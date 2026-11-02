@@ -7,7 +7,7 @@ Companion to [GDD.md](GDD.md) §11. All audio is synthesized with WebAudio in `s
 - **Short.** Every SFX ≤ 0.25 s, so rapid shifting never stacks into noise.
 - **Informative.** The shift sound's pitch direction tells you where you went (down = night, up = day).
 - **Funny, not scary.** Yelps and giggles, never stingers or screams.
-- **The freaks are raccoons who know dark magic** (GDD §4.8): their sounds are **chitters** (fast, high, scratchy) plus a hint of **spell shimmer**. Never a real animal recording; it's all synthesized.
+- **The freaks** (GDD §4.8, nature undefined): mischievous **giggles and scuttles**, plus a hint of **shimmer** when a prank does something impossible. Nothing that sounds like a specific animal; it's all synthesized.
 - **Master gain 0.35**; `M` mutes. The AudioContext starts on the first key press (browser autoplay rules).
 
 ## 2. Sound effects (built)
@@ -23,7 +23,7 @@ Companion to [GDD.md](GDD.md) §11. All audio is synthesized with WebAudio in `s
 | Land | Soft thump | sine 140 → 70 Hz, 0.05 s, vol 0.2 |
 | Death (hazard/fall) | Slide down | sawtooth 400 → 60 Hz, 0.25 s, vol 0.25 |
 | **Spooked** (freak) | Two-part yelp | square 500 → 1400 Hz 0.12 s, then 1300 → 600 Hz 0.1 s, vol 0.22/0.18 |
-| **Prank fired** | Giggle (to become a chitter, §4) | 4 triangle blips alternating 900/1080 → 700 Hz, 0.05 s each, 70 ms apart, vol 0.14 |
+| **Prank fired** | Giggle | 4 triangle blips alternating 900/1080 → 700 Hz, 0.05 s each, 70 ms apart, vol 0.14 |
 | Checkpoint | Two-note chime | triangle 523 Hz 0.07 s, then 784 Hz 0.1 s |
 | Win | Arpeggio | triangle 523, 659, 784, 1047 Hz, 0.12 s each, 80 ms apart |
 | Timecard stamp | Thunk | square 90 → 50 Hz, 0.09 s, vol 0.3 (450 ms after win) |
@@ -53,8 +53,7 @@ Companion to [GDD.md](GDD.md) §11. All audio is synthesized with WebAudio in `s
 | Peeker pops out | Tiny "boing" (sine 300 → 600 Hz, 0.05 s), only when on screen and on night |
 | Lurker footsteps | Very quiet ticks while you're on night (positional pan by x) |
 | Freaks freeze (shift to day) | Optional "record scratch" micro-sound layered under the shift blip |
-| Prank giggle → **chitter** | Rework the built giggle toward a raccoon chitter: faster blips (~40 ms apart), a little noise mixed in, slight upward pitch wobble. Still ≤ 0.25 s. |
-| Spell shimmer | Layered under the chitter when a prank fires: 3–4 quick sine pings, high (~1.5–2.5 kHz), very quiet. The "magic" half of the joke. |
+| Prank shimmer | Layered under the giggle when a prank fires: 3–4 quick sine pings, high (~1.5–2.5 kHz), very quiet. The "how did they do that?" half of the joke. |
 | Peeker hands | A tiny scratch (filtered noise, 0.03 s) when a peeker grips the ledge |
 | Wet floor slide | Squeak on hard stop |
 | Menu move / select | Soft clicks |
