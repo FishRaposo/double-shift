@@ -15,6 +15,11 @@ Jam communities (the Game Off itch community, Discord) are a source of cold test
 
 ## 2. How to run one
 
+**Getting a build in front of them:**
+- *Same machine:* `npm start` (or double-click `play.bat` on Windows) opens the current working copy at http://localhost:8080, uncommitted changes included.
+- *Their machine:* send <https://fishraposo.github.io/double-shift/>, which is the last push to `main`.
+- *Recording the session:* fill in "Build / commit" in the log with `git log --oneline -1`, plus "(dirty)" if you played uncommitted changes.
+
 1. Give them the link and **say nothing** beyond "it's a puzzle-platformer, keyboard". No explanation of shifting.
 2. Watch (screen share or in person). Don't help unless they're stuck for 2+ minutes; note when and why you helped.
 3. Note every moment of: confusion, a death they didn't expect, a laugh, an "oh!", a sigh.

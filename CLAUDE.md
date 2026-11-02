@@ -10,7 +10,8 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm test                                   # node --test test/*.test.mjs
 node --test --test-name-pattern="peeker" test/rules.test.mjs   # single test / subset
 npm run check                              # syntax-check src/*.js + validate every level via parseLevel
-npm run serve                              # http://localhost:8080 (ES modules won't load from file://)
+npm start                                  # local server + opens the browser (play.bat does the same on Windows)
+npm run serve                              # http://localhost:8080, no browser; next free port if busy (scripts/serve.mjs)
 npm run zip                                # double-shift-web.zip (index.html + src/) for itch.io
 node scripts/smoke.mjs http://localhost:8080/ media   # headless Chromium plays level 1; needs Playwright
 ```

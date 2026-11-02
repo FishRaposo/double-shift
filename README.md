@@ -21,11 +21,13 @@ A puzzle-platformer for [GitHub Game Off 2026](https://itch.io/jam/game-off-2026
 
 ## Play locally
 
-Serve the folder over HTTP (ES modules don't load from `file://`):
+Needs [Node.js](https://nodejs.org) 22 or newer; nothing to install.
 
-```sh
-npm run serve        # http://localhost:8080
-```
+- **Windows:** double-click `play.bat`.
+- **Any OS:** `npm start` serves the game and opens it in your browser.
+- `npm run serve` does the same without opening a browser.
+
+The server runs at http://localhost:8080 (it picks the next free port if 8080 is busy). Nothing is cached, so edit a file and reload. Opening `index.html` directly from the folder won't work, because browsers block ES modules on `file://`.
 
 URL options: `?level=3` start at a level, `?autostart` skip the title, `?debug` show the collision/state overlay (toggle with `` ` ``).
 

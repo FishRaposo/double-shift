@@ -7,7 +7,8 @@
   "scripts": {
     "test": "node --test test/*.test.mjs",
     "check": "node scripts/check.mjs",
-    "serve": "npx --yes http-server -c-1 -p 8080 .",
+    "start": "node scripts/serve.mjs --open",
+    "serve": "node scripts/serve.mjs",
     "zip": "node scripts/zip.mjs"
   },
   "license": "MIT"

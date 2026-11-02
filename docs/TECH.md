@@ -21,6 +21,7 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-01.
 | `src/audio.js` | WebAudio synth, `sfx.*` | Yes (AudioContext) |
 | `test/*.test.mjs` | `node --test` suites against the real rules | No |
 | `test/helpers.mjs` | `level()`, `stepN()`, `place()`, `play(level, policy)` | No |
+| `scripts/serve.mjs` | Zero-dependency local server, no caching (`npm start` opens the browser; `npm run serve` doesn't). `play.bat` wraps it for double-click on Windows. | — |
 | `scripts/check.mjs` | Syntax-check modules, validate levels | — |
 | `scripts/smoke.mjs` | Headless Chromium plays level 1 with real keys, screenshots | — |
 | `scripts/zip.mjs` | Builds `double-shift-web.zip` for itch | — |
