@@ -44,10 +44,14 @@ Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game l
 | Act 2 card | ACT 2 · OVERTIME · "Something keeps moving things." |
 | Act 3 card | ACT 3 · GRAVEYARD SHIFT · "They've gotten organized." |
 | Act 4 card | ACT 4 · LIGHTS OUT · "The building doesn't add up anymore." |
+| Act 5 card *(planned)* | ACT 5 · UPSIDE DOWN · "The night shift turned the building over." |
+| Finale card *(planned)* | FINALE · CLOCK OUT · "One more shift." |
 | Sticky Keys joke (G14) | A freak memo: "WE PRES SHIFT 5 TIMES. FOR FUN." + the practical line kept below it |
 | End (full game) | SHIFT COMPLETE · totals · SPACE: clock in again |
 
 ## 3. Level notes (shown 5 s at level start)
+
+In the order of the 21-level game (LEVELS.md §5.0). ✅ = in the build.
 
 | Level | Note |
 |---|---|
@@ -63,12 +67,17 @@ Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game l
 | 10 Structural Integrity (`pillar`) | They moved a load-bearing pillar. The building is somehow fine. |
 | 11 Night Management (`supervisor`) ✅ | One of them has a clipboard now. It supervises the others. |
 | 12 Stacked (`stacked`) ✅ | They've been busy. |
-| 13 Broad Daylight (`daywalker`) ✅ | One of them clocked in for the day shift. |
-| 14 Floor 3.5 (`offset`) ✅ | There is no Floor 3 anymore. It's now Floor 3.5. |
-| 15 Employee of the Month (`portrait`) | They installed a portrait of themselves. It blocks the exit. |
-| 16 Clock Out (`clockout`) ✅ | Almost done. Don't look at the vents. |
+| 13 Employee of the Month (`portrait`) | They installed a portrait of themselves. It blocks the exit. |
+| 14 Broad Daylight (`daywalker`) ✅ | One of them clocked in for the day shift. |
+| 15 Floor 3.5 (`offset`) ✅ | There is no Floor 3 anymore. It's now Floor 3.5. |
+| 16 Night Audit (`audit`) | Management is doing a walkthrough tonight. So are they. |
+| 17 Mind Your Head (`upside`) | They flipped the night shift. Mind your head. |
+| 18 Falling Up (`fallup`) | The floor is up there now. |
+| 19 Ceiling Walker (`ceiling`) | Something is walking on the ceiling. It's fine. |
+| 20 Head Over Heels (`heels`) | Up is a matter of opinion now. |
+| 21 Clock Out (`clockout`) ✅ | Almost done. Don't look at the vents. |
 
-Notes 7, 8, 10, 11, 13 and 15 come from Fish's idea pool (2026-11-02). 8 and 13 are unchanged; 7, 10, 11 and 15 are lightly trimmed to fit one line at scale 2 (14 px tall) (his full lines are the "Fiction" lines in LEVELS.md §5). *Freight* ("The crates were stacked properly. They were.") is kept for post-jam. Act 5 *Upside Down* notes (LEVELS.md §5.2): 17 Mind Your Head: "They flipped the night shift. Mind your head." · 18 Falling Up: "The floor is up there now." · 19 Ceiling Walker: "Something is walking on the ceiling. It's fine." Act card: ACT 5 · UPSIDE DOWN · "The night shift turned the building over."
+Notes 7, 8, 10, 11, 13 and 15 come from Fish's idea pool (2026-11-02). 8 and 15 are unchanged; 7, 10, 11 and 13 are lightly trimmed to fit one line at scale 2 (14 px tall) (his full lines are the "Fiction" lines in LEVELS.md §5). Act 5 is Fish's Upside Down idea (LEVELS.md §5.2). *Freight* ("The crates were stacked properly. They were.") is kept for post-jam.
 
 ## 4. Spook lines (random on freak contact) ✅
 

@@ -1,7 +1,7 @@
 # DOUBLE SHIFT
 ## Game Design Document
 
-**Version:** 0.5.0  
+**Version:** 0.6.0  
 **Status:** Prototype  
 **Project:** Game Off 2026  
 **Theme:** SHIFT  
@@ -28,7 +28,7 @@
 | Score | Timecard: clock-ins vs. par (fewest shifts the designer found, proven by tests) | §15.3 |
 | Tone | Mock horror: petty monsters, deadpan worker, no gore, no jump scares | §10.5 |
 | Look and sound | Crisp pixel art on a 2-px grid, a hand-made pixel font, a spooky-goofy theme whose day/night arrangements crossfade on every shift; all made in code (built 2026-11-02) | §10, §11, ART.md, AUDIO.md |
-| Levels | 12 built, **tier A (jam minimum) complete**; 19 planned in five acts (act 5: Upside Down, the night is the map flipped with gravity up), in tiers: A = 8, B = 12, C = 16 with four new mechanics (wet floor, supervisor, offset layer, day-walker — all shipped) | §8.2, [CONTENT.md](CONTENT.md) |
+| Levels | **21: five acts of four plus the finale.** 12 built (a complete game, tier A); tier B = 17, tier C = 21 with act 5 Upside Down (night flipped, gravity up) and the finale rework. Four new mechanics shipped; Upside Down is the fifth | §8.2, [CONTENT.md](CONTENT.md) |
 | Jam | Game Off 2026, theme SHIFT, due Dec 1 13:37 PST. Lead with the pranks and freezing freaks: two overlapping worlds alone is one of the jam page's example ideas. | §1.8 |
 
 **Living sections** (kept current): §0, §1, §3, §4, §8.2, §10.5, §15.3, §18, §21. **Historical sections** (the original pre-v0.2 plan, kept for the record): §13.1–13.8, §16, §22. Their banners say what replaced them.
@@ -42,6 +42,15 @@ This GDD decides *what* the game is. The production docs in this folder decide *
 ---
 
 # 0. Changes
+
+## v0.6
+
+| Change | Why |
+|---|---|
+| **21 levels: five acts of four plus the finale** (§8.2), with a freak-and-mechanic ladder | Fish, 2026-11-02: start almost normal, introduce everything gradually, grow into the Upside Down levels, end on a finale that pays it all off |
+| **Act 5: Upside Down**: at night the map is flipped and gravity points up (LEVELS.md §5.2) | Fish's idea; the other shift becomes the same building turned over |
+| Two new levels: **Night Audit** (act 4 exam) and **Head Over Heels** (act 5 combination) | Each late act ends on a combination level |
+| **Clock Out reworked** as an upside-down finale, one room per act; today's version is the fallback | The finale should pay off every act |
 
 ## v0.5
 
@@ -219,8 +228,8 @@ The player retains their position and movement state.
 |---|---|
 | Playable dimensions | 2 |
 | Core mechanics | Move, jump, shift |
-| Main levels | 16 compact levels in four acts (tiers: 8 / 12 / 16) |
-| Estimated completion | 25–40 minutes |
+| Main levels | 21 compact levels: five acts of four plus the finale (tiers: 12 built / 17 / 21) |
+| Estimated completion | 35–50 minutes |
 | Difficulty | Progressive |
 | Checkpoints | Yes, where appropriate |
 | Combat | Not planned |
@@ -814,54 +823,62 @@ A linear progression is sufficient.
 
 ## 8.2 Proposed Level Sequence
 
-**Decision (v0.5): 16 levels in four acts**, built in tiers so any cut still ships a complete game. The manifest is [CONTENT.md](CONTENT.md); the full level specs are [LEVELS.md](LEVELS.md) §4–5. ✅ = built. Tiers: **A** = jam minimum, **B** = existing systems only, **C** = needs a new mechanic.
+**Decision (v0.6): 21 levels, five acts of four plus the finale** (Fish, 2026-11-02). The game starts almost normal and grows into the full Upside Down levels; each act introduces one idea, practises it, and ends on a level that combines it with what came before; the finale pays everything off. Manifest: [CONTENT.md](CONTENT.md) §2. Specs: [LEVELS.md](LEVELS.md) §4–5.3. ✅ = built. Tiers: **A** = built today (a complete game), **B** = existing systems, **C** = act 5 (Upside Down) and the finale rework.
 
-**Act 1: Renovation** (only evidence of the freaks; teaching the shift)
+**Act 1: Renovation** (it's just a job; only evidence of the freaks)
 
 | Level | Focus | Intended Lesson | Fiction | Tier |
 |---|---|---|---|---|
 | 1. Clock In ✅ | Basic toggle | Shift changes world geometry | Gap in the floor by day; night planks, night gate | A |
 | 2. Scaffolding ✅ | Missing platforms | Use the other shift to cross | Day crew's scaffolding and deliveries | A |
-| 3. Closing Time ✅ | Obstacle bypass | Geometry differs spatially | Gates, rebar by day, lasers by night | A |
+| 3. Closing Time ✅ | Obstacle bypass | Geometry differs spatially; first frozen outline | Gates, rebar by day, lasers by night | A |
 | 4. Mid-Air ✅ | Midair shifting | Shift during a jump | Eyes blink in the dark. Nobody mentions it. | A |
 
-**Act 2: Overtime** (the freaks appear)
+**Act 2: Overtime** (the freaks show up)
 
 | Level | Focus | Intended Lesson | Fiction | Tier |
 |---|---|---|---|---|
 | 5. Inventory ✅ | First prank | Each clock-in changes the night | The plank keeps moving | A |
 | 6. Night Watch ✅ | Lurker, peeker, squatter | Freaks freeze when you go to day | Something is in the tunnel | A |
 | 7. Under Renovation | Height from one shift | Climb a night staircase, shift mid-air onto a day ledge | A staircase to nowhere; they're very proud | B |
-| 8. Lost & Found | Wanted pranks | Spend clock-ins on purpose: the stolen-door pile is your way up | They stole every door | B |
+| 8. Lost & Found | Wanted pranks (act 2 combination) | Spend clock-ins on purpose | They stole every door | B |
 
-**Act 3: Graveyard Shift** (the freaks bring new tricks)
+**Act 3: Graveyard Shift** (they get organized; first new rule)
 
 | Level | Focus | Intended Lesson | Fiction | Tier |
 |---|---|---|---|---|
 | 9. Wet Floor ✅ | Wet floor `~` | Slide at night, grip by day | Floors waxed at night (by whom?) | C |
 | 10. Structural Integrity | Moving object | Count your night entries: the pillar is a wall, then a step | The load-bearing pillar moved | B |
 | 11. Night Management ✅ | Supervisor freak | Cross on the side it isn't watching | One of them has a clipboard | C |
-| 12. Stacked ✅ | Multiple pranks | Order your clock-ins | Several pranks queued | A |
+| 12. Stacked ✅ | Multiple pranks (act 3 combination) | Order your clock-ins | They've been busy | A |
 
-**Act 4: Lights Out** (they're getting bold; the rules bend)
+**Act 4: Lights Out** (the rules bend)
 
 | Level | Focus | Intended Lesson | Fiction | Tier |
 |---|---|---|---|---|
-| 13. Broad Daylight ✅ | Day-walker freak | Each shift freezes the other shift's freaks; you must freeze it | One of them works days now | C |
-| 14. Floor 3.5 ✅ | Offset layer | Shift at the apex to climb between floors | Night is half a storey up | C |
-| 15. Employee of the Month | Obstacle as tool | The portrait blocks the exit, then becomes the step | Their portrait. It's just eyes. | B |
-| 16. Clock Out ✅ | Combined mechanics | Demonstrate mastery | Get out. Final timecard. They wave from the dark. | A |
+| 13. Employee of the Month | Obstacle as tool | The portrait blocks the exit, then becomes the step | Their portrait. It's just eyes. | B |
+| 14. Broad Daylight ✅ | Day-walker freak | Each shift freezes the other shift's freaks; you must freeze it | One of them works days now | C |
+| 15. Floor 3.5 ✅ | Offset layer | Shift at the apex to climb between floors | Night is half a storey up | C |
+| 16. Night Audit | Acts 1–4 exam | Everything so far, one screen, no new rules | Management's walkthrough; so is theirs | B |
 
-**Act 5: Upside Down** *(planned, decided 2026-11-02)*: by day you play the map as drawn; at night you play the same map upside down, with gravity pointing up. Every shift is also a gravity flip. Clock Out moves to close this act.
+**Act 5: Upside Down** (the building turns over)
 
 | Level | Focus | Intended Lesson | Fiction | Tier |
 |---|---|---|---|---|
 | 17. Mind Your Head | Night flipped, gravity up | At night you fall up; the ceiling is the floor | They flipped the night shift | C |
 | 18. Falling Up | Mid-fall flips | Shift mid-fall to reverse it; climb a shaft by flipping | The floor is up there now | C |
 | 19. Ceiling Walker | Flip + freak + prank | Freeze a ceiling lurker; read a prank on the flipped map | Something walks on the ceiling | C |
-| 20. Clock Out ✅ | Finale (moved) | Demonstrate mastery | Get out. | A |
+| 20. Head Over Heels | Act 5 combination | Every shift freezes one freak and flips gravity | Up is a matter of opinion now | C |
 
-**Tiers and cut dates.** A = 8 levels (the six originals + Stacked + Clock Out), B = 12, C = 16. A new mechanic that isn't done (rules, tests, drawing, level at par) by its cut date moves to post-jam with its level: wet floor and day-walker by **Nov 12**, supervisor and offset layer by **Nov 17**. Content freeze **Nov 22**. Levels are referred to by id, so cuts never renumber anything.
+**Finale**
+
+| Level | Focus | Intended Lesson | Fiction | Tier |
+|---|---|---|---|---|
+| 21. Clock Out ✅ (rework planned) | Everything | One room per act, then the time clock; the ending | Get out. Final timecard. They wave from the dark. | A built / C rework |
+
+**Ladder.** Freak evidence in act 1; pranks single (5), wanted (8), moving an object (10), queued (12); visible freaks (6), the supervisor (11), the day-walker (14), a freak on the ceiling (19); one new rule per act from act 3: wax (9), offset (15), upside down (17). Floor 3.5 previews act 5: the building stops being where it was before it turns over.
+
+**Tiers and cut dates.** A = the 12 built; B = 17 (M2, Nov 15); C = 21, which needs the gravity flip working and `upside` proven by **Nov 18**. Content freeze **Nov 22**. If a tier slips, its levels go post-jam and the rest keep their order; today's Clock Out is always the fallback finale. Levels are referred to by id, so cuts never renumber anything.
 
 **Shared state and Freight** (crates restacking on a cycle) are post-jam (LEVELS.md §5.1).
 
@@ -1820,7 +1837,7 @@ The following decisions require prototypes or further discussion.
 | Hazards | Simple and dimension-specific | Medium |
 | Checkpoint frequency | Based on challenge length | Medium |
 | Moving objects in inactive layers | Frozen | Locked |
-| Level count | 16 in four acts; tiers 8 / 12 / 16 with cut dates (§8.2) | Locked (v0.5) |
+| Level count | 21: five acts of four plus the finale; tiers 12 / 17 / 21 with cut dates (§8.2) | Locked (v0.6) |
 | New mechanics in jam scope | Wet floor, supervisor, offset layer, day-walker; each cut if it misses its date | Locked (v0.5) |
 | Antagonist | The freaks: never fully shown, nature undefined, nocturnal and annoying (§4.8) | Locked |
 | Tone | Mock horror | Locked |
@@ -1907,4 +1924,4 @@ It is to create a platformer in which a single additional button meaningfully tr
 
 **Press Shift to change shifts.**
 
-*End of Game Design Document, Version 0.5.0*
+*End of Game Design Document, Version 0.6.0*

@@ -13,7 +13,7 @@ Companion to [GDD.md](GDD.md) §19. Playtests answer questions the tests can't: 
 |---|---|---|---|---|
 | 0 | Nov 2–3 | Levels 1–6 | Fish | Feel, Sticky Keys, tuning |
 | 1 | by Nov 8 (M1) | Levels 1–6 | 1–2 people who haven't seen it | Do they get Shift, echoes, freezing, pranks without help? |
-| 2 | by Nov 22 (M3) | Full run: every level still in after the cut dates (up to 16) | 2–3 new people | Pacing across four acts, difficulty curve, new mechanics readable on first sight, jokes landing |
+| 2 | by Nov 22 (M3) | Full run: every level still in after the cut dates (up to 21) | 2–3 new people | Pacing across five acts and the finale, how readable the Upside Down flip is on first sight, difficulty curve, new mechanics readable on first sight, jokes landing |
 | 3 | Nov 26 (M4) | itch draft page | 1 person, their own machine | Loads, runs, controls, nothing broken |
 
 Jam communities (the Game Off itch community, Discord) are a source of cold testers. Trade plays with other entrants.

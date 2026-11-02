@@ -46,7 +46,7 @@ The jam rules and how they apply are in `docs/RELEASE.md` §0, and the category-
 
 ## Docs
 
-`docs/INDEX.md` maps the doc set. `docs/GDD.md` is the design source of truth (rule IDs S-01…S-08, §13.7 edge cases referenced in tests); `docs/TECH.md` is the detailed code reference (state shape, event table, `PARAMS`, how to add a level/prank/freak/tile); `docs/LEVELS.md` has movement metrics and the level authoring format. `docs/DESIGN.md` is the one-page portfolio write-up. `docs/CONTENT.md` is the manifest of the full 16-level game (tiers, cut dates); the tier-C mechanics (wet floor, day-walker, supervisor, offset layer) are built and documented in `docs/TECH.md` §6.5.
+`docs/INDEX.md` maps the doc set. `docs/GDD.md` is the design source of truth (rule IDs S-01…S-08, §13.7 edge cases referenced in tests); `docs/TECH.md` is the detailed code reference (state shape, event table, `PARAMS`, how to add a level/prank/freak/tile); `docs/LEVELS.md` has movement metrics and the level authoring format. `docs/DESIGN.md` is the one-page portfolio write-up. `docs/CONTENT.md` is the manifest of the full **21-level game** (five acts of four plus the finale; sequence and ladder in `docs/LEVELS.md` §5.0; tiers, cut dates); the tier-C mechanics (wet floor, day-walker, supervisor, offset layer) are built and documented in `docs/TECH.md` §6.5.
 
 Doc rules from `docs/INDEX.md`:
 - GDD decides *what*, other docs decide *how*; if they disagree, the GDD wins and the other doc gets fixed.

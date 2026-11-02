@@ -3,9 +3,10 @@
 Companion to [GDD.md](GDD.md) §6 and §8. Tile = 30 px. Levels are 32×18 tiles (one 960×540 screen).
 
 **At a glance**
-- Jumpable rise: **≤ 3 tiles**. Gaps: **≤ 4** comfortable, **≥ 7** impossible (use 8 for "must shift"). Leave **≥ 1 tile** to shift in (§1).
+- Jumpable rise: **≤ 3 tiles**. Gaps: **≤ 4** comfortable, **≥ 7** impossible (use 8 for "must shift") (§1).
 - A level is two ASCII grids (day, night) plus optional pranks, freaks and decor (§2).
-- 12 built (§4), 4 tier-B levels planned (§5) and 3 Upside Down levels (§5.2): 19 levels in five acts. Jam minimum (tier A) is complete: the 6 originals + `stacked` + `clockout`.
+- **The game is 21 levels: five acts of four plus the finale (§5.0).** 12 built (§4); 5 tier-B levels specced (§5); act 5 Upside Down (§5.2) and the finale rework (§5.3) planned. Tier A (a complete game) is built.
+- Leave **≥ 200 ms** of slack per required input in acts 1–2, **≥ 100 ms** in acts 3–5 (tested).
 - Nothing ships without a scripted par solution in the tests and the §6 checklist.
 
 ## 1. Movement metrics (from `PARAMS`, measured 2026-11-02)
@@ -151,16 +152,53 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 - **Margin:** the full jump peaks at ≈ 93.5 px against the 90 px needed (plus the 4 px nudge): each apex shift has ≈ 250 ms. Any lower `jumpVelocity` breaks this level first — re-run `npm run audit` after tuning. `dy: -2` is the fallback.
 - **Props:** floor signs read 3 and 3.5.
 
-### 12. Clock Out: par 7 (act 4, the finale)
+### 12. Clock Out: par 7 (the finale; #21 in the full game, rework planned in §5.3)
 - **Lesson:** everything you know, in one run.
 - **Room 1 (cols 0–14):** a pit with a 3-wide night stone (cols 5–7, row 13) and a higher day stone (cols 10–12, row 12): jump off each as you land, shifting mid-air to the one ahead.
 - **Room 2 (cols 15–24):** `watch`'s tunnel under a building: day crates at cols 17 and 24 force night in and out; the lurker inside (col 20) forces a day freeze. Checkpoint at col 15.
 - **Room 3 (cols 25–31):** the time clock sits on a ledge 4 tiles up (cols 28–31); the only way up is a night step at col 27. Leaving room 2 at night is clock-in 3, when they take the step (telegraphed); clock-in 4 puts it back. So clock out and in on the floor at cols 25–26, then climb. Checkpoint at col 25.
 - **Ending:** the timecard, then the end screen (WRITING.md §8). Tests pin that without the fourth clock-in the time clock is out of reach.
 
+## 5.0 The 21-level sequence (20 levels + finale; Fish, 2026-11-02)
+
+Five acts of four, then the finale. Each act introduces one idea, practises it, and ends on a level that combines it with what came before. The game starts almost normal and grows into the full Upside Down levels. `#` is the position in the finished game; the build numbers levels by their position in `src/levels.js`.
+
+| # | Act | Level (id) | Introduces / practises | Status |
+|---|---|---|---|---|
+| 1 | **1 · Renovation** (it's just a job) | Clock In (`clock`) | Shift changes the world | ✅ |
+| 2 | 1 | Scaffolding (`scaff`) | Use the other shift's geometry | ✅ |
+| 3 | 1 | Closing Time (`closing`) | Per-shift hazards and walls; first frozen outline (harmless) | ✅ |
+| 4 | 1 | Mid-Air (`midair`) | Shift during a jump; eyes in the dark | ✅ |
+| 5 | **2 · Overtime** (the freaks show up) | Inventory (`inventory`) | **First prank**: a clock-in changes the night | ✅ |
+| 6 | 2 | Night Watch (`watch`) | **First visible freaks**: lurker, peeker, squatter; day freezes them | ✅ |
+| 7 | 2 | Under Renovation (`stairs`) | Height from one shift carries into the other | spec (§5) |
+| 8 | 2 | Lost & Found (`doors`) | **Wanted pranks**; act 2's combination (pranks + a lurker) | spec (§5) |
+| 9 | **3 · Graveyard Shift** (they get organized) | Wet Floor (`wet`) | **Wet floor**: slide at night, grip by day | ✅ |
+| 10 | 3 | Structural Integrity (`pillar`) | One object moved each clock-in: wall, then step | spec (§5) |
+| 11 | 3 | Night Management (`supervisor`) | **Supervisor**: watched freaks work, the rest slack | ✅ |
+| 12 | 3 | Stacked (`stacked`) | Several queued pranks; act 3's combination | ✅ |
+| 13 | **4 · Lights Out** (the rules bend) | Employee of the Month (`portrait`) | The obstacle is the tool | spec (§5) |
+| 14 | 4 | Broad Daylight (`daywalker`) | **Day-walker**: each shift freezes the other's freaks | ✅ |
+| 15 | 4 | Floor 3.5 (`offset`) | **Offset layer**: night is the building moved; apex shifts | ✅ |
+| 16 | 4 | Night Audit (`audit`) | Acts 1–4 exam on one screen; no new rules | spec (§5) |
+| 17 | **5 · Upside Down** (the building turns over) | Mind Your Head (`upside`) | **Upside Down**: at night the map is flipped and gravity points up | spec (§5.2) |
+| 18 | 5 | Falling Up (`fallup`) | Mid-fall flips; climb a shaft by flipping | spec (§5.2) |
+| 19 | 5 | Ceiling Walker (`ceiling`) | A freak on the ceiling; a prank on the flipped map | spec (§5.2) |
+| 20 | 5 | Head Over Heels (`heels`) | Act 5's combination: every shift freezes one freak and flips gravity | spec (§5.2) |
+| 21 | **Finale** | Clock Out (`clockout`) | Pays everything off, then the ending | ✅ built (3 rooms); rework spec §5.3 |
+
+**Freak and mechanic ladder** (first seen → first required):
+- **Freak evidence:** eyes and footprints in act 1, a harmless frozen peeker in Closing Time.
+- **Pranks:** single in 5, wanted in 8, moving an object in 10, queued in 12.
+- **Visible freaks:** lurker, peeker and squatter in 6; the supervisor in 11; the day-walker in 14; a freak on the ceiling in 19.
+- **New rules, one per act from act 3:** wax in 9, offset in 15, upside down in 17.
+- **Act 4 previews act 5:** Floor 3.5 already says "the building isn't where it was", so the flip in 17 is the next step, not a jump.
+
+**Tiers:** A = the 12 built (a complete game today). B = 17, adding `stairs`, `doors`, `pillar`, `portrait`, `audit` on existing systems (M2, Nov 15). C = 21, adding act 5 and the finale rework; the gravity flip must be working and `upside` proven by **Nov 18**. Content freeze Nov 22. If a tier slips its levels go post-jam and the rest keep their order; today's Clock Out is always the fallback finale.
+
 ## 5. Planned levels (specs)
 
-Four more levels take the game to 16 in four acts (manifest: [CONTENT.md](CONTENT.md) §2). Each spec gives the lesson, a layout concept within the §1 metrics, the intended solution and a **target** par range. The real par is whatever the scripted solution in `SOLUTIONS` proves when the level is built; grids are drawn at build time. Rows are 0–17; "floor" means the usual floor with its top at row 14 (stand on row 13).
+The levels still to build in acts 2–4, in the §5.0 order (manifest: [CONTENT.md](CONTENT.md) §2). Each spec gives the lesson, a layout concept within the §1 metrics, the intended solution and a **target** par range. The real par is whatever the scripted solution in `SOLUTIONS` proves when the level is built; grids are drawn at build time. Rows are 0–17; "floor" means the usual floor with its top at row 14 (stand on row 13).
 
 **Tiers:** A = jam minimum, B = existing systems only, C = needs a new mechanic (all four tier-C mechanics shipped in `wet`, `supervisor`, `offset` and `daywalker`). If a level is cut, the rest keep their order.
 
@@ -169,9 +207,10 @@ Four more levels take the game to 16 in four acts (manifest: [CONTENT.md](CONTEN
 | 7 | 2 Overtime | Under Renovation | `stairs` | B |
 | 8 | 2 | Lost & Found | `doors` | B |
 | 10 | 3 | Structural Integrity | `pillar` | B |
-| 15 | 4 | Employee of the Month | `portrait` | B |
+| 13 | 4 | Employee of the Month | `portrait` | B |
+| 16 | 4 | Night Audit | `audit` | B |
 
-### Under Renovation (`stairs`, slot 7): target par 2 (act 2, tier B)
+### Under Renovation (`stairs`, #7): target par 2 (act 2, tier B)
 - **Lesson:** height you only have on one shift can carry you into the other. A mid-air shift that starts from the top of something.
 - **Fiction:** "They've built an entirely unnecessary staircase. It leads nowhere. They're very proud."
 - **Night:** a staircase of 1-tile steps rising from about col 6 to a top step about 6 tiles above the floor, ending in mid-air (about col 16). Beyond it, nothing.
@@ -181,7 +220,7 @@ Four more levels take the game to 16 in four acts (manifest: [CONTENT.md](CONTEN
 - **Props:** a proud hand-painted sign at the stair top (WRITING.md §5), eyes under the stairs.
 - **Constraints:** step rises of 1 tile; ≥ 1 tile of open air above the ledge where both shifts are clear for the mid-air shift.
 
-### Lost & Found (`doors`, slot 8): target par 5 (act 2, tier B)
+### Lost & Found (`doors`, #8): target par 5 (act 2, tier B)
 - **Lesson:** sometimes you *want* the freaks to act. Clock-ins are a resource you spend on purpose.
 - **Fiction:** "The freaks have stolen every door. Not the keys. The doors."
 - **Both shifts:** three full-height doors (D1–D3, around cols 9, 15 and 21) cut the floor into rooms. The exit is on a ledge about 6 tiles up at the right end.
@@ -190,7 +229,7 @@ Four more levels take the game to 16 in four acts (manifest: [CONTENT.md](CONTEN
 - **Par note:** this level inverts "fewest clock-ins": par is the shifts needed to earn 3 night entries safely, proven by the scripted solution like every other par.
 - **Props:** door frames left behind (empty, non-solid), the pile, a LOST & FOUND box.
 
-### Structural Integrity (`pillar`, slot 10): target par 4 (act 3, tier B)
+### Structural Integrity (`pillar`, #10): target par 4 (act 3, tier B)
 - **Lesson:** one object, moved by each clock-in, is a wall in one place and a step in another. Count your night entries.
 - **Fiction:** "They've moved a load-bearing pillar. The building is somehow fine."
 - **Both shifts:** a mezzanine (top about 7 tiles above the floor) holds the exit.
@@ -200,7 +239,7 @@ Four more levels take the game to 16 in four acts (manifest: [CONTENT.md](CONTEN
 - **Props:** a ceiling crack and a dust outline where the pillar used to be; a memo about it.
 - **Constraints:** tells for all three positions are visible from the start (eyes/notes at P1–P3).
 
-### Employee of the Month (`portrait`, slot 15): target par 3–4 (act 4, tier B)
+### Employee of the Month (`portrait`, #13): target par 3–4 (act 4, tier B)
 - **Lesson:** the obstacle and the tool are the same object, moved by each clock-in.
 - **Fiction:** "The freaks have installed a portrait of themselves. It blocks the exit."
 - **Night:** a big portrait (a solid block, about 2×3 tiles) hangs in front of the exit doorway.
@@ -208,6 +247,16 @@ Four more levels take the game to 16 in four acts (manifest: [CONTENT.md](CONTEN
 - **Pranks:** each night entry rehangs the portrait; on entry 2 it hangs low next to the ledge, where its top is a step.
 - **Solution:** use the portrait as a step at night (entry 2) to get onto the ledge, walk above the exit, shift to day and drop to the exit.
 - **Props:** the portrait is just eyes (WRITING.md §6 memo), a nail where it used to hang.
+
+### Night Audit (`audit`, #16): target par 6–8 (act 4, tier B)
+- **Lesson:** everything from acts 1–4 on one screen, no new rules. It's the "you've learned it all" exam before the building turns over.
+- **Fiction:** "Management is doing a walkthrough tonight. So are they."
+- **Beats** (left to right, a checkpoint between each):
+  1. a waxed night corridor with a dry day stop before a hazard (act 3);
+  2. a supervisor watching two short tunnels: cross on the slack side (act 3);
+  3. a day-walker stretch you pass by going night, then a night lurker you pass by going day (act 4).
+- **Glue:** one telegraphed prank (act 2), visible from the spawn: a plank that appears over the last pit on the night entry the beats naturally lead to. Count your clock-ins so it's there when you arrive.
+- **Uses:** existing systems only. Every required input ≥ 100 ms (act 4 floor).
 
 ## 5.1 Idea pool status
 
@@ -226,7 +275,7 @@ Four more levels take the game to 16 in four acts (manifest: [CONTENT.md](CONTEN
 
 **The rule:** by day you play the map as drawn. **At night you play the same map upside down:** the night grid is the day grid flipped top to bottom, and gravity points up. The worker stands under what were floors, on what were ceilings. Shifting keeps your position and momentum (S-01, S-02), so every shift is also a gravity flip.
 
-**Why it's its own act:** it changes what "the other shift" means. In every other level the other shift is a different building; here it's the same building turned over. That needs a teach level, a mid-air level and a combination level, so three levels, then the finale.
+**Why it's its own act:** it changes what "the other shift" means. In every other level the other shift is a different building; here it's the same building turned over. That needs a teach level, a mid-air level, a freak-and-prank level and a combination level: four levels, then the finale (#21).
 
 **Designing flipped levels (rules of thumb, to verify at build):**
 - A solid at day row *r* sits at night row *17 − r*. You author the **day map only**; the night is generated (like `offset`), with an optional `nightPatch` for the few tiles that differ.
@@ -240,28 +289,44 @@ Four more levels take the game to 16 in four acts (manifest: [CONTENT.md](CONTEN
 | 17 | 5 Upside Down | Mind Your Head | `upside` | At night you fall up: the ceiling is the floor | C |
 | 18 | 5 | Falling Up | `fallup` | Shift mid-fall to reverse it; climb a shaft by flipping | C |
 | 19 | 5 | Ceiling Walker | `ceiling` | A freak on the ceiling, and a prank on a flipped map | C |
-| 20 | 5 | Clock Out | `clockout` (moved) | The finale closes act 5 (built; gets an optional flipped room) | A |
+| 20 | 5 | Head Over Heels | `heels` | Act 5's combination: every shift freezes one freak and flips gravity | C |
 
-### Mind Your Head (`upside`, slot 17): target par 2–3 (act 5, tier C)
+### Mind Your Head (`upside`, #17): target par 2–3 (act 5, tier C)
 - **Lesson:** at night the building is upside down: you fall up, and walk along what was the ceiling.
 - **Fiction:** "They flipped the night shift. Mind your head."
 - **Concept:** by day the floor route is blocked (a pit too wide to jump, or a wall); the ceiling route above it is continuous. Clock in, fall up onto the flipped ceiling, walk across, clock out and drop down past the obstacle. A second beat reverses it: the ceiling route is blocked where the floor isn't.
 - **Teach safely:** the first shift happens on open floor under a clear ceiling, with nothing to hit; a checkpoint before the first real use.
 
-### Falling Up (`fallup`, slot 18): target par 4–6 (act 5, tier C)
+### Falling Up (`fallup`, #18): target par 4–6 (act 5, tier C)
 - **Lesson:** shifting mid-fall reverses it. Chain flips to climb, or to stop a fall.
 - **Fiction:** "The floor is up there now."
 - **Concept:** a tall shaft with ledges on alternating sides at heights you can't jump between. Jump off a ledge, shift at the right height, and you "fall" the other way onto a ledge's flipped copy; repeat to climb (the cousin of Floor 3.5's apex shifts). One beat uses a flip as a brake over a pit.
 - **Margin:** every required shift needs ≥ 100 ms (act 5 floor); tune ledge spacing against the jump (≈ 93.5 px) at build.
 
-### Ceiling Walker (`ceiling`, slot 19): target par 4–6 (act 5, tier C)
+### Ceiling Walker (`ceiling`, #19): target par 4–6 (act 5, tier C)
 - **Lesson:** the old tricks on the flipped map: freeze a freak, read a prank.
 - **Fiction:** "Something is walking on the ceiling. It's fine."
 - **Concept:** a lurker patrols the night ceiling route; by day it's an upside-down outline above you (freeze it by being on day, walk under its outline). Then a prank: on a night clock-in the freaks move a plank on the flipped map, telegraphed by tells hanging from the ceiling.
 
-**Clock Out moves to the end of act 5** (it stays the finale). If the rule ships, it may get a short flipped room as a cameo; it must never depend on it (tier rule).
+### Head Over Heels (`heels`, #20): target par 6–8 (act 5, tier C)
+- **Lesson:** act 5's combination: every shift freezes one freak, wakes the other, and flips gravity.
+- **Fiction:** "Up is a matter of opinion now."
+- **Concept:** `upsideDown: true`. A day-walker patrols the floor by day; a lurker walks the flipped ceiling by night. Each shift both flips you to the other side of the room and swaps which freak is moving, so you route through the moments when the one on your side is frozen. It ends on a prank: a plank moved on the flipped map, telegraphed by a tell hanging from the ceiling.
+- **Role:** the hardest level before the finale. Fairness floor 100 ms per required input; checkpoints between beats.
 
-**Cut date:** the gravity flip (rules, tests, drawing) by **Nov 20**; if it misses, act 5 moves to post-jam and Clock Out stays at the end of act 4.
+**Cut date:** the gravity flip (rules, tests, drawing) working and `upside` proven by **Nov 18**. If it misses, act 5 and the finale rework move to post-jam; the game ships acts 1–4 and today's Clock Out.
+
+## 5.3 The finale: Clock Out reworked *(planned, tier C; today's version is the fallback)*
+
+The built Clock Out (§4, #12 in today's build) is a complete finale and ships as-is if act 5 slips. The rework makes it pay off every act:
+- **One screen, `upsideDown: true`, four rooms**, each recalling an act:
+  1. mid-air shifts across stones (act 1);
+  2. a frozen-lurker tunnel and a telegraphed prank (act 2);
+  3. a wax stop under a supervisor's gaze (act 3);
+  4. a flipped climb to the time clock, where the freaks take the last step and put it back (acts 4–5).
+- **Fiction:** "Almost done. Don't look at the vents." (kept). Act card: FINALE · CLOCK OUT · "One more shift."
+- **Ending:** the timecard, then the eyes-and-wave ending that's already built.
+- Grids at build time, with the fairness floor (≥ 100 ms), a checkpoint at every room, and par proven by test.
 
 ### Showing the freaks early (built, PRODUCTION.md L8)
 
