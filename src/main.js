@@ -1,7 +1,7 @@
 // Double Shift — browser shell: input capture, fixed-step loop, rendering.
 // Draws only what src/rules.js decided. Art lives in sprites.js (characters) and art.js (everything else).
 
-import { step, initState, parseLevel, tileAt, freakBoxes, TILE, DT, DAY, NIGHT, PARAMS } from './rules.js';
+import { step, initState, parseLevel, tileAt, isSolidChar, freakBoxes, TILE, DT, DAY, NIGHT, PARAMS } from './rules.js';
 import { LEVELS, ACTS } from './levels.js';
 import { createInput, GAME_KEYS } from './input.js';
 import { sfx, unlockAudio, toggleMute, setVolumes, setMusicShift, setMenu } from './audio.js';
@@ -11,7 +11,7 @@ import { drawSprite, workerFrame, ART, SPRITES } from './sprites.js';
 import {
   PAL, PROPS, drawBackground, drawSolidTile, drawHatch, drawEchoEdges, drawRebar, drawLaser, drawHazardEcho,
   drawExit, drawCheckpoint, drawSign, drawFreak, drawShiftRing, drawDust, drawPuff, drawSparkle, drawPanel,
-  drawStamp, drawLogo, px,
+  drawStamp, drawLogo, drawWetTile, px,
 } from './art.js';
 import { SPOOK_LINES, ACT_LINES, timecardComment, stampText } from './copy.js';
 
@@ -221,6 +221,7 @@ function handleEvents(events) {
       case 'shiftFail': sfx.shiftFail(); fx.fail = 1; break;
       case 'jump': sfx.jump(); fx.dust.push({ x: cx, y: p.y + PARAMS.playerH, t: 0 }); break;
       case 'land': sfx.land(); fx.land = 0.1; fx.dust.push({ x: cx, y: p.y + PARAMS.playerH, t: 0 }); break;
+      case 'wetStop': sfx.wetStop(); break;
       case 'death':
         if (ev.cause === 'spooked') {
           sfx.spooked();
@@ -303,7 +304,7 @@ function frame(now) {
 
 // ---------- rendering ----------
 
-const isSolidCh = (ch) => ch === '#';
+const isSolidCh = isSolidChar; // one definition, owned by the rules
 
 function solidAt(lvl, layer, tx, ty, ov) {
   if (tx < 0 || tx >= lvl.w || ty < 0 || ty >= lvl.h) return false;
@@ -355,12 +356,14 @@ function staticLayer(lvl, def, layer, ov) {
     for (let tx = 0; tx < lvl.w; tx++) {
       const ch = tileAt(lvl, layer, tx, ty, ov);
       if (isSolidCh(ch)) {
-        drawSolidTile(ctx, tx, ty, layer, {
+        const open = {
           up: !solidAt(lvl, layer, tx, ty - 1, ov) && ty > 0,
           down: !solidAt(lvl, layer, tx, ty + 1, ov) && ty + 1 < lvl.h,
           left: !solidAt(lvl, layer, tx - 1, ty, ov) && tx > 0,
           right: !solidAt(lvl, layer, tx + 1, ty, ov) && tx + 1 < lvl.w,
-        });
+        };
+        if (ch === '~') drawWetTile(ctx, tx, ty, layer, open);
+        else drawSolidTile(ctx, tx, ty, layer, open);
         if (!isSolidCh(tileAt(lvl, other, tx, ty, ov))) drawHatch(ctx, tx, ty, layer);
       }
       if (tileAt(lvl, other, tx, ty, ov) === '^') drawHazardEcho(ctx, tx, ty, PAL[other].echo);

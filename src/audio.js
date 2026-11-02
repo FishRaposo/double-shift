@@ -186,4 +186,8 @@ export const sfx = {
   uiMove: () => playSound('uiMove'),
   uiSelect: () => playSound('uiSelect'),
   sting: () => playSound('sting'),
+  wetStop: () => playSound('wetSqueak'),
+  daywalkerGiggle: () => playSound('daywalkerGiggle'),
+  supervisorTurn: () => { playSound('clipboardTick'); playSound('turnWhoosh'); },
+  offsetRumble: () => playSound('offsetRumble'),
 };

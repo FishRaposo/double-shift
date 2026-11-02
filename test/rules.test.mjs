@@ -1,7 +1,7 @@
 // GDD §13.7 collision/shift edge cases, plus S-rules. Each runs headless against src/rules.js.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { step, initState, NO_INPUT, DAY, NIGHT, TILE, PARAMS, isEmbedded, freakBoxes, tileAt } from '../src/rules.js';
+import { step, initState, NO_INPUT, DAY, NIGHT, TILE, PARAMS, isEmbedded, isSolidChar, overlapsSolid, freakBoxes, tileAt } from '../src/rules.js';
 import { level, stepN, place, play } from './helpers.mjs';
 
 const OPEN = [
@@ -347,4 +347,99 @@ test('a peeker that is ducked in cannot spook you', () => {
   assert.equal(s.deaths, 0);
   s = stepN(lvl, s, 60); // the cycle comes round: out it pops
   assert.equal(s.deaths, 1);
+});
+
+// ---------- wet floor `~` (SYS-1) ----------
+// Exit sits in the sky: these tests run right at floor level and must never win.
+const WIDE = [
+  'E...........',
+  '............',
+  '............',
+  '............',
+  '............',
+  '............',
+  '.S..........',
+  '############',
+];
+const WIDE_WET = WIDE.map((r, i) => (i === 6 ? '............' : i === 7 ? '~~~~~~~~~~~~' : r.replace(/E/g, '.')));
+const wet = level(WIDE, WIDE_WET);
+// Same shape as OPEN but with the exit out of the way.
+const OPEN_E_UP = OPEN.map((r, i) => (i === 0 ? '........E.' : r.replace(/[SE]/g, '.')));
+OPEN_E_UP[6] = '.S........';
+
+test('wet floor: isSolidChar treats ~ as solid, and only ~ is wet', () => {
+  assert.equal(isSolidChar('#'), true);
+  assert.equal(isSolidChar('~'), true);
+  assert.equal(isSolidChar('^'), false);
+  assert.equal(isSolidChar('.'), false);
+  assert.equal(overlapsSolid(wet, NIGHT, TILE, 7 * TILE - 1), true, '~ floor holds the player');
+});
+
+test('wet floor: letting go slides much farther than on dry ground', () => {
+  // the wet level's own day floor is dry: same run, two different stopping distances
+  let d = stepN(wet, initState(wet), 90, RIGHT);
+  d = stepN(wet, d, 20);
+  assert.equal(d.player.vx, 0, 'dry floor stops you fast');
+  let w = step(wet, initState(wet), SHIFT);
+  w = stepN(wet, w, 90, RIGHT);
+  w = stepN(wet, w, 20);
+  assert.ok(w.player.vx > 100, `vx ${w.player.vx}: should still be sliding`);
+});
+
+test('wet floor: one dry tile under the feet gives grip', () => {
+  const mixed = level(OPEN_E_UP, BLANK.map((r, i) => (i === 7 ? '~~~~~~~~~#' : r)));
+  let s = step(mixed, initState(mixed), SHIFT);
+  s = place(s, 8, 6, { dx: 15, player: { vx: PARAMS.maxSpeed } }); // feet span ~ (col 8) and # (col 9)
+  s = stepN(mixed, s, 20);
+  assert.equal(s.player.vx, 0, 'dry stopping distance, not the slide');
+});
+
+test('wet floor: shifting off ~ onto dry ground stops the slide', () => {
+  const lvl = level(OPEN_E_UP, [...BLANK.slice(0, 7), '~~~~~~~~~~']);
+  let s = step(lvl, initState(lvl), SHIFT); // to night, on the waxed floor
+  s = stepN(lvl, s, 60, RIGHT); // full-speed slide
+  s = step(lvl, s, SHIFT); // to day: dry floor underneath
+  assert.equal(s.layer, DAY);
+  const x0 = s.player.x;
+  s = stepN(lvl, s, 20);
+  assert.equal(s.player.vx, 0);
+  assert.ok(s.player.x - x0 < 20, `stopped in ${s.player.x - x0}px on the dry floor`);
+});
+
+test('wet floor: jump and coyote behave the same as on dry ground', () => {
+  const lvl = level(OPEN_E_UP, [...BLANK.slice(0, 7), '~~~~~~~~..']); // ~ floor ends at col 8
+  let s = step(lvl, initState(lvl), SHIFT);
+  s = stepN(lvl, s, 30, RIGHT);
+  s = step(lvl, s, { ...RIGHT, jumpPressed: true, jumpHeld: true });
+  assert.ok(s.events.some((e) => e.type === 'jump'), 'jump fires while grounded on ~');
+  // run off the wet edge; a jump inside coyote time still fires
+  s = step(lvl, initState(lvl), SHIFT);
+  let guard = 0;
+  while (s.player.grounded && guard++ < 300) s = step(lvl, s, RIGHT);
+  s = stepN(lvl, s, 3, RIGHT);
+  s = step(lvl, s, { ...RIGHT, jumpPressed: true, jumpHeld: true });
+  assert.ok(s.events.some((e) => e.type === 'jump'), 'coyote jump fires after leaving a ~ edge');
+});
+
+test('wet floor: a tile of ~ blocks a shift just like a wall', () => {
+  const night = [...BLANK];
+  night[6] = '.~........'; // ~ where the player stands
+  const lvl = level(OPEN, night);
+  let s = step(lvl, initState(lvl), SHIFT);
+  assert.equal(s.layer, DAY, 'shift into ~ is buffered');
+  for (let i = 0; i < 20; i++) s = step(lvl, s);
+  assert.equal(s.layer, DAY);
+  assert.equal(s.shifts, 0);
+});
+
+test('wet floor: sliding to a stop emits a wetStop squeak; a dry stop does not', () => {
+  let s = step(wet, initState(wet), SHIFT);
+  s = stepN(wet, s, 40, RIGHT);
+  const evs = [];
+  for (let i = 0; i < 240 && !evs.length; i++) { s = step(wet, s); evs.push(...s.events); }
+  assert.ok(evs.some((e) => e.type === 'wetStop'), 'hard stop on ~ squeaks');
+  let d = stepN(twin, initState(twin), 40, RIGHT);
+  const evs2 = [];
+  for (let i = 0; i < 60; i++) { d = step(twin, d); evs2.push(...d.events); }
+  assert.equal(evs2.filter((e) => e.type === 'wetStop').length, 0);
 });

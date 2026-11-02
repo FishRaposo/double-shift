@@ -22,6 +22,8 @@ export const PARAMS = Object.freeze({
   shiftBuffer: 0.08,
   shiftNudge: 4, // px
   hazardHeight: 0.45, // fraction of a tile, measured from the tile bottom
+  wetAccel: 900, // px/s² while grounded on wet floor `~` (grip is 2600)
+  wetDecel: 250, // px/s² (grip is 3000): you keep sliding
 });
 
 export const DAY = 0;
@@ -120,6 +122,12 @@ const NO_OV = Object.freeze({});
 
 const EPS = 1e-6;
 
+// '#' is ordinary solid, '~' is wet floor (solid but low friction). Rules and
+// renderer share this so they can't disagree about what counts as ground.
+export function isSolidChar(ch) {
+  return ch === '#' || ch === '~';
+}
+
 function tileSpan(x, w) {
   return [Math.floor(x / TILE), Math.floor((x + w - EPS) / TILE)];
 }
@@ -129,7 +137,7 @@ export function overlapsSolid(level, layer, x, y, w = PARAMS.playerW, h = PARAMS
   const [y0, y1] = tileSpan(y, h);
   for (let ty = y0; ty <= y1; ty++) {
     for (let tx = x0; tx <= x1; tx++) {
-      if (tileAt(level, layer, tx, ty, ov) === '#') return true;
+      if (isSolidChar(tileAt(level, layer, tx, ty, ov))) return true;
     }
   }
   return false;
@@ -158,6 +166,18 @@ function overlapsTile(p, tx, ty) {
 
 function isGrounded(level, layer, p, ov) {
   return overlapsSolid(level, layer, p.x, p.y + 1, undefined, undefined, ov);
+}
+
+// Low friction applies only while every tile under the feet is wet: one dry tile gives grip.
+function onWetFloor(level, s) {
+  const p = s.player;
+  if (!p.grounded) return false;
+  const ty = Math.floor((p.y + PARAMS.playerH + 1) / TILE);
+  const [x0, x1] = tileSpan(p.x, PARAMS.playerW);
+  for (let tx = x0; tx <= x1; tx++) {
+    if (tileAt(level, s.layer, tx, ty, s.overrides) !== '~') return false;
+  }
+  return true;
 }
 
 const solidAt = (level, s, layer, x, y) => overlapsSolid(level, layer, x, y, undefined, undefined, s.overrides);
@@ -326,16 +346,20 @@ export function step(level, prev, input = NO_INPUT, dt = DT) {
   // 2. The night keeps moving only while you're in it.
   if (s.layer === NIGHT) s.freakClock += dt;
 
-  // 3. Horizontal intent.
+  // 3. Horizontal intent. Wet floor `~` swaps the ground accel/decel for the slick pair.
+  const wet = onWetFloor(level, s);
+  const accel = wet ? P.wetAccel : p.grounded ? P.groundAccel : P.airAccel;
+  const decel = wet ? P.wetDecel : p.grounded ? P.groundDecel : P.airDecel;
   const dir = (input.right ? 1 : 0) - (input.left ? 1 : 0);
   if (dir !== 0) p.facing = dir;
   if (dir !== 0) {
-    const accel = p.grounded ? P.groundAccel : P.airAccel;
     // turning around uses decel + accel for snappier reversals
-    const boost = Math.sign(p.vx) === -dir ? (p.grounded ? P.groundDecel : P.airDecel) : 0;
+    const boost = Math.sign(p.vx) === -dir ? decel : 0;
     p.vx = approach(p.vx, dir * P.maxSpeed, (accel + boost) * dt);
   } else {
-    p.vx = approach(p.vx, 0, (p.grounded ? P.groundDecel : P.airDecel) * dt);
+    const before = p.vx;
+    p.vx = approach(p.vx, 0, decel * dt);
+    if (wet && before !== 0 && p.vx === 0) s.events.push({ type: 'wetStop' });
   }
 
   // 4. Jump: buffer, coyote (which carries across shifts), variable height.

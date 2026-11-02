@@ -49,6 +49,15 @@ const SOLUTIONS = {
     }
     return { right, shift: want(s, target) };
   },
+  wet: (s) => {
+    const x = tx(s);
+    let target = s.layer;
+    if (x < 8.5) target = NIGHT; // onto the wax: slide toward the tunnel
+    else if (x < 12.05) target = DAY; // dry stop before the lasers, walk past them
+    else if (x < 25) target = NIGHT; // back into the tunnel, slide to the lurker
+    else target = DAY; // grip and freeze it, then walk to the exit
+    return { right: true, shift: want(s, target) };
+  },
 };
 
 test('every level has a scripted solution', () => {
