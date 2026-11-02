@@ -28,7 +28,7 @@
 | Score | Timecard: clock-ins vs. par (fewest shifts the designer found, proven by tests) | §15.3 |
 | Tone | Mock horror: petty monsters, deadpan worker, no gore, no jump scares | §10.5 |
 | Look and sound | Crisp pixel art on a 2-px grid, a hand-made pixel font, a spooky-goofy theme whose day/night arrangements crossfade on every shift; all made in code (built 2026-11-02) | §10, §11, ART.md, AUDIO.md |
-| Levels | 6 built; **16 planned in four acts**, in tiers: A = 8 (jam minimum), B = 12, C = 16 with four new mechanics (wet floor, supervisor, offset layer, day-walker) | §8.2, [CONTENT.md](CONTENT.md) |
+| Levels | 10 built; **16 planned in four acts**, in tiers: A = 8 (jam minimum), B = 12, C = 16 with four new mechanics (wet floor, supervisor, offset layer, day-walker — all shipped) | §8.2, [CONTENT.md](CONTENT.md) |
 | Jam | Game Off 2026, theme SHIFT, due Dec 1 13:37 PST. Lead with the pranks and freezing freaks: two overlapping worlds alone is one of the jam page's example ideas. | §1.8 |
 
 **Living sections** (kept current): §0, §1, §3, §4, §8.2, §10.5, §15.3, §18, §21. **Historical sections** (the original pre-v0.2 plan, kept for the record): §13.1–13.8, §16, §22. Their banners say what replaced them.
@@ -177,11 +177,11 @@ Game Off is rated by other participants in six categories (RELEASE.md §0). What
 
 | Category | What earns it here | Gap today |
 |---|---|---|
-| Overall | A complete, polished run with a satisfying final timecard | Levels 7–16 not built yet (tiers, §8.2) |
+| Overall | A complete, polished run with a satisfying final timecard | 6 levels remain: `stairs`, `doors`, `pillar`, `stacked`, `portrait`, `clockout` (tiers A–B, §8.2) |
 | Gameplay | Tight movement (§5), mid-air shifting, par as a second puzzle per level | Tuning pass (G1), playtests |
-| Graphics | A deliberate code-drawn style: two palettes of one building, echoes, readable freaks (ART.md §1.1) | Freak art pass, worker animation, props |
-| Audio | Theme in two arrangements crossfaded on shift (§11.3); yelp, giggle, stamp | **No music yet** |
-| Innovation | **Pranks**: each night clock-in can change the building, so clock-ins are a resource. **Freaks freeze by day**: the other shift is a pause button for the monsters. Timecard par. | Freaks appear late (level 5+) |
+| Graphics | A deliberate code-drawn style: two palettes of one building, echoes, readable freaks (ART.md §1.1) | — |
+| Audio | Theme in two arrangements crossfaded on shift (§11.3); yelp, giggle, stamp | — |
+| Innovation | **Pranks**: each night clock-in can change the building, so clock-ins are a resource. **Freaks freeze by day**: the other shift is a pause button for the monsters. Timecard par. | — (evidence from level 1; first encounter level 3) |
 | Theme | The Shift key, the work shift, and the building that shifts, all at once (§1.7) | Sticky Keys joke (planned) |
 
 **Overlap warning.** The jam page's list of example ideas includes a puzzle-platformer where you shift between two overlapping realities and a monster might be standing on the bridge in the other one. That is our core premise, so many entries will look like ours at first glance. Everywhere a rater forms a first impression (the itch hook, cover, GIF, the first two minutes of play), lead with what only this game does: the freaks prank the building every time you clock in, and freeze when you leave the night.
@@ -532,8 +532,8 @@ Example (*Inventory*): the night plank spans the first pit on the first visit. O
 | Lurker | Patrols a fixed span at fixed speed | Pass it by freezing it (go to day, walk past its outline, come back) | Act 2 |
 | Peeker | Pops out of a hole on a timer, ducks back in | Timing | Act 2 |
 | Squatter | Sits in a doorway, never moves | Route through the other shift | Act 2 |
-| Supervisor *(planned, tier C)* | Holds a clipboard, turns left/right on a fixed cycle. Freaks on the side it faces work; the others slack off (frozen, harmless). Never moves, never spooks. | Timing by reading its facing | Act 3 (`supervisor`) |
-| Day-walker *(planned, tier C)* | Patrols like a lurker, but on the **day** shift; frozen by night | Each shift now freezes the other's freaks | Act 4 (`daywalker`) |
+| Supervisor | Holds a clipboard, turns left/right on a fixed cycle. Freaks on the side it faces work; the others slack off (frozen, harmless). Never moves, never spooks. | Timing by reading its facing | Act 3 (`supervisor`) |
+| Day-walker | Patrols like a lurker, but on the **day** shift; frozen by night | Each shift now freezes the other's freaks | Act 4 (`daywalker`) |
 | Scatterer *(post-jam)* | Flees when approached, knocking things over (real-time geometry change) | — | — |
 
 Touching an active freak on the night shift: the worker is **spooked** (yelp, leaps out of their boots, respawn at checkpoint). Overlapping a freak's frozen outline by day is safe; shifting into an active freak is a spook.
@@ -852,7 +852,7 @@ A linear progression is sufficient.
 | 15. Employee of the Month | Obstacle as tool | The portrait blocks the exit, then becomes the step | Their portrait. It's just eyes. | B |
 | 16. Clock Out | Combined mechanics | Demonstrate mastery | Get out. Final timecard. They wave from the dark. | A |
 
-**Tiers and cut dates.** A = 8 levels (the 6 built + Stacked + Clock Out), B = 12, C = 16. A new mechanic that isn't done (rules, tests, drawing, level at par) by its cut date moves to post-jam with its level: wet floor and day-walker by **Nov 12**, supervisor and offset layer by **Nov 17**. Content freeze **Nov 22**. Levels are referred to by id, so cuts never renumber anything.
+**Tiers and cut dates.** A = 8 levels (the six originals + Stacked + Clock Out), B = 12, C = 16. A new mechanic that isn't done (rules, tests, drawing, level at par) by its cut date moves to post-jam with its level: wet floor and day-walker by **Nov 12**, supervisor and offset layer by **Nov 17**. Content freeze **Nov 22**. Levels are referred to by id, so cuts never renumber anything.
 
 **Shared state and Freight** (crates restacking on a cycle) are post-jam (LEVELS.md §5.1).
 

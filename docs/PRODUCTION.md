@@ -15,11 +15,11 @@ Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-02**.
 | Core rules (move, jump, shift, buffer/nudge, coyote, jump buffer) | Built, tested |
 | Pranks (Nth night entry, tells, checkpoint restore) | Built, tested |
 | Freaks: lurker, peeker, squatter (frozen by day) | Built, tested |
-| Levels | 6 built (act 1: 4, act 2: 2), all proven solvable at par; 10 more planned (CONTENT.md) |
+| Levels | 10 built (act 1: 4, act 2: 2, act 3: 2, act 4: 2), all proven solvable at par; 6 more planned (CONTENT.md). Tier-C mechanics shipped: wet floor, supervisor, offset layer, day-walker |
 | Rendering | **Pixel art** (Nov 2): sprites, animated worker and freaks, pixel tiles and props, pixel font, effects; every asset in `/tools/gallery.html` |
-| Audio | Mix bus, 26 SFX (incl. planned-level sounds), **music** (day/night arrangements crossfading on every shift) |
+| Audio | Mix bus, 25 SFX (incl. planned-level sounds), **music** (day/night arrangements crossfading on every shift) |
 | Menus | Title, level select + saved bests, settings (volumes, reduced effects), act cards, pause, timecard with comment, end screen with totals |
-| Tests | 60 passing (`npm test`) |
+| Tests | 91 passing (`npm test`) |
 | Repo / CI / itch | Public repo [FishRaposo/double-shift](https://github.com/FishRaposo/double-shift), CI green, playable on [GitHub Pages](https://fishraposo.github.io/double-shift/). **No itch page** |
 
 ## 2. Milestones
@@ -40,14 +40,14 @@ The whole game is listed in [CONTENT.md](CONTENT.md): **16 levels in tiers** (A 
 
 **Jam scoring** (GDD §1.8): Overall, Gameplay, Graphics, Audio, Innovation and Theme are rated by other entrants. Priorities below keep every category covered: that's why music, level select and showing the freaks early are P0.
 
-**Cut line (tiers).** Tier A always ships: the 6 built levels + `stacked` + `clockout`. Tier B ships if M2 holds. Each tier-C level ships only if its mechanic made its cut date. Cut levels move to post-jam; the remaining levels keep their order. A polished shorter game beats an unfinished long one.
+**Cut line (tiers).** Tier A always ships: the six original levels + `stacked` + `clockout`. Tier B ships if M2 holds. Each tier-C level ships only if its mechanic made its cut date. Cut levels move to post-jam; the remaining levels keep their order. A polished shorter game beats an unfinished long one.
 
 ## 3. Weekly plan
 
 ### Week 1 (Nov 2–8): feel, shell, first new levels
 - Play everything on Windows; record the Sticky Keys result in GDD §3.2 (decides Shift vs K as the primary bind).
 - Tuning pass on `PARAMS` (TECH.md §4), then re-prove pars (`npm test`).
-- ~~Level select + save (A7)~~ done Nov 2. Freak evidence from the first night shift (L8).
+- ~~Level select + save (A7)~~ done Nov 2. ~~Freak evidence from the first night shift (L8)~~ done: a peeker behind Clock In's gate, eyes in Scaffolding, a frozen peeker by Closing Time's exit.
 - Build `stairs` and `doors` (LEVELS.md §5).
 - Start music (A5): sequencer + day arrangement.
 - Start wet floor and day-walker **tests** (TECH.md §6.5).
@@ -105,17 +105,17 @@ Priority: **P0** = the game doesn't ship without it. **P1** = expected in the ja
 ### Levels
 | ID | Item | Pri |
 |---|---|---|
-| L1 | Polish pass on the 6 built levels after playtest | P0 |
+| L1 | Polish pass on the built levels after playtest | P0 |
 | L2 | `stairs` *Under Renovation* | Tier B |
 | L3 | `doors` *Lost & Found* | Tier B |
 | L4 | `stacked` *Stacked* | **Tier A** (jam minimum) |
 | L5 | `clockout` *Clock Out* | **Tier A** (jam minimum) |
 | L6 | `pillar` *Structural Integrity*, `portrait` *Employee of the Month* | Tier B |
-| L9 | `wet` *Wet Floor*, `daywalker` *Broad Daylight* | Tier C (cut Nov 12) |
-| L10 | `supervisor` *Night Management*, `offset` *Floor 3.5* | Tier C (cut Nov 17) |
+| L9 | ~~`wet` *Wet Floor*, `daywalker` *Broad Daylight*~~ done | Tier C |
+| L10 | ~~`supervisor` *Night Management*, `offset` *Floor 3.5*~~ done | Tier C |
 | L11 | *Freight* | Post |
 | L7 | Re-verify every par with scripted solutions after any tuning change | P0 |
-| L8 | Show the freaks before raters quit: evidence on the first night shift (eyes, a giggle) and a prank tell visible in act 1 | P0 (jam scoring, GDD §1.8) |
+| L8 | ~~Show the freaks before raters quit: evidence on the first night shift~~ done: peeker behind Clock In's gate, eyes in Scaffolding, frozen peeker by Closing Time's exit | ~~P0~~ |
 
 ### Presentation
 | ID | Item | Pri |

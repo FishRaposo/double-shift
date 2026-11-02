@@ -8,7 +8,7 @@ One month (GitHub Game Off, Nov 1 – Dec 1, 2026, theme SHIFT), one designer, n
 
 - **No engine, no dependencies, no asset files.** Plain JavaScript modules on one 960×540 canvas. Everything on screen is drawn by code and every sound is synthesized with WebAudio. Nothing to license, nothing to load, and it runs in any browser.
 - **The game must be provable, not just playable.** With AI writing code, "it seemed to work" isn't enough. Every rule that decides whether you live, die or win has a test.
-- **Scope to the deadline.** 6 levels exist; 16 are planned in tiers, with a cut line at 8 so any cut still ships a complete game (CONTENT.md).
+- **Scope to the deadline.** 10 levels exist; 16 are planned in tiers, with a cut line at 8 so any cut still ships a complete game (CONTENT.md).
 
 ## The decisions
 

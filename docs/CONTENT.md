@@ -1,6 +1,6 @@
 # Content Manifest
 
-Everything the finished jam game contains, in one place. Each row has an ID, its tier, its status and where its full spec lives. Planned 2026-11-02, starting from the 6-level build.
+Everything the finished jam game contains, in one place. Each row has an ID, its tier, its status and where its full spec lives. Planned 2026-11-02, starting from the 6-level build; the tier-C mechanics and their levels shipped since.
 
 **At a glance**
 - **16 levels in four acts**, about 25–40 minutes. Built in three tiers so any cut still ships a complete game (§1).
@@ -13,7 +13,7 @@ Everything the finished jam game contains, in one place. Each row has an ID, its
 
 | Tier | Levels | What it adds | Ships if |
 |---|---|---|---|
-| **A** (jam minimum) | 8: the 6 built + `stacked` + `clockout` | A complete game with a finale | Always |
+| **A** (jam minimum) | 8: the six originals + `stacked` + `clockout` | A complete game with a finale | Always |
 | **B** | 12: + `stairs`, `doors`, `pillar`, `portrait` | Four levels using only existing systems | On schedule at M2 (Nov 15) |
 | **C** | 16: + `wet`, `supervisor`, `offset`, `daywalker` | The four new mechanics | Each mechanic is done by its cut date |
 
@@ -43,12 +43,12 @@ Full specs: [LEVELS.md](LEVELS.md) §4 (built) and §5 (planned).
 | 6 | 2 | Night Watch | `watch` | Freaks freeze by day | A | ✅ |
 | 7 | 2 | Under Renovation | `stairs` | Night staircase to nowhere → mid-air shift onto a day ledge | B | planned |
 | 8 | 2 | Lost & Found | `doors` | You *need* the pranks: the stolen-door pile grows each night | B | planned |
-| 9 | 3 · Graveyard Shift | Wet Floor | `wet` | Wet floor `~`: slide at night, grip by day | C | planned |
+| 9 | 3 · Graveyard Shift | Wet Floor | `wet` | Wet floor `~`: slide at night, grip by day | C | ✅ built |
 | 10 | 3 | Structural Integrity | `pillar` | A pillar moves each night clock-in | B | planned |
-| 11 | 3 | Night Management | `supervisor` | Supervisor freak: watched freaks work, the rest slack off | C | planned |
+| 11 | 3 | Night Management | `supervisor` | Supervisor freak: watched freaks work, the rest slack off | C | ✅ built |
 | 12 | 3 | Stacked | `stacked` | Several queued pranks; the order of clock-ins | A | planned |
-| 13 | 4 · Lights Out | Floor 3.5 | `offset` | Offset layer: night is the day map half a storey up | C | planned |
-| 14 | 4 | Broad Daylight | `daywalker` | Day-walker freak: active by day, frozen by night | C | planned |
+| 13 | 4 · Lights Out | Floor 3.5 | `offset` | Offset layer: night is the day map half a storey up | C | ✅ built |
+| 14 | 4 | Broad Daylight | `daywalker` | Day-walker freak: active by day, frozen by night | C | ✅ built |
 | 15 | 4 | Employee of the Month | `portrait` | The portrait blocks the exit and is rehung each clock-in | B | planned |
 | 16 | 4 | Clock Out | `clockout` | Finale: everything from tiers A–B, final timecard | A | planned |
 
@@ -60,16 +60,16 @@ Specs: [TECH.md](TECH.md) §6 (mechanics), [GDD.md](GDD.md) §12 (UI).
 
 | ID | System | Needed by | Tier / priority | Backlog | Status |
 |---|---|---|---|---|---|
-| SYS-1 | Wet floor tile `~` (low friction when grounded on it) | `wet` | C, cut Nov 12 | G4 | planned |
-| SYS-2 | Day-walker freak + day-only clock | `daywalker` | C, cut Nov 12 | G8 | planned |
-| SYS-3 | Supervisor freak (facing decides which freaks work) | `supervisor` | C, cut Nov 17 | G15 | planned |
-| SYS-4 | Offset layer (`offset` field generates the night grid) | `offset` | C, cut Nov 17 | G9 | planned |
+| SYS-1 | Wet floor tile `~` (low friction when grounded on it) | `wet` | C, cut Nov 12 | G4 | ✅ built |
+| SYS-2 | Day-walker freak + day-only clock | `daywalker` | C, cut Nov 12 | G8 | ✅ built |
+| SYS-3 | Supervisor freak (facing decides which freaks work) | `supervisor` | C, cut Nov 17 | G15 | ✅ built |
+| SYS-4 | Offset layer (`offset` field generates the night grid) | `offset` | C, cut Nov 17 | G9 | ✅ built |
 | SYS-5 | Level select + save progress (localStorage, try/catch) | Raters reaching act 2+ | P0 | A7 | ✅ (act starts always open) |
 | SYS-6 | Music engine (step sequencer, two synced arrangements, crossfade on shift) | Audio score | P0 | A5 | ✅ |
 | SYS-7 | Settings: master / music / SFX volume, reduced effects | Accessibility | P1 | A6 | ✅ |
 | SYS-8 | Act title cards between acts | Structure, pacing | P1 | A10 | ✅ |
 | SYS-9 | Timecard comments; end screen with totals for every level | Replay hook | P1 | A8 | ✅ |
-| SYS-10 | Freak evidence from the first night shift | Raters seeing the freaks early | P0 | L8 | planned |
+| SYS-10 | Freak evidence from the first night shift | Raters seeing the freaks early | P0 | L8 | ✅ built |
 | SYS-11 | Sticky Keys in-joke | Theme | P1 | G14 | planned |
 | SYS-12 | Demo GIF capture (extend `scripts/media.mjs`) | itch page | P1 | A9 | planned |
 | SYS-13 | Rebindable controls | Accessibility | *stretch* | G12 | — |

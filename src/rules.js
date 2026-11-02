@@ -97,6 +97,7 @@ export function parseLevel(def) {
     pranks,
     freaks,
     decor: def.decor ?? [],
+    offset: def.offset ?? null,
   };
 }
 

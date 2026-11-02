@@ -213,6 +213,7 @@ function handleEvents(events) {
     switch (ev.type) {
       case 'shift':
         sfx.shift(ev.layer === NIGHT);
+        if (level().offset) sfx.offsetRumble(); // the building is half a storey off here
         fx.flash = 1;
         fx.flashLayer = ev.layer;
         fx.rings.push({ x: cx, y: p.y + PARAMS.playerH / 2, t: 0, layer: ev.layer });

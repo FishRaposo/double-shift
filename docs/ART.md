@@ -91,12 +91,12 @@ Graphics is a rated jam category. Simple shapes score well when they look *chose
 | Freak (day, frozen) | Dashed silhouette outline in the night echo blue, dim eyes | Dashed |
 | Peeker hidden | Dark slot + small eyes | Shape |
 | Pending prank | Night: two pairs of eyes near the target. Day: yellow MINE note | Eyes / note shape |
-| Wet floor `~` *(planned)* | Solid fill + sheen lines; a WET FLOOR sign nearby | **Wavy top edge** instead of a straight one |
-| Supervisor facing *(planned)* | Head and clipboard turned to the watched side; eyes only on that side | Shape (head offset, clipboard side) |
-| Watched vs. slacking freak *(planned)* | Watched: normal. Slacking: eyes closed to lines, silhouette still | Closed eyes, no jitter |
-| Day-walker *(planned)* | Day: dark silhouette with a cream rim. Night: dashed outline in the day echo orange | Silhouette / dashed |
+| Wet floor `~` | Solid fill + sheen lines; a WET FLOOR sign nearby | **Wavy top edge** instead of a straight one |
+| Supervisor facing | Head and clipboard turned to the watched side; eyes only on that side | Shape (head offset, clipboard side) |
+| Watched vs. slacking freak | Watched: normal. Slacking: eyes closed to lines, silhouette still | Closed eyes, no jitter |
+| Day-walker | Day: dark silhouette with a cream rim. Night: dashed outline in the day echo orange | Silhouette / dashed |
 | Moved object *(planned: doors, pillar, portrait)* | Ordinary solids; its future spots carry the usual prank tells | Tell shapes (eyes / notes) |
-| Offset layer *(planned)* | No new marks: the echo of the other shift shows the floors half a storey off. Floor signs read 3 and 3.5 | Echo dashes + sign text |
+| Offset layer | No new marks: the echo of the other shift shows the floors half a storey off. Floor signs read 3 and 3.5 | Echo dashes + sign text |
 
 **Rule:** any new element must fit this table before it goes in a level.
 
@@ -167,7 +167,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | Floor signs "3" / "3.5" | `offset` | Wall signs at each landing | Timecard paper `#f7efdc`, ink `#3b2d1f` |
 | Time clock (the exit) | `clockout` | The exit door with a punch clock beside it | Exit colors + checkpoint clock `#ffd23f` |
 
-### 6.2 Props per level *(prop drawings built; the 6 built levels have their props via the `props` field; planned levels add theirs when built)*
+### 6.2 Props per level *(prop drawings built; the 10 built levels have their props via the `props` field; planned levels add theirs when built)*
 
 | Level | Props |
 |---|---|

@@ -3,7 +3,7 @@
 Companion to [GDD.md](GDD.md) §11. All audio is synthesized with WebAudio in `src/audio.js`. No audio files, no licensed music.
 
 **At a glance**
-- 11 sound effects are built (§2); music is planned and P0 (§3).
+- 25 sound effects are built (§2); the 16-bar theme ships in two synced arrangements that crossfade on every shift (§3).
 - Every SFX is ≤ 0.25 s. The shift sound's pitch says where you went: down = night, up = day.
 - Funny, not scary: yelps, giggles, a rubber stamp. `M` mutes.
 
@@ -34,6 +34,23 @@ The original 11, re-voiced 2026-11-02 with filters and a little noise so they si
 | Checkpoint | Two-note chime | triangle 523 Hz 0.07 s, then 784 Hz 0.1 s |
 | Win | Arpeggio | triangle 523, 659, 784, 1047 Hz, 0.12 s each, 80 ms apart |
 | Timecard stamp | Thunk | square 90 → 50 Hz, 0.09 s, vol 0.3 (450 ms after win) |
+
+The 14 added since (same `SOUNDS` map, main voice only). The level-mechanic sounds were pre-built before their levels shipped:
+
+| Event | Sound | Values |
+|---|---|---|
+| Prank shimmer | High sine sparkle | sine 1568–2637 Hz, 4 notes, vol 0.035 |
+| Freeze on day shift | Filtered hush | noise, bandpass 1400 → 350 Hz, 0.08 s, vol 0.05 |
+| Menu move / select | Tick / confirm blip | square 660 Hz (select sweeps to 990) |
+| Act card sting | Two-part chord | triangle 392/494 → 523/659 Hz |
+| Peeker pop *(reserved)* | Boing | sine 300 → 600 Hz, 0.05 s |
+| Lurker footstep *(reserved)* | Soft scuff | noise, low-pass 300 Hz, 0.02 s |
+| Wet slide stop (`wetStop`) | Squeak | square 900 → 1300 Hz + vibrato, 0.08 s |
+| Door steal *(reserved: `doors`)* | Thunk | sine 180 → 90 Hz + noise, 0.1 s |
+| Pillar move *(reserved: `pillar`)* | Scrape | sawtooth 70 → 55 Hz + noise, 0.22 s |
+| Supervisor turn | Clipboard tick + whoosh | square 2 kHz tick, 0.02 s; noise bandpass 600 → 300 Hz, 0.1 s |
+| Shift in an offset level | Rumble | sine 55 → 45 Hz + noise, 0.25 s |
+| Day-walker spook | Giggle | 4 triangle blips 1100–1300 → 900 Hz, 60 ms apart |
 
 ## 3. Music (built 2026-11-02, `src/music.js`)
 
