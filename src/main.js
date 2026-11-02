@@ -224,7 +224,7 @@ function handleEvents(events) {
       case 'wetStop': sfx.wetStop(); break;
       case 'death':
         if (ev.cause === 'spooked') {
-          sfx.spooked();
+          (ev.by === 'daywalker' ? sfx.daywalkerGiggle : sfx.spooked)();
           fx.pops.push({ x: ev.x + PARAMS.playerW / 2, y: ev.y - 20, t: 0, text: SPOOK_LINES[spookIx++ % SPOOK_LINES.length] });
           fx.spook = { x: ev.x, y: ev.y, t: 0, layer: game.state.layer };
         } else {
@@ -522,8 +522,9 @@ function drawPlay() {
   drawDecor(lvl, def, layer, t);
   drawTells(lvl, s, layer, t);
   freakBoxes(lvl, s).forEach((b, i) => {
-    const look = b.kind === 'lurker' ? Math.sign(Math.sin(s.freakClock * 0.9 + i)) : 0;
-    drawFreak(g, b, i, t, { layer, freakShift: NIGHT, frozenFlash: game.fx.freeze, prankSquint: game.fx.squint, look });
+    const clock = b.shift === DAY ? s.dayClock : s.freakClock;
+    const look = b.kind === 'lurker' || b.kind === 'daywalker' ? Math.sign(Math.sin(clock * 0.9 + i)) : 0;
+    drawFreak(g, b, i, t, { layer, freakShift: b.shift, frozenFlash: game.fx.freeze, prankSquint: game.fx.squint, look });
   });
   if (game.fx.spook) drawSpookGag();
   else drawWorker(s, layer);

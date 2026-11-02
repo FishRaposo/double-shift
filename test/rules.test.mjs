@@ -443,3 +443,76 @@ test('wet floor: sliding to a stop emits a wetStop squeak; a dry stop does not',
   for (let i = 0; i < 60; i++) { d = step(twin, d); evs2.push(...d.events); }
   assert.equal(evs2.filter((e) => e.type === 'wetStop').length, 0);
 });
+
+// ---------- day-walker freak (SYS-2) ----------
+// Lives on the day shift: patrols on `dayClock`, a frozen harmless outline by night.
+const DW_LVL = level(OPEN_E_UP, BLANK, { freaks: [{ kind: 'daywalker', tx: 5, ty: 6, range: 3, speed: 60 }] });
+
+test('day-walker: patrols on dayClock (advances by day only), freezes at night', () => {
+  let s = initState(DW_LVL);
+  const x0 = freakBoxes(DW_LVL, s)[0].x;
+  s = stepN(DW_LVL, s, 60); // by day it walks its patrol
+  assert.ok(s.dayClock > 0.4);
+  assert.equal(s.freakClock, 0);
+  assert.notEqual(freakBoxes(DW_LVL, s)[0].x, x0);
+  const xFrozen = freakBoxes(DW_LVL, s)[0].x;
+  const dc = s.dayClock;
+  s = step(DW_LVL, s, SHIFT);
+  s = stepN(DW_LVL, s, 60); // at night its clock stops: frozen mid-stride
+  assert.equal(s.dayClock, dc);
+  assert.equal(freakBoxes(DW_LVL, s)[0].x, xFrozen);
+  s = step(DW_LVL, s, SHIFT);
+  s = stepN(DW_LVL, s, 30); // back to day: the patrol resumes
+  assert.notEqual(freakBoxes(DW_LVL, s)[0].x, xFrozen);
+});
+
+test('day-walker: contact by day spooks; sharing its tile by night is safe', () => {
+  let s = place(initState(DW_LVL), 5, 6, { dx: 5 }); // on its patrol spot, by day
+  s = step(DW_LVL, s);
+  assert.equal(s.deaths, 1);
+  s = step(DW_LVL, initState(DW_LVL), SHIFT);
+  s = place(s, 5, 6, { dx: 5 }); // inside its outline, by night
+  s = stepN(DW_LVL, s, 60);
+  assert.equal(s.deaths, 0);
+});
+
+test('day-walker: shifting to day onto it is a spook (mirror of the night rule)', () => {
+  let s = step(DW_LVL, initState(DW_LVL), SHIFT);
+  s = place(s, 5, 6, { dx: 5 }); // inside its outline, safe by night
+  s = stepN(DW_LVL, s, 10);
+  assert.equal(s.deaths, 0);
+  s = step(DW_LVL, s, SHIFT); // the shift lands you on it, by day
+  assert.equal(s.deaths, 1);
+  assert.ok(s.events.some((e) => e.type === 'death' && e.cause === 'spooked'));
+});
+
+test('day-walker: dayClock is not rewound by death (same rule as freakClock)', () => {
+  let s = initState(DW_LVL);
+  s = stepN(DW_LVL, s, 60);
+  const dc = s.dayClock;
+  assert.ok(dc > 0);
+  const b = freakBoxes(DW_LVL, s)[0]; // it has wandered off its base tile by now
+  s = place(s, 0, 6, { dx: b.x });
+  s = step(DW_LVL, s);
+  assert.equal(s.deaths, 1);
+  assert.ok(s.dayClock > dc - 1e-9, 'dayClock kept its value through the respawn');
+});
+
+test('day-walker: each shift wakes one freak and freezes the other', () => {
+  const both = level(OPEN_E_UP, BLANK, {
+    freaks: [
+      { kind: 'daywalker', tx: 3, ty: 6, range: 2, speed: 60 },
+      { kind: 'lurker', tx: 6, ty: 6, range: 2, speed: 60 },
+    ],
+  });
+  let s = initState(both);
+  s = stepN(both, s, 60); // day: walker moves, lurker frozen
+  const [dw, lu] = freakBoxes(both, s);
+  assert.notEqual(dw.x, 3 * TILE + 5);
+  assert.equal(lu.x, 6 * TILE + 5);
+  s = step(both, s, SHIFT);
+  s = stepN(both, s, 60); // night: lurker moves, walker frozen
+  const [dw2, lu2] = freakBoxes(both, s);
+  assert.equal(dw2.x, dw.x);
+  assert.notEqual(lu2.x, lu.x);
+});

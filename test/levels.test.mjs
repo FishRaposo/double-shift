@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { LEVELS } from '../src/levels.js';
-import { parseLevel, DAY, NIGHT } from '../src/rules.js';
+import { parseLevel, freakBoxes, DAY, NIGHT, PARAMS } from '../src/rules.js';
 import { play, tx } from './helpers.mjs';
 
 const L = Object.fromEntries(LEVELS.map((l) => [l.id, parseLevel(l)]));
@@ -57,6 +57,19 @@ const SOLUTIONS = {
     else if (x < 25) target = NIGHT; // back into the tunnel, slide to the lurker
     else target = DAY; // grip and freeze it, then walk to the exit
     return { right: true, shift: want(s, target) };
+  },
+  daywalker: (s) => {
+    const x = tx(s);
+    const dw = freakBoxes(L.daywalker, s).find((b) => b.kind === 'daywalker');
+    let target = s.layer;
+    if (x < 17) target = DAY; // the patrol corridor only exists by day
+    else if (x < 18.8) target = NIGHT; // the day pillar closes the mouth: enter at night
+    else if (s.layer === NIGHT && x < 20.6) target = DAY; // inside the tunnel: freeze the lurker
+    else if (x > 24.3 && x < 26.5) target = NIGHT; // out past the far pillar
+    // hop the day-walker: it only needs ~0.04 s of rise to clear a 22 px box
+    const gap = dw.x - (s.player.x + PARAMS.playerW);
+    const jump = s.layer === DAY && (s.player.grounded ? gap > 25 && gap < 60 : s.player.vy < 0);
+    return { right: true, jump, shift: want(s, target) };
   },
 };
 

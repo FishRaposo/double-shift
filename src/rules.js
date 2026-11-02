@@ -71,6 +71,7 @@ export function parseLevel(def) {
   const freaks = (def.freaks ?? []).map((f, i) => ({
     id: f.id ?? `freak${i}`,
     kind: f.kind,
+    shift: f.kind === 'daywalker' ? DAY : NIGHT, // which shift it lives on
     tx: f.tx,
     ty: f.ty,
     range: f.range ?? 0,
@@ -195,23 +196,24 @@ function pingpong(d, len) {
 }
 
 export function freakBoxes(level, s) {
-  const t = s.freakClock;
   return level.freaks.map((f) => {
     const baseX = f.tx * TILE + (TILE - FREAK.w) / 2;
     const y = (f.ty + 1) * TILE - FREAK.h;
     let x = baseX;
     let active = true;
-    if (f.kind === 'lurker') x = baseX + pingpong(f.phase + t * f.speed, f.range * TILE);
+    const t = f.shift === DAY ? s.dayClock : s.freakClock; // each shift runs its own clock
+    if (f.kind === 'lurker' || f.kind === 'daywalker') x = baseX + pingpong(f.phase + t * f.speed, f.range * TILE);
     if (f.kind === 'peeker') active = ((t + f.phase) % f.period) < f.duty * f.period;
-    return { id: f.id, kind: f.kind, x, y, w: FREAK.w, h: FREAK.h, active };
+    return { id: f.id, kind: f.kind, shift: f.shift, x, y, w: FREAK.w, h: FREAK.h, active };
   });
 }
 
-function touchesFreak(level, s) {
-  if (s.layer !== NIGHT) return false;
+// The freak currently touching the player on its own shift, if any.
+function touchedFreak(level, s) {
   const p = s.player;
-  return freakBoxes(level, s).some((b) =>
-    b.active && p.x < b.x + b.w && p.x + PARAMS.playerW > b.x && p.y < b.y + b.h && p.y + PARAMS.playerH > b.y);
+  return freakBoxes(level, s).find((b) =>
+    b.shift === s.layer && b.active &&
+    p.x < b.x + b.w && p.x + PARAMS.playerW > b.x && p.y < b.y + b.h && p.y + PARAMS.playerH > b.y);
 }
 
 // ---------- state ----------
@@ -241,6 +243,7 @@ export function initState(level) {
     nightEntries: 0, // successful shifts into night: the freaks act on these
     overrides: {}, // geometry their pranks changed
     freakClock: 0, // advances only on the night shift
+    dayClock: 0, // advances only on the day shift (the day-walker's clock)
     events: [], // things that happened this step, for audio/fx
   };
 }
@@ -305,9 +308,9 @@ function approach(v, target, amount) {
   return v;
 }
 
-function die(level, s, cause) {
+function die(level, s, cause, by) {
   s.deaths += 1;
-  s.events.push({ type: 'death', cause, x: s.player.x, y: s.player.y });
+  s.events.push({ type: 'death', cause, by, x: s.player.x, y: s.player.y });
   const p = s.player;
   p.x = s.checkpoint.x;
   p.y = s.checkpoint.y;
@@ -343,8 +346,9 @@ export function step(level, prev, input = NO_INPUT, dt = DT) {
     }
   }
 
-  // 2. The night keeps moving only while you're in it.
+  // 2. Each shift's clock moves only while you're in it.
   if (s.layer === NIGHT) s.freakClock += dt;
+  else s.dayClock += dt;
 
   // 3. Horizontal intent. Wet floor `~` swaps the ground accel/decel for the slick pair.
   const wet = onWetFloor(level, s);
@@ -404,7 +408,8 @@ export function step(level, prev, input = NO_INPUT, dt = DT) {
 
   // 7. Hazards, freaks, and falling out.
   if (overlapsHazard(level, s.layer, p.x, p.y, undefined, undefined, s.overrides)) { die(level, s, 'hazard'); return s; }
-  if (touchesFreak(level, s)) { die(level, s, 'spooked'); return s; }
+  const fb = touchedFreak(level, s);
+  if (fb) { die(level, s, 'spooked', fb.kind); return s; }
   if (p.y > level.h * TILE + 60) { die(level, s, 'fall'); return s; }
 
   // 8. Shared objects: checkpoints and exit exist in both shifts.
