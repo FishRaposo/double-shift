@@ -31,11 +31,14 @@ export const NIGHT = 1;
 
 // ---------- level parsing ----------
 
-// A level is { name, par, day: string[], night: string[] }.
+// A level is { name, par, day: string[], night: string[] } — or `offset` + optional
+// `nightPatch` instead of `night`, which generates the night grid from the day one.
 // Legend: '#' solid, '^' hazard, 'S' spawn, 'E' exit, 'C' checkpoint, '.' empty.
 // S, E and C are shared between shifts and may be written in either grid.
 export function parseLevel(def) {
-  const { day, night } = def;
+  const { day } = def;
+  const night = def.night ?? generateOffset(def);
+  if (!night) throw new Error(`${def.name}: needs a night grid or an offset`);
   if (day.length !== night.length) throw new Error(`${def.name}: day/night height differs`);
   const h = day.length;
   const w = day[0].length;
@@ -95,6 +98,36 @@ export function parseLevel(def) {
     freaks,
     decor: def.decor ?? [],
   };
+}
+
+// `offset: { dx, dy }` (in tiles) builds the night grid by moving the day grid:
+// night[y][x] = day[y - dy][x - dx], '.' outside the grid. S/E/C are shared markers and are
+// stripped from the copy — they are not moved. `nightPatch` rectangles (the prank `set`
+// format minus `layer`) then apply differences: the exit approach, hazards.
+function generateOffset(def) {
+  if (!def.offset) return null;
+  const { dx = 0, dy = 0 } = def.offset;
+  const h = def.day.length;
+  const w = def.day[0].length;
+  const rows = [];
+  for (let y = 0; y < h; y++) {
+    let row = '';
+    for (let x = 0; x < w; x++) {
+      const sy = y - dy;
+      const sx = x - dx;
+      const ch = sy >= 0 && sy < h && sx >= 0 && sx < w ? def.day[sy][sx] : '.';
+      row += ch === 'S' || ch === 'E' || ch === 'C' ? '.' : ch;
+    }
+    rows.push(row.split(''));
+  }
+  for (const r of def.nightPatch ?? []) {
+    for (let ty = r.y0; ty <= (r.y1 ?? r.y0); ty++) {
+      for (let tx = r.x0; tx <= (r.x1 ?? r.x0); tx++) {
+        if (ty >= 0 && ty < h && tx >= 0 && tx < w) rows[ty][tx] = r.ch;
+      }
+    }
+  }
+  return rows.map((r) => r.join(''));
 }
 
 // Prank cell sets: { layer: 'day'|'night', x0, x1, y0, y1, ch } rectangles → [layer, tx, ty, ch]

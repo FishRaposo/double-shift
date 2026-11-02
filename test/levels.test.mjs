@@ -86,6 +86,23 @@ const SOLUTIONS = {
     }
     return { right, shift: want(s, target) };
   },
+  offset: (s, m) => {
+    // four hops up the tower: walk into place, jump, shift at the apex onto the floor's copy
+    const hops = [[7.5, NIGHT], [9.5, DAY], [11, NIGHT], [12, DAY]];
+    const i = m.i ?? 0;
+    if (i >= hops.length) return { right: true };
+    const [at, layer] = hops[i];
+    const p = s.player;
+    if (m.launched && p.grounded) {
+      m.launched = false;
+      if (s.layer === layer) { m.i = i + 1; return { right: true }; } // landed on the copy: next hop
+    }
+    const airborne = !p.grounded;
+    const jump = airborne ? p.vy < 0 : tx(s) > at;
+    const shift = airborne && Math.abs(p.vy) < 60 && s.layer !== layer;
+    if (shift) m.launched = true;
+    return { right: !airborne, jump, shift }; // no right in the air: land on the copy below
+  },
 };
 
 test('every level has a scripted solution', () => {

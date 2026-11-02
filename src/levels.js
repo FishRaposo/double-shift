@@ -443,6 +443,44 @@ export const LEVELS = [
   },
 
   {
+    id: 'offset',
+    name: 'Floor 3.5',
+    act: 4,
+    note: "There is no Floor 3 anymore. It's now Floor 3.5.",
+    par: 4,
+    // The night grid is generated: the day building moved 3 tiles up. Each hop is the same
+    // move — jump, and at the apex shift, stepping onto the floor's other-shift copy. The
+    // grounded shift is refused (the copy would embed you), so the level teaches the jump.
+    offset: { dx: 0, dy: -3 },
+    // lasers trace where the day floor continues at night: the copy ends, don't wander off
+    nightPatch: [{ x0: 11, x1: 18, y0: 11, ch: '^' }],
+    props: [
+      { kind: 'sign', tx: 3, ty: 12, text: '3', style: 'paper' },
+      { kind: 'sign', tx: 12, ty: 6, text: '3.5', style: 'note', layer: 'night' },
+    ],
+    decor: [{ kind: 'eyes', tx: 21, ty: 15 }],
+    day: [
+      '................................',
+      '.............E..................',
+      '...........#######..............',
+      '...........#######..............',
+      '................................',
+      '................................',
+      '................................',
+      '................................',
+      '.......#######..................',
+      '.......#######..................',
+      '................................',
+      '................................',
+      '................................',
+      '..S.............................',
+      '###########.....................',
+      '###########.....................',
+      '###########.....................',
+      '###########.....................',
+    ],
+  },
+  {
     id: 'daywalker',
     name: 'Broad Daylight',
     act: 4,

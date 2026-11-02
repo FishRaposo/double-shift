@@ -601,3 +601,71 @@ test('supervisor: emits supervisorTurn when the facing flips, once per window', 
   }
   assert.ok(turns >= 2, `expected turns in 3 s of night, got ${turns}`);
 });
+
+// ---------- offset layer (SYS-4) ----------
+// `offset` generates the night grid by moving the day grid; S/E/C stay shared and unmoved.
+const TOWER_DAY = [
+  '..........',
+  '..........',
+  '..........',
+  '..........',
+  '..........',
+  '..S....E..',
+  '##########',
+  '##########',
+  '##########',
+];
+// dy: -3 → the floor copy lands 3 tiles up at night
+const TOWER_NIGHT = [
+  '..........',
+  '..........',
+  '..........',
+  '##########',
+  '##########',
+  '##########',
+  '..........',
+  '..........',
+  '..........',
+];
+const tower = level(TOWER_DAY, null, { offset: { dx: 0, dy: -3 } });
+
+test('offset: the generated night grid equals the day grid moved by (dx, dy)', () => {
+  const hand = level(TOWER_DAY, TOWER_NIGHT);
+  for (let y = 0; y < 9; y++) {
+    for (let x = 0; x < 10; x++) {
+      assert.equal(tileAt(tower, NIGHT, x, y), tileAt(hand, NIGHT, x, y), `tile ${x},${y}`);
+    }
+  }
+  // shared markers come from the day grid only — they are not moved by the offset
+  assert.deepEqual(tower.spawn, hand.spawn);
+  assert.deepEqual(tower.exit, hand.exit);
+  assert.equal(tileAt(tower, NIGHT, 2, 2), '.', 'the moved S is stripped from the copy');
+});
+
+test('offset: nightPatch applies after the offset, day side untouched', () => {
+  const lvl = level(TOWER_DAY, null, {
+    offset: { dx: 0, dy: -3 },
+    nightPatch: [{ x0: 0, x1: 2, y0: 3, ch: '^' }, { x0: 8, y0: 6, ch: '#' }],
+  });
+  assert.equal(tileAt(lvl, NIGHT, 0, 3), '^');
+  assert.equal(tileAt(lvl, NIGHT, 2, 3), '^');
+  assert.equal(tileAt(lvl, NIGHT, 8, 6), '#', 'single-cell patch via x0-only rect');
+  assert.equal(tileAt(lvl, DAY, 0, 3), '.', 'patch never touches day');
+});
+
+test('offset: a grounded shift into the raised copy is refused and changes nothing', () => {
+  let s = step(tower, initState(tower), SHIFT);
+  for (let i = 0; i < 30; i++) s = step(tower, s);
+  assert.equal(s.layer, DAY);
+  assert.equal(s.shifts, 0, 'the copy would embed the player: S-08 refusal');
+});
+
+test('offset: shifting at a jump apex lands on the raised night copy', () => {
+  const { state } = play(tower, (s) => ({
+    jump: s.layer === DAY && (s.player.grounded || s.player.vy < 0),
+    shift: !s.player.grounded && Math.abs(s.player.vy) < 60 && s.layer !== NIGHT,
+  }), 240);
+  assert.equal(state.layer, NIGHT);
+  assert.equal(state.player.grounded, true, 'landed on the copy');
+  assert.ok(state.player.y < 100, `up on the copy (y ${state.player.y})`);
+});
