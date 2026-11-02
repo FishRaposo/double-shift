@@ -1,0 +1,4 @@
+node_modules/
+*.zip
+media/*.png
+.DS_Store

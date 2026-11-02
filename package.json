@@ -1,0 +1,14 @@
+{
+  "name": "double-shift",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Double Shift — a day/night puzzle-platformer for GitHub Game Off 2026 (theme: SHIFT).",
+  "type": "module",
+  "scripts": {
+    "test": "node --test test/*.test.mjs",
+    "check": "node scripts/check.mjs",
+    "serve": "npx --yes http-server -c-1 -p 8080 .",
+    "zip": "node scripts/zip.mjs"
+  },
+  "license": "MIT"
+}
