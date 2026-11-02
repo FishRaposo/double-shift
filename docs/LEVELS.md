@@ -2,6 +2,12 @@
 
 Companion to [GDD.md](GDD.md) §6 and §8. Tile = 30 px. Levels are 32×18 tiles (one 960×540 screen).
 
+**At a glance**
+- Jumpable rise: **≤ 3 tiles**. Gaps: **≤ 4** comfortable, **≥ 7** impossible (use 8 for "must shift"). Leave **≥ 1 tile** to shift in (§1).
+- A level is two ASCII grids (day, night) plus optional pranks, freaks and decor (§2).
+- 6 built (§4), 6 planned (§5), more ideas in the pool (§5.1). Jam minimum: 1–6, 9, 12.
+- Nothing ships without a scripted par solution in the tests and the §6 checklist.
+
 ## 1. Movement metrics (from `PARAMS`, 2026-11-01)
 
 | Metric | Value | Design rule |

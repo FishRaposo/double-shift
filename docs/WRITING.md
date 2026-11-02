@@ -2,6 +2,11 @@
 
 Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game lives here first. **Status: drafts for Fish to edit.** Lines marked ✅ are in the build now.
 
+**At a glance**
+- Worker: deadpan. Freaks: petty, smug, all caps, bad spelling. Management: clueless (§1).
+- ✅ = in the build. Everything else is a draft for Fish.
+- One-line jokes only; original jokes only.
+
 ## 1. Voice
 
 - The worker is **deadpan**. Underpaid, unbothered, quietly done with this building.

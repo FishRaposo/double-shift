@@ -2,6 +2,11 @@
 
 Companion to [GDD.md](GDD.md) §1.8 and §16.4–16.5. Deadline **Dec 1, 2026, 13:37 PST = 18:37 BRT**. Target: submitted **Nov 30**.
 
+**At a glance**
+- Every jam rule is met or has a step below (§0). AI use is allowed; disclose it when submitting.
+- Submit on itch by **Nov 30** (deadline Dec 1, 13:37 PST); the repo URL goes in the form.
+- After Dec 1: critical fixes only, each with a note. Aim for 25+ ratings by rating 30+ entries (§6).
+
 ## 0. Jam rules (from the [host's FAQ](https://itch.io/jam/game-off-2026/topic/7290154/frequently-asked-questions-faq), read 2026-11-02)
 
 | Rule | What it means for us | Status |

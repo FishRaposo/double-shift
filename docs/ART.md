@@ -2,6 +2,12 @@
 
 Companion to [GDD.md](GDD.md) §4.7, §7, §10. Everything is drawn in code on a 960×540 canvas; there are no image files. Values below are the ones in `src/main.js` on 2026-11-02 (after the readability pass, §3.1). **Decided 2026-11-01: the jam build stays code-drawn** (GDD §10.1). Post-jam, if a design partner joins, this is their brief; credit them as they choose.
 
+**At a glance**
+- Everything is drawn by code; that's the style, not a placeholder (§1.1).
+- One line language: **filled** = solid now, **dashed** = the other shift, **hatched** = only in this shift (§3).
+- Reading order on screen: worker → solids → hazards/freaks → other shift → exit → HUD → background (§3.1).
+- Freaks: black lumps with glowing eyes, never fully shown, nature undefined (§5).
+
 ## 1. Pillars
 
 1. **Readability beats beauty.** The player must always know: what's solid now, what's solid on the other shift, what kills, where the freaks are, which shift they're in.

@@ -12,6 +12,27 @@
 **Developer:** Vinícius Raposo  
 **Title:** Double Shift (working title "SHIFT" retired in v0.2). Subtitle candidate: *The Freaks Come Out at Night* (provisional)
 
+
+---
+
+# At a Glance
+
+**Pitch.** A 2D puzzle-platformer where you work the day shift and the night shift in the same building at once. Press Shift to step between them, even mid-jump. Every time you clock into night, the freaks may prank the building, and when you're on the day shift they freeze. Finish each level in as few clock-ins as possible.
+
+| Topic | The short version | Details |
+|---|---|---|
+| Verbs | Move, jump, shift. Nothing else. | §3 |
+| Shift rules | Same spot, momentum kept, instant, no cooldown, one shift per key press, separate geometry per shift, a blocked shift nudges ≤ 4 px → waits 80 ms → is refused | §3.3 (S-01…S-08) |
+| The other shift | Shown as dashed outlines; geometry that exists only in your current shift is hatched; nothing on the other shift moves | §4.6, §7 |
+| The freaks | Undefined, nocturnal, out to annoy you. Pranks fire on the Nth night clock-in; visible freaks (lurker, peeker, squatter) freeze by day. Never chase, always telegraphed. | §4.8–4.10 |
+| Score | Timecard: clock-ins vs. par (fewest shifts the designer found, proven by tests) | §15.3 |
+| Tone | Mock horror: petty monsters, deadpan worker, no gore, no jump scares | §10.5 |
+| Look and sound | Code-drawn as a deliberate style; synthesized audio; music planned | §10, §11 |
+| Levels | 6 built (act 1 + start of act 2), 12 planned, jam minimum 1–6 + 9 + 12 | §8.2 |
+| Jam | Game Off 2026, theme SHIFT, due Dec 1 13:37 PST. Lead with the pranks and freezing freaks: two overlapping worlds alone is one of the jam page's example ideas. | §1.8 |
+
+**Living sections** (kept current): §0, §1, §3, §4, §8.2, §10.5, §15.3, §18, §21. **Historical sections** (the original pre-v0.2 plan, kept for the record): §13.1–13.8, §16, §22. Their banners say what replaced them.
+
 ---
 
 # Companion documents
@@ -30,6 +51,7 @@ This GDD decides *what* the game is. The production docs in this folder decide *
 | §1.7 Theme: added the readings the jam page itself lists (night shift, Sticky Keys) | Theme interpretation is a rated category |
 | §10.1: art stays **code-drawn, as a deliberate style**; no outside artist for the jam | Fish's decision 2026-11-01. Graphics is rated, so "placeholder" has to become a style (ART.md §1.1). |
 | §18: three jam risks added | Innovation overlap, raters quitting before the freaks, a low rating count |
+| Added **At a Glance** (top of this doc); marked §13.1–13.8, §16 and §22 as historical | Readability: the whole design should fit on one screen, and stale plans shouldn't read as current |
 | **Freak personality** (§4.8): nocturnal little menaces who exist to annoy you. References: *they act like raccoons who know dark magic*, and Sableye (Pokémon) as the model prankster. Both describe behavior only; **what they actually are stays undefined.** | Fish's direction, 2026-11-02. Gives art, audio and writing one shared attitude to draw from, without answering the mystery. |
 
 ## v0.3
@@ -1140,6 +1162,8 @@ Rapid Shift usage must remain accessible to players who cannot comfortably use t
 
 # 13. Technical Design
 
+> **Historical (pre-v0.2).** §13.1–13.8 are the original engine-agnostic plan. The built architecture is §13.9 and [TECH.md](TECH.md).
+
 ## 13.1 Architecture Goal
 
 The engine should treat dimensions as separate world layers sharing a common player and coordinate system.
@@ -1499,6 +1523,8 @@ These remain outside the required jam scope.
 
 # 16. Development Plan
 
+> **Historical (pre-v0.2).** The live schedule, milestones and backlog are in [PRODUCTION.md](PRODUCTION.md); the release steps are in [RELEASE.md](RELEASE.md).
+
 ## 16.1 Phase 1: Core Prototype
 
 **Target: First development week**
@@ -1786,6 +1812,8 @@ The following decisions require prototypes or further discussion.
 
 # 22. Immediate Next Steps
 
+> **Historical.** Steps 1–3 are done (the prototype has 6 levels and 42 tests). The current next steps are the milestones in [PRODUCTION.md](PRODUCTION.md) §2.
+
 ## Step 1: Select Engine — done (v0.2)
 
 Plain JS + canvas, pure rules module (§13.8–13.9).
@@ -1855,4 +1883,4 @@ It is to create a platformer in which a single additional button meaningfully tr
 
 **Press Shift to change shifts.**
 
-*End of Game Design Document, Version 0.3.0*
+*End of Game Design Document, Version 0.4.0*

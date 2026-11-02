@@ -2,6 +2,8 @@
 
 Everything needed to finish, ship and maintain *Double Shift* for GitHub Game Off 2026 (theme: SHIFT).
 
+**Start here:** the GDD's [At a Glance](GDD.md#at-a-glance) for the game, [PRODUCTION.md](PRODUCTION.md) for what's next, [DESIGN.md](DESIGN.md) for the one-page story. Every doc opens with its own **At a glance** box.
+
 | Doc | What it's for | Read when |
 |---|---|---|
 | [GDD.md](GDD.md) | The design: what the game is and why. Source of truth for rules (S-01…S-08), the freaks, tone, level plan. | Any design question |

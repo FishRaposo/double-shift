@@ -2,6 +2,11 @@
 
 Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-01.
 
+**At a glance**
+- **The one rule:** `src/rules.js` decides everything that matters; the screen only draws it (§2).
+- `npm start` to play, `npm test` (42 tests), `npm run check` (§7).
+- Add a level: grids in `src/levels.js` + a `SOLUTIONS` entry in `test/levels.test.mjs` (§6).
+
 ## 1. Stack and constraints
 
 - Plain JavaScript ES modules, one `<canvas>` (960×540), no engine, no dependencies, no asset files.

@@ -1,6 +1,12 @@
 # Production Plan
 
 Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-01** (night of day 1).
+Status as of **2026-11-02**.
+
+**At a glance**
+- **Next milestone:** M0 Feel check (Nov 2–3): play all 6 levels, Sticky Keys test, tuning. Repo + CI are done.
+- **Key P0 items:** tuning, music, level select, freaks in the first minutes, freak art, levels 9 + 12, cover and media, itch page (§4).
+- **Cut line:** if M2 slips past Nov 17, ship levels 1–6 + 9 + 12 only (§2).
 
 ## 1. Where we are
 

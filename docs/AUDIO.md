@@ -2,6 +2,11 @@
 
 Companion to [GDD.md](GDD.md) §11. All audio is synthesized with WebAudio in `src/audio.js`. No audio files, no licensed music.
 
+**At a glance**
+- 11 sound effects are built (§2); music is planned and P0 (§3).
+- Every SFX is ≤ 0.25 s. The shift sound's pitch says where you went: down = night, up = day.
+- Funny, not scary: yelps, giggles, a rubber stamp. `M` mutes.
+
 ## 1. Rules
 
 - **Short.** Every SFX ≤ 0.25 s, so rapid shifting never stacks into noise.

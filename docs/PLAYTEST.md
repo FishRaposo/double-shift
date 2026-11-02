@@ -2,6 +2,11 @@
 
 Companion to [GDD.md](GDD.md) §19. Playtests answer questions the tests can't: is it fun, is it readable, is it fair.
 
+**At a glance**
+- Run a build: `npm start` (your machine) or the Pages link (theirs) (§2).
+- Say nothing, watch, take notes, then the form (§2, §4).
+- Biggest signals: time to first shift, do they work out that day freezes the freaks, do they replay for par (§3).
+
 ## 1. Schedule
 
 | Round | When | Build | Who | Focus |
