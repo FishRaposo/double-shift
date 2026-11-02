@@ -5,7 +5,7 @@ Everything the finished jam game contains, in one place. Each row has an ID, its
 **At a glance**
 - **21 levels: five acts of four plus the finale**, about 35–50 minutes. 12 built (a complete game); tiers B (17) and C (21) on top, so any cut still ships complete (§1).
 - **5 new mechanics, one per act from act 3:** wet floor, supervisor and day-walker freaks, offset layer (all shipped), and Upside Down (act 5, cut date Nov 18).
-- This doc says *what* is in the game. *When* and *in what order* is [PRODUCTION.md](PRODUCTION.md); *how* is in the linked specs.
+- This doc says *what* is in the game. *When* and *in what order* is [PRODUCTION.md](PRODUCTION.md); *how* is in the linked specs, and the build task for each planned item is in [BUILD.md](BUILD.md) §4.
 - Status: ✅ built · **planned** (in the jam plan) · *stretch* (only if ahead) · *post-jam*.
 - **2026-11-02:** every art and audio asset is built, including those for planned levels (review them in `/tools/gallery.html`). What's left is mostly levels and their mechanics.
 
