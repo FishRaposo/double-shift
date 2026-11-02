@@ -1,47 +1,73 @@
 // Double Shift — browser shell: input capture, fixed-step loop, rendering.
-// Draws only what src/rules.js decided.
+// Draws only what src/rules.js decided. Art lives in sprites.js (characters) and art.js (everything else).
 
 import { step, initState, parseLevel, tileAt, freakBoxes, TILE, DT, DAY, NIGHT, PARAMS } from './rules.js';
 import { LEVELS, ACTS } from './levels.js';
 import { createInput, GAME_KEYS } from './input.js';
 import { sfx, unlockAudio, toggleMute } from './audio.js';
 import { createSave, isUnlocked } from './save.js';
+import { drawText, measureText } from './font.js';
+import { drawSprite, workerFrame, ART, SPRITES } from './sprites.js';
+import {
+  PAL, PROPS, drawBackground, drawSolidTile, drawHatch, drawEchoEdges, drawRebar, drawLaser, drawHazardEcho,
+  drawExit, drawCheckpoint, drawSign, drawFreak, drawShiftRing, drawDust, drawPuff, drawSparkle, drawPanel,
+  drawStamp, drawLogo, px,
+} from './art.js';
+import { SPOOK_LINES, ACT_LINES, timecardComment, stampText } from './copy.js';
 
 const W = 960;
 const H = 540;
+const A = ART;
 const canvas = document.getElementById('game');
 const g = canvas.getContext('2d');
+g.imageSmoothingEnabled = false;
 const input = createInput();
+const NIGHT_PAL = SPRITES.worker.nightPalette;
 const levels = LEVELS.map(parseLevel);
 const save = createSave((() => { try { return localStorage; } catch { return null; } })());
 
 const params = new URLSearchParams(location.search);
+const freshFx = () => ({ flash: 0, flashLayer: DAY, fail: 0, death: 0, land: 0, rings: [], pops: [], dust: [], puffs: [], sparkles: [], spook: null, freeze: 0, squint: 0, ping: 0 });
 const game = {
-  screen: 'title', // title | select | play | card | end | paused
+  screen: 'title', // title | select | act | play | card | end | paused
   selected: 0, // highlighted card on the level select screen
   newBest: false, // the last clear beat a saved best
   index: Math.min(Math.max((parseInt(params.get('level'), 10) || 1) - 1, 0), levels.length - 1),
   state: null,
   results: [],
   debug: params.has('debug'),
-  fx: { flash: 0, flashLayer: DAY, fail: 0, death: 0, rings: [], pops: [] },
+  fx: freshFx(),
   levelTime: 0,
+  clock: 0, // real seconds, for menu animation
+  screenTime: 0, // seconds on the current screen (card stamp, act card)
+  actShown: 0, // last act whose title card was shown
 };
 
 function level() { return levels[game.index]; }
 
-function openSelect() {
-  game.selected = game.index;
-  game.screen = 'select';
-  input.clear();
+function setScreen(s) {
+  game.screen = s;
+  game.screenTime = 0;
 }
 
-function startLevel(i) {
+// Start a level. An act's first level gets its title card first, once per run through the act.
+function startLevel(i, { card = true } = {}) {
   game.index = i;
   game.state = initState(levels[i]);
   game.levelTime = 0;
-  game.fx = { flash: 0, flashLayer: DAY, fail: 0, death: 0, rings: [], pops: [] };
-  game.screen = 'play';
+  game.fx = freshFx();
+  input.clear();
+  const act = LEVELS[i].act;
+  if (card && act !== game.actShown) {
+    game.actShown = act;
+    sfx.sting?.();
+    setScreen('act');
+  } else setScreen('play');
+}
+
+function openSelect() {
+  game.selected = game.index;
+  setScreen('select');
   input.clear();
 }
 
@@ -58,33 +84,34 @@ addEventListener('keydown', (e) => {
     else if (e.code === 'KeyL') openSelect();
     return;
   }
+  if (game.screen === 'act') { setScreen('play'); return; }
   if (game.screen === 'select') {
     const dir = SELECT_KEYS[e.code];
-    if (dir) moveSelect(dir[0], dir[1]);
-    else if ((e.code === 'Space' || e.code === 'Enter') && isUnlocked(LEVELS, game.selected, save)) startLevel(game.selected);
-    else if (e.code === 'Escape' || e.code === 'KeyL') game.screen = 'title';
+    if (dir) { moveSelect(dir[0], dir[1]); sfx.uiMove?.(); }
+    else if ((e.code === 'Space' || e.code === 'Enter') && isUnlocked(LEVELS, game.selected, save)) { sfx.uiSelect?.(); startLevel(game.selected); }
+    else if (e.code === 'Escape' || e.code === 'KeyL') setScreen('title');
     return;
   }
   if (game.screen === 'card') {
     if (e.code === 'Space' || e.code === 'Enter') {
       if (game.index + 1 < levels.length) startLevel(game.index + 1);
-      else game.screen = 'end';
-    } else if (e.code === 'KeyR') startLevel(game.index);
+      else setScreen('end');
+    } else if (e.code === 'KeyR') startLevel(game.index, { card: false });
     return;
   }
   if (game.screen === 'end') {
-    if (e.code === 'Space' || e.code === 'Enter') { game.results = []; startLevel(0); }
+    if (e.code === 'Space' || e.code === 'Enter') { game.results = []; game.actShown = 0; startLevel(0); }
     return;
   }
   if (game.screen === 'paused') {
-    if (e.code === 'Escape' || e.code === 'Space') game.screen = 'play';
-    else if (e.code === 'KeyR') startLevel(game.index);
+    if (e.code === 'Escape' || e.code === 'Space') setScreen('play');
+    else if (e.code === 'KeyR') startLevel(game.index, { card: false });
     else if (e.code === 'KeyL') openSelect();
     return;
   }
   // play
-  if (e.code === 'Escape') { game.screen = 'paused'; input.clear(); return; }
-  if (e.code === 'KeyR') { startLevel(game.index); return; }
+  if (e.code === 'Escape') { setScreen('paused'); input.clear(); return; }
+  if (e.code === 'KeyR') { startLevel(game.index, { card: false }); return; }
   input.keyDown(e);
 });
 addEventListener('keyup', (e) => { input.keyUp(e); });
@@ -100,6 +127,8 @@ canvas.addEventListener('pointerdown', (e) => {
   if (game.screen === 'title') {
     if (inside(TITLE_SELECT)) openSelect();
     else startLevel(game.index);
+  } else if (game.screen === 'act') {
+    setScreen('play');
   } else if (game.screen === 'select') {
     const i = LEVELS.findIndex((_, k) => inside(cardRect(k)));
     if (i >= 0 && isUnlocked(LEVELS, i, save)) startLevel(i);
@@ -110,7 +139,7 @@ canvas.addEventListener('pointerdown', (e) => {
 // One row of timecards per act. Act starts are always open (src/save.js).
 
 const CARD = { w: 200, h: 74, gap: 24, top: 120, rowH: 104 };
-const TITLE_SELECT = { x: W / 2 - 120, y: 434, w: 240, h: 30 };
+const TITLE_SELECT = { x: W / 2 - 120, y: 444, w: 240, h: 32 };
 const SELECT_KEYS = {
   ArrowLeft: [-1, 0], KeyA: [-1, 0], ArrowRight: [1, 0], KeyD: [1, 0],
   ArrowUp: [0, -1], KeyW: [0, -1], ArrowDown: [0, 1], KeyS: [0, 1],
@@ -132,31 +161,45 @@ function moveSelect(dx, dy) {
 
 // ---------- simulation ----------
 
+let spookIx = 0;
+
 function handleEvents(events) {
   const p = game.state.player;
+  const fx = game.fx;
+  const cx = p.x + PARAMS.playerW / 2;
   for (const ev of events) {
     switch (ev.type) {
       case 'shift':
         sfx.shift(ev.layer === NIGHT);
-        game.fx.flash = 1;
-        game.fx.flashLayer = ev.layer;
-        game.fx.rings.push({ x: p.x + PARAMS.playerW / 2, y: p.y + PARAMS.playerH / 2, t: 0, layer: ev.layer });
+        fx.flash = 1;
+        fx.flashLayer = ev.layer;
+        fx.rings.push({ x: cx, y: p.y + PARAMS.playerH / 2, t: 0, layer: ev.layer });
+        if (ev.layer === DAY && level().freaks.length) { fx.freeze = 1; sfx.freeze?.(); }
         break;
-      case 'shiftFail': sfx.shiftFail(); game.fx.fail = 1; break;
-      case 'jump': sfx.jump(); break;
-      case 'land': sfx.land(); break;
+      case 'shiftFail': sfx.shiftFail(); fx.fail = 1; break;
+      case 'jump': sfx.jump(); fx.dust.push({ x: cx, y: p.y + PARAMS.playerH, t: 0 }); break;
+      case 'land': sfx.land(); fx.land = 0.1; fx.dust.push({ x: cx, y: p.y + PARAMS.playerH, t: 0 }); break;
       case 'death':
         if (ev.cause === 'spooked') {
           sfx.spooked();
-          game.fx.pops.push({ x: ev.x + PARAMS.playerW / 2, y: ev.y - 8, t: 0, text: pick(SPOOK_LINES) });
-        } else sfx.death();
-        game.fx.death = 1;
+          fx.pops.push({ x: ev.x + PARAMS.playerW / 2, y: ev.y - 20, t: 0, text: SPOOK_LINES[spookIx++ % SPOOK_LINES.length] });
+          fx.spook = { x: ev.x, y: ev.y, t: 0, layer: game.state.layer };
+        } else {
+          sfx.death();
+          fx.puffs.push({ x: ev.x + PARAMS.playerW / 2, y: ev.y + PARAMS.playerH / 2, t: 0 });
+        }
+        fx.death = 1;
         break;
-      case 'prank':
+      case 'prank': {
         sfx.giggle();
-        game.fx.pops.push({ x: W / 2, y: 92, t: 0, text: 'hee hee hee', big: true });
+        sfx.shimmer?.();
+        fx.squint = 1;
+        fx.pops.push({ x: W / 2, y: 86, t: 0, text: 'hee hee hee', big: true });
+        const pr = level().pranks.find((q) => q.id === ev.id);
+        for (const [, tx, ty] of pr?.cells ?? []) fx.sparkles.push({ x: tx * TILE + TILE / 2, y: ty * TILE + TILE / 2, t: 0, seed: tx * 31 + ty });
         break;
-      case 'checkpoint': sfx.checkpoint(); break;
+      }
+      case 'checkpoint': sfx.checkpoint(); fx.ping = 1; break;
       case 'win':
         sfx.win();
         setTimeout(() => sfx.stamp(), 450);
@@ -166,7 +209,7 @@ function handleEvents(events) {
           const hadBest = save.cleared(id);
           game.newBest = save.record(id, game.results[game.index]) && hadBest;
         }
-        game.screen = 'card';
+        setScreen('card');
         break;
     }
   }
@@ -175,8 +218,11 @@ function handleEvents(events) {
 let acc = 0;
 let last = performance.now();
 function frame(now) {
-  const elapsed = Math.min((now - last) / 1000, 0.1);
+  const elapsed = Math.min(Math.max((now - last) / 1000, 0), 0.1);
   last = now;
+  game.clock += elapsed;
+  game.screenTime += elapsed;
+  if (game.screen === 'act' && game.screenTime > 1.6) setScreen('play');
   if (game.screen === 'play') {
     acc += elapsed;
     let steps = 0;
@@ -192,450 +238,211 @@ function frame(now) {
     acc = 0;
   }
   const fx = game.fx;
-  fx.flash = Math.max(0, fx.flash - elapsed / 0.12);
-  fx.fail = Math.max(0, fx.fail - elapsed / 0.25);
-  fx.death = Math.max(0, fx.death - elapsed / 0.3);
-  fx.rings = fx.rings.filter((r) => (r.t += elapsed) < 0.3);
-  fx.pops = fx.pops.filter((q) => (q.t += elapsed) < 0.9);
+  const decay = (v, d) => Math.max(0, v - elapsed / d);
+  fx.flash = decay(fx.flash, 0.12);
+  fx.fail = decay(fx.fail, 0.25);
+  fx.death = decay(fx.death, 0.3);
+  fx.land = decay(fx.land, 1);
+  fx.freeze = decay(fx.freeze, 0.15);
+  fx.squint = decay(fx.squint, 0.8);
+  fx.ping = decay(fx.ping, 0.2);
+  for (const k of ['rings', 'pops', 'dust', 'puffs', 'sparkles']) {
+    const life = { rings: 0.3, pops: 0.9, dust: 0.3, puffs: 0.4, sparkles: 0.5 }[k];
+    fx[k] = fx[k].filter((q) => (q.t += elapsed) < life);
+  }
+  if (fx.spook && (fx.spook.t += elapsed) > 0.35) fx.spook = null;
   render();
   requestAnimationFrame(frame);
 }
 
 // ---------- rendering ----------
 
-const PAL = {
-  [DAY]: {
-    skyTop: '#f6e7c8', skyBot: '#e8c58c', window: 'rgba(255,255,255,0.22)', frame: 'rgba(120,90,50,0.1)',
-    solid: '#6e5a45', solidEdge: '#fbecc9', echo: 'rgba(255,170,80,0.95)', hud: '#3b2d1f', hudSoft: 'rgba(59,45,31,0.85)', halo: 'rgba(246,231,200,0.85)',
-  },
-  [NIGHT]: {
-    skyTop: '#0b1029', skyBot: '#1d2a56', window: 'rgba(255,214,110,0.12)', frame: 'rgba(120,150,255,0.05)',
-    solid: '#2e4173', solidEdge: '#5ff2ff', echo: 'rgba(52,96,230,1)', hud: '#d9f6ff', hudSoft: 'rgba(217,246,255,0.85)', halo: 'rgba(11,16,41,0.85)',
-  },
-};
+const isSolidCh = (ch) => ch === '#';
 
-// deterministic star field
-const STARS = Array.from({ length: 70 }, (_, i) => {
-  const r = Math.sin(i * 127.1) * 43758.5453;
-  const r2 = Math.sin(i * 311.7) * 12543.123;
-  return { x: (r - Math.floor(r)) * W, y: (r2 - Math.floor(r2)) * H * 0.7, s: i % 3 === 0 ? 2 : 1 };
-});
-
-function drawBackground(layer) {
-  const pal = PAL[layer];
-  const grad = g.createLinearGradient(0, 0, 0, H);
-  grad.addColorStop(0, pal.skyTop);
-  grad.addColorStop(1, pal.skyBot);
-  g.fillStyle = grad;
-  g.fillRect(0, 0, W, H);
-  if (layer === NIGHT) {
-    g.fillStyle = 'rgba(255,255,255,0.35)';
-    for (const s of STARS) g.fillRect(s.x, s.y, s.s, s.s);
-  }
-  // big windows of the building interior
-  for (let i = 0; i < 6; i++) {
-    const x = 40 + i * 160;
-    g.fillStyle = pal.frame;
-    g.fillRect(x - 6, 60, 112, 200);
-    g.fillStyle = pal.window;
-    const lit = layer === DAY || (i * 7) % 3 !== 0;
-    if (lit) {
-      g.fillRect(x, 66, 48, 92);
-      g.fillRect(x + 52, 66, 48, 92);
-      g.fillRect(x, 162, 48, 92);
-      g.fillRect(x + 52, 162, 48, 92);
-    }
-  }
-}
-
-// current geometry, including whatever the freaks have changed
-let curOv = {};
-function T(lvl, layer, tx, ty) { return tileAt(lvl, layer, tx, ty, curOv); }
-
-function isSolid(lvl, layer, tx, ty) {
+function solidAt(lvl, layer, tx, ty, ov) {
   if (tx < 0 || tx >= lvl.w || ty < 0 || ty >= lvl.h) return false;
-  return T(lvl, layer, tx, ty) === '#';
+  return isSolidCh(tileAt(lvl, layer, tx, ty, ov));
 }
 
-// Outer edges of a layer's solid region, as line segments.
-function solidEdges(lvl, layer) {
+// Outer edges of a layer's solid region, as segments: [x0, y0, x1, y1, 'top'|'bot'|'left'|'right'].
+function solidEdges(lvl, layer, ov) {
   const segs = [];
   for (let ty = 0; ty < lvl.h; ty++) {
     for (let tx = 0; tx < lvl.w; tx++) {
-      if (!isSolid(lvl, layer, tx, ty)) continue;
+      if (!solidAt(lvl, layer, tx, ty, ov)) continue;
       const x = tx * TILE;
       const y = ty * TILE;
-      if (!isSolid(lvl, layer, tx, ty - 1)) segs.push([x, y, x + TILE, y, 'top']);
-      if (!isSolid(lvl, layer, tx, ty + 1) && ty + 1 < lvl.h) segs.push([x, y + TILE, x + TILE, y + TILE, 'bot']);
-      if (!isSolid(lvl, layer, tx - 1, ty) && tx > 0) segs.push([x, y, x, y + TILE, 'side']);
-      if (!isSolid(lvl, layer, tx + 1, ty) && tx + 1 < lvl.w) segs.push([x + TILE, y, x + TILE, y + TILE, 'side']);
+      if (!solidAt(lvl, layer, tx, ty - 1, ov)) segs.push([x, y, x + TILE, y, 'top']);
+      if (!solidAt(lvl, layer, tx, ty + 1, ov) && ty + 1 < lvl.h) segs.push([x, y + TILE, x + TILE, y + TILE, 'bot']);
+      if (!solidAt(lvl, layer, tx - 1, ty, ov) && tx > 0) segs.push([x, y, x, y + TILE, 'left']);
+      if (!solidAt(lvl, layer, tx + 1, ty, ov) && tx + 1 < lvl.w) segs.push([x + TILE, y, x + TILE, y + TILE, 'right']);
     }
   }
   return segs;
 }
 
-const edgeCache = new Map();
-function edges(lvl, layer) {
-  const key = `${lvl.name}:${layer}:${JSON.stringify(curOv)}`;
-  if (!edgeCache.has(key)) edgeCache.set(key, solidEdges(lvl, layer));
-  return edgeCache.get(key);
-}
-
-function drawEcho(lvl, layer) {
-  // the other shift: dashed outlines, never filled (shape, not just colour, tells them apart)
-  const pal = PAL[layer];
-  g.save();
-  g.strokeStyle = pal.echo;
-  g.lineWidth = 2.5;
-  g.setLineDash([8, 5]);
-  g.beginPath();
-  for (const [x0, y0, x1, y1] of edges(lvl, layer)) { g.moveTo(x0, y0); g.lineTo(x1, y1); }
-  g.stroke();
-  g.setLineDash([3, 4]);
-  for (let ty = 0; ty < lvl.h; ty++) {
-    for (let tx = 0; tx < lvl.w; tx++) {
-      if (T(lvl, layer, tx, ty) !== '^') continue;
-      const hz = TILE * PARAMS.hazardHeight;
-      g.strokeRect(tx * TILE + 2, (ty + 1) * TILE - hz, TILE - 4, hz - 1);
-    }
-  }
-  g.restore();
-}
-
-const hatchCache = {};
-function hatch(layer) {
-  if (hatchCache[layer]) return hatchCache[layer];
+function makeCanvas() {
   const c = document.createElement('canvas');
-  c.width = c.height = 10;
-  const h = c.getContext('2d');
-  h.strokeStyle = layer === DAY ? 'rgba(255,232,170,0.6)' : 'rgba(95,242,255,0.35)';
-  h.lineWidth = 2;
-  h.beginPath();
-  h.moveTo(-2, 12); h.lineTo(12, -2);
-  h.moveTo(-2, 2); h.lineTo(2, -2);
-  h.moveTo(8, 12); h.lineTo(12, 8);
-  h.stroke();
-  return (hatchCache[layer] = g.createPattern(c, 'repeat'));
+  c.width = W;
+  c.height = H;
+  const ctx = c.getContext('2d');
+  ctx.imageSmoothingEnabled = false;
+  return [c, ctx];
 }
 
-function drawSolids(lvl, layer) {
-  const pal = PAL[layer];
-  g.fillStyle = pal.solid;
-  for (let ty = 0; ty < lvl.h; ty++) {
-    for (let tx = 0; tx < lvl.w; tx++) {
-      if (T(lvl, layer, tx, ty) === '#') g.fillRect(tx * TILE, ty * TILE, TILE, TILE);
-    }
+// Everything that doesn't move, drawn once per level × shift × prank state:
+// the other shift's echo, solids, hatching, props and the exit.
+const staticCache = new Map();
+function staticLayer(lvl, def, layer, ov) {
+  const key = `${def.id}:${layer}:${JSON.stringify(ov)}`;
+  const hit = staticCache.get(key);
+  if (hit) return hit;
+  const [c, ctx] = makeCanvas();
+  const other = 1 - layer;
+  // props first: they sit behind the geometry
+  for (const pr of def.props ?? []) {
+    if (pr.layer && (pr.layer === 'night') !== (layer === NIGHT)) continue;
+    PROPS[pr.kind]?.(ctx, pr.tx * TILE, pr.ty * TILE, pr.w ?? pr, pr);
   }
-  // texture: day = brick courses, night = panel seams
-  g.strokeStyle = layer === DAY ? 'rgba(0,0,0,0.12)' : 'rgba(95,242,255,0.08)';
-  g.lineWidth = 1;
-  g.beginPath();
+  drawEchoEdges(ctx, solidEdges(lvl, other, ov), PAL[other].echo);
   for (let ty = 0; ty < lvl.h; ty++) {
     for (let tx = 0; tx < lvl.w; tx++) {
-      if (T(lvl, layer, tx, ty) !== '#') continue;
-      const x = tx * TILE;
-      const y = ty * TILE;
-      if (layer === DAY) {
-        g.moveTo(x, y + 15.5); g.lineTo(x + TILE, y + 15.5);
-        const off = ty % 2 ? 15 : 0;
-        g.moveTo(x + off + 0.5, y); g.lineTo(x + off + 0.5, y + 15);
-      } else {
-        g.rect(x + 3.5, y + 3.5, TILE - 7, TILE - 7);
+      const ch = tileAt(lvl, layer, tx, ty, ov);
+      if (isSolidCh(ch)) {
+        drawSolidTile(ctx, tx, ty, layer, {
+          up: !solidAt(lvl, layer, tx, ty - 1, ov) && ty > 0,
+          down: !solidAt(lvl, layer, tx, ty + 1, ov) && ty + 1 < lvl.h,
+          left: !solidAt(lvl, layer, tx - 1, ty, ov) && tx > 0,
+          right: !solidAt(lvl, layer, tx + 1, ty, ov) && tx + 1 < lvl.w,
+        });
+        if (!isSolidCh(tileAt(lvl, other, tx, ty, ov))) drawHatch(ctx, tx, ty, layer);
       }
+      if (tileAt(lvl, other, tx, ty, ov) === '^') drawHazardEcho(ctx, tx, ty, PAL[other].echo);
     }
   }
-  g.stroke();
-  // hatch geometry that exists only in this shift: "this won't be here on the other shift"
-  g.fillStyle = hatch(layer);
+  drawExit(ctx, lvl.exit.tx, lvl.exit.ty, layer);
+  if (staticCache.size > 24) staticCache.delete(staticCache.keys().next().value);
+  const out = c;
+  staticCache.set(key, out);
+  return out;
+}
+
+const bgCache = {};
+function background(layer) {
+  if (!bgCache[layer]) {
+    const [c, ctx] = makeCanvas();
+    drawBackground(ctx, layer, W, H, 0);
+    bgCache[layer] = c;
+  }
+  return bgCache[layer];
+}
+
+function drawHazards(lvl, layer, t, ov) {
   for (let ty = 0; ty < lvl.h; ty++) {
     for (let tx = 0; tx < lvl.w; tx++) {
-      if (T(lvl, layer, tx, ty) === '#' && T(lvl, 1 - layer, tx, ty) !== '#') g.fillRect(tx * TILE, ty * TILE, TILE, TILE);
-    }
-  }
-  g.strokeStyle = pal.solidEdge;
-  g.lineWidth = 2;
-  g.beginPath();
-  for (const [x0, y0, x1, y1, kind] of edges(lvl, layer)) {
-    if (kind === 'bot') continue;
-    g.moveTo(x0, y0 + (kind === 'top' ? 1 : 0)); g.lineTo(x1, y1 + (kind === 'top' ? 1 : 0));
-  }
-  g.stroke();
-}
-
-function drawHazards(lvl, layer, t) {
-  const hz = TILE * PARAMS.hazardHeight;
-  for (let ty = 0; ty < lvl.h; ty++) {
-    for (let tx = 0; tx < lvl.w; tx++) {
-      if (T(lvl, layer, tx, ty) !== '^') continue;
-      const x = tx * TILE;
-      const base = (ty + 1) * TILE;
-      if (layer === DAY) {
-        // rebar: rusty spikes
-        g.fillStyle = '#c4572a';
-        for (let i = 0; i < 3; i++) {
-          g.beginPath();
-          g.moveTo(x + 2 + i * 9, base);
-          g.lineTo(x + 6.5 + i * 9, base - hz);
-          g.lineTo(x + 11 + i * 9, base);
-          g.fill();
-        }
-      } else {
-        // security laser: pulsing beam with emitters
-        const a = 0.65 + 0.35 * Math.sin(t * 18 + tx);
-        g.fillStyle = `rgba(255,59,92,${a})`;
-        g.fillRect(x, base - hz * 0.6, TILE, 3);
-        g.fillStyle = `rgba(255,59,92,${a * 0.25})`;
-        g.fillRect(x, base - hz * 0.6 - 4, TILE, 11);
-        g.fillStyle = '#ff9db0';
-        if (tx === 0 || T(lvl, layer, tx - 1, ty) !== '^') g.fillRect(x, base - hz, 4, hz);
-        if (tx === lvl.w - 1 || T(lvl, layer, tx + 1, ty) !== '^') g.fillRect(x + TILE - 4, base - hz, 4, hz);
-      }
+      if (tileAt(lvl, layer, tx, ty, ov) !== '^') continue;
+      if (layer === DAY) drawRebar(g, tx, ty);
+      else drawLaser(g, tx, ty, t, tx === 0 || tileAt(lvl, layer, tx - 1, ty, ov) !== '^', tx === lvl.w - 1 || tileAt(lvl, layer, tx + 1, ty, ov) !== '^');
     }
   }
 }
 
-function drawShared(lvl, s, layer) {
-  const pal = PAL[layer];
-  // exit door
-  const ex = lvl.exit.tx * TILE;
-  const ey = lvl.exit.ty * TILE;
-  g.fillStyle = layer === DAY ? '#3d7a4a' : '#1f6b47';
-  g.fillRect(ex + 3, ey - TILE + 4, TILE - 6, TILE * 2 - 4);
-  g.strokeStyle = '#9dffb8';
-  g.lineWidth = 2;
-  g.strokeRect(ex + 3, ey - TILE + 4, TILE - 6, TILE * 2 - 4);
-  g.fillStyle = '#9dffb8';
-  g.fillRect(ex + TILE - 10, ey + 8, 3, 3);
-  // lit sign above the door
-  g.fillStyle = '#2bdc6a';
-  g.fillRect(ex - 4, ey - TILE - 14, TILE + 8, 14);
-  g.fillStyle = '#06210f';
-  g.font = 'bold 11px monospace';
-  g.textAlign = 'center';
-  g.fillText('EXIT', ex + TILE / 2, ey - TILE - 3);
-  // checkpoints: time clocks on a post
-  for (const c of lvl.checkpoints) {
-    const cx = c.tx * TILE + TILE / 2;
-    const cy = (c.ty + 1) * TILE;
-    const on = s.checkpoint.id === c.id;
-    g.fillStyle = pal.hudSoft;
-    g.fillRect(cx - 2, cy - 22, 4, 22);
-    g.fillStyle = on ? '#ffd23f' : '#8a8a8a';
-    g.beginPath(); g.arc(cx, cy - 26, 7, 0, Math.PI * 2); g.fill();
-    g.strokeStyle = '#222'; g.lineWidth = 1.5;
-    g.beginPath(); g.moveTo(cx, cy - 26); g.lineTo(cx, cy - 31); g.moveTo(cx, cy - 26); g.lineTo(cx + 3, cy - 26); g.stroke();
-  }
-}
-
-
-// ---------- the freaks ----------
-// Never fully shown: a dark lumpy silhouette and a pair of eyes. That's the joke.
-
-const SPOOK_LINES = ['SPOOKED!', 'AAAGH!', 'NOPE!', 'EEP!', 'NOT PAID ENOUGH'];
-let spookIx = 0;
-function pick(list) { return list[spookIx++ % list.length]; }
-
-function eyes(x, y, t, seed, alpha = 1, size = 3) {
-  // blink: closed for ~0.12 s every few seconds, offset per freak
-  const cyc = (t * 0.9 + seed * 0.37) % 3.1;
-  const open = cyc > 0.12;
-  g.fillStyle = `rgba(255,236,90,${alpha})`;
-  if (open) {
-    g.fillRect(x - size - 2, y - size / 2, size, size);
-    g.fillRect(x + 2, y - size / 2, size, size);
-  } else {
-    g.fillRect(x - size - 2, y, size, 1);
-    g.fillRect(x + 2, y, size, 1);
-  }
-}
-
-function blob(b, t, seed) {
-  // jittery lumpy silhouette with a few spikes of fur on top
-  const { x, y, w, h } = b;
-  const j = Math.sin(t * 14 + seed) * 1.2;
-  g.beginPath();
-  g.moveTo(x, y + h);
-  g.lineTo(x - 1, y + 8 + j);
-  g.lineTo(x + 3, y + 2);
-  g.lineTo(x + 6, y + 5 - j);
-  g.lineTo(x + 10, y - 2 + j);
-  g.lineTo(x + 14, y + 4);
-  g.lineTo(x + 17, y + 1 - j);
-  g.lineTo(x + w + 1, y + 9 + j);
-  g.lineTo(x + w, y + h);
-  g.closePath();
-}
-
-function drawFreaks(lvl, s, layer, t) {
-  const boxes = freakBoxes(lvl, s);
-  boxes.forEach((b, i) => {
-    const cx = b.x + b.w / 2;
-    if (layer === NIGHT) {
-      if (b.kind === 'peeker' && !b.active) {
-        // ducked in: just eyes in the dark of its hole
-        g.fillStyle = 'rgba(0,0,0,0.55)';
-        g.fillRect(b.x - 2, b.y + b.h - 6, b.w + 4, 6);
-        eyes(cx, b.y + b.h - 3, t, i, 0.8, 2);
-        return;
-      }
-      g.fillStyle = '#05060f';
-      blob(b, t, i);
-      g.fill();
-      g.strokeStyle = 'rgba(95,242,255,0.6)';
-      g.lineWidth = 1.5;
-      g.stroke();
-      eyes(cx + (b.kind === 'lurker' ? Math.sign(Math.sin(t)) * 2 : 0), b.y + 9, t, i);
-    } else {
-      // day: they're frozen on the other shift. Dashed outline where they'll be when you go back.
-      g.save();
-      g.setLineDash([4, 3]);
-      g.strokeStyle = PAL[NIGHT].echo;
-      g.lineWidth = 2;
-      blob(b, 0, i);
-      g.stroke();
-      g.restore();
-      if (b.active) eyes(cx, b.y + 9, 1, i, 0.6);
-    }
-  });
-}
-
-// Warnings for pranks that haven't happened yet: eyes watching by night, a note by day.
 function drawTells(lvl, s, layer, t) {
   for (const pr of lvl.pranks) {
     if (!pr.tell || s.nightEntries >= pr.onNight) continue;
     const x = pr.tell.tx * TILE + TILE / 2;
     const y = pr.tell.ty * TILE + TILE / 2;
     if (layer === NIGHT) {
-      eyes(x - 18, y - 30, t, 7, 1, 4);
-      eyes(x + 16, y - 44, t, 3, 1, 4);
+      PROPS.eyes(g, x - 30, y - 50, { t, seed: 7 });
+      PROPS.eyes(g, x + 4, y - 64, { t, seed: 3 });
     } else {
-      g.save();
-      g.translate(x, y - 40);
-      g.rotate(0.08);
-      g.fillStyle = '#ffe96b';
-      g.fillRect(-21, -15, 42, 30);
-      g.fillStyle = '#5a3d10';
-      g.font = 'bold 13px monospace';
-      g.textAlign = 'center';
-      g.fillText('MINE', 0, 5);
-      g.restore();
+      drawSign(g, x, y - 36, 'MINE', 'note', 2);
     }
   }
 }
 
-function drawDecor(lvl, layer, t) {
+function drawDecor(lvl, def, layer, t) {
   if (layer !== NIGHT) return;
-  lvl.decor.forEach((d, i) => {
-    if (d.kind === 'eyes') eyes(d.tx * TILE + TILE / 2, d.ty * TILE + TILE / 2, t, 11 + i * 5, 0.85);
+  (def.decor ?? []).forEach((d, i) => {
+    if (d.kind === 'eyes') PROPS.eyes(g, d.tx * TILE, d.ty * TILE, { t, seed: 11 + i * 5 });
   });
 }
 
-function drawPlayer(s, layer) {
+function drawWorker(s, layer) {
   const p = s.player;
-  const x = Math.round(p.x);
-  const y = Math.round(p.y);
-  const w = PARAMS.playerW;
-  const h = PARAMS.playerH;
-  // failed-shift pulse: outline, no camera shake (GDD §7.5)
-  if (game.fx.fail > 0) {
-    g.strokeStyle = `rgba(255,70,70,${game.fx.fail})`;
-    g.lineWidth = 3;
-    g.strokeRect(x - 3, y - 6, w + 6, h + 9);
+  const fx = game.fx;
+  const opts = (extra) => ({ flip: p.facing < 0, palette: layer === NIGHT ? NIGHT_PAL : null, ...extra });
+  if (fx.fail > 0) {
+    g.fillStyle = `rgba(255,70,70,${fx.fail})`;
+    const x = Math.round(p.x) - 3 * A;
+    const y = Math.round(p.y) - 6 * A;
+    g.fillRect(x, y, PARAMS.playerW + 6 * A, A);
+    g.fillRect(x, y + PARAMS.playerH + 8 * A, PARAMS.playerW + 6 * A, A);
+    g.fillRect(x, y, A, PARAMS.playerH + 9 * A);
+    g.fillRect(x + PARAMS.playerW + 5 * A, y, A, PARAMS.playerH + 9 * A);
   }
-  // outline in the shift's contrast colour: the worker is always the easiest thing to find
-  g.fillStyle = layer === DAY ? '#1b1209' : '#d9f6ff';
-  for (const [rx, ry, rw, rh] of [[x, y + 8, w, h - 8], [x + 3, y + 3, w - 6, 7], [x - 1, y - 2, w + 2, 5], [x + 3, y - 5, w - 6, 4]]) {
-    g.fillRect(rx - 1.5, ry - 1.5, rw + 3, rh + 3);
-  }
-  // overalls
-  g.fillStyle = layer === DAY ? '#2f6fdc' : '#3f86ff';
-  g.fillRect(x, y + 8, w, h - 8);
-  // face
-  g.fillStyle = '#f2c79a';
-  g.fillRect(x + 3, y + 3, w - 6, 7);
-  // eye in facing direction
-  g.fillStyle = '#222';
-  g.fillRect(p.facing > 0 ? x + w - 7 : x + 5, y + 5, 2, 2);
-  // hard hat
-  g.fillStyle = '#ffcc33';
-  g.fillRect(x - 1, y - 2, w + 2, 5);
-  g.fillRect(x + 3, y - 5, w - 6, 4);
-  // hi-vis stripe
-  g.fillStyle = layer === DAY ? '#ffe680' : '#c6ff4d';
-  g.fillRect(x, y + 15, w, 2);
+  drawSprite(g, 'worker', workerFrame(p, s.time, fx), p.x, p.y, opts());
 }
 
-function drawFx(layer) {
+function drawSpookGag() {
+  // the worker leaps out of their boots; the boots stay put for a beat
+  const sp = game.fx.spook;
+  if (!sp) return;
+  const pop = Math.sin(Math.min(1, sp.t / 0.35) * Math.PI) * 26;
+  const palette = sp.layer === NIGHT ? NIGHT_PAL : null;
+  drawSprite(g, 'worker', 'boots', sp.x, sp.y, { palette });
+  drawSprite(g, 'worker', 'spookBody', sp.x, sp.y - pop, { palette });
+}
+
+function drawFx(layer, reduced) {
   const fx = game.fx;
-  for (const r of fx.rings) {
-    const k = r.t / 0.3;
-    g.strokeStyle = r.layer === NIGHT ? `rgba(95,242,255,${1 - k})` : `rgba(255,200,90,${1 - k})`;
-    g.lineWidth = 2;
-    g.beginPath();
-    g.arc(r.x, r.y, 10 + k * 40, 0, Math.PI * 2);
-    g.stroke();
-  }
-  if (fx.flash > 0) {
-    g.fillStyle = fx.flashLayer === NIGHT ? `rgba(40,80,200,${fx.flash * 0.18})` : `rgba(255,240,200,${fx.flash * 0.22})`;
-    g.fillRect(0, 0, W, H);
-  }
-  if (fx.death > 0) {
-    g.fillStyle = `rgba(200,30,40,${fx.death * 0.3})`;
-    g.fillRect(0, 0, W, H);
+  for (const d of fx.dust) drawDust(g, d.x, d.y, d.t / 0.3);
+  for (const q of fx.puffs) drawPuff(g, q.x, q.y, q.t / 0.4);
+  if (!reduced) {
+    for (const r of fx.rings) drawShiftRing(g, r.x, r.y, r.t / 0.3, r.layer);
+    for (const sp of fx.sparkles) drawSparkle(g, sp.x, sp.y, sp.t / 0.5, sp.seed);
+    if (fx.flash > 0) {
+      g.fillStyle = fx.flashLayer === NIGHT ? `rgba(40,80,200,${fx.flash * 0.18})` : `rgba(255,240,200,${fx.flash * 0.22})`;
+      g.fillRect(0, 0, W, H);
+    }
+    if (fx.death > 0) {
+      g.fillStyle = `rgba(200,30,40,${fx.death * 0.3})`;
+      g.fillRect(0, 0, W, H);
+    }
   }
   for (const q of fx.pops) {
     const a = Math.min(1, (0.9 - q.t) / 0.3);
-    g.textAlign = 'center';
-    g.font = q.big ? 'italic 16px monospace' : 'bold 16px monospace';
-    g.fillStyle = q.big ? `rgba(255,236,90,${a})` : `rgba(255,255,255,${a})`;
-    g.strokeStyle = `rgba(0,0,0,${a})`;
-    g.lineWidth = 3;
-    const y = q.y - q.t * 30;
-    g.strokeText(q.text, q.x, y);
-    g.fillText(q.text, q.x, y);
+    drawText(g, q.text, q.x, q.y - q.t * 30, { scale: 2, color: q.big ? '#ffec5a' : '#ffffff', halo: '#1b1209', align: 'center', alpha: a });
   }
 }
 
-// HUD text with a halo in the shift's background colour, so it stays readable over walls
-function hudText(text, x, y, color, halo) {
-  g.lineJoin = 'round';
-  g.strokeStyle = halo;
-  g.lineWidth = 4;
-  g.strokeText(text, x, y);
-  g.fillStyle = color;
-  g.fillText(text, x, y);
+function hud(text, x, y, layer, { align = 'left', scale = 2, color } = {}) {
+  drawText(g, text, x, y, { scale, align, color: color ?? PAL[layer].hud, halo: PAL[layer].halo });
 }
 
 function drawHud(lvl, s, layer) {
   const pal = PAL[layer];
-  g.textAlign = 'left';
-  g.font = 'bold 18px monospace';
-  hudText(`${game.index + 1}/${levels.length}  ${lvl.name.toUpperCase()}`, 14, 26, pal.hud, pal.halo);
-  // dimension indicator: icon + label (not colour alone)
-  g.textAlign = 'right';
-  hudText(layer === DAY ? 'DAY SHIFT' : 'NIGHT SHIFT', W - 44, 26, pal.hud, pal.halo);
+  hud(`${game.index + 1}/${levels.length}  ${lvl.name.toUpperCase()}`, 14, 12, layer);
+  // shift indicator: icon + label (not colour alone)
+  hud(layer === DAY ? 'DAY SHIFT' : 'NIGHT SHIFT', W - 40, 12, layer, { align: 'right' });
+  const ix = W - 30;
   if (layer === DAY) {
-    g.fillStyle = '#f2a516';
-    g.beginPath(); g.arc(W - 26, 19, 8, 0, Math.PI * 2); g.fill();
+    px(g, ix, 10, 6, 6, '#f2a516');
+    px(g, ix - A, 12, 1, 2, '#f2a516');
+    px(g, ix + 6 * A, 12, 1, 2, '#f2a516');
+    px(g, ix + 2 * A, 8, 2, 1, '#f2a516');
+    px(g, ix + 2 * A, 22, 2, 1, '#f2a516');
   } else {
-    g.fillStyle = '#d9f6ff';
-    g.beginPath(); g.arc(W - 26, 19, 8, 0, Math.PI * 2); g.fill();
-    g.fillStyle = PAL[NIGHT].skyTop;
-    g.beginPath(); g.arc(W - 22, 16, 7, 0, Math.PI * 2); g.fill();
+    // crescent moon
+    for (const [cx, cy, w] of [[2, 0, 3], [1, 1, 2], [0, 2, 2], [0, 3, 2], [0, 4, 2], [1, 5, 2], [2, 6, 3]]) px(g, ix + cx * A, 9 + cy * A, w, 1, '#d9f6ff');
   }
-  g.font = 'bold 15px monospace';
   const over = s.shifts > lvl.par;
-  hudText(`CLOCK-INS ${s.shifts}  ·  PAR ${lvl.par}`, W - 14, 48, over ? '#e0473c' : pal.hud, pal.halo);
-  g.textAlign = 'left';
-  g.font = '15px monospace';
+  hud(`CLOCK-INS ${s.shifts}  ·  PAR ${lvl.par}`, W - 14, 36, layer, { align: 'right', color: over ? '#e0473c' : pal.hud });
   const note = LEVELS[game.index].note;
-  if (game.levelTime < 5 && note) hudText(note, 14, 48, pal.hudSoft, pal.halo);
+  if (game.levelTime < 5 && note) hud(note, W / 2, 62, layer, { align: 'center', color: pal.hudSoft });
   if (game.index === 0 && s.shifts === 0) {
-    g.textAlign = 'center';
-    g.font = 'bold 22px monospace';
-    hudText('Press SHIFT (or K) to change shifts', W / 2, 150, pal.hud, pal.halo);
-    g.font = '15px monospace';
-    hudText('Dashed outlines show the other shift', W / 2, 176, pal.hudSoft, pal.halo);
+    hud('Press SHIFT (or K) to change shifts', W / 2, 140, layer, { align: 'center', scale: 3 });
+    hud('Dashed outlines show the other shift', W / 2, 172, layer, { align: 'center', color: pal.hudSoft });
   }
 }
 
@@ -645,220 +452,178 @@ function drawDebug(lvl, s) {
   g.lineWidth = 1;
   g.strokeRect(p.x + 0.5, p.y + 0.5, PARAMS.playerW - 1, PARAMS.playerH - 1);
   g.fillStyle = 'rgba(0,0,0,0.6)';
-  g.fillRect(10, H - 70, 380, 60);
-  g.fillStyle = '#0f0';
-  g.font = '12px monospace';
-  g.textAlign = 'left';
-  g.fillText(`pos ${p.x.toFixed(1)},${p.y.toFixed(1)}  tile ${(p.x / TILE).toFixed(2)},${(p.y / TILE).toFixed(2)}`, 16, H - 52);
-  g.fillText(`vel ${p.vx.toFixed(0)},${p.vy.toFixed(0)}  grounded ${p.grounded}  coyote ${p.coyote.toFixed(3)}`, 16, H - 36);
-  g.fillText(`layer ${s.layer}  pending ${s.shiftPending.toFixed(3)}  deaths ${s.deaths}`, 16, H - 20);
+  g.fillRect(10, H - 76, 470, 66);
+  const t = (str, y) => drawText(g, str, 16, y, { scale: 1, color: '#00ff00' });
+  t(`pos ${p.x.toFixed(1)},${p.y.toFixed(1)}  tile ${(p.x / TILE).toFixed(2)},${(p.y / TILE).toFixed(2)}`, H - 70);
+  t(`vel ${p.vx.toFixed(0)},${p.vy.toFixed(0)}  grounded ${p.grounded}  coyote ${p.coyote.toFixed(3)}`, H - 54);
+  t(`layer ${s.layer}  pending ${s.shiftPending.toFixed(3)}  deaths ${s.deaths}`, H - 38);
 }
 
-function panel(x, y, w, h, light) {
-  g.fillStyle = light ? '#f7efdc' : 'rgba(10,14,32,0.88)';
-  g.fillRect(x, y, w, h);
-  g.strokeStyle = light ? '#3b2d1f' : '#5ff2ff';
-  g.lineWidth = 2;
-  g.strokeRect(x + 1, y + 1, w - 2, h - 2);
+function drawPlay() {
+  const lvl = level();
+  const def = LEVELS[game.index];
+  const s = game.state;
+  const layer = s.layer;
+  const t = s.time;
+  const reduced = false;
+  g.drawImage(background(layer), 0, 0);
+  g.drawImage(staticLayer(lvl, def, layer, s.overrides), 0, 0);
+  drawHazards(lvl, layer, t, s.overrides);
+  for (const c of lvl.checkpoints) drawCheckpoint(g, c.tx, c.ty, s.checkpoint.id === c.id, s.checkpoint.id === c.id ? game.fx.ping : 0);
+  drawDecor(lvl, def, layer, t);
+  drawTells(lvl, s, layer, t);
+  freakBoxes(lvl, s).forEach((b, i) => {
+    const look = b.kind === 'lurker' ? Math.sign(Math.sin(s.freakClock * 0.9 + i)) : 0;
+    drawFreak(g, b, i, t, { layer, freakShift: NIGHT, frozenFlash: game.fx.freeze, prankSquint: game.fx.squint, look });
+  });
+  if (game.fx.spook) drawSpookGag();
+  else drawWorker(s, layer);
+  drawFx(layer, reduced);
+  drawHud(lvl, s, layer);
+  if (game.debug) drawDebug(lvl, s);
 }
+
+// ---------- screens ----------
 
 function drawTitle() {
   // split screen: day on the left, night on the right
-  g.save();
-  g.beginPath(); g.rect(0, 0, W / 2, H); g.clip();
-  drawBackground(DAY);
-  g.restore();
-  g.save();
-  g.beginPath(); g.rect(W / 2, 0, W / 2, H); g.clip();
-  drawBackground(NIGHT);
-  g.restore();
-  g.textAlign = 'center';
-  g.font = 'bold 72px monospace';
-  g.fillStyle = PAL[DAY].hud;
-  g.fillText('DOUBLE', W / 2 - 150, 220);
-  g.fillStyle = PAL[NIGHT].hud;
-  g.fillText('SHIFT', W / 2 + 140, 220);
-  g.font = '18px monospace';
-  g.fillStyle = '#ffffff';
-  g.fillStyle = 'rgba(0,0,0,0.55)';
-  g.fillRect(W / 2 - 260, 270, 520, 150);
-  g.fillStyle = '#fff';
-  g.fillText('One building. Two shifts. One worker.', W / 2, 300);
-  g.font = '15px monospace';
-  g.fillText('Move: A/D or ←/→    Jump: Space/W/↑', W / 2, 335);
-  g.fillText('Change shift: Shift or K    Restart: R', W / 2, 358);
-  g.font = 'bold 18px monospace';
-  g.fillText('Click or press SPACE to clock in', W / 2, 400);
-  // level select button (also L)
+  g.save(); g.beginPath(); g.rect(0, 0, W / 2, H); g.clip(); g.drawImage(background(DAY), 0, 0); g.restore();
+  g.save(); g.beginPath(); g.rect(W / 2, 0, W / 2, H); g.clip(); g.drawImage(background(NIGHT), 0, 0); g.restore();
+  // a floor across both halves, with the worker on the seam
+  for (let tx = 0; tx < 32; tx++) {
+    const layer = tx < 16 ? DAY : NIGHT;
+    drawSolidTile(g, tx, 16, layer, { up: true, down: false, left: false, right: false });
+    drawSolidTile(g, tx, 17, layer, { up: false, down: false, left: false, right: false });
+  }
+  const logo = drawLogo(g, W / 2, 96, 9);
+  const bob = Math.floor(game.clock * 1.6) % 2;
+  drawSprite(g, 'worker', `idle${bob}`, logo.gapX + logo.gap / 2 - 13, 112, { scale: 3, palette: game.clock % 4 < 2 ? null : NIGHT_PAL });
+  // eyes in the night half
+  PROPS.eyes(g, 800, 330, { t: game.clock, seed: 2 });
+  PROPS.eyes(g, 680, 250, { t: game.clock, seed: 5 });
+  drawPanel(g, W / 2 - 270, 250, 540, 176, false);
+  drawText(g, 'One building. Two shifts. One worker.', W / 2, 270, { scale: 2, color: '#ffffff', align: 'center' });
+  drawText(g, 'Move  A/D or ←/→      Jump  Space/W/↑', W / 2, 310, { scale: 2, color: '#d9f6ff', align: 'center' });
+  drawText(g, 'Change shift  Shift or K      Restart  R', W / 2, 334, { scale: 2, color: '#d9f6ff', align: 'center' });
+  const blink = Math.floor(game.clock * 2) % 2 === 0;
+  drawText(g, 'Click or press SPACE to clock in', W / 2, 380, { scale: 2, color: blink ? '#ffec5a' : '#ffffff', align: 'center' });
   const b = TITLE_SELECT;
+  drawPanel(g, b.x, b.y, b.w, b.h, false);
+  drawText(g, 'LEVEL SELECT (L)', W / 2, b.y + 9, { scale: 2, color: '#ffffff', align: 'center' });
+  drawText(g, 'Windows: hammering Shift can open Sticky Keys — use K, or turn off the Sticky Keys shortcut.', W / 2, H - 16, { scale: 1, color: 'rgba(255,255,255,0.8)', align: 'center' });
+}
+
+function drawAct() {
+  const act = LEVELS[game.index].act;
+  g.save(); g.beginPath(); g.rect(0, 0, W / 2, H); g.clip(); g.drawImage(background(DAY), 0, 0); g.restore();
+  g.save(); g.beginPath(); g.rect(W / 2, 0, W / 2, H); g.clip(); g.drawImage(background(NIGHT), 0, 0); g.restore();
+  const k = Math.min(1, game.screenTime / 0.25);
   g.fillStyle = 'rgba(0,0,0,0.55)';
-  g.fillRect(b.x, b.y, b.w, b.h);
-  g.strokeStyle = 'rgba(255,255,255,0.6)';
-  g.lineWidth = 1.5;
-  g.strokeRect(b.x + 0.5, b.y + 0.5, b.w - 1, b.h - 1);
-  g.fillStyle = '#fff';
-  g.font = 'bold 14px monospace';
-  g.fillText('LEVEL SELECT (L)', W / 2, b.y + 20);
-  g.font = '12px monospace';
-  g.fillStyle = 'rgba(255,255,255,0.75)';
-  g.fillText('Windows: hammering Shift can open Sticky Keys — use K, or turn off the Sticky Keys shortcut.', W / 2, H - 24);
+  g.fillRect(0, H / 2 - 90, W, 180);
+  drawText(g, `ACT ${act}`, W / 2, H / 2 - 64, { scale: 3, color: '#ffec5a', align: 'center', alpha: k });
+  drawText(g, ACTS[act].toUpperCase(), W / 2, H / 2 - 24, { scale: 6, color: '#ffffff', halo: '#1b1209', align: 'center', alpha: k });
+  drawText(g, ACT_LINES[act] ?? '', W / 2, H / 2 + 40, { scale: 2, color: '#d9f6ff', align: 'center', alpha: k });
 }
 
 function drawCard() {
   const r = game.results[game.index];
   const lvl = level();
-  panel(W / 2 - 200, 110, 400, 300, true);
-  g.textAlign = 'center';
-  g.fillStyle = '#3b2d1f';
-  g.font = 'bold 22px monospace';
-  g.fillText('TIMECARD', W / 2, 150);
-  g.font = '16px monospace';
-  g.fillText(lvl.name, W / 2, 176);
-  g.textAlign = 'left';
-  const rows = [
-    ['Clock-ins', String(r.shifts)],
-    ['Par', String(r.par)],
-    ['Time', `${r.time.toFixed(2)}s`],
-    ['Incidents', String(r.deaths)],
-  ];
+  const cx = W / 2;
+  drawPanel(g, cx - 240, 100, 480, 330, true);
+  const ink = '#3b2d1f';
+  drawText(g, 'TIMECARD', cx, 120, { scale: 3, color: ink, align: 'center' });
+  drawText(g, lvl.name, cx, 152, { scale: 2, color: ink, align: 'center' });
+  px(g, cx - 180, 176, 180, 1, 'rgba(59,45,31,0.4)');
+  const rows = [['Clock-ins', String(r.shifts)], ['Par', String(r.par)], ['Time', `${r.time.toFixed(2)}s`], ['Incidents', String(r.deaths)]];
   rows.forEach(([k, v], i) => {
-    g.fillText(k, W / 2 - 150, 220 + i * 28);
-    g.textAlign = 'right';
-    g.fillText(v, W / 2 + 150, 220 + i * 28);
-    g.textAlign = 'left';
+    drawText(g, k, cx - 170, 190 + i * 28, { scale: 2, color: ink });
+    drawText(g, v, cx + 170, 190 + i * 28, { scale: 2, color: ink, align: 'right' });
   });
   const diff = r.shifts - r.par;
-  const stamp = diff < 0 ? 'UNDER PAR!' : diff === 0 ? 'ON PAR' : `+${diff} OVERTIME`;
-  g.save();
-  g.translate(W / 2 + 90, 360);
-  g.rotate(-0.15);
-  g.strokeStyle = diff <= 0 ? '#c0392b' : '#7f6a50';
-  g.fillStyle = g.strokeStyle;
-  g.lineWidth = 3;
-  g.strokeRect(-80, -20, 160, 36);
-  g.font = 'bold 18px monospace';
-  g.textAlign = 'center';
-  g.fillText(stamp, 0, 5);
-  g.restore();
-  g.textAlign = 'left';
-  g.font = '13px monospace';
-  g.fillStyle = '#3b2d1f';
-  g.fillText('SPACE: next   R: retry', W / 2 - 170, 395);
-  if (game.newBest) {
-    g.textAlign = 'right';
-    g.font = 'bold 13px monospace';
-    g.fillStyle = '#c0392b';
-    g.fillText('NEW BEST', W / 2 + 185, 132);
-  }
+  const k = Math.min(1, Math.max(0, (game.screenTime - 0.45) / 0.12));
+  if (game.screenTime > 0.45) drawStamp(g, cx + 70, 330, stampText(diff), diff <= 0 ? '#c0392b' : '#7f6a50', 3, k);
+  const comment = timecardComment(r);
+  drawText(g, comment, cx, 372, { scale: measureText(comment, 2) > 440 ? 1 : 2, color: ink, align: 'center' });
+  drawText(g, 'SPACE: next    R: retry', cx - 210, 402, { scale: 2, color: ink });
+  if (game.newBest) drawText(g, 'NEW BEST', cx + 226, 112, { scale: 2, color: '#c0392b', align: 'right' });
+}
+
+function drawEnd() {
+  g.drawImage(background(NIGHT), 0, 0);
+  drawPanel(g, W / 2 - 250, 60, 500, 420, true);
+  const ink = '#3b2d1f';
+  drawText(g, 'END OF PROTOTYPE', W / 2, 84, { scale: 3, color: ink, align: 'center' });
+  drawText(g, 'Thanks for working overtime.', W / 2, 116, { scale: 2, color: ink, align: 'center' });
+  let total = 0;
+  let totalPar = 0;
+  levels.forEach((lvl, i) => {
+    const r = game.results[i];
+    drawText(g, lvl.name, W / 2 - 210, 156 + i * 30, { scale: 2, color: ink });
+    drawText(g, r ? `${r.shifts} / par ${r.par}` : '—', W / 2 + 210, 156 + i * 30, { scale: 2, color: ink, align: 'right' });
+    if (r) { total += r.shifts; totalPar += r.par; }
+  });
+  const y = 156 + levels.length * 30 + 10;
+  px(g, W / 2 - 210, y, 210, 1, 'rgba(59,45,31,0.4)');
+  drawText(g, 'Total clock-ins', W / 2 - 210, y + 14, { scale: 2, color: ink });
+  drawText(g, `${total} / par ${totalPar}`, W / 2 + 210, y + 14, { scale: 2, color: ink, align: 'right' });
+  drawText(g, 'SPACE: clock in again', W / 2, 446, { scale: 2, color: ink, align: 'center' });
 }
 
 function drawSelect() {
   const pal = PAL[NIGHT];
-  drawBackground(NIGHT);
-  g.textAlign = 'center';
-  g.font = 'bold 26px monospace';
-  hudText('TIMECARDS', W / 2, 54, pal.hud, pal.halo);
+  g.drawImage(background(NIGHT), 0, 0);
+  drawText(g, 'TIMECARDS', W / 2, 40, { scale: 4, color: pal.hud, halo: pal.halo, align: 'center' });
   for (const row of actRows) {
     const c = cardRect(row[0]);
     const act = LEVELS[row[0]].act;
-    g.textAlign = 'left';
-    g.font = 'bold 13px monospace';
-    hudText(`ACT ${act} · ${ACTS[act].toUpperCase()}`, c.x, c.y - 9, pal.hudSoft, pal.halo);
+    drawText(g, `ACT ${act} · ${ACTS[act].toUpperCase()}`, c.x, c.y - 20, { scale: 2, color: pal.hudSoft, halo: pal.halo });
   }
   LEVELS.forEach((def, i) => {
     const c = cardRect(i);
     const open = isUnlocked(LEVELS, i, save);
     const best = save.best(def.id);
-    g.globalAlpha = open ? 1 : 0.35;
-    g.fillStyle = '#f7efdc';
-    g.fillRect(c.x, c.y, c.w, c.h);
+    g.globalAlpha = open ? 1 : 0.4;
+    drawPanel(g, c.x, c.y, c.w, c.h, true);
     g.globalAlpha = 1;
     if (i === game.selected) {
-      g.strokeStyle = '#5ff2ff';
-      g.lineWidth = 3;
-      g.strokeRect(c.x - 4, c.y - 4, c.w + 8, c.h + 8);
+      g.fillStyle = '#5ff2ff';
+      g.fillRect(c.x - 3 * A, c.y - 3 * A, c.w + 6 * A, A);
+      g.fillRect(c.x - 3 * A, c.y + c.h + 2 * A, c.w + 6 * A, A);
+      g.fillRect(c.x - 3 * A, c.y - 3 * A, A, c.h + 6 * A);
+      g.fillRect(c.x + c.w + 2 * A, c.y - 3 * A, A, c.h + 6 * A);
     }
-    g.textAlign = 'left';
-    g.fillStyle = '#3b2d1f';
-    g.font = 'bold 13px monospace';
-    g.fillText(`${i + 1}. ${def.name.toUpperCase()}`, c.x + 10, c.y + 24);
-    g.font = '13px monospace';
-    g.fillText(!open ? 'NOT YET' : best ? `BEST ${best.shifts} · PAR ${def.par}` : `PAR ${def.par}`, c.x + 10, c.y + 48);
+    const ink = open ? '#3b2d1f' : 'rgba(59,45,31,0.7)';
+    const name = `${i + 1}. ${def.name.toUpperCase()}`;
+    drawText(g, name, c.x + 10, c.y + 12, { scale: measureText(name, 2) > c.w - 20 ? 1 : 2, color: ink });
+    drawText(g, !open ? 'NOT YET' : best ? `BEST ${best.shifts} · PAR ${def.par}` : `PAR ${def.par}`, c.x + 10, c.y + 42, { scale: 1, color: ink });
     if (best) {
       const diff = best.shifts - def.par;
-      g.save();
-      g.translate(c.x + c.w - 42, c.y + 56);
-      g.rotate(-0.15);
-      g.strokeStyle = g.fillStyle = diff <= 0 ? '#c0392b' : '#7f6a50';
-      g.lineWidth = 2;
-      g.strokeRect(-34, -11, 68, 18);
-      g.font = 'bold 11px monospace';
-      g.textAlign = 'center';
-      g.fillText(diff < 0 ? 'UNDER!' : diff === 0 ? 'ON PAR' : `+${diff}`, 0, 2);
-      g.restore();
+      drawStamp(g, c.x + c.w - 44, c.y + 52, diff < 0 ? 'UNDER!' : diff === 0 ? 'ON PAR' : `+${diff}`, diff <= 0 ? '#c0392b' : '#7f6a50', 1);
     }
   });
-  g.textAlign = 'center';
-  g.font = '13px monospace';
-  hudText('Arrows: choose · SPACE or click: clock in · Esc: back', W / 2, H - 16, pal.hudSoft, pal.halo);
+  drawText(g, 'Arrows: choose · SPACE or click: clock in · Esc: back', W / 2, H - 22, { scale: 2, color: pal.hudSoft, halo: pal.halo, align: 'center' });
 }
 
-function drawEnd() {
-  drawBackground(NIGHT);
-  panel(W / 2 - 240, 80, 480, 380, false);
-  g.textAlign = 'center';
-  g.fillStyle = '#d9f6ff';
-  g.font = 'bold 24px monospace';
-  g.fillText('END OF PROTOTYPE', W / 2, 125);
-  g.font = '15px monospace';
-  g.fillText('Thanks for working overtime.', W / 2, 152);
-  levels.forEach((lvl, i) => {
-    const r = game.results[i];
-    g.textAlign = 'left';
-    g.fillText(lvl.name, W / 2 - 200, 200 + i * 30);
-    g.textAlign = 'right';
-    g.fillText(r ? `${r.shifts} / par ${r.par}` : '—', W / 2 + 200, 200 + i * 30);
-  });
-  g.textAlign = 'center';
-  g.fillText('SPACE: clock in again', W / 2, 430);
+function drawPause() {
+  drawPanel(g, W / 2 - 200, H / 2 - 64, 400, 128, false);
+  drawText(g, 'ON BREAK', W / 2, H / 2 - 40, { scale: 3, color: '#d9f6ff', align: 'center' });
+  drawText(g, 'Esc: resume   R: restart   L: levels', W / 2, H / 2 + 12, { scale: 2, color: '#d9f6ff', align: 'center' });
 }
 
 function render() {
+  g.imageSmoothingEnabled = false;
   g.clearRect(0, 0, W, H);
   if (game.screen === 'title') { drawTitle(); return; }
   if (game.screen === 'select') { drawSelect(); return; }
   if (game.screen === 'end') { drawEnd(); return; }
-  const lvl = level();
-  const s = game.state;
-  const layer = s.layer;
-  const other = 1 - layer;
-  const t = s.time;
-  curOv = s.overrides;
-  drawBackground(layer);
-  drawEcho(lvl, other);
-  drawSolids(lvl, layer);
-  drawHazards(lvl, layer, t);
-  drawShared(lvl, s, layer);
-  drawDecor(lvl, layer, t);
-  drawTells(lvl, s, layer, t);
-  drawFreaks(lvl, s, layer, t);
-  drawPlayer(s, layer);
-  drawFx(layer);
-  drawHud(lvl, s, layer);
-  if (game.debug) drawDebug(lvl, s);
+  if (game.screen === 'act') { drawAct(); return; }
+  drawPlay();
   if (game.screen === 'card') drawCard();
-  if (game.screen === 'paused') {
-    panel(W / 2 - 190, H / 2 - 60, 380, 120, false);
-    g.textAlign = 'center';
-    g.fillStyle = '#d9f6ff';
-    g.font = 'bold 20px monospace';
-    g.fillText('ON BREAK', W / 2, H / 2 - 15);
-    g.font = '14px monospace';
-    g.fillText('Esc: resume   R: restart   L: levels', W / 2, H / 2 + 20);
-  }
+  if (game.screen === 'paused') drawPause();
 }
 
-if (params.has('autostart')) startLevel(game.index);
+
+if (params.has('autostart')) startLevel(game.index, { card: false });
 requestAnimationFrame(frame);
 
 // expose for smoke tests

@@ -202,15 +202,15 @@ function frameCanvas(name, frame, palette, mode) {
 }
 
 // Draw a sprite frame so that its anchor lines up with (x, y), the top-left of the hitbox in screen px.
-export function drawSprite(g, name, frame, x, y, { flip = false, palette = null, outline = null, alpha = 1 } = {}) {
+export function drawSprite(g, name, frame, x, y, { flip = false, palette = null, outline = null, alpha = 1, scale = ART } = {}) {
   const s = SPRITES[name];
   const pal = outline ? { outline } : palette ?? s.palette;
   const c = frameCanvas(name, frame, pal, outline ? 'outline' : 'fill');
   const [ax, ay] = s.anchor;
-  const w = c.width * ART;
-  const h = c.height * ART;
-  const left = Math.round(x) - ax * ART;
-  const top = Math.round(y) - ay * ART;
+  const w = c.width * scale;
+  const h = c.height * scale;
+  const left = Math.round(x) - ax * scale;
+  const top = Math.round(y) - ay * scale;
   const prevSmooth = g.imageSmoothingEnabled;
   const prevAlpha = g.globalAlpha;
   g.imageSmoothingEnabled = false;

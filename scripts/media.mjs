@@ -49,7 +49,7 @@ async function connect() {
         ws.onmessage = (m) => {
           const msg = JSON.parse(m.data);
           if (msg.id && pending.has(msg.id)) { pending.get(msg.id)(msg); pending.delete(msg.id); }
-          if (msg.method === 'Runtime.exceptionThrown') errors.push(msg.params.exceptionDetails.text);
+          if (msg.method === 'Runtime.exceptionThrown') { const d = msg.params.exceptionDetails; errors.push(`${d.exception?.description ?? d.text} (${d.url ?? ''}:${d.lineNumber})`); }
           if (msg.method === 'Runtime.consoleAPICalled' && msg.params.type === 'error') errors.push(JSON.stringify(msg.params.args.map((a) => a.value)));
         };
         return;
@@ -98,6 +98,9 @@ try {
 
   // level 1 with real keys: run right, night across the gap, day before the gate, exit
   await press('Space');
+  await sleep(500);
+  await shot('10-act-card.png'); // the act 1 title card
+  await press('Space'); // any key skips it
   await sleep(300);
   await shot('02-clock-in-day.png');
   await key('keyDown', 'ArrowRight');

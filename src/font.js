@@ -155,14 +155,16 @@ function plot(c, text, color, ox, oy) {
   }
 }
 
-// Renders a string at 1 art pixel per pixel, with an optional 1-px halo all around.
-function render(text, color, halo) {
-  const key = `${text}\u0000${color}\u0000${halo ?? ''}`;
+// Renders a string at 1 art pixel per pixel, with an optional 1-px halo all around
+// and/or a drop shadow 1 px down and right.
+function render(text, color, halo, shadow) {
+  const key = `${text}\u0000${color}\u0000${halo ?? ''}\u0000${shadow ?? ''}`;
   const hit = cache.get(key);
   if (hit) return hit;
-  const pad = halo ? 1 : 0;
+  const pad = halo || shadow ? 1 : 0;
   const c = makeCanvas(measureArt(text) + pad * 2 || 1, ROWS + pad * 2);
   const ctx = c.getContext('2d');
+  if (shadow) plot(ctx, text, shadow, pad + 1, pad + 1);
   if (halo) {
     for (const [dx, dy] of [[-1, -1], [0, -1], [1, -1], [-1, 0], [1, 0], [-1, 1], [0, 1], [1, 1]]) plot(ctx, text, halo, pad + dx, pad + dy);
   }
@@ -174,10 +176,10 @@ function render(text, color, halo) {
 }
 
 // Draw text with its cap top at y. align: 'left' | 'center' | 'right'.
-export function drawText(g, text, x, y, { scale = 2, color = '#fff', align = 'left', halo = null, alpha = 1 } = {}) {
+export function drawText(g, text, x, y, { scale = 2, color = '#fff', align = 'left', halo = null, shadow = null, alpha = 1 } = {}) {
   text = String(text);
   if (!text) return;
-  const { canvas, pad } = render(text, color, halo);
+  const { canvas, pad } = render(text, color, halo, shadow);
   const w = measureText(text, scale);
   const left = align === 'center' ? x - w / 2 : align === 'right' ? x - w : x;
   const prevSmooth = g.imageSmoothingEnabled;
