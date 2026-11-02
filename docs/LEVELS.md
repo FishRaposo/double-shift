@@ -117,6 +117,21 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 
 **Jam minimum:** 1–6, 9, 12.
 
+## 5.1 Level idea pool (Fish, 2026-11-02)
+
+Ideas not yet slotted into the sequence. Each fiction line is Fish's own. The mechanics are first sketches to check against §1 metrics and the §3 rules before anything is built. "Existing systems" means it can be built with today's tiles, pranks and freaks (TECH.md §6), with no new rules.
+
+| Idea | Fiction | Mechanic sketch | Needs | Could fit |
+|---|---|---|---|---|
+| **Lost & Found** | The freaks have stolen every door. Not the keys. The doors. | Doors are full-height solids by day. Each night entry steals one more door (a prank chain): a stolen door opens a passage on the night shift, but the doors also turn up stacked in the freaks' hoard as a climbable pile. The puzzle: which doors to let them steal, and in what order. | Existing systems (pranks setting tiles) | Act 2 (alongside 7 Freight) or act 3 (9 Stacked, as its multi-prank level) |
+| **Under Renovation** | They've built an entirely unnecessary staircase. It leads nowhere. They're very proud. | A night-only staircase that ends in mid-air. It leads nowhere *on this shift*: jump off the top, shift to day mid-air, and land on a day ledge you couldn't reach otherwise. A mid-air shift chain that starts from the joke. | Existing systems | Act 2, as the step up from 4 Mid-Air |
+| **Structural Integrity** | They've moved a load-bearing pillar. The building is somehow fine. | A full-height pillar that sits in a different column on each shift, and moves further on each night entry (prank chain). It's a wall in one place and a step in another. Plan your clock-ins around where it will be. Decor: cracks in the ceiling where it used to be. | Existing systems | Act 2–3 (pranks + routing) |
+| **Night Management** | One of the freaks has acquired a clipboard and is now supervising the others. | A new **supervisor** freak that turns to face left or right on a fixed night-clock cycle. Freaks it's facing work (move and spook); freaks behind its back slack off (frozen, safe to pass). Still deterministic: a pure function of `freakClock`. Freezes by day like every freak. | **New freak kind** (rules + tests + drawing, TECH.md §6) | Act 3; P2 unless ahead of schedule |
+| **Employee of the Month** | The freaks have installed a portrait of themselves. It blocks the exit. | A big portrait (a solid block in front of the shared exit) hangs on the night shift, so the exit can only be reached from the day side. Each night entry rehangs it somewhere new (prank) where it's also a platform. The last approach has to be on the right shift. The portrait is just eyes (matches the WRITING.md memo). | Existing systems | Act 3, or as part of 12 Clock Out |
+| **Floor 3.5** | There is no Floor 3 anymore. It's now Floor 3.5. | The night shift is the day map **moved half a storey** (a vertical offset): every floor exists on both shifts, but at different heights. A natural fit for the planned offset layer. | **Offset layer** (`offset` field generating the night grid, GDD §8.2) | Replaces or renames 10 Moved Floor (P2) |
+
+Before any of these is built: write its §4-style spec (lesson, layers, solution, par), add its scripted solution to `SOLUTIONS`, and run the §6 checklist.
+
 ### Showing the freaks early *(planned, PRODUCTION.md L8)*
 
 Jam raters often play only the first couple of minutes (GDD §1.8), and today the first prank is in level 5. Act 1 should show freak *evidence* from the very first night shift, without new rules:

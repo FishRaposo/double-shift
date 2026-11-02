@@ -807,6 +807,8 @@ The game is structured in three acts that follow the fiction (§1.6). ✅ = in t
 
 The jam-minimum cut is levels 1–6 + 9 + 12. The full sequence is provisional.
 
+More level ideas, not yet slotted (*Lost & Found*, *Under Renovation*, *Structural Integrity*, *Night Management*, *Employee of the Month*, *Floor 3.5*), are in the idea pool, LEVELS.md §5.1.
+
 ## 8.3 Tutorial Philosophy
 
 Tutorials should be primarily environmental.

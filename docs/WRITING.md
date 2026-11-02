@@ -43,6 +43,17 @@ Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game l
 | 11 Broad Daylight | One of them clocked in for the day shift. |
 | 12 Clock Out | Almost done. Don't look at the vents. |
 
+**Idea pool notes** (LEVELS.md §5.1, Fish's lines). These are the fictions; each level's 5-second note must fit on one line, so some will need trimming:
+
+| Idea | Note |
+|---|---|
+| Lost & Found | The freaks have stolen every door. Not the keys. The doors. |
+| Under Renovation | They've built an entirely unnecessary staircase. It leads nowhere. They're very proud. |
+| Structural Integrity | They've moved a load-bearing pillar. The building is somehow fine. |
+| Night Management | One of the freaks has acquired a clipboard and is now supervising the others. |
+| Employee of the Month | The freaks have installed a portrait of themselves. It blocks the exit. |
+| Floor 3.5 | There is no Floor 3 anymore. It's now Floor 3.5. |
+
 ## 4. Spook lines (random on freak contact) ✅
 
 SPOOKED! · AAAGH! · NOPE! · EEP! · NOT PAID ENOUGH
