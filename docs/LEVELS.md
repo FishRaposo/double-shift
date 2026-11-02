@@ -5,7 +5,7 @@ Companion to [GDD.md](GDD.md) §6 and §8. Tile = 30 px. Levels are 32×18 tiles
 **At a glance**
 - Jumpable rise: **≤ 3 tiles**. Gaps: **≤ 4** comfortable, **≥ 7** impossible (use 8 for "must shift"). Leave **≥ 1 tile** to shift in (§1).
 - A level is two ASCII grids (day, night) plus optional pranks, freaks and decor (§2).
-- 6 built (§4), 6 planned (§5), more ideas in the pool (§5.1). Jam minimum: 1–6, 9, 12.
+- 6 built (§4), 10 planned with full specs (§5): 16 levels in four acts. Jam minimum (tier A): the 6 built + `stacked` + `clockout`.
 - Nothing ships without a scripted par solution in the tests and the §6 checklist.
 
 ## 1. Movement metrics (from `PARAMS`, 2026-11-01)
@@ -23,7 +23,7 @@ Companion to [GDD.md](GDD.md) §6 and §8. Tile = 30 px. Levels are 32×18 tiles
 | Shift nudge | 4 px | Overlaps of ≤ 4 px into a wall resolve automatically |
 | Freak box | 20 × 22 px, sits on its tile's floor | |
 
-**Shift windows:** wherever the player must be in a specific shift, leave **≥ 1 tile** where both shifts are safe to switch in (≈ 0.11 s at full run). Use **0.5 tile** only in act 3 precision levels.
+**Shift windows:** wherever the player must be in a specific shift, leave **≥ 1 tile** where both shifts are safe to switch in (≈ 0.11 s at full run). Use **0.5 tile** only in act 3–4 precision levels.
 
 **Re-verify all of this after any `PARAMS` change** (`npm test` re-proves every par).
 
@@ -110,33 +110,123 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 - **Freaks (night):** lurker in the tunnel (col 11, range 3, 55 px/s), peeker at col 23 (1.6 s cycle, out 50%), squatter at col 28.
 - **Solution:** night into the tunnel → day to walk past the frozen lurker → night out of the tunnel and past the day rebar, timing the peeker → day around the squatter.
 
-## 5. Planned levels (briefs)
+## 5. Planned levels (specs)
 
-| # | Name | Act | New element | Brief | Pri |
-|---|---|---|---|---|---|
-| 7 | Freight | 2 | Pranks + momentum | Loading dock. Crates restack on each night entry along a fixed cycle (entry 1, 2, 3 = three arrangements). A run-and-jump route exists in each arrangement but only one connects to the exit. Player picks which entry to cross on. | P1 |
-| 8 | Wet Floor | 2 | Low-friction tile `~` | Night floors are waxed (by whom?). Momentum carries; stopping takes distance. Shifting to day gives grip back. Pairs with a lurker you must stop short of. | P1 |
-| 9 | Stacked | 3 | Several pranks queued | Three pranks on entries 1, 2, 3, each fixing one obstacle and breaking another. The puzzle is the order of clock-ins. Tells for all three visible from the start. | **P0** |
-| 10 | Moved Floor | 3 | Offset layer | Night is the day map translated by (dx, dy). Needs an `offset` field that generates the night grid. | P2 |
-| 11 | Broad Daylight | 3 | Day-walker freak | One freak is active only on the day shift. Day is no longer the safe place. | P2 |
-| 12 | Clock Out | 3 | Everything | A final run combining a frozen-lurker pass, a mid-air chain and one last prank. Ends at the time clock by the exit; final timecard. Eyes wave from the dark. | **P0** |
+Ten new levels take the game to 16 in four acts (manifest: [CONTENT.md](CONTENT.md) §2). Each spec gives the lesson, a layout concept within the §1 metrics, the intended solution and a **target** par range. The real par is whatever the scripted solution in `SOLUTIONS` proves when the level is built; grids are drawn at build time. Rows are 0–17; "floor" means the usual floor with its top at row 14 (stand on row 13).
 
-**Jam minimum:** 1–6, 9, 12.
+**Tiers:** A = jam minimum, B = existing systems only, C = needs a new mechanic (cut date in CONTENT.md §1). If a level is cut, the rest keep their order.
 
-## 5.1 Level idea pool (Fish, 2026-11-02)
-
-Ideas not yet slotted into the sequence. Each fiction line is Fish's own. The mechanics are first sketches to check against §1 metrics and the §3 rules before anything is built. "Existing systems" means it can be built with today's tiles, pranks and freaks (TECH.md §6), with no new rules.
-
-| Idea | Fiction | Mechanic sketch | Needs | Could fit |
+| # | Act | Level | id | Tier |
 |---|---|---|---|---|
-| **Lost & Found** | The freaks have stolen every door. Not the keys. The doors. | Doors are full-height solids by day. Each night entry steals one more door (a prank chain): a stolen door opens a passage on the night shift, but the doors also turn up stacked in the freaks' hoard as a climbable pile. The puzzle: which doors to let them steal, and in what order. | Existing systems (pranks setting tiles) | Act 2 (alongside 7 Freight) or act 3 (9 Stacked, as its multi-prank level) |
-| **Under Renovation** | They've built an entirely unnecessary staircase. It leads nowhere. They're very proud. | A night-only staircase that ends in mid-air. It leads nowhere *on this shift*: jump off the top, shift to day mid-air, and land on a day ledge you couldn't reach otherwise. A mid-air shift chain that starts from the joke. | Existing systems | Act 2, as the step up from 4 Mid-Air |
-| **Structural Integrity** | They've moved a load-bearing pillar. The building is somehow fine. | A full-height pillar that sits in a different column on each shift, and moves further on each night entry (prank chain). It's a wall in one place and a step in another. Plan your clock-ins around where it will be. Decor: cracks in the ceiling where it used to be. | Existing systems | Act 2–3 (pranks + routing) |
-| **Night Management** | One of the freaks has acquired a clipboard and is now supervising the others. | A new **supervisor** freak that turns to face left or right on a fixed night-clock cycle. Freaks it's facing work (move and spook); freaks behind its back slack off (frozen, safe to pass). Still deterministic: a pure function of `freakClock`. Freezes by day like every freak. | **New freak kind** (rules + tests + drawing, TECH.md §6) | Act 3; P2 unless ahead of schedule |
-| **Employee of the Month** | The freaks have installed a portrait of themselves. It blocks the exit. | A big portrait (a solid block in front of the shared exit) hangs on the night shift, so the exit can only be reached from the day side. Each night entry rehangs it somewhere new (prank) where it's also a platform. The last approach has to be on the right shift. The portrait is just eyes (matches the WRITING.md memo). | Existing systems | Act 3, or as part of 12 Clock Out |
-| **Floor 3.5** | There is no Floor 3 anymore. It's now Floor 3.5. | The night shift is the day map **moved half a storey** (a vertical offset): every floor exists on both shifts, but at different heights. A natural fit for the planned offset layer. | **Offset layer** (`offset` field generating the night grid, GDD §8.2) | Replaces or renames 10 Moved Floor (P2) |
+| 7 | 2 Overtime | Under Renovation | `stairs` | B |
+| 8 | 2 | Lost & Found | `doors` | B |
+| 9 | 3 Graveyard Shift | Wet Floor | `wet` | C |
+| 10 | 3 | Structural Integrity | `pillar` | B |
+| 11 | 3 | Night Management | `supervisor` | C |
+| 12 | 3 | Stacked | `stacked` | A |
+| 13 | 4 Lights Out | Floor 3.5 | `offset` | C |
+| 14 | 4 | Broad Daylight | `daywalker` | C |
+| 15 | 4 | Employee of the Month | `portrait` | B |
+| 16 | 4 | Clock Out | `clockout` | A |
 
-Before any of these is built: write its §4-style spec (lesson, layers, solution, par), add its scripted solution to `SOLUTIONS`, and run the §6 checklist.
+### 7. Under Renovation (`stairs`): target par 2 (act 2, tier B)
+- **Lesson:** height you only have on one shift can carry you into the other. A mid-air shift that starts from the top of something.
+- **Fiction:** "They've built an entirely unnecessary staircase. It leads nowhere. They're very proud."
+- **Night:** a staircase of 1-tile steps rising from about col 6 to a top step about 6 tiles above the floor, ending in mid-air (about col 16). Beyond it, nothing.
+- **Day:** no staircase. A high ledge (top about 6 tiles above the floor, unjumpable) starts ≤ 4 tiles past the stair top and runs to the exit. At night that ledge is missing (renovation).
+- **Solution:** clock into night, climb the stairs, run off the top, shift to day mid-air, land on the ledge, walk to the exit.
+- **Uses:** existing tiles only. Optional squatter on a landing (jump over it) to keep act 2's freak presence.
+- **Props:** a proud hand-painted sign at the stair top (WRITING.md §5), eyes under the stairs.
+- **Constraints:** step rises of 1 tile; ≥ 1 tile of open air above the ledge where both shifts are clear for the mid-air shift.
+
+### 8. Lost & Found (`doors`): target par 5 (act 2, tier B)
+- **Lesson:** sometimes you *want* the freaks to act. Clock-ins are a resource you spend on purpose.
+- **Fiction:** "The freaks have stolen every door. Not the keys. The doors."
+- **Both shifts:** three full-height doors (D1–D3, around cols 9, 15 and 21) cut the floor into rooms. The exit is on a ledge about 6 tiles up at the right end.
+- **Pranks:** night entry *n* steals door D*n* from the night layer **and** adds one door to the freaks' pile at the foot of the exit ledge. After 3 entries, the pile makes the climb jumpable (each rise ≤ 3).
+- **Solution:** each door is passed by clocking out and back in next to it, so 3 night entries = 5 shifts. The puzzle is **where** to toggle: rebar by day and lasers by night leave a few spots where both shifts are safe, and a lurker between D2 and D3 has to be frozen at the right moment.
+- **Par note:** this level inverts "fewest clock-ins": par is the shifts needed to earn 3 night entries safely, proven by the scripted solution like every other par.
+- **Props:** door frames left behind (empty, non-solid), the pile, a LOST & FOUND box.
+
+### 9. Wet Floor (`wet`): target par 3–4 (act 3, tier C, needs SYS-1)
+- **Lesson:** night floors are waxed: you keep sliding. The day shift gives you grip back.
+- **Fiction:** "Someone waxed the floors. Nobody on the payroll waxes floors."
+- **New tile `~`:** solid; low friction while grounded on it (TECH.md §6.5).
+- **Beat 1 (safe teach):** a long night corridor of `~` that ends at a laser strip. Let go of the keys and you slide into it; shift to day, where the floor is dry and clear, to stop. Death here is cheap: a checkpoint sits just before.
+- **Beat 2 (sticking a landing):** a short ledge that is waxed at night. Land on it at night and you slide off the far end; shift to day on touchdown (the day floor is dry) to stick the landing.
+- **Beat 3:** a lurker at the end of a `~` stretch. Stop short by shifting to day (which also freezes it), walk past its outline.
+- **Constraints:** every forced stop has a ≥ 1-tile window where the day floor is clear; slide distances verified by test, not by eye.
+
+### 10. Structural Integrity (`pillar`): target par 4 (act 3, tier B)
+- **Lesson:** one object, moved by each clock-in, is a wall in one place and a step in another. Count your night entries.
+- **Fiction:** "They've moved a load-bearing pillar. The building is somehow fine."
+- **Both shifts:** a mezzanine (top about 7 tiles above the floor) holds the exit.
+- **Day:** the pillar (4 tiles tall, unjumpable on its own) stands where it blocks the floor route; a day-only crate stack (3 tall) sits further along.
+- **Pranks (night only):** entries 1, 2 and 3 move the pillar to positions P1, P2, P3. At P2 it stands between the crate and the mezzanine, making a staircase: crate (3) → pillar top (4) → mezzanine (7).
+- **Solution:** plan which clock-in is which. Pass the day pillar at night (entry 1), shift to day to use the crate, and time the next night entry so it's entry 2 when you jump from the crate and shift mid-air onto the pillar's top.
+- **Props:** a ceiling crack and a dust outline where the pillar used to be; a memo about it.
+- **Constraints:** tells for all three positions are visible from the start (eyes/notes at P1–P3).
+
+### 11. Night Management (`supervisor`): target par 2–4 (act 3, tier C, needs SYS-3)
+- **Lesson:** the freaks only work when they're watched. Read the supervisor and cross on the side it isn't looking at.
+- **Fiction:** "One of the freaks has acquired a clipboard and is now supervising the others."
+- **Night:** the supervisor sits on a perch mid-screen and turns left or right on a fixed cycle (about 2 s each way, night clock). Two lurkers patrol the floor, one on each side. Facing a side means its lurker moves and spooks; the other lurker is frozen and harmless.
+- **Day:** walls and rebar block the floor on both sides, so the crossings must be done at night. By day everything is frozen, the supervisor included, so you can't wait it out by day.
+- **Solution:** at night, wait in a safe nook until the supervisor faces right, cross the left side; wait again, cross the right side. Shift to day only where the day route helps.
+- **Constraints:** the facing cue must be readable without color (ART.md §5.1). Each crossing fits comfortably in one facing window (≥ 1 s spare).
+
+### 12. Stacked (`stacked`): target par 4–5 (act 3, tier A)
+- **Lesson:** several pranks are queued; each fixes one obstacle and breaks another. The puzzle is the order and place of your clock-ins.
+- **Fiction:** "They've been busy."
+- **Pranks:** three, on night entries 1, 2 and 3. Example chain: entry 1 bridges gap A but drops gate C; entry 2 opens gate C but takes away bridge A; entry 3 puts a plank over gap B.
+- **Solution:** be past gap A before entry 2 fires, and at gate C when it does. All three tells are visible from the spawn.
+- **Uses:** existing systems only. A checkpoint between the halves (G3).
+- **Jam-minimum level:** it must ship.
+
+### 13. Floor 3.5 (`offset`): target par 4–6 (act 4, tier C, needs SYS-4)
+- **Lesson:** the night shift is the same building, half a storey higher. Shift at the top of a jump to step onto the other shift's floor and climb.
+- **Fiction:** "There is no Floor 3 anymore. It's now Floor 3.5."
+- **Offset:** the night grid is the day grid moved **3 tiles up** (`offset: { dx: 0, dy: -3 }`), plus a small patch for the exit and hazards.
+- **Climb:** day ledges every 6 tiles up a tower. Jump from a day floor; at the apex (about 3 tiles up) shift to night and you're standing on that floor's night copy. Jump again and shift to day at the apex onto the next day ledge. Repeat to the exit at the top.
+- **Constraint (important):** shifting while standing on a floor would put you inside the other shift's floor, more than the 4 px nudge can fix, so the shift is refused (S-08). The level teaches that: the first room makes you try it on the ground (refused, red pulse), then shows the jump. Every intended shift is in open air. With `dy: -3` and the current jump (≈ 3.2 tiles), the feet are above the night floor for only about 0.15 s at the apex (the 80 ms shift buffer helps). If playtests find that too tight, use `dy: -2`; tune at build time and record the window here.
+- **Props:** floor number signs reading 3 and 3.5.
+
+### 14. Broad Daylight (`daywalker`): target par 3–4 (act 4, tier C, needs SYS-2)
+- **Lesson:** day is no longer safe. One freak works the day shift, and each shift now freezes the other shift's freaks.
+- **Fiction:** "One of them clocked in for the day shift."
+- **Day:** the day-walker patrols a corridor whose night version is a pit, so you must be on day there.
+- **Night:** a lurker patrols where the day has a wall.
+- **Solution:** pass the day-walker by jumping over the pit and shifting to night in mid-air (it freezes and becomes an outline), then back to day to land. Pass the night lurker by shifting to day, like in `watch`.
+- **Constraints:** the day-walker must read clearly against the warm sky (ART.md §5.1). Its frozen outline by night uses the day echo color.
+
+### 15. Employee of the Month (`portrait`): target par 3–4 (act 4, tier B)
+- **Lesson:** the obstacle and the tool are the same object, moved by each clock-in.
+- **Fiction:** "The freaks have installed a portrait of themselves. It blocks the exit."
+- **Night:** a big portrait (a solid block, about 2×3 tiles) hangs in front of the exit doorway.
+- **Day:** the exit is clear, but the day route ends at a ledge you can't climb (5+ tiles).
+- **Pranks:** each night entry rehangs the portrait; on entry 2 it hangs low next to the ledge, where its top is a step.
+- **Solution:** use the portrait as a step at night (entry 2) to get onto the ledge, walk above the exit, shift to day and drop to the exit.
+- **Props:** the portrait is just eyes (WRITING.md §6 memo), a nail where it used to hang.
+
+### 16. Clock Out (`clockout`): target par 5–7 (act 4, tier A)
+- **Lesson:** everything you know, in one run. The ending.
+- **Fiction:** "Almost done. Don't look at the vents."
+- **Rooms:** (1) a mid-air shift chain over a pit (act 1); (2) a frozen-lurker pass through a tunnel (act 2); (3) one last telegraphed prank that has to be timed (act 2–3). Checkpoints between rooms.
+- **Tier rule:** built only from tier A and B elements. If tier C mechanics shipped, a short cameo of one may be added; the level must never depend on them.
+- **Ending:** the exit is the time clock. Punching out shows the final timecard (totals), then a dozen pairs of eyes blink in sequence in the dark. One waves (WRITING.md §8).
+- **Jam-minimum level:** it must ship.
+
+## 5.1 Idea pool status
+
+All six ideas from Fish's pool (2026-11-02) are now planned levels: *Lost & Found* → `doors`, *Under Renovation* → `stairs`, *Structural Integrity* → `pillar`, *Night Management* → `supervisor`, *Employee of the Month* → `portrait`, *Floor 3.5* → `offset`.
+
+**Post-jam pool**
+
+| Idea | Brief | Why post-jam |
+|---|---|---|
+| Freight | Loading dock; crates restack on each night entry along a fixed cycle; one arrangement connects to the exit | Prank chains are covered by `doors`, `stacked` and `pillar` |
+| Scatterer | A freak that flees and knocks things over (real-time geometry change) | Breaks the "pranks only on shift" rule; needs new rules |
+| Shared state | Levers and doors that keep one state across both shifts | New system; GDD §8.2 |
 
 ### Showing the freaks early *(planned, PRODUCTION.md L8)*
 
@@ -154,7 +244,7 @@ Keep act 1's lessons clean: evidence only, no pranks before level 5.
 - [ ] It can't be won without shifting.
 - [ ] Par is the fewest shifts *you* can find; try to beat it by hand once.
 - [ ] Every prank has a tell; every freak is visible or telegraphed before it can spook.
-- [ ] Every required shift has a ≥ 1-tile safe window (≥ 0.5 in act 3).
+- [ ] Every required shift has a ≥ 1-tile safe window (≥ 0.5 in acts 3–4).
 - [ ] The note line (5 s) is in WRITING.md and fits on one line at 14 px.
 - [ ] Played once by Fish; played cold by one tester (PLAYTEST.md).
 - [ ] No unintended shortcut that skips the level's lesson (shortcuts that need skill are allowed: GDD §8.6).

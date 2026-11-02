@@ -6,6 +6,7 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-01.
 - **The one rule:** `src/rules.js` decides everything that matters; the screen only draws it (§2).
 - `npm start` to play, `npm test` (42 tests), `npm run check` (§7).
 - Add a level: grids in `src/levels.js` + a `SOLUTIONS` entry in `test/levels.test.mjs` (§6).
+- Planned mechanics (wet floor, day-walker, supervisor, offset layer) are designed in §6.5, not built.
 
 ## 1. Stack and constraints
 
@@ -114,24 +115,58 @@ See [LEVELS.md](LEVELS.md) §2 for the full format. Summary: `{ id, name, note, 
 
 ## 6. Extending
 
-### Add a level
+### 6.1 Add a level
 1. Write the grids and metadata in `src/levels.js` (or generate with a script; widths must match).
 2. Add a scripted solution policy to `SOLUTIONS` in `test/levels.test.mjs`. The test asserts it wins at ≤ par with zero deaths, and that running/jumping without shifting can't win.
 3. `npm test`, `npm run check`, play it.
 
-### Add a prank
+### 6.2 Add a prank
 Add to the level's `pranks`: `{ id, onNight: N, tell: { tx, ty }, set: [{ layer: 'day'|'night', x0, x1, y0, y1, ch }] }`. The engine handles validation, tells, the giggle, and checkpoint restore.
 
-### Add a freak kind
+### 6.3 Add a freak kind
 1. In `freakBoxes()` give the kind its position/`active` rule as a pure function of `s.freakClock` (no per-freak mutable state).
 2. Add a rules test (frozen by day, spooks on contact at night, any timing behavior).
 3. Draw it in `drawFreaks()` in `main.js`.
 
-### Add a tile type (e.g. wet floor `~`)
+### 6.4 Add a tile type
 1. Decide whether it's solid for collision (`overlapsSolid`) and what else it changes (e.g. friction read in step 3).
 2. Parse char in `parseLevel` if it needs metadata; otherwise just use it in grids.
 3. Tests first: behavior on it, behavior shifting onto/off it.
 4. Draw it in `drawSolids`/a new draw function.
+
+### 6.5 Planned mechanics: design (nothing below is built yet)
+
+The four tier-C mechanics from [CONTENT.md](CONTENT.md) §3. Each follows the same rules as everything else: pure functions of state and level, no per-object mutable state, **tests first**. Build order follows the cut dates: wet floor and day-walker (Nov 12), then supervisor and offset (Nov 17).
+
+#### Wet floor `~` (SYS-1, level `wet`)
+- **Collision:** `~` is solid. Today four places test `=== '#'` for solidity: `overlapsSolid` in `rules.js`, and `isSolid`, `drawSolids` (fill, texture, hatch) in `main.js`. Replace them with one `isSolidChar(ch)` exported from `rules.js` so the two can't drift.
+- **Friction:** in step 3 (horizontal), when grounded **and every tile under the feet is `~`**, use `PARAMS.wetAccel` / `PARAMS.wetDecel` instead of the ground values. Any dry tile under the feet gives grip. Starting values to tune: `wetAccel 900`, `wetDecel 250` px/s² (ground is 2600 / 3000). Max speed is unchanged.
+- **Shifting:** friction is read from the active layer each tick, so shifting from night `~` to a dry day floor gives grip on the next tick. That's the level's whole lesson.
+- **Tests:** slide distance from full speed on `~` vs. dry floor; one dry tile under the feet gives grip; shift night→day on `~` stops you within the dry-floor stopping distance; jump buffer and coyote unchanged on `~`; `isSolidChar` treats `~` as solid in both the rules and the echo outline.
+- **Drawing:** ART.md §6.1.
+
+#### Day-walker freak (SYS-2, level `daywalker`)
+- **State:** add `dayClock`, advancing by `dt` only while `s.layer === DAY` (mirror of `freakClock`). Checkpoints store and restore it alongside `freakClock`.
+- **Freak field:** every freak gets `shift: NIGHT` by default; `kind: 'daywalker'` sets `shift: DAY` and moves like a lurker (`range`, `speed`) on `dayClock`.
+- **Contact:** `touchesFreak` becomes "the player overlaps an active freak **whose `shift` is the current layer**". The night-only check moves into that comparison.
+- **Shifting into it:** shifting to day onto an active day-walker is a spook, mirroring the night rule.
+- **Tests:** frozen at night (position constant while on night); spooks on contact by day; overlapping its outline at night is safe; shifting into it by day spooks; checkpoint restores `dayClock`; existing night freaks unchanged (all current freak tests still pass).
+- **Drawing:** dark silhouette by day; dashed outline in the day echo color at night (ART.md §5.1).
+
+#### Supervisor freak (SYS-3, level `supervisor`)
+- **Definition:** `{ kind: 'supervisor', tx, ty, period, startFacing: 'left'|'right' }`. It never moves and never spooks (it's management).
+- **Facing:** at night time `t = freakClock`, it faces `startFacing` during `[2kP, (2k+1)P)` and the other way otherwise (P = `period`).
+- **Who works:** a freak is *watched* if the supervisor faces its side (decided by the freak's base `tx` against the supervisor's `tx`). Unwatched freaks are frozen and `active: false`, so they're harmless.
+- **Staying pure:** each watched freak's own clock is "night time during which its side was watched". That has a closed form: with `k = floor(t / 2P)` and `r = t − 2kP`, time watched on the start side = `kP + min(r, P)`, and on the other side = `t − that`. Use that value in place of `freakClock` in the freak's existing pattern (lurker pingpong, peeker cycle). No mutable per-freak state, so the TECH §6.3 rule holds.
+- **Tests:** a lurker on the unwatched side doesn't move and doesn't spook; on the watched side it moves and spooks; the closed form matches a tick-by-tick accumulation over 10,000 ticks (determinism); everything is frozen by day, the supervisor's facing included.
+- **Drawing:** clipboard, a head turned toward the watched side, an eye glow on that side; non-color cue required (ART.md §5.1).
+
+#### Offset layer (SYS-4, level `offset`)
+- **Format:** a level may give `offset: { dx, dy }` (in tiles) instead of a full `night` grid. `parseLevel` generates night as the day grid moved by (dx, dy), so `night[y][x] = day[y − dy][x − dx]`, with empty `.` outside the grid. `S`, `E` and `C` stay shared and aren't moved. An optional `nightPatch` (the same rectangle format as prank `set`) adds differences: the exit approach, hazards.
+- **Nothing else changes:** after parsing it's an ordinary two-layer level, so collision, pranks, freaks and echoes all just work.
+- **Expected behavior:** shifting while standing on a floor puts you inside the other shift's copy of that floor (3 tiles away, well beyond the 4 px nudge), so the shift is refused (S-08). That's intended and taught (LEVELS.md `offset`).
+- **Tests:** a generated night grid equals a hand-written equivalent; `nightPatch` applies after the offset; shifting on the ground in an offset level is refused and leaves the player unchanged; shifting at the apex of a jump lands on the night copy (scripted with the real jump).
+- **Drawing:** nothing new beyond the floor-number signs (ART.md §6.1).
 
 ## 7. Testing
 

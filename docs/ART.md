@@ -79,6 +79,12 @@ Graphics is a rated jam category. Simple shapes score well when they look *chose
 | Freak (day, frozen) | Dashed silhouette outline in the night echo blue, dim eyes | Dashed |
 | Peeker hidden | Dark slot + small eyes | Shape |
 | Pending prank | Night: two pairs of eyes near the target. Day: yellow MINE note | Eyes / note shape |
+| Wet floor `~` *(planned)* | Solid fill + sheen lines; a WET FLOOR sign nearby | **Wavy top edge** instead of a straight one |
+| Supervisor facing *(planned)* | Head and clipboard turned to the watched side; eyes only on that side | Shape (head offset, clipboard side) |
+| Watched vs. slacking freak *(planned)* | Watched: normal. Slacking: eyes closed to lines, silhouette still | Closed eyes, no jitter |
+| Day-walker *(planned)* | Day: dark silhouette with a cream rim. Night: dashed outline in the day echo orange | Silhouette / dashed |
+| Moved object *(planned: doors, pillar, portrait)* | Ordinary solids; its future spots carry the usual prank tells | Tell shapes (eyes / notes) |
+| Offset layer *(planned)* | No new marks: the echo of the other shift shows the floors half a storey off. Floor signs read 3 and 3.5 | Echo dashes + sign text |
 
 **Rule:** any new element must fit this table before it goes in a level.
 
@@ -118,13 +124,61 @@ The screen should read in this order: **worker → what's solid now → hazards 
   - the squatter sits on a small **hoard** of stolen things (a plank end, a hard hat);
   - eyes that narrow smugly when a prank fires.
 - *(planned, A1)* **"How did they do that?"**: when a prank fires, a brief **sparkle** (a few 2 px squares in the freak-eye yellow, about 0.4 s) on the changed tiles. It reuses an existing color, so no new palette row. Keep it subtle: the sparkle must never hide geometry.
-- *(planned)* Scatterer: scurry pose; Day-walker: same silhouette, readable in daylight (dark against warm sky, eyes still glow).
+- *(post-jam)* Scatterer: scurry pose.
+
+### 5.1 New freaks *(planned, tier C)*
+
+| Freak | Look | Facing / state cue | Colors (existing only) |
+|---|---|---|---|
+| **Supervisor** (`supervisor`) | The usual lump, a bit taller, holding a clipboard (a paper rectangle with three ink lines). Sits on a perch. | The head bump and clipboard sit on the watched side; eyes are drawn only on that side; it snaps (no tween) when it turns, with 0.3 s of anticipation (the eyes slide across first). | Body `#05060f`, rim `rgba(95,242,255,0.6)`; clipboard paper `#f7efdc`, ink `#3b2d1f`; eyes freak yellow |
+| **Slacking freaks** (unwatched) | Same silhouette, no jitter | Eyes closed to 1 px lines; a tiny "z" in `hudSoft` above (optional) | Existing |
+| **Day-walker** (`daywalker`) | Same lump, readable in daylight: dark body against the warm sky, with a cream rim instead of cyan | By night: dashed outline in the **day echo orange** (it belongs to the day shift), dim eyes | Body `#05060f`, rim `#fbecc9`; night outline `rgba(255,170,80,0.95)` |
 
 ## 6. Environment
 
 - Background: six big windows across the back wall (40 px margin, 160 px spacing, 4 panes each), kept faint so they never read as platforms. Day: pale panes. Night: most windows faintly lit warm, some dark; dim stars above.
 - Solids: day = brick courses; night = inset panel seams.
 - *(planned, A3)* Props per level, never collidable: notice board with memos, vents (where peekers live), barrier tape at shafts, pallets on delivery stacks, signage ("CLOSING TIME", "WET FLOOR"), footprints leading to prank targets.
+
+### 6.1 New tiles and objects *(planned)*
+
+| Item | Level | Drawing | Colors |
+|---|---|---|---|
+| Wet floor `~` | `wet` | Normal solid of its shift + 2–3 short diagonal sheen strokes per tile; the top edge drawn as a gentle wave (2 px amplitude) | Night: fill `#2e4173`, sheen and edge `#5ff2ff`. Day (if ever used): fill `#6e5a45`, sheen and edge `#fbecc9` |
+| WET FLOOR sign | `wet` | A-frame sign prop next to the first `~` | Sticky-note yellow `#ffe96b`, ink `#5a3d10` |
+| Doors | `doors` | Full-height solid with a frame line and a knob | Shift solid fill; frame = shift edge color; knob `#9dffb8` |
+| Empty door frame (stolen) | `doors` | Frame lines only, no fill, non-solid | Shift `hudSoft` |
+| Door pile | `doors` | Doors lying flat, stacked, each 1 tile tall | Same as doors |
+| LOST & FOUND box | `doors` | Cardboard box prop with a label | Box: day solid `#6e5a45`; label paper/ink |
+| Pillar | `pillar` | Solid with vertical fluting (2 lines), capital and base bands | Shift solid fill and edge |
+| Ceiling crack / dust outline | `pillar` | Zigzag line where the pillar was; dust rectangle on the floor | Shift `hudSoft` |
+| Staircase to nowhere | `stairs` | Ordinary night solids, 1-tile steps | Night solid |
+| The freaks' proud sign | `stairs` | Hand-painted board at the top step | Sticky-note yellow, ink |
+| Portrait ("just eyes") | `portrait` | Framed rectangle; inside, darkness and two pairs of eyes that blink | Frame ink `#3b2d1f`, canvas `#05060f`, eyes freak yellow |
+| Nail / pale square | `portrait` | Where the portrait used to hang | Shift `hudSoft` |
+| Floor signs "3" / "3.5" | `offset` | Wall signs at each landing | Timecard paper `#f7efdc`, ink `#3b2d1f` |
+| Time clock (the exit) | `clockout` | The exit door with a punch clock beside it | Exit colors + checkpoint clock `#ffd23f` |
+
+### 6.2 Props per level *(planned, A3)*
+
+| Level | Props |
+|---|---|
+| `clock` | Barrier tape at the shaft, a RENOVATION sign |
+| `scaff` | Pallets on the delivery stack, a crate label |
+| `closing` | CLOSING TIME sign, laser warning stickers |
+| `midair` | Eyes in the dark (built), a vent |
+| `inventory` | Notice board with the plank memo, footprints to the second pit |
+| `watch` | Vents (peekers), a squatter's hoard |
+| `stairs` | The proud sign, eyes under the stairs |
+| `doors` | Empty frames, the pile, LOST & FOUND box |
+| `wet` | WET FLOOR signs, a mop bucket |
+| `pillar` | Ceiling crack, dust outline, a memo |
+| `supervisor` | A desk on the perch, a NIGHT MANAGEMENT nameplate |
+| `stacked` | Three tells in view, chalk circles |
+| `offset` | Floor signs 3 / 3.5, an elevator button panel |
+| `daywalker` | A coffee mug left on the day floor |
+| `portrait` | EMPLOYEE OF THE MONTH plaque, the nail |
+| `clockout` | The time clock, a coat rack, eyes everywhere in the dark |
 
 ## 7. UI and effects
 
@@ -138,6 +192,19 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | Popups | "SPOOKED!" family over the worker; "hee hee hee" (italic, yellow) under the HUD on a prank; rise 30 px and fade over 0.9 s |
 | Timecard | 400×300 paper card, rows Clock-ins / Par / Time / Incidents, rotated stamp ON PAR / UNDER PAR! / +n OVERTIME |
 | Title | Split screen day/night, DOUBLE (day ink) SHIFT (night ink), controls box, Sticky Keys footnote |
+
+### 7.1 Planned screens and effects
+
+| Screen / effect | Spec |
+|---|---|
+| Title + level select *(P0, A7)* | Title as now, plus `L: level select` (and a click target). Level select: a 4×4 grid of timecards by act; each shows name, best clock-ins vs. par (stamped ON/UNDER PAR in red ink), locked levels greyed. Unlock: the next level after any clear; all act starts unlock once seen. |
+| Settings *(P1, A6)* | Night-palette panel: master / music / SFX sliders (keyboard: ↑↓ select, ←→ adjust), Reduced effects on/off. Opened from title and pause. |
+| Act cards *(P1, A10)* | 1.5 s full-screen card between acts: act number + title + one line (WRITING.md §2.1), split day/night like the title; any key skips. |
+| Timecard comment *(P1, A8)* | One line under the stamp, 13 px italic ink (WRITING.md §7). |
+| End screen totals *(P1, A8)* | Paper card listing all levels with clock-ins / par and total time; overall stamp; then the `clockout` ending (WRITING.md §8). |
+| Credits | Night panel, monospace, from WRITING.md §8. |
+| Freeze cue | On a shift to day, frozen freak outlines flash once (0.15 s brighter dash). |
+| Checkpoint ping | Clock face pops (scale 1 → 1.3 → 1, 0.2 s) when taken. |
 
 Effects must stay readable under rapid shifting: no stacking full-screen flashes (the tint resets, doesn't add), no shake. *(planned)* "Reduced effects" setting disables tint and rings.
 

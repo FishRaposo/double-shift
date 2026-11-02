@@ -2,11 +2,12 @@
 
 Everything needed to finish, ship and maintain *Double Shift* for GitHub Game Off 2026 (theme: SHIFT).
 
-**Start here:** the GDD's [At a Glance](GDD.md#at-a-glance) for the game, [PRODUCTION.md](PRODUCTION.md) for what's next, [DESIGN.md](DESIGN.md) for the one-page story. Every doc opens with its own **At a glance** box.
+**Start here:** the GDD's [At a Glance](GDD.md#at-a-glance) for the game, [CONTENT.md](CONTENT.md) for everything in the full game, [PRODUCTION.md](PRODUCTION.md) for what's next, [DESIGN.md](DESIGN.md) for the one-page story. Every doc opens with its own **At a glance** box.
 
 | Doc | What it's for | Read when |
 |---|---|---|
 | [GDD.md](GDD.md) | The design: what the game is and why. Source of truth for rules (S-01…S-08), the freaks, tone, level plan. | Any design question |
+| [CONTENT.md](CONTENT.md) | The manifest: every level, system, asset, sound and text item in the full game, with tiers, cut dates and status. | Asking "what's in the game?" or "is X planned?" |
 | [PRODUCTION.md](PRODUCTION.md) | Schedule to the deadline, milestones, the full backlog with priorities and cut lines. | Planning the day / week |
 | [DESIGN.md](DESIGN.md) | One-page write-up: the constraint, the key decisions, the numbers, what would change, a sixty-second pitch. | Explaining the project (portfolio, interviews, devlogs) |
 | [TECH.md](TECH.md) | Architecture, state shape, rules API, tuning values, how to add a level/prank/freak, testing, debug, build. | Writing code |

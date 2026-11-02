@@ -31,6 +31,20 @@ Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game l
 | Timecard ✅ | TIMECARD · Clock-ins · Par · Time · Incidents · stamps ON PAR / UNDER PAR! / +n OVERTIME |
 | End ✅ *(prototype)* | END OF PROTOTYPE · Thanks for working overtime. · SPACE: clock in again |
 
+### 2.1 Planned UI text *(drafts)*
+
+| Where | Text |
+|---|---|
+| Title hint | L: level select |
+| Level select | TIMECARDS · locked: NOT YET · Esc: back |
+| Settings | SETTINGS · Master · Music · Sound · Reduced effects ON/OFF · Esc: back |
+| Act 1 card | ACT 1 · RENOVATION · "Pardon our dust." |
+| Act 2 card | ACT 2 · OVERTIME · "Something keeps moving things." |
+| Act 3 card | ACT 3 · GRAVEYARD SHIFT · "They've gotten organized." |
+| Act 4 card | ACT 4 · LIGHTS OUT · "The building doesn't add up anymore." |
+| Sticky Keys joke (G14) | A freak memo: "WE PRES SHIFT 5 TIMES. FOR FUN." + the practical line kept below it |
+| End (full game) | SHIFT COMPLETE · totals · SPACE: clock in again |
+
 ## 3. Level notes (shown 5 s at level start)
 
 | Level | Note |
@@ -41,23 +55,18 @@ Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game l
 | 4 Mid-Air ✅ | Something up there blinked. |
 | 5 Inventory ✅ | Every time you clock in, something gets moved. |
 | 6 Night Watch ✅ | Something is in the tunnel. It only moves at night. |
-| 7 Freight | The crates were stacked properly. They were. |
-| 8 Wet Floor | Someone waxed the floors. Nobody on the payroll waxes floors. |
-| 9 Stacked | They've been busy. |
-| 10 Moved Floor | The whole floor is three feet to the left. |
-| 11 Broad Daylight | One of them clocked in for the day shift. |
-| 12 Clock Out | Almost done. Don't look at the vents. |
+| 7 Under Renovation (`stairs`) | They built a staircase. It leads nowhere. They're very proud. |
+| 8 Lost & Found (`doors`) | The freaks have stolen every door. Not the keys. The doors. |
+| 9 Wet Floor (`wet`) | Someone waxed the floors. Nobody on the payroll waxes floors. |
+| 10 Structural Integrity (`pillar`) | They moved a load-bearing pillar. The building is somehow fine. |
+| 11 Night Management (`supervisor`) | One of them has a clipboard now. It's supervising the others. |
+| 12 Stacked (`stacked`) | They've been busy. |
+| 13 Floor 3.5 (`offset`) | There is no Floor 3 anymore. It's now Floor 3.5. |
+| 14 Broad Daylight (`daywalker`) | One of them clocked in for the day shift. |
+| 15 Employee of the Month (`portrait`) | They installed a portrait of themselves. It blocks the exit. |
+| 16 Clock Out (`clockout`) | Almost done. Don't look at the vents. |
 
-**Idea pool notes** (LEVELS.md §5.1, Fish's lines). These are the fictions; each level's 5-second note must fit on one line, so some will need trimming:
-
-| Idea | Note |
-|---|---|
-| Lost & Found | The freaks have stolen every door. Not the keys. The doors. |
-| Under Renovation | They've built an entirely unnecessary staircase. It leads nowhere. They're very proud. |
-| Structural Integrity | They've moved a load-bearing pillar. The building is somehow fine. |
-| Night Management | One of the freaks has acquired a clipboard and is now supervising the others. |
-| Employee of the Month | The freaks have installed a portrait of themselves. It blocks the exit. |
-| Floor 3.5 | There is no Floor 3 anymore. It's now Floor 3.5. |
+Notes 7, 8, 10, 11, 13 and 15 come from Fish's idea pool (2026-11-02). 8 and 13 are unchanged; 7, 10, 11 and 15 are lightly trimmed to fit one line at 15 px (his full lines are the "Fiction" lines in LEVELS.md §5). *Freight* ("The crates were stacked properly. They were.") is kept for post-jam.
 
 ## 4. Spook lines (random on freak contact) ✅
 
@@ -89,6 +98,27 @@ Shown as props; readable when the worker stands near (or always, small).
 - "Break room: all snacks have been taken. The wrappers have been arranged in a circle. With candles."
 - "Do not leave shiny objects unattended."
 
+### 6.1 One memo per level *(drafts; pick from §6 or these)*
+
+| Level | Memo |
+|---|---|
+| `clock` | "Mind the gap. Seriously. — Renovation" |
+| `scaff` | "Deliveries go on the ledge. Not on the scaffolding. Not on the ledge either. — Receiving" |
+| `closing` | "Lasers are for security, not for jumping over. — Night Management" |
+| `midair` | "Please report blinking in the dark to nobody." |
+| `inventory` | "Lost: one (1) plank. If found, please return to the pit." |
+| `watch` | "Reminder: the vents are not a break room." |
+| `stairs` | "Who approved the staircase. — Facilities" |
+| `doors` | "Doors are now available at Lost & Found. Please take only your own door." |
+| `wet` | "Floors were waxed at 3 AM. We do not employ anyone at 3 AM." |
+| `pillar` | "Structural survey: fine. Somehow. — Engineering" |
+| `supervisor` | "We did not hire a night supervisor. — HR" |
+| `stacked` | "Whoever keeps drawing circles in chalk on the loading dock: stop." |
+| `offset` | "The elevator now stops at 3.5. Do not press 3.5." |
+| `daywalker` | "Day crew: if you see eyes, no you didn't." |
+| `portrait` | "Employee of the Month: [photo is just eyes]" |
+| `clockout` | "Overtime is mandatory. So are the freaks, apparently." |
+
 ## 7. Timecard comments *(planned, A8)*
 
 One line under the stamp, picked by result:
@@ -102,7 +132,7 @@ One line under the stamp, picked by result:
 | Spooked ≥ 3 | "Incident report: was spooked. Again. And again." |
 | 0 deaths, on/under par | "Perfect shift. Nobody believes you." |
 
-## 8. Ending *(planned, level 12)*
+## 8. Ending *(planned, `clockout`)*
 
 - Final timecard totals across all levels.
 - Last line: "Shift complete. See you tonight." Then, in the dark, a dozen pairs of eyes blink in sequence. One waves.

@@ -1,7 +1,7 @@
 # DOUBLE SHIFT
 ## Game Design Document
 
-**Version:** 0.4.0  
+**Version:** 0.5.0  
 **Status:** Prototype  
 **Project:** Game Off 2026  
 **Theme:** SHIFT  
@@ -28,7 +28,7 @@
 | Score | Timecard: clock-ins vs. par (fewest shifts the designer found, proven by tests) | §15.3 |
 | Tone | Mock horror: petty monsters, deadpan worker, no gore, no jump scares | §10.5 |
 | Look and sound | Code-drawn as a deliberate style; synthesized audio; music planned | §10, §11 |
-| Levels | 6 built (act 1 + start of act 2), 12 planned, jam minimum 1–6 + 9 + 12 | §8.2 |
+| Levels | 6 built; **16 planned in four acts**, in tiers: A = 8 (jam minimum), B = 12, C = 16 with four new mechanics (wet floor, supervisor, offset layer, day-walker) | §8.2, [CONTENT.md](CONTENT.md) |
 | Jam | Game Off 2026, theme SHIFT, due Dec 1 13:37 PST. Lead with the pranks and freezing freaks: two overlapping worlds alone is one of the jam page's example ideas. | §1.8 |
 
 **Living sections** (kept current): §0, §1, §3, §4, §8.2, §10.5, §15.3, §18, §21. **Historical sections** (the original pre-v0.2 plan, kept for the record): §13.1–13.8, §16, §22. Their banners say what replaced them.
@@ -42,6 +42,15 @@ This GDD decides *what* the game is. The production docs in this folder decide *
 ---
 
 # 0. Changes
+
+## v0.5
+
+| Change | Why |
+|---|---|
+| **16 levels in four acts** (§8.2), built in tiers A/B/C with dated cut lines; all six idea-pool levels slotted | Fish's call, 2026-11-02, after the 6-level build played well. Tiers keep any cut shippable. |
+| Four new mechanics in jam scope: **wet floor, supervisor freak, offset layer, day-walker** (§4.10, §8.2) | Each gets its own level and a cut date |
+| Act 3 renamed **Graveyard Shift**; new Act 4 **Lights Out** | Four acts of four |
+| New manifest [CONTENT.md](CONTENT.md): every level, asset, sound and text item with an ID | One place to see the whole game |
 
 ## v0.4
 
@@ -147,7 +156,7 @@ What the freaks actually are is **deliberately undefined**, in the docs as well 
 The fiction does three jobs:
 
 1. **Explains differences.** Every difference between the day map and the night map is either the building's ordinary life (renovation, deliveries, closing time) or the freaks' doing.
-2. **Carries the arc.** Act 1 has only evidence. Act 2 the freaks appear. Act 3 they're everywhere and start breaking the rules.
+2. **Carries the arc.** Act 1 has only evidence. Act 2 the freaks appear. Act 3 they bring new tricks (wax, management). Act 4 they bend the rules: the floor moves, one of them works days.
 3. **Frames the score.** The shift counter is a timecard. Fewer clock-ins is better, and every clock-in gives the freaks another chance.
 
 Narrative remains environmental: signage, notes, memos, the state of the rooms, timecard comments. No dialogue system.
@@ -168,7 +177,7 @@ Game Off is rated by other participants in six categories (RELEASE.md §0). What
 
 | Category | What earns it here | Gap today |
 |---|---|---|
-| Overall | A complete, short, polished run with a satisfying final timecard | Levels 7–12 not built yet |
+| Overall | A complete, polished run with a satisfying final timecard | Levels 7–16 not built yet (tiers, §8.2) |
 | Gameplay | Tight movement (§5), mid-air shifting, par as a second puzzle per level | Tuning pass (G1), playtests |
 | Graphics | A deliberate code-drawn style: two palettes of one building, echoes, readable freaks (ART.md §1.1) | Freak art pass, worker animation, props |
 | Audio | Theme in two arrangements crossfaded on shift (§11.3); yelp, giggle, stamp | **No music yet** |
@@ -210,8 +219,8 @@ The player retains their position and movement state.
 |---|---|
 | Playable dimensions | 2 |
 | Core mechanics | Move, jump, shift |
-| Main levels | 8–12 compact levels |
-| Estimated completion | 15–30 minutes |
+| Main levels | 16 compact levels in four acts (tiers: 8 / 12 / 16) |
+| Estimated completion | 25–40 minutes |
 | Difficulty | Progressive |
 | Checkpoints | Yes, where appropriate |
 | Combat | Not planned |
@@ -523,8 +532,9 @@ Example (*Inventory*): the night plank spans the first pit on the first visit. O
 | Lurker | Patrols a fixed span at fixed speed | Pass it by freezing it (go to day, walk past its outline, come back) | Act 2 |
 | Peeker | Pops out of a hole on a timer, ducks back in | Timing | Act 2 |
 | Squatter | Sits in a doorway, never moves | Route through the other shift | Act 2 |
-| Scatterer *(stretch)* | Flees when approached, knocking things over (real-time geometry change) | Act 3 surprise | Act 3 |
-| Day-walker *(stretch)* | A freak active on the day shift | The rules breaking: they're getting bold | Act 3 |
+| Supervisor *(planned, tier C)* | Holds a clipboard, turns left/right on a fixed cycle. Freaks on the side it faces work; the others slack off (frozen, harmless). Never moves, never spooks. | Timing by reading its facing | Act 3 (`supervisor`) |
+| Day-walker *(planned, tier C)* | Patrols like a lurker, but on the **day** shift; frozen by night | Each shift now freezes the other's freaks | Act 4 (`daywalker`) |
+| Scatterer *(post-jam)* | Flees when approached, knocking things over (real-time geometry change) | — | — |
 
 Touching an active freak on the night shift: the worker is **spooked** (yelp, leaps out of their boots, respawn at checkpoint). Overlapping a freak's frozen outline by day is safe; shifting into an active freak is a spook.
 
@@ -804,42 +814,47 @@ A linear progression is sufficient.
 
 ## 8.2 Proposed Level Sequence
 
-The game is structured in three acts that follow the fiction (§1.6). ✅ = in the prototype.
+**Decision (v0.5): 16 levels in four acts**, built in tiers so any cut still ships a complete game. The manifest is [CONTENT.md](CONTENT.md); the full level specs are [LEVELS.md](LEVELS.md) §4–5. ✅ = built. Tiers: **A** = jam minimum, **B** = existing systems only, **C** = needs a new mechanic.
 
 **Act 1: Renovation** (only evidence of the freaks; teaching the shift)
 
-| Level | Focus | Intended Lesson | Fiction |
-|---|---|---|---|
-| 1. Clock In ✅ | Basic toggle | Shift changes world geometry | Gap in the floor by day; night planks, night gate |
-| 2. Scaffolding ✅ | Missing platforms | Use the other shift to cross | Day crew's scaffolding and deliveries |
-| 3. Closing Time ✅ | Obstacle bypass | Geometry differs spatially | Gates, rebar by day, lasers by night |
-| 4. Mid-Air ✅ | Midair shifting | Shift during a jump | Eyes blink in the dark. Nobody mentions it. |
+| Level | Focus | Intended Lesson | Fiction | Tier |
+|---|---|---|---|---|
+| 1. Clock In ✅ | Basic toggle | Shift changes world geometry | Gap in the floor by day; night planks, night gate | A |
+| 2. Scaffolding ✅ | Missing platforms | Use the other shift to cross | Day crew's scaffolding and deliveries | A |
+| 3. Closing Time ✅ | Obstacle bypass | Geometry differs spatially | Gates, rebar by day, lasers by night | A |
+| 4. Mid-Air ✅ | Midair shifting | Shift during a jump | Eyes blink in the dark. Nobody mentions it. | A |
 
 **Act 2: Overtime** (the freaks appear)
 
-| Level | Focus | Intended Lesson | Fiction |
-|---|---|---|---|
-| 5. Inventory ✅ | First prank | Each clock-in changes the night | The plank keeps moving |
-| 6. Night Watch ✅ | Lurker, peeker, squatter | Freaks freeze when you go to day | Something is in the tunnel |
-| 7. Freight | Pranks + momentum | Plan clock-ins around a run | Loading dock; crates restacked every visit |
-| 8. Wet Floor | Loss of support | Shift changes grounding | Floors waxed at night (by whom?) |
+| Level | Focus | Intended Lesson | Fiction | Tier |
+|---|---|---|---|---|
+| 5. Inventory ✅ | First prank | Each clock-in changes the night | The plank keeps moving | A |
+| 6. Night Watch ✅ | Lurker, peeker, squatter | Freaks freeze when you go to day | Something is in the tunnel | A |
+| 7. Under Renovation | Height from one shift | Climb a night staircase, shift mid-air onto a day ledge | A staircase to nowhere; they're very proud | B |
+| 8. Lost & Found | Wanted pranks | Spend clock-ins on purpose: the stolen-door pile is your way up | They stole every door | B |
 
-**Act 3: Lights Out** (they're everywhere, and getting bold)
+**Act 3: Graveyard Shift** (the freaks bring new tricks)
 
-| Level | Focus | Intended Lesson | Fiction |
-|---|---|---|---|
-| 9. Stacked | Multiple pranks | Order your clock-ins | Several pranks queued on one level |
-| 10. Moved Floor *(stretch)* | Offset layer | Night is the day floor displaced by (dx, dy) | The freaks moved the whole floor |
-| 11. Broad Daylight *(stretch)* | Day-walker freak | Day is no longer safe | One of them is on the day shift now |
-| 12. Clock Out | Combined mechanics | Demonstrate mastery | Get out. Final timecard. They wave from the dark. |
+| Level | Focus | Intended Lesson | Fiction | Tier |
+|---|---|---|---|---|
+| 9. Wet Floor | Wet floor `~` | Slide at night, grip by day | Floors waxed at night (by whom?) | C |
+| 10. Structural Integrity | Moving object | Count your night entries: the pillar is a wall, then a step | The load-bearing pillar moved | B |
+| 11. Night Management | Supervisor freak | Cross on the side it isn't watching | One of them has a clipboard | C |
+| 12. Stacked | Multiple pranks | Order your clock-ins | Several pranks queued | A |
 
-**Offset levels (stretch):** the night layer is generated from the day layer translated by a per-level vector: the ultimate prank.
+**Act 4: Lights Out** (they're getting bold; the rules bend)
 
-**Shared state (stretch):** levers, doors and crates marked `shared` keep one state across both shifts.
+| Level | Focus | Intended Lesson | Fiction | Tier |
+|---|---|---|---|---|
+| 13. Floor 3.5 | Offset layer | Shift at the apex to climb between floors | Night is half a storey up | C |
+| 14. Broad Daylight | Day-walker freak | Each shift freezes the other shift's freaks | One of them works days now | C |
+| 15. Employee of the Month | Obstacle as tool | The portrait blocks the exit, then becomes the step | Their portrait. It's just eyes. | B |
+| 16. Clock Out | Combined mechanics | Demonstrate mastery | Get out. Final timecard. They wave from the dark. | A |
 
-The jam-minimum cut is levels 1–6 + 9 + 12. The full sequence is provisional.
+**Tiers and cut dates.** A = 8 levels (the 6 built + Stacked + Clock Out), B = 12, C = 16. A new mechanic that isn't done (rules, tests, drawing, level at par) by its cut date moves to post-jam with its level: wet floor and day-walker by **Nov 12**, supervisor and offset layer by **Nov 17**. Content freeze **Nov 22**. Levels are referred to by id, so cuts never renumber anything.
 
-More level ideas, not yet slotted (*Lost & Found*, *Under Renovation*, *Structural Integrity*, *Night Management*, *Employee of the Month*, *Floor 3.5*), are in the idea pool, LEVELS.md §5.1.
+**Shared state and Freight** (crates restacking on a cycle) are post-jam (LEVELS.md §5.1).
 
 ## 8.3 Tutorial Philosophy
 
@@ -1669,7 +1684,7 @@ The minimum release is complete when:
 | Levels feel repetitive | High | Focus on distinct geometric relationships |
 | Excessive visual effects obscure play | Medium | Short effects and reduced-effects option |
 | Rapid Shift input triggers OS shortcuts | Medium | Remapping and Sticky Keys guidance |
-| Scope grows beyond the jam | High | Prioritize core mechanics and levels |
+| Scope grows beyond the jam (16 levels, 4 new mechanics) | High | Tiers A/B/C with dated cut lines (§8.2); tier A always ships; content freeze Nov 22 |
 | Difficulty spikes unexpectedly | Medium | External playtesting |
 | Too much architectural work delays content | Medium | Keep extensibility lightweight |
 | Unintended routes break progression | Medium | Systematic level testing |
@@ -1796,14 +1811,14 @@ The following decisions require prototypes or further discussion.
 | Hazards | Simple and dimension-specific | Medium |
 | Checkpoint frequency | Based on challenge length | Medium |
 | Moving objects in inactive layers | Frozen | Locked |
-| Level count | 6 minimum, 12 full (three acts) | Provisional |
-| Offset levels | Act 3 stretch ("they moved the floor") | Medium |
+| Level count | 16 in four acts; tiers 8 / 12 / 16 with cut dates (§8.2) | Locked (v0.5) |
+| New mechanics in jam scope | Wet floor, supervisor, offset layer, day-walker; each cut if it misses its date | Locked (v0.5) |
 | Antagonist | The freaks: never fully shown, nature undefined, nocturnal and annoying (§4.8) | Locked |
 | Tone | Mock horror | Locked |
 | Pranks trigger | Nth entry into night | Locked |
 | Freak AI | None: fixed patterns, frozen by day | Locked |
 | Subtitle | *The Freaks Come Out at Night* | Provisional |
-| Shared state (levers/doors) | Act 3 stretch | Low |
+| Shared state (levers/doors) | Post-jam | Deferred |
 | Speedrun timer | Optional | Low |
 | Additional dimensions | Post-jam | Deferred |
 | Narrative | Minimal | Provisional |
@@ -1883,4 +1898,4 @@ It is to create a platformer in which a single additional button meaningfully tr
 
 **Press Shift to change shifts.**
 
-*End of Game Design Document, Version 0.4.0*
+*End of Game Design Document, Version 0.5.0*
