@@ -1,12 +1,24 @@
 # Art Bible
 
-Companion to [GDD.md](GDD.md) §4.7, §7, §10. Everything is drawn in code on a 960×540 canvas; there are no image files. Values below are the ones in `src/main.js` on 2026-11-02 (after the readability pass, §3.1). **Decided 2026-11-01: the jam build stays code-drawn** (GDD §10.1). Post-jam, if a design partner joins, this is their brief; credit them as they choose.
+Companion to [GDD.md](GDD.md) §4.7, §7, §10. Everything is drawn in code on a 960×540 canvas; there are no image files. Values below match `src/art.js` and `src/sprites.js` on 2026-11-02 (after the pixel-art pass, §0). Every asset can be reviewed in the gallery: serve the repo and open `/tools/gallery.html` (`npm run media` also captures it as `media/11-gallery.png`). **Decided 2026-11-01: the jam build stays code-drawn** (GDD §10.1). Post-jam, if a design partner joins, this is their brief; credit them as they choose.
 
 **At a glance**
 - Everything is drawn by code; that's the style, not a placeholder (§1.1).
 - One line language: **filled** = solid now, **dashed** = the other shift, **hatched** = only in this shift (§3).
 - Reading order on screen: worker → solids → hazards/freaks → other shift → exit → HUD → background (§3.1).
 - Freaks: black lumps with glowing eyes, never fully shown, nature undefined (§5).
+- **Crisp pixel art on a 2-px grid, one hand-made pixel font, motion over detail (§0).**
+
+## 0. Pixel style (built 2026-11-02)
+
+| Rule | Value |
+|---|---|
+| Grid | 1 art pixel = 2×2 screen pixels (`ART` in `src/sprites.js`). A 30-px tile = 15×15 art px. Everything snaps to the grid; `imageSmoothingEnabled = false` everywhere. |
+| Characters | String-grid sprites in `src/sprites.js`, cached per frame and palette. Worker 11×16 art px (hitbox 9×13 inside it), freaks 12×13 (hitbox 10×11). Outline built into the sprite. Eyes drawn on top (blink, glance, squint). |
+| Everything else | Drawn procedurally in art pixels by `src/art.js`: tiles, hazards, exit, checkpoint, signs, props, effects, panels, stamps, logo. |
+| Type | `src/font.js`: hand-made 5×7 glyphs (9 rows with descenders), A–Z, a–z, 0–9 and every symbol the game prints. Integer scales only: 1 footnotes, 2 body/HUD, 3 headings, 4–6 screen titles, 7–9 the logo. Halo (1 art px all round) for text over the playfield; drop shadow for the logo. Identical on every computer. |
+| Motion | 4-frame run, idle bob, jump/fall/land frames, spooked boots gag, freak jitter and 2-frame wobble, blinks, smug squint on a prank, dust, puffs, sparkles, shift rings, stamp slam. |
+| Performance | The static layer (echo, solids, hatch, props, exit) is drawn once per level × shift × prank state; a frame costs ≈ 0.4 ms (measured by `npm run media`). |
 
 ## 1. Pillars
 
@@ -105,28 +117,24 @@ The screen should read in this order: **worker → what's solid now → hazards 
 
 ## 4. The worker
 
-- Hitbox 18×26 px. Outlined (§3.1). Drawn: blue overalls (`#2f6fdc` day, `#3f86ff` night), face `#f2c79a`, eye on the facing side, yellow hard hat `#ffcc33` (wider brim + crown), hi-vis stripe (`#ffe680` day, `#c6ff4d` night).
-- Failed-shift feedback: red outline pulse around the worker (0.25 s). No camera shake.
-- *(planned)* Animations (GDD §10.3): idle bob, 4-frame run (legs as two rects), jump (arms up), fall, **spooked gag** (worker pops up, boots stay on the ground for a beat), respawn pop.
+- Hitbox 18×26 px (9×13 art px); sprite 11×16 art px with a built-in outline (`#1b1209` by day, `#d9f6ff` by night). Blue overalls (`#2f6fdc` / shade `#2558b8` day, `#3f86ff` / `#2f6fdc` night), face `#f2c79a`, eye on the facing side, yellow hard hat `#ffcc33`, hi-vis stripe (`#ffe680` day, `#c6ff4d` night), brown boots `#5a3d10`.
+- ✅ Frames: `idle0/1` (bob), `run0–3`, `jump` (legs tucked), `fall` (legs apart), `land` (squash, 0.1 s), `spookBody` + `boots` (the spooked gag: the body pops up while the boots stay put for 0.35 s). `workerFrame(player, t, fx)` picks the frame (tested).
+- Failed-shift feedback: red pixel frame around the worker (0.25 s). No camera shake.
+- Jump and landing kick up dust; a hazard or fall death bursts into a white puff.
 
 ## 5. The freaks
 
 - **Nature undefined** (GDD §4.8). Draw attitude (nosy, grabby, smug), never a recognizable animal or creature type.
 - **Attitude reference: Sableye (Pokémon)**: gleeful, lurking in the dark, delighted with its own tricks. Take the *energy* only. Never take its look: no gem eyes, no chest gem, no purple goblin body, no toothy grin. Our freaks stay black lumps with plain square eyes, and expression comes from timing (blinks, narrowing, jitter, peeking).
 - **Never fully shown.** No faces beyond eyes, no full-light view, no close-up.
-- Silhouette: a 20×22 lumpy shape with 3 fur spikes on top, jittering ±1.2 px (`sin(t·14)`), body `#05060f` with a faint cyan rim so it reads against the night solids.
-- Eyes: two 3×3 px squares, `rgba(255,236,90)`, blink (closed ~0.12 s every ~3.1 s, offset per freak). Lurker eyes glance in its travel direction.
-- Peeker hidden: a dark 6 px slot with small eyes.
-- By day: dashed outline (night echo blue, 2 px) at the frozen position, eyes at 60% opacity.
-- *(planned art pass, A1)*: decide size after playtest (they're smaller than the worker now); per-kind silhouette (lurker hunched, peeker tall/thin, squatter wide and smug); a 2-frame walk wobble for lurkers; peeker pop-up squash.
-- *(planned, A1)* **Personality touches**, all inside the existing silhouette language (black body, cyan rim, yellow eyes):
-  - tiny **hands** gripping the ledge on the peeker;
-  - the squatter sits on a small **hoard** of stolen things (a plank end, a hard hat);
-  - eyes that narrow smugly when a prank fires.
-- *(planned, A1)* **"How did they do that?"**: when a prank fires, a brief **sparkle** (a few 2 px squares in the freak-eye yellow, about 0.4 s) on the changed tiles. It reuses an existing color, so no new palette row. Keep it subtle: the sparkle must never hide geometry.
+- ✅ Sprites (12×13 art px, body `#05060f`, rim `#5ff2ff`): **lurker** (hunched, tufts, 2-frame wobble), **peeker** (tall and thin, hands on the ledge), **squatter** (wide and smug, sitting on its hoard: a plank end and a hard hat). Jitter ±1 art px while active.
+- ✅ Eyes: two 1×2 art-px eyes in `#ffec5a`, blink (shut ~0.12 s every ~3.1 s, offset per freak); lurker eyes glance; eyes **squint** smugly for 0.8 s after a prank.
+- ✅ Peeker hidden: a dark slot with eyes.
+- ✅ By day: dotted outline of the silhouette in the night echo blue, eyes at 60%. On every shift to day the outlines **flash** white once (freeze cue, 0.15 s).
+- ✅ Prank sparkle: plus-shaped twinkles in the freak-eye yellow over the changed tiles (0.5 s). Off with reduced effects.
 - *(post-jam)* Scatterer: scurry pose.
 
-### 5.1 New freaks *(planned, tier C)*
+### 5.1 New freaks *(sprites built 2026-11-02; levels pending, tier C)*
 
 | Freak | Look | Facing / state cue | Colors (existing only) |
 |---|---|---|---|
@@ -140,7 +148,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 - Solids: day = brick courses; night = inset panel seams.
 - *(planned, A3)* Props per level, never collidable: notice board with memos, vents (where peekers live), barrier tape at shafts, pallets on delivery stacks, signage ("CLOSING TIME", "WET FLOOR"), footprints leading to prank targets.
 
-### 6.1 New tiles and objects *(planned)*
+### 6.1 New tiles and objects *(drawing built 2026-11-02 in `src/art.js`; levels pending)*
 
 | Item | Level | Drawing | Colors |
 |---|---|---|---|
@@ -159,7 +167,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | Floor signs "3" / "3.5" | `offset` | Wall signs at each landing | Timecard paper `#f7efdc`, ink `#3b2d1f` |
 | Time clock (the exit) | `clockout` | The exit door with a punch clock beside it | Exit colors + checkpoint clock `#ffd23f` |
 
-### 6.2 Props per level *(planned, A3)*
+### 6.2 Props per level *(prop drawings built; the 6 built levels have their props via the `props` field; planned levels add theirs when built)*
 
 | Level | Props |
 |---|---|
@@ -184,37 +192,37 @@ The screen should read in this order: **worker → what's solid now → hazards 
 
 | Element | Spec |
 |---|---|
-| Font | System `monospace`. Sizes: 72 bold (title), 22 bold (timecard title, tutorial), 15–18 (HUD), 15 (level notes), 12 (footnotes) |
-| HUD | Top-left `n/6 LEVEL NAME` (18 bold); top-right shift label + icon; below it `CLOCK-INS n · PAR p` (15 bold, red over par); level note for the first 5 s (15). All with a halo (§3.1) |
+| Font | The pixel font (§0). Scales: 9 logo, 6 act title, 4 screen titles, 3 headings and tutorial, 2 HUD and body, 1 footnotes and debug |
+| HUD | Top-left `n/6 LEVEL NAME`; top-right shift label + pixel sun / crescent moon; below it `CLOCK-INS n · PAR p` (red over par); the level note centred on the third line for the first 5 s. All scale 2 with a halo (§3.1) |
 | Tutorial | Level 1 until first shift: "Press SHIFT (or K) to change shifts" + "Dashed outlines show the other shift" |
 | Shift effect | Screen tint 0.12 s (day: warm `rgba(255,240,200,·0.22)`, night: blue `rgba(40,80,200,·0.18)`), expanding ring 0.3 s from the worker |
 | Death effect | Red tint 0.3 s |
 | Popups | "SPOOKED!" family over the worker; "hee hee hee" (italic, yellow) under the HUD on a prank; rise 30 px and fade over 0.9 s |
-| Timecard | 400×300 paper card, rows Clock-ins / Par / Time / Incidents, rotated stamp ON PAR / UNDER PAR! / +n OVERTIME |
-| Title | Split screen day/night, DOUBLE (day ink) SHIFT (night ink), controls box, Sticky Keys footnote |
+| Timecard | 480×330 paper panel, rows Clock-ins / Par / Time / Incidents, a rubber stamp that slams in 0.45 s after the win (ON PAR / UNDER PAR! / +n OVERTIME), the comment line, NEW BEST |
+| Title | Split day/night background with a floor across both, the pixel logo (DOUBLE in day ink, SHIFT in night ink, drop shadows) with the worker between the words, the controls panel, LEVEL SELECT (L) and SETTINGS (O) buttons, a blinking clock-in prompt, eyes in the night half, Sticky Keys footnote |
 
-### 7.1 Planned screens and effects
+### 7.1 Screens and effects (built 2026-11-02 unless marked)
 
 | Screen / effect | Spec |
 |---|---|
 | Title + level select ✅ (A7) | Title: a LEVEL SELECT (L) button under the panel. Level select (night background): one row of 200×74 paper timecards per act, act label above each row; each card shows `n. NAME`, `BEST n · PAR p` or `PAR p`, and a small rotated stamp (ON PAR / UNDER! in `#c0392b`, `+n` in `#7f6a50`). Locked cards at 35% opacity reading NOT YET. Selection: 3 px `#5ff2ff` frame. Unlock: act starts always open; otherwise after the previous level is cleared. |
-| Settings *(P1, A6)* | Night-palette panel: master / music / SFX sliders (keyboard: ↑↓ select, ←→ adjust), Reduced effects on/off. Opened from title and pause. |
-| Act cards *(P1, A10)* | 1.5 s full-screen card between acts: act number + title + one line (WRITING.md §2.1), split day/night like the title; any key skips. |
-| Timecard comment *(P1, A8)* | One line under the stamp, 13 px italic ink (WRITING.md §7). |
-| End screen totals *(P1, A8)* | Paper card listing all levels with clock-ins / par and total time; overall stamp; then the `clockout` ending (WRITING.md §8). |
-| Credits | Night panel, monospace, from WRITING.md §8. |
-| Freeze cue | On a shift to day, frozen freak outlines flash once (0.15 s brighter dash). |
-| Checkpoint ping | Clock face pops (scale 1 → 1.3 → 1, 0.2 s) when taken. |
+| Settings ✅ (A6) | Opened with O from title (button) and pause. Four night panels: MASTER, MUSIC, SOUND (10-block bars + %), REDUCED EFFECTS (ON/OFF). ↑↓ choose, ←→ change (or click the left/right half of a row), Esc back. Saved. |
+| Act cards ✅ (A10) | 1.6 s split day/night card: ACT n (scale 3, yellow), the act name (scale 6, haloed), one line (WRITING.md §2.1); any key or click skips; a two-chord sting. Shown the first time an act starts in a run. |
+| Timecard comment ✅ (A8) | One line under the stamp, scale 2 when it fits, else 1 (`timecardComment` in `src/copy.js`, WRITING.md §7). |
+| End screen totals ✅ (A8) | Paper panel listing every level with clock-ins / par, and total clock-ins vs. total par. The `clockout` ending comes with that level. |
+| Credits *(planned)* | Night panel in the pixel font, from WRITING.md §8. |
+| Freeze cue ✅ | On a shift to day, frozen freak outlines flash white once (0.15 s), with a scratch sound. |
+| Checkpoint ping ✅ | The clock face grows by 2 art px and settles over 0.2 s when taken. |
 
-Effects must stay readable under rapid shifting: no stacking full-screen flashes (the tint resets, doesn't add), no shake. *(planned)* "Reduced effects" setting disables tint and rings.
+Effects must stay readable under rapid shifting: no stacking full-screen flashes (the tint resets, doesn't add), no shake. **Reduced effects** (Settings) turns off the screen tints, shift rings and prank sparkles.
 
 ## 8. Marketing media (for itch, RELEASE.md)
 
 | Asset | Size | Content |
 |---|---|---|
-| Cover image | **1260×1000** (630×500 ratio) | Split day/night building, worker mid-jump at the seam, eyes in the night half, title lockup |
-| Screenshots | 960×540 (native), 3–5 | Day + night of the same level; a prank tell; Night Watch with freaks; the timecard |
+| Cover image ✅ | **1260×1000** (630×500 ratio) | `tools/cover.html`, drawn with the game's own sprites, tiles and font at 2×: split day/night, the worker mid-jump on the seam (day colours left, night right) inside shift rings, a night-only plank and its echo, a smug lurker and eyes on the night side, a MINE note on the day side, the logo, the tagline |
+| Screenshots ✅ | 960×540 (native) | `npm run media`: title, level 1 day/night, timecard, Inventory day/night, Night Watch night/day, level select, act card |
 | Demo GIF | ≤ 960 wide, ≤ 10 s, first in the screenshot list | A mid-air shift chain, then a frozen-lurker pass |
 | Page theme | Background `#0b1029`, text `#d9f6ff`, links `#5ff2ff` | Matches the night palette; embed background `#0b1029` (same as `index.html`) |
 
-Capture with `scripts/smoke.mjs` (screenshots) or the browser; record GIFs from a real play session.
+Capture with `npm run media` (headless Edge/Chrome: cover, screenshots, gallery, audio and draw-cost checks); record GIFs from a real play session.

@@ -13,11 +13,13 @@ Companion to [GDD.md](GDD.md) §11. All audio is synthesized with WebAudio in `s
 - **Informative.** The shift sound's pitch direction tells you where you went (down = night, up = day).
 - **Funny, not scary.** Yelps and giggles, never stingers or screams.
 - **The freaks** (GDD §4.8, nature undefined): mischievous **giggles and scuttles**, plus a hint of **shimmer** when a prank does something impossible. Nothing that sounds like a specific animal; it's all synthesized.
-- **Master gain 0.35**; `M` mutes. The AudioContext starts on the first key press (browser autoplay rules).
+- **One mix bus** (built 2026-11-02): music gain and SFX gain → master gain (0.55 × the Master setting) → DynamicsCompressor (−14 dB, 4:1) → speakers. Volumes come from Settings and are saved. `M` mutes. The AudioContext starts on the first key press or click (browser autoplay rules), and the music starts with it.
+- **Every sound is data:** `SOUNDS` in `src/audio.js` maps each name to a list of voices (`voice()`: oscillator or noise, pitch sweep, optional filter sweep, vibrato). Tests check every SFX is ≤ 0.25 s and ≤ 0.35 volume. Play them all in the gallery's audio board (`/tools/gallery.html`).
+- **Offline check:** `npm run media` renders every SFX and 8 bars of each music arrangement through an OfflineAudioContext and fails on a peak ≥ 1.0 (today the loudest is ≈ 0.4–0.6 before the master gain).
 
 ## 2. Sound effects (built)
 
-`tone({ type, f0 → f1 (exponential), dur, vol, delay })`
+The original 11, re-voiced 2026-11-02 with filters and a little noise so they sit together. Values below are the main voice; the full spec (all voices) is `SOUNDS` in `src/audio.js`. Levels were lowered slightly to make room for the music.
 
 | Event | Sound | Values |
 |---|---|---|
@@ -33,7 +35,14 @@ Companion to [GDD.md](GDD.md) §11. All audio is synthesized with WebAudio in `s
 | Win | Arpeggio | triangle 523, 659, 784, 1047 Hz, 0.12 s each, 80 ms apart |
 | Timecard stamp | Thunk | square 90 → 50 Hz, 0.09 s, vol 0.3 (450 ms after win) |
 
-## 3. Music (planned, P0: A5)
+## 3. Music (built 2026-11-02, `src/music.js`)
+
+As built: **110 BPM, 16 bars of 8 eighth-note steps (≈ 35 s loop)**, progression C · Am · F · G · C · Am · F G · C · F · C · Dm · G · C · Am · F G · C. The melody is note data (`MELODY`), tested for range and length.
+- **Day:** square lead through a 2.6 kHz low-pass; square root-fifth bass (low-pass 700 Hz); a soft sine kick on beats 1 and 3; noise hats on the off-eighths.
+- **Night:** the same melody in the **minor mode** (E → E♭, A → A♭; B stays natural, so it's harmonic minor and a bit spooky) on a **theremin** (sine, 6 Hz vibrato, 70 ms glide from the previous note); a triangle **walking bass** (root, third, fifth, chromatic approach); **organ stabs** (three squares) on the "and" of 2 and 4.
+- Both arrangements are scheduled together (25 ms timer, ~120 ms look-ahead) into two gains; every shift crossfades them in 50 ms, so the tune never restarts. Menus play the day arrangement at 60%.
+
+The original plan, kept for reference:
 
 **One theme, two arrangements**, running in sync so a shift never restarts the music.
 
@@ -55,7 +64,7 @@ Companion to [GDD.md](GDD.md) §11. All audio is synthesized with WebAudio in `s
 
 Same loop, one added part per act so the game builds without new songs: act 2 adds a quiet low pulse on night; act 3 adds a muted second lead line; act 4 swaps the night organ stabs for faster ones. Only if A5 ships with time to spare.
 
-## 4. Planned SFX
+## 4. More SFX (built 2026-11-02)
 
 | Event | Idea |
 |---|---|
@@ -67,7 +76,7 @@ Same loop, one added part per act so the game builds without new songs: act 2 ad
 | Wet floor slide | Squeak on hard stop |
 | Menu move / select | Soft clicks |
 
-### 4.1 SFX for the new levels *(planned)*
+### 4.1 SFX for the new levels *(built 2026-11-02; triggered when their levels are built)*
 
 Same `tone()` format as §2; every sound ≤ 0.25 s.
 

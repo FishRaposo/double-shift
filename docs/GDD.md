@@ -27,7 +27,7 @@
 | The freaks | Undefined, nocturnal, out to annoy you. Pranks fire on the Nth night clock-in; visible freaks (lurker, peeker, squatter) freeze by day. Never chase, always telegraphed. | §4.8–4.10 |
 | Score | Timecard: clock-ins vs. par (fewest shifts the designer found, proven by tests) | §15.3 |
 | Tone | Mock horror: petty monsters, deadpan worker, no gore, no jump scares | §10.5 |
-| Look and sound | Code-drawn as a deliberate style; synthesized audio; music planned | §10, §11 |
+| Look and sound | Crisp pixel art on a 2-px grid, a hand-made pixel font, a spooky-goofy theme whose day/night arrangements crossfade on every shift; all made in code (built 2026-11-02) | §10, §11, ART.md, AUDIO.md |
 | Levels | 6 built; **16 planned in four acts**, in tiers: A = 8 (jam minimum), B = 12, C = 16 with four new mechanics (wet floor, supervisor, offset layer, day-walker) | §8.2, [CONTENT.md](CONTENT.md) |
 | Jam | Game Off 2026, theme SHIFT, due Dec 1 13:37 PST. Lead with the pranks and freezing freaks: two overlapping worlds alone is one of the jam page's example ideas. | §1.8 |
 

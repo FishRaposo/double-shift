@@ -26,8 +26,9 @@ One month (GitHub Game Off, Nov 1 – Dec 1, 2026, theme SHIFT), one designer, n
 
 ## The numbers
 
-- 49 automated tests (`npm test`): shift and collision edge cases, nudge/buffer, pranks, freaks, checkpoint restore, input rules, determinism, a 6000-tick fuzz for getting stuck in walls, every level at par, and progress saving (including blocked or corrupt storage).
-- `src/rules.js` is 404 lines; rendering (`src/main.js`) is 715.
+- 60 automated tests (`npm test`): shift and collision edge cases, nudge/buffer, pranks, freaks, checkpoint restore, input rules, determinism, a 6000-tick fuzz for getting stuck in walls, every level at par, progress and settings saving (including blocked or corrupt storage), and the art and music data (every glyph and sprite well-formed, every sound short).
+- `src/rules.js` is 404 lines. The shell (`src/main.js`) is 706; the art is `src/art.js` (529), `src/sprites.js` (248) and `src/font.js` (192); sound is `src/audio.js` (189) and `src/music.js` (232).
+- Drawing a frame costs about 0.4 ms (the static layer is cached), measured headless by `npm run media`.
 - CI runs the syntax check, level validation and the tests on every push.
 
 ## What would change with more time

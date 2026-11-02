@@ -26,8 +26,10 @@ Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game l
 | Start ✅ | Click or press SPACE to clock in |
 | Sticky Keys note ✅ | Windows: hammering Shift can open Sticky Keys — use K, or turn off the Sticky Keys shortcut. |
 | Tutorial ✅ | Press SHIFT (or K) to change shifts / Dashed outlines show the other shift |
-| Pause ✅ | ON BREAK · Esc: resume · R: restart · L: levels |
-| Title button ✅ | LEVEL SELECT (L) |
+| Pause ✅ | ON BREAK · Esc: resume · R: restart · L: levels · O: settings |
+| Title buttons ✅ | LEVEL SELECT (L) · SETTINGS (O) |
+| Settings ✅ | SETTINGS · MASTER · MUSIC · SOUND · REDUCED EFFECTS ON/OFF · Up/Down: choose · Left/Right: change · Esc: back |
+| Act cards ✅ | ACT n · NAME · the line from §2.1 |
 | Level select ✅ | TIMECARDS · ACT n · NAME · BEST n · PAR p · NOT YET · stamps ON PAR / UNDER! / +n · Arrows: choose · SPACE or click: clock in · Esc: back |
 | Timecard ✅ | NEW BEST (when a saved best is beaten) |
 | HUD ✅ | DAY SHIFT / NIGHT SHIFT · CLOCK-INS n · PAR p |
@@ -38,7 +40,6 @@ Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game l
 
 | Where | Text |
 |---|---|
-| Settings | SETTINGS · Master · Music · Sound · Reduced effects ON/OFF · Esc: back |
 | Act 1 card | ACT 1 · RENOVATION · "Pardon our dust." |
 | Act 2 card | ACT 2 · OVERTIME · "Something keeps moving things." |
 | Act 3 card | ACT 3 · GRAVEYARD SHIFT · "They've gotten organized." |
@@ -120,18 +121,19 @@ Shown as props; readable when the worker stands near (or always, small).
 | `portrait` | "Employee of the Month: [photo is just eyes]" |
 | `clockout` | "Overtime is mandatory. So are the freaks, apparently." |
 
-## 7. Timecard comments *(planned, A8)*
+## 7. Timecard comments ✅
 
-One line under the stamp, picked by result:
+One line under the stamp, picked in this order (`timecardComment` in `src/copy.js`):
 
 | Result | Comment |
 |---|---|
-| Under par | "Efficient. Suspiciously efficient." |
-| On par | "A normal shift. Nothing to report." |
-| Over par | "Clocked in a lot. The freaks noticed." |
-| Spooked ≥ 1 | "Incident report: was spooked." |
-| Spooked ≥ 3 | "Incident report: was spooked. Again. And again." |
-| 0 deaths, on/under par | "Perfect shift. Nobody believes you." |
+| 3+ incidents | "Incident report: was spooked. Again. And again." |
+| 1–2 incidents | "Incident report: was spooked." |
+| Under par, no incidents | "Perfect shift. Nobody believes you." |
+| On par, no incidents | "A normal shift. Nothing to report." |
+| Over par, no incidents | "Clocked in a lot. The freaks noticed." |
+
+Unused, kept for later: "Efficient. Suspiciously efficient." 
 
 ## 8. Ending *(planned, `clockout`)*
 

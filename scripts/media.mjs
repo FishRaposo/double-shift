@@ -88,6 +88,8 @@ try {
   await connect();
   await send('Page.enable');
   await send('Runtime.enable');
+  await send('Page.bringToFront');
+  await send('Emulation.setFocusEmulationEnabled', { enabled: true }); // keep rAF running like a focused tab
   console.log(`Saving to ${out}`);
 
   await open('tools/cover.html', 1260, 1000);
@@ -103,16 +105,19 @@ try {
   await press('Space'); // any key skips it
   await sleep(300);
   await shot('02-clock-in-day.png');
+  // real key presses, timed by where the worker actually is (screenshots can stall frames)
+  const tileX = () => evaluate('__doubleShift.state ? __doubleShift.state.player.x / 30 : 0');
+  const until = async (cond, ms = 6000) => { const t0 = Date.now(); while (!(await cond()) && Date.now() - t0 < ms) await sleep(15); };
   await key('keyDown', 'ArrowRight');
-  await sleep(250);
+  await until(async () => (await tileX()) > 4);
   await press('KeyK');
-  await sleep(700);
+  await until(async () => (await tileX()) > 9);
   await shot('03-clock-in-night.png');
-  await sleep(1200);
+  await until(async () => (await tileX()) > 20.5);
   await press('KeyK');
-  await sleep(1500);
+  await until(async () => (await evaluate('__doubleShift.screen')) === 'card');
   await key('keyUp', 'ArrowRight');
-  await sleep(600);
+  await sleep(700);
   const l1 = await evaluate('({ screen: __doubleShift.screen, shifts: __doubleShift.state.shifts, deaths: __doubleShift.state.deaths })');
   await shot('04-timecard.png');
   if (l1.screen !== 'card') { failed = true; console.error(`level 1 not cleared with real keys: ${JSON.stringify(l1)}`); }
@@ -122,6 +127,14 @@ try {
     if (night) { await press('KeyK'); await sleep(400); }
     await shot(name);
   }
+
+  // frame-time check on the busiest level (freaks, lasers, night): rAF intervals over 2 s
+  await open('?level=6&autostart');
+  await press('KeyK');
+  // draw cost: render the busiest frame 120 times directly (headless rAF timing is throttled, so not used)
+  const ft = await evaluate(`(() => { const g = __doubleShift; g.render(); const t0 = performance.now(); for (let i = 0; i < 120; i++) g.render(); const ms = (performance.now() - t0) / 120; return { ms }; })()`);
+  console.log(`  draw cost (level 6, night): ${ft.ms.toFixed(2)} ms per frame (budget 16.7)`);
+  if (ft.ms > 8) { failed = true; console.error('drawing a frame is too slow'); }
 
   // level select, after the level-1 clear above was saved (same browser profile)
   await open('');

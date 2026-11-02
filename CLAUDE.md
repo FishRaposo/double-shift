@@ -13,8 +13,7 @@ npm run check                              # syntax-check src/*.js + validate ev
 npm start                                  # local server + opens the browser (play.bat does the same on Windows)
 npm run serve                              # http://localhost:8080, no browser; next free port if busy (scripts/serve.mjs)
 npm run zip                                # double-shift-web.zip (index.html + src/) for itch.io
-npm run media                              # itch cover + screenshots via headless Edge/Chrome; also a full-speed level-1 smoke test
-node scripts/smoke.mjs http://localhost:8080/ media   # headless Chromium plays level 1; needs Playwright
+npm run media                              # headless Edge/Chrome: real-key level-1 run, cover/screenshots/gallery, audio clipping + draw-cost checks
 ```
 
 Tests and scripts target Node 22. URL flags for manual play: `?level=N`, `?autostart`, `?debug` (overlay, toggle with `` ` ``). `globalThis.__doubleShift` exposes the game object in the browser.
@@ -29,7 +28,9 @@ Tests and scripts target Node 22. URL flags for manual play: `?level=N`, `?autos
 - **Pranks** fire on the Nth entry into night (`onNight`) and write tile overrides into `state.overrides` (`'layer,tx,ty' → ch`); checkpoints snapshot and restore them.
 - **Freaks** have no mutable per-freak state: their position/`active` is a pure function of `state.freakClock`, which only advances on the night shift (so day freezes them). Add a kind in `freakBoxes()`, then draw it in `drawFreaks()` in `main.js`.
 - `src/input.js` — DOM-free key events → one input frame per tick. One shift per physical key-down; OS key-repeat ignored; presses between ticks are queued.
-- `src/main.js` — fixed-step loop (accumulator, ≤12 steps/frame), screens, all rendering, event → sfx/fx. `src/audio.js` — WebAudio `sfx.*`.
+- `src/main.js` — fixed-step loop (accumulator, ≤12 steps/frame), screens, draw order, event → sfx/fx; caches each level's static layer per shift × prank state.
+- Art is all code on a 2-px grid: `src/sprites.js` (string-grid sprites + pure `workerFrame`), `src/art.js` (tiles, props, effects, UI), `src/font.js` (pixel font; every printed character needs a glyph — a test checks the source). Review every asset at `/tools/gallery.html`.
+- Sound: `src/audio.js` (mix bus, every SFX as data in `SOUNDS`) and `src/music.js` (note data + scheduler; day/night arrangements crossfade on shift). `src/save.js` also holds settings; `src/copy.js` holds result-based lines.
 
 ## Tests
 

@@ -4,7 +4,7 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-01.
 
 **At a glance**
 - **The one rule:** `src/rules.js` decides everything that matters; the screen only draws it (§2).
-- `npm start` to play, `npm test` (49 tests), `npm run check` (§7).
+- `npm start` to play, `npm test` (60 tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
 - Add a level: grids in `src/levels.js` + a `SOLUTIONS` entry in `test/levels.test.mjs` (§6).
 - Planned mechanics (wet floor, day-walker, supervisor, offset layer) are designed in §6.5, not built.
 
@@ -23,15 +23,21 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-01.
 | `src/rules.js` | **All gameplay rules.** Pure: `step(level, state, input)` → next state | No |
 | `src/levels.js` | Level data (ASCII grids + pranks/freaks/decor) | No |
 | `src/input.js` | Key events → one input frame per physics tick | No (takes event-like objects) |
-| `src/main.js` | Fixed-step loop, screens, rendering, event → sfx/fx | Yes |
+| `src/main.js` | Fixed-step loop, screens, event → sfx/fx, draw order; caches the static layer (echo, solids, hatch, props, exit) per level × shift × prank state | Yes |
+| `src/sprites.js` | Pixel sprites as string grids (worker frames, freaks), palettes, `workerFrame()` (pure), `drawSprite`/`drawEyes` | Data no; drawing yes |
+| `src/art.js` | Procedural pixel drawing: tiles, hatch, echoes, hazards, exit, checkpoint, signs, freaks, `PROPS`, planned-level objects, effects, panels, stamps, logo | Yes (canvas) |
+| `src/font.js` | The pixel font: glyph table (pure), `measureText`, `drawText` (cached string canvases) | Data no; drawing yes |
+| `src/copy.js` | Result-based lines: timecard comments, stamps, act card lines, spook lines | No |
+| `src/music.js` | The theme as note data (pure), `scheduleStep`, `createMusic` (look-ahead player with day/night crossfade) | Data no; engine yes |
 | `src/save.js` | Best result per level in localStorage (key `double-shift.progress.v1`); unlock rule for level select. Storage is passed in; blocked or corrupt storage falls back to memory | No (takes a storage object) |
-| `src/audio.js` | WebAudio synth, `sfx.*` | Yes (AudioContext) |
+| `src/audio.js` | Mix bus (music + SFX → master → compressor), `voice()`, every SFX as data in `SOUNDS`, `sfx.*`, volumes, music shift/menu hooks | Yes (AudioContext) |
+| `tools/gallery.html` | Every asset on both palettes, audio board, offline loudness check (`window.__audioCheck`) | Yes |
+| `tools/cover.html` | The itch cover, drawn with the game's sprites, tiles and font | Yes |
 | `test/*.test.mjs` | `node --test` suites against the real rules | No |
 | `test/helpers.mjs` | `level()`, `stepN()`, `place()`, `play(level, policy)` | No |
 | `scripts/serve.mjs` | Zero-dependency local server, no caching (`npm start` opens the browser; `npm run serve` doesn't). `play.bat` wraps it for double-click on Windows. | — |
 | `scripts/check.mjs` | Syntax-check modules, validate levels | — |
-| `scripts/smoke.mjs` | Headless Chromium plays level 1 with real keys, screenshots | — |
-| `scripts/media.mjs` | `npm run media`: drives headless Edge/Chrome over the DevTools protocol (no dependencies). Saves the itch cover (`tools/cover.html`) and screenshots to `media/`, and fails if level 1 can't be cleared with real keys at full speed. | — |
+| `scripts/media.mjs` | `npm run media`: drives headless Edge/Chrome over the DevTools protocol (no dependencies). Saves the cover, screenshots and gallery to `media/`; fails if level 1 can't be cleared with real keys, the page logs an error, the audio clips, or a frame takes > 8 ms to draw. | — |
 | `tools/cover.html` | Draws the 1260×1000 itch cover in code | — |
 | `scripts/zip.mjs` | Builds `double-shift-web.zip` for itch | — |
 
@@ -173,9 +179,9 @@ The four tier-C mechanics from [CONTENT.md](CONTENT.md) §3. Each follows the sa
 
 | Command | What it covers |
 |---|---|
-| `npm test` | 49 tests: GDD §13.7 cases 1–10, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, every level at par + unwinnable without shifting, progress saving and level-select unlocks |
+| `npm test` | 60 tests: GDD §13.7 cases 1–10, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data |
 | `npm run check` | Every module parses; every level validates |
-| `node scripts/smoke.mjs <url> <outdir>` | Real browser: plays level 1 with keyboard events, fails on console errors or wrong outcome, saves screenshots. Needs Playwright. |
+| `npm run media` | Real browser (headless Edge/Chrome, no dependencies): plays level 1 with key presses, fails on page errors, a wrong outcome, audio clipping or a slow frame; saves the cover, screenshots and gallery. |
 
 Test style: build tiny ASCII levels with `level(day, night, extra)` and assert on state. Policies for `play()` read state like a player would (position, layer, `freakClock`), so they survive small tuning changes better than frame-exact scripts.
 

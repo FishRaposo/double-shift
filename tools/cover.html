@@ -3,144 +3,68 @@
 <head>
 <meta charset="utf-8">
 <title>Double Shift cover</title>
-<style>html, body { margin: 0; background: #0b1029; } canvas { display: block; }</style>
+<style>html, body { margin: 0; background: #0b1029; } canvas { display: block; image-rendering: pixelated; }</style>
 </head>
 <body>
-<!-- itch.io cover, 1260×1000 (630×500 ratio). Drawn in code with the game's palettes (docs/ART.md §2, §8).
+<!-- itch.io cover, 1260×1000 (630×500 ratio), drawn with the game's own sprites, tiles and font at 2× scale.
      Rendered to media/cover.png by scripts/media.mjs. -->
 <canvas id="c" width="1260" height="1000"></canvas>
-<script>
-const W = 1260, H = 1000, SEAM = 630, FLOOR = 760, S = 5; // S: worker pixel scale
-const g = document.getElementById('c').getContext('2d');
+<script type="module">
+import { drawText } from '../src/font.js';
+import { drawSprite, drawEyes, SPRITES } from '../src/sprites.js';
+import { PAL, DAY, NIGHT, TILE, PROPS, drawBackground, drawSolidTile, drawEchoEdges, drawShiftRing, drawSign, drawLogo, drawHatch } from '../src/art.js';
 
-function half(x0, x1, day) {
-  g.save();
-  g.beginPath(); g.rect(x0, 0, x1 - x0, H); g.clip();
-  const sky = g.createLinearGradient(0, 0, 0, H);
-  sky.addColorStop(0, day ? '#f6e7c8' : '#0b1029');
-  sky.addColorStop(1, day ? '#e8c58c' : '#1d2a56');
-  g.fillStyle = sky; g.fillRect(0, 0, W, H);
-  if (!day) {
-    g.fillStyle = 'rgba(255,255,255,0.45)';
-    for (let i = 0; i < 90; i++) {
-      const r = Math.sin(i * 127.1) * 43758.5453, r2 = Math.sin(i * 311.7) * 12543.123;
-      g.fillRect(SEAM + (r - Math.floor(r)) * SEAM, (r2 - Math.floor(r2)) * 600, i % 3 ? 2 : 3, i % 3 ? 2 : 3);
-    }
-  }
-  // back-wall windows
-  for (let i = 0; i < 6; i++) {
-    const x = 60 + i * 200;
-    g.fillStyle = day ? 'rgba(120,90,50,0.12)' : 'rgba(120,150,255,0.06)';
-    g.fillRect(x - 8, 300, 150, 300);
-    g.fillStyle = day ? 'rgba(255,255,255,0.3)' : (i % 3 ? 'rgba(255,214,110,0.16)' : 'rgba(0,0,0,0)');
-    for (const [dx, dy] of [[0, 8], [70, 8], [0, 150], [70, 150]]) g.fillRect(x + dx, 300 + dy, 64, 136);
-  }
-  // floor
-  g.fillStyle = day ? '#6e5a45' : '#2e4173';
-  g.fillRect(0, FLOOR, W, H - FLOOR);
-  g.strokeStyle = day ? 'rgba(0,0,0,0.14)' : 'rgba(95,242,255,0.1)';
-  g.lineWidth = 2;
-  g.beginPath();
-  for (let y = FLOOR; y < H; y += 40) {
-    for (let x = 0; x < W; x += 40) {
-      if (day) { g.moveTo(x, y + 20); g.lineTo(x + 40, y + 20); g.moveTo(x + ((y / 40) % 2 ? 20 : 0), y); g.lineTo(x + ((y / 40) % 2 ? 20 : 0), y + 20); }
-      else g.rect(x + 5, y + 5, 30, 30);
-    }
-  }
-  g.stroke();
-  g.fillStyle = day ? '#fbecc9' : '#5ff2ff';
-  g.fillRect(0, FLOOR, W, 4);
-  g.restore();
+const cv = document.getElementById('c');
+const g = cv.getContext('2d');
+g.imageSmoothingEnabled = false;
+g.scale(2, 2); // draw at 630×500, every art pixel becomes 4×4
+const W = 630;
+const H = 500;
+const SEAM = W / 2;
+const clip = (x0, x1, fn) => { g.save(); g.beginPath(); g.rect(x0, 0, x1 - x0, H); g.clip(); fn(); g.restore(); };
+
+clip(0, SEAM, () => drawBackground(g, DAY, W, H, 0));
+clip(SEAM, W, () => drawBackground(g, NIGHT, W, H, 1.3));
+
+// the floor, day bricks on the left, night panels on the right
+for (const [layer, x0, x1] of [[DAY, 0, SEAM], [NIGHT, SEAM, W]]) {
+  clip(x0, x1, () => {
+    for (let tx = 0; tx < 21; tx++) for (let ty = 13; ty < 17; ty++) drawSolidTile(g, tx, ty, layer, { up: ty === 13, down: false, left: false, right: false });
+  });
 }
 
-function eyes(x, y, s = 6) {
-  g.fillStyle = '#ffec5a';
-  g.fillRect(x - s - 4, y, s, s);
-  g.fillRect(x + 4, y, s, s);
+// a plank that only exists at night: solid on the night side, a dashed echo on the day side
+for (const tx of [11, 12, 13]) {
+  drawSolidTile(g, tx, 9, NIGHT, { up: true, down: true, left: tx === 11, right: tx === 13 });
+  drawHatch(g, tx, 9, NIGHT);
 }
+drawEchoEdges(g, [[210, 270, 300, 270, 'top'], [210, 300, 300, 300, 'bot'], [210, 270, 210, 300, 'left']], PAL[NIGHT].echo);
 
-function freak(x, y, s) {
-  // lumpy silhouette, never fully shown
-  g.fillStyle = '#05060f';
-  g.beginPath();
-  g.moveTo(x, y + 22 * s);
-  g.lineTo(x - s, y + 8 * s); g.lineTo(x + 3 * s, y + 2 * s); g.lineTo(x + 6 * s, y + 5 * s);
-  g.lineTo(x + 10 * s, y - 2 * s); g.lineTo(x + 14 * s, y + 4 * s); g.lineTo(x + 17 * s, y + s);
-  g.lineTo(x + 21 * s, y + 9 * s); g.lineTo(x + 20 * s, y + 22 * s);
-  g.closePath(); g.fill();
-  g.strokeStyle = 'rgba(95,242,255,0.6)'; g.lineWidth = 2; g.stroke();
-  eyes(x + 10 * s, y + 8 * s, 2 * s);
-}
+// the freaks: eyes in the dark, one lurker on the night floor, a note on the day side
+PROPS.eyes(g, 420, 170, { t: 0.5, seed: 1 });
+PROPS.eyes(g, 560, 120, { t: 0.5, seed: 2 });
+PROPS.eyes(g, 500, 300, { t: 0.5, seed: 3 });
+drawSprite(g, 'lurker', 'a', 520, 390 - 22 * 1.5, { scale: 3 });
+drawEyes(g, 'lurker', 520, 390 - 22 * 1.5, { state: 'squint', scale: 3 });
+drawSign(g, 110, 300, 'MINE', 'note', 3);
+PROPS.noticeBoard(g, 40, 330);
 
-function worker(x, y) {
-  // the in-game worker (18×26) at scale S, mid-jump, outlined
-  const r = (rx, ry, rw, rh, c) => { g.fillStyle = c; g.fillRect(x + rx * S, y + ry * S, rw * S, rh * S); };
-  for (const [rx, ry, rw, rh] of [[0, 8, 18, 18], [3, 3, 12, 7], [-1, -2, 20, 5], [3, -5, 12, 4]]) r(rx - 1.5, ry - 1.5, rw + 3, rh + 3, '#1b1209');
-  r(0, 8, 18, 18, '#2f6fdc');
-  r(3, 3, 12, 7, '#f2c79a');
-  r(11, 5, 2, 2, '#222');
-  r(-1, -2, 20, 5, '#ffcc33');
-  r(3, -5, 12, 4, '#ffcc33');
-  r(0, 15, 18, 2, '#ffe680');
-  // night half of the worker: the shift happening mid-air
-  g.save(); g.beginPath(); g.rect(SEAM, 0, W, H); g.clip();
-  r(0, 8, 18, 18, '#3f86ff');
-  r(0, 15, 18, 2, '#c6ff4d');
-  g.restore();
-}
-
-half(0, SEAM, true);
-half(SEAM, W, false);
-
-// the other shift, as the game shows it: dashed echoes
-g.save();
-g.setLineDash([16, 10]); g.lineWidth = 5;
-g.strokeStyle = 'rgba(52,96,230,1)';      // night plank, seen from the day side
-g.strokeRect(330, 640, 300, 26);
-g.strokeStyle = 'rgba(255,170,80,0.95)';  // day crate, seen from the night side
-g.strokeRect(1010, 600, 130, 160);
-g.restore();
-// the same plank, solid on the night side
-g.fillStyle = '#2e4173'; g.fillRect(SEAM, 640, 300, 26);
-g.fillStyle = '#5ff2ff'; g.fillRect(SEAM, 640, 300, 4);
-
-// shift ring at the seam
-g.strokeStyle = 'rgba(95,242,255,0.8)'; g.lineWidth = 4;
-g.beginPath(); g.arc(SEAM, 540, 120, 0, Math.PI * 2); g.stroke();
-g.strokeStyle = 'rgba(255,200,90,0.6)'; g.lineWidth = 3;
-g.beginPath(); g.arc(SEAM, 540, 150, 0, Math.PI * 2); g.stroke();
-
-worker(SEAM - 9 * S, 470);
-
-// the freaks: eyes in the dark, one lump on the night ledge
-eyes(820, 360); eyes(1140, 280); eyes(980, 470, 5); eyes(700, 250, 5);
-freak(1060, 640 - 22 * 4, 4);
-
-// MINE note on the day side
-g.save(); g.translate(170, 610); g.rotate(-0.1);
-g.fillStyle = '#ffe96b'; g.fillRect(-60, -42, 120, 84);
-g.fillStyle = '#5a3d10'; g.font = 'bold 40px monospace'; g.textAlign = 'center'; g.fillText('MINE', 0, 14);
-g.restore();
+// the worker, mid-jump, mid-shift: day colours on the left of the seam, night on the right
+drawShiftRing(g, SEAM, 268, 0.35, NIGHT);
+drawShiftRing(g, SEAM, 268, 0.55, DAY);
+const wx = SEAM - 4.5 * 5;
+const wy = 236;
+clip(0, SEAM, () => drawSprite(g, 'worker', 'jump', wx, wy, { scale: 5 }));
+clip(SEAM, W, () => drawSprite(g, 'worker', 'jump', wx, wy, { scale: 5, palette: SPRITES.worker.nightPalette }));
 
 // title lockup
-g.textAlign = 'center';
-g.font = 'bold 150px monospace';
-g.lineJoin = 'round';
-g.lineWidth = 14;
-g.strokeStyle = 'rgba(246,231,200,0.9)'; g.strokeText('DOUBLE', SEAM / 2 + 20, 190);
-g.fillStyle = '#3b2d1f'; g.fillText('DOUBLE', SEAM / 2 + 20, 190);
-g.strokeStyle = 'rgba(11,16,41,0.9)'; g.strokeText('SHIFT', SEAM + SEAM / 2 - 20, 190);
-g.fillStyle = '#d9f6ff'; g.fillText('SHIFT', SEAM + SEAM / 2 - 20, 190);
-g.font = 'italic 34px monospace';
-g.fillStyle = '#ffec5a';
-g.strokeStyle = 'rgba(11,16,41,0.9)'; g.lineWidth = 8;
-g.strokeText('The freaks come out at night.', SEAM + 20, 255);
-g.fillText('The freaks come out at night.', SEAM + 20, 255);
+drawLogo(g, SEAM, 34, 7);
+drawText(g, 'The freaks come out at night.', SEAM, 104, { scale: 2, color: '#ffec5a', halo: '#1b1209', align: 'center' });
 
 // bottom band
-g.fillStyle = 'rgba(0,0,0,0.45)'; g.fillRect(0, 900, W, 100);
-g.font = 'bold 34px monospace'; g.fillStyle = '#fff';
-g.fillText('One building. Two shifts. One worker.', W / 2, 962);
+g.fillStyle = 'rgba(0,0,0,0.55)';
+g.fillRect(0, 452, W, 48);
+drawText(g, 'One building. Two shifts. One worker.', SEAM, 468, { scale: 2, color: '#ffffff', align: 'center' });
 </script>
 </body>
 </html>

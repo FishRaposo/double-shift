@@ -196,7 +196,7 @@ function draw(t) {
 }
 
 let start = performance.now();
-function loop(now) { draw((now - start) / 1000); requestAnimationFrame(loop); }
+function loop(now) { draw(Math.max(0, (now - start) / 1000)); requestAnimationFrame(loop); }
 requestAnimationFrame(loop);
 
 // ---- audio board ----

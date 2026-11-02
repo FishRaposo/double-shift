@@ -701,5 +701,6 @@ function render() {
 if (params.has('autostart')) startLevel(game.index, { card: false });
 requestAnimationFrame(frame);
 
-// expose for smoke tests
+// expose for smoke tests (render: for timing the draw cost)
 globalThis.__doubleShift = game;
+game.render = render;

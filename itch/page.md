@@ -1,12 +1,12 @@
 # itch.io page kit
 
-Everything needed to create the *Double Shift* page on itch.io, in the order the itch dashboard asks for it. Settings come from [RELEASE.md](../docs/RELEASE.md) §2. **Fish writes the final description words**; the draft below is checked against the build of 2026-11-02 (6 levels, 49 tests, level select).
+Everything needed to create the *Double Shift* page on itch.io, in the order the itch dashboard asks for it. Settings come from [RELEASE.md](../docs/RELEASE.md) §2. **Fish writes the final description words**; the draft below is checked against the build of 2026-11-02 (6 levels, 60 tests, level select, pixel art and music).
 
 ## 1. Build the files
 
 ```bash
 npm run zip      # double-shift-web.zip: index.html + src/ at the archive root
-npm run media    # media/cover.png (1260×1000) + 9 screenshots (960×540), via headless Edge/Chrome
+npm run media    # media/cover.png (1260×1000) + 10 screenshots (960×540) + the asset gallery, via headless Edge/Chrome
 ```
 
 `npm run media` also plays level 1 with real keys at full speed and fails if it can't be cleared or the page logs an error.
@@ -40,7 +40,7 @@ npm run media    # media/cover.png (1260×1000) + 9 screenshots (960×540), via 
 | Slot | File |
 |---|---|
 | Cover image | `media/cover.png` |
-| Screenshots (in this order) | `03-clock-in-night.png`, `07-night-watch-night.png`, `05-inventory-day.png`, `06-inventory-night.png`, `04-timecard.png`, `08-night-watch-day.png`, `09-level-select.png`, `01-title.png` |
+| Screenshots (in this order) | `03-clock-in-night.png`, `07-night-watch-night.png`, `05-inventory-day.png`, `06-inventory-night.png`, `04-timecard.png`, `08-night-watch-day.png`, `09-level-select.png`, `10-act-card.png`, `01-title.png` |
 | Gameplay video/GIF | *(planned: a ≤ 10 s GIF of a mid-air shift chain and a frozen-lurker pass, ART.md §8)* |
 
 ## 4. Description (paste into the editor; Fish edits the words)
@@ -62,6 +62,7 @@ npm run media    # media/cover.png (1260×1000) + 9 screenshots (960×540), via 
 > | Change shift | Shift or K |
 > | Restart level | R |
 > | Level select | L, or click LEVEL SELECT on the title |
+> | Settings | O (volumes, reduced effects) |
 > | Pause | Esc |
 > | Mute | M |
 >
@@ -70,7 +71,7 @@ npm run media    # media/cover.png (1260×1000) + 9 screenshots (960×540), via 
 > **What's in this build:** 6 levels. A prototype for GitHub Game Off 2026 (theme: SHIFT).
 >
 > **How it was made**
-> Designed by Vinícius Raposo for GitHub Game Off 2026. Built with AI assistance (Claude) to his design document, then tested like production software: the gameplay rules are a pure module, the game has 49 automated tests, and every level is proven solvable at par by a scripted run. No engine, no assets: everything you see and hear is drawn and synthesized by code. Source: https://github.com/FishRaposo/double-shift
+> Designed by Vinícius Raposo for GitHub Game Off 2026. Built with AI assistance (Claude) to his design document, then tested like production software: the gameplay rules are a pure module, the game has 60 automated tests, and every level is proven solvable at par by a scripted run. No engine, no assets: the pixel art, the pixel font and the music are all drawn and synthesized by code. Source: https://github.com/FishRaposo/double-shift
 >
 > If you enjoyed it, a follow or a small donation helps.
 
