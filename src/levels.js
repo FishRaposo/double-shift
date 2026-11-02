@@ -18,7 +18,16 @@ export const LEVELS = [
     id: 'clock',
     name: 'Clock In',
     act: 1,
-    props: [{ kind: 'barrierTape', tx: 12, ty: 13, w: 8, layer: 'day' }, { kind: 'sign', tx: 8, ty: 10, text: 'RENOVATION', style: 'note' }],
+    props: [
+      { kind: 'barrierTape', tx: 12, ty: 13, w: 8, layer: 'day' },
+      { kind: 'sign', tx: 8, ty: 10, text: 'RENOVATION', style: 'note' },
+      { kind: 'footprints', tx: 21, ty: 13, layer: 'night' },
+      { kind: 'footprints', tx: 22, ty: 13, layer: 'night' },
+    ],
+    decor: [{ kind: 'eyes', tx: 29, ty: 4 }],
+    // the night crew is here from level 1: a peeker blinks behind the locked gate — sealed
+    // off by the wall at col 24, so it is evidence, not danger
+    freaks: [{ kind: 'peeker', tx: 26, ty: 13, period: 1.6, duty: 0.5 }],
     note: 'Gap in the floor by day. The night crew laid planks, and locked the gate.',
     par: 2,
     day: [
@@ -66,7 +75,14 @@ export const LEVELS = [
     id: 'scaff',
     name: 'Scaffolding',
     act: 1,
-    props: [{ kind: 'pallet', tx: 18, ty: 7, layer: 'day' }, { kind: 'crate', tx: 20, ty: 7, layer: 'day' }, { kind: 'sign', tx: 5, ty: 9, text: 'DELIVERIES', style: 'paper' }],
+    props: [
+      { kind: 'pallet', tx: 18, ty: 7, layer: 'day' },
+      { kind: 'crate', tx: 20, ty: 7, layer: 'day' },
+      { kind: 'sign', tx: 5, ty: 9, text: 'DELIVERIES', style: 'paper' },
+      { kind: 'footprints', tx: 9, ty: 13, layer: 'night' },
+      { kind: 'footprints', tx: 10, ty: 13, layer: 'night' },
+    ],
+    decor: [{ kind: 'eyes', tx: 8, ty: 4 }, { kind: 'eyes', tx: 13, ty: 6 }],
     note: 'The day crew put up scaffolding. Deliveries came in.',
     par: 1,
     day: [
@@ -115,6 +131,10 @@ export const LEVELS = [
     name: 'Closing Time',
     act: 1,
     props: [{ kind: 'sign', tx: 5, ty: 10, text: 'CLOSING TIME', style: 'paper' }, { kind: 'sign', tx: 22, ty: 10, text: 'LASERS', style: 'red', layer: 'night' }],
+    decor: [{ kind: 'eyes', tx: 24, ty: 4 }],
+    // a peeker sealed past the far night gate: it blinks at night, and by day its frozen
+    // outline stands beside the exit — the first freak a new player walks through
+    freaks: [{ kind: 'peeker', tx: 30, ty: 13, period: 1.3, duty: 0.4 }],
     note: 'Rebar by day, lasers by night. Gates go down at closing.',
     par: 2,
     day: [
