@@ -141,12 +141,12 @@ function frame(now) {
 
 const PAL = {
   [DAY]: {
-    skyTop: '#f6e7c8', skyBot: '#e8c58c', window: 'rgba(255,255,255,0.35)', frame: 'rgba(120,90,50,0.18)',
-    solid: '#6e5a45', solidEdge: '#fbecc9', echo: 'rgba(244,170,90,0.75)', hud: '#3b2d1f', hudSoft: 'rgba(59,45,31,0.7)',
+    skyTop: '#f6e7c8', skyBot: '#e8c58c', window: 'rgba(255,255,255,0.22)', frame: 'rgba(120,90,50,0.1)',
+    solid: '#6e5a45', solidEdge: '#fbecc9', echo: 'rgba(255,170,80,0.95)', hud: '#3b2d1f', hudSoft: 'rgba(59,45,31,0.85)', halo: 'rgba(246,231,200,0.85)',
   },
   [NIGHT]: {
-    skyTop: '#0b1029', skyBot: '#1d2a56', window: 'rgba(255,214,110,0.55)', frame: 'rgba(120,150,255,0.08)',
-    solid: '#1f2b49', solidEdge: '#5ff2ff', echo: 'rgba(95,140,255,0.8)', hud: '#d9f6ff', hudSoft: 'rgba(217,246,255,0.7)',
+    skyTop: '#0b1029', skyBot: '#1d2a56', window: 'rgba(255,214,110,0.12)', frame: 'rgba(120,150,255,0.05)',
+    solid: '#2e4173', solidEdge: '#5ff2ff', echo: 'rgba(52,96,230,1)', hud: '#d9f6ff', hudSoft: 'rgba(217,246,255,0.85)', halo: 'rgba(11,16,41,0.85)',
   },
 };
 
@@ -165,7 +165,7 @@ function drawBackground(layer) {
   g.fillStyle = grad;
   g.fillRect(0, 0, W, H);
   if (layer === NIGHT) {
-    g.fillStyle = 'rgba(255,255,255,0.6)';
+    g.fillStyle = 'rgba(255,255,255,0.35)';
     for (const s of STARS) g.fillRect(s.x, s.y, s.s, s.s);
   }
   // big windows of the building interior
@@ -222,8 +222,8 @@ function drawEcho(lvl, layer) {
   const pal = PAL[layer];
   g.save();
   g.strokeStyle = pal.echo;
-  g.lineWidth = 2;
-  g.setLineDash([6, 5]);
+  g.lineWidth = 2.5;
+  g.setLineDash([8, 5]);
   g.beginPath();
   for (const [x0, y0, x1, y1] of edges(lvl, layer)) { g.moveTo(x0, y0); g.lineTo(x1, y1); }
   g.stroke();
@@ -244,7 +244,7 @@ function hatch(layer) {
   const c = document.createElement('canvas');
   c.width = c.height = 10;
   const h = c.getContext('2d');
-  h.strokeStyle = layer === DAY ? 'rgba(255,214,120,0.35)' : 'rgba(95,242,255,0.22)';
+  h.strokeStyle = layer === DAY ? 'rgba(255,232,170,0.6)' : 'rgba(95,242,255,0.35)';
   h.lineWidth = 2;
   h.beginPath();
   h.moveTo(-2, 12); h.lineTo(12, -2);
@@ -337,12 +337,18 @@ function drawShared(lvl, s, layer) {
   const ey = lvl.exit.ty * TILE;
   g.fillStyle = layer === DAY ? '#3d7a4a' : '#1f6b47';
   g.fillRect(ex + 3, ey - TILE + 4, TILE - 6, TILE * 2 - 4);
+  g.strokeStyle = '#9dffb8';
+  g.lineWidth = 2;
+  g.strokeRect(ex + 3, ey - TILE + 4, TILE - 6, TILE * 2 - 4);
   g.fillStyle = '#9dffb8';
   g.fillRect(ex + TILE - 10, ey + 8, 3, 3);
+  // lit sign above the door
   g.fillStyle = '#2bdc6a';
-  g.font = 'bold 9px monospace';
+  g.fillRect(ex - 4, ey - TILE - 14, TILE + 8, 14);
+  g.fillStyle = '#06210f';
+  g.font = 'bold 11px monospace';
   g.textAlign = 'center';
-  g.fillText('EXIT', ex + TILE / 2, ey - TILE + 1);
+  g.fillText('EXIT', ex + TILE / 2, ey - TILE - 3);
   // checkpoints: time clocks on a post
   for (const c of lvl.checkpoints) {
     const cx = c.tx * TILE + TILE / 2;
@@ -411,20 +417,20 @@ function drawFreaks(lvl, s, layer, t) {
       g.fillStyle = '#05060f';
       blob(b, t, i);
       g.fill();
-      g.strokeStyle = 'rgba(95,242,255,0.25)';
-      g.lineWidth = 1;
+      g.strokeStyle = 'rgba(95,242,255,0.6)';
+      g.lineWidth = 1.5;
       g.stroke();
       eyes(cx + (b.kind === 'lurker' ? Math.sign(Math.sin(t)) * 2 : 0), b.y + 9, t, i);
     } else {
       // day: they're frozen on the other shift. Dashed outline where they'll be when you go back.
       g.save();
-      g.setLineDash([3, 3]);
-      g.strokeStyle = 'rgba(70,90,200,0.7)';
-      g.lineWidth = 1.5;
+      g.setLineDash([4, 3]);
+      g.strokeStyle = PAL[NIGHT].echo;
+      g.lineWidth = 2;
       blob(b, 0, i);
       g.stroke();
       g.restore();
-      if (b.active) eyes(cx, b.y + 9, 1, i, 0.35);
+      if (b.active) eyes(cx, b.y + 9, 1, i, 0.6);
     }
   });
 }
@@ -436,18 +442,18 @@ function drawTells(lvl, s, layer, t) {
     const x = pr.tell.tx * TILE + TILE / 2;
     const y = pr.tell.ty * TILE + TILE / 2;
     if (layer === NIGHT) {
-      eyes(x - 18, y - 30, t, 7, 0.9);
-      eyes(x + 16, y - 44, t, 3, 0.9);
+      eyes(x - 18, y - 30, t, 7, 1, 4);
+      eyes(x + 16, y - 44, t, 3, 1, 4);
     } else {
       g.save();
       g.translate(x, y - 40);
       g.rotate(0.08);
       g.fillStyle = '#ffe96b';
-      g.fillRect(-16, -12, 32, 24);
+      g.fillRect(-21, -15, 42, 30);
       g.fillStyle = '#5a3d10';
-      g.font = 'bold 10px monospace';
+      g.font = 'bold 13px monospace';
       g.textAlign = 'center';
-      g.fillText('MINE', 0, 4);
+      g.fillText('MINE', 0, 5);
       g.restore();
     }
   }
@@ -471,6 +477,11 @@ function drawPlayer(s, layer) {
     g.strokeStyle = `rgba(255,70,70,${game.fx.fail})`;
     g.lineWidth = 3;
     g.strokeRect(x - 3, y - 6, w + 6, h + 9);
+  }
+  // outline in the shift's contrast colour: the worker is always the easiest thing to find
+  g.fillStyle = layer === DAY ? '#1b1209' : '#d9f6ff';
+  for (const [rx, ry, rw, rh] of [[x, y + 8, w, h - 8], [x + 3, y + 3, w - 6, 7], [x - 1, y - 2, w + 2, 5], [x + 3, y - 5, w - 6, 4]]) {
+    g.fillRect(rx - 1.5, ry - 1.5, rw + 3, rh + 3);
   }
   // overalls
   g.fillStyle = layer === DAY ? '#2f6fdc' : '#3f86ff';
@@ -521,15 +532,24 @@ function drawFx(layer) {
   }
 }
 
+// HUD text with a halo in the shift's background colour, so it stays readable over walls
+function hudText(text, x, y, color, halo) {
+  g.lineJoin = 'round';
+  g.strokeStyle = halo;
+  g.lineWidth = 4;
+  g.strokeText(text, x, y);
+  g.fillStyle = color;
+  g.fillText(text, x, y);
+}
+
 function drawHud(lvl, s, layer) {
   const pal = PAL[layer];
   g.textAlign = 'left';
-  g.fillStyle = pal.hud;
-  g.font = 'bold 16px monospace';
-  g.fillText(`${game.index + 1}/${levels.length}  ${lvl.name.toUpperCase()}`, 14, 24);
+  g.font = 'bold 18px monospace';
+  hudText(`${game.index + 1}/${levels.length}  ${lvl.name.toUpperCase()}`, 14, 26, pal.hud, pal.halo);
   // dimension indicator: icon + label (not colour alone)
   g.textAlign = 'right';
-  g.fillText(layer === DAY ? 'DAY SHIFT' : 'NIGHT SHIFT', W - 44, 24);
+  hudText(layer === DAY ? 'DAY SHIFT' : 'NIGHT SHIFT', W - 44, 26, pal.hud, pal.halo);
   if (layer === DAY) {
     g.fillStyle = '#f2a516';
     g.beginPath(); g.arc(W - 26, 19, 8, 0, Math.PI * 2); g.fill();
@@ -539,21 +559,19 @@ function drawHud(lvl, s, layer) {
     g.fillStyle = PAL[NIGHT].skyTop;
     g.beginPath(); g.arc(W - 22, 16, 7, 0, Math.PI * 2); g.fill();
   }
-  g.fillStyle = pal.hud;
-  g.font = '14px monospace';
-  g.fillText(`CLOCK-INS ${s.shifts}  ·  PAR ${lvl.par}`, W - 14, 46);
+  g.font = 'bold 15px monospace';
+  const over = s.shifts > lvl.par;
+  hudText(`CLOCK-INS ${s.shifts}  ·  PAR ${lvl.par}`, W - 14, 48, over ? '#e0473c' : pal.hud, pal.halo);
   g.textAlign = 'left';
-  g.fillStyle = pal.hudSoft;
+  g.font = '15px monospace';
   const note = LEVELS[game.index].note;
-  if (game.levelTime < 5 && note) g.fillText(note, 14, 46);
+  if (game.levelTime < 5 && note) hudText(note, 14, 48, pal.hudSoft, pal.halo);
   if (game.index === 0 && s.shifts === 0) {
     g.textAlign = 'center';
-    g.font = 'bold 20px monospace';
-    g.fillStyle = pal.hud;
-    g.fillText('Press SHIFT (or K) to change shifts', W / 2, 150);
-    g.font = '14px monospace';
-    g.fillStyle = pal.hudSoft;
-    g.fillText('Dashed outlines show the other shift', W / 2, 174);
+    g.font = 'bold 22px monospace';
+    hudText('Press SHIFT (or K) to change shifts', W / 2, 150, pal.hud, pal.halo);
+    g.font = '15px monospace';
+    hudText('Dashed outlines show the other shift', W / 2, 176, pal.hudSoft, pal.halo);
   }
 }
 

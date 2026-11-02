@@ -1,6 +1,6 @@
 # Art Bible
 
-Companion to [GDD.md](GDD.md) §4.7, §7, §10. Everything is drawn in code on a 960×540 canvas; there are no image files. Values below are the ones in `src/main.js` on 2026-11-01. **Decided 2026-11-01: the jam build stays code-drawn** (GDD §10.1). Post-jam, if a design partner joins, this is their brief; credit them as they choose.
+Companion to [GDD.md](GDD.md) §4.7, §7, §10. Everything is drawn in code on a 960×540 canvas; there are no image files. Values below are the ones in `src/main.js` on 2026-11-02 (after the readability pass, §3.1). **Decided 2026-11-01: the jam build stays code-drawn** (GDD §10.1). Post-jam, if a design partner joins, this is their brief; credit them as they choose.
 
 ## 1. Pillars
 
@@ -26,22 +26,22 @@ Graphics is a rated jam category. Simple shapes score well when they look *chose
 | Role | Value |
 |---|---|
 | Sky gradient top → bottom | `#f6e7c8` → `#e8c58c` |
-| Window panes / frames | `rgba(255,255,255,0.35)` / `rgba(120,90,50,0.18)` |
+| Window panes / frames | `rgba(255,255,255,0.22)` / `rgba(120,90,50,0.1)` |
 | Solid fill | `#6e5a45` (brick courses texture, `rgba(0,0,0,0.12)`) |
 | Solid edge (top/sides) | `#fbecc9`, 2 px |
-| Echo of night geometry | dashed `rgba(95,140,255,0.8)` |
-| HUD text / soft | `#3b2d1f` / `rgba(59,45,31,0.7)` |
+| Echo of night geometry | dashed `rgba(52,96,230,1)`, 2.5 px, dash 8/5 |
+| HUD text / soft / halo | `#3b2d1f` / `rgba(59,45,31,0.85)` / `rgba(246,231,200,0.85)` |
 | Sun icon | `#f2a516` |
 
 ### Night shift
 | Role | Value |
 |---|---|
-| Sky gradient top → bottom | `#0b1029` → `#1d2a56`, stars `rgba(255,255,255,0.6)` |
-| Lit windows / frames | `rgba(255,214,110,0.55)` / `rgba(120,150,255,0.08)` (some windows dark) |
-| Solid fill | `#1f2b49` (panel seams texture, `rgba(95,242,255,0.08)`) |
+| Sky gradient top → bottom | `#0b1029` → `#1d2a56`, stars `rgba(255,255,255,0.35)` |
+| Lit windows / frames | `rgba(255,214,110,0.12)` / `rgba(120,150,255,0.05)` (some windows dark) |
+| Solid fill | `#2e4173` (panel seams texture, `rgba(95,242,255,0.08)`) |
 | Solid edge | `#5ff2ff`, 2 px |
-| Echo of day geometry | dashed `rgba(244,170,90,0.75)` |
-| HUD text / soft | `#d9f6ff` / `rgba(217,246,255,0.7)` |
+| Echo of day geometry | dashed `rgba(255,170,80,0.95)`, 2.5 px, dash 8/5 |
+| HUD text / soft / halo | `#d9f6ff` / `rgba(217,246,255,0.85)` / `rgba(11,16,41,0.85)` |
 | Moon icon | `#d9f6ff` crescent |
 
 *Note:* each echo uses the **other** shift's echo color (day view shows night geometry in blue, night view shows day geometry in orange), so the echo's color says which shift it belongs to.
@@ -51,11 +51,11 @@ Graphics is a rated jam category. Simple shapes score well when they look *chose
 |---|---|
 | Rebar (day hazard) | `#c4572a` |
 | Laser (night hazard) | `rgba(255,59,92,α)` pulsing, emitters `#ff9db0` |
-| Exit door day / night | `#3d7a4a` / `#1f6b47`, sign `#2bdc6a`, knob `#9dffb8` |
+| Exit door day / night | `#3d7a4a` / `#1f6b47`, 2 px frame and knob `#9dffb8`; lit sign box `#2bdc6a` above the door with `EXIT` in `#06210f` (11 px bold) |
 | Checkpoint clock off / on | `#8a8a8a` / `#ffd23f` |
-| Freak body | `#05060f`, rim `rgba(95,242,255,0.25)` |
+| Freak body | `#05060f`, rim `rgba(95,242,255,0.6)` 1.5 px |
 | Freak eyes | `rgba(255,236,90,α)` |
-| Sticky note | `#ffe96b`, text `#5a3d10` |
+| Sticky note | `#ffe96b` 42×30, text `#5a3d10` 13 px bold |
 | Timecard paper / ink / stamp | `#f7efdc` / `#3b2d1f` / `#c0392b` (on/under par), `#7f6a50` (overtime) |
 | Debug | `#ff00ff` hitbox, `#0f0` text |
 
@@ -70,15 +70,30 @@ Graphics is a rated jam category. Simple shapes score well when they look *chose
 | Hazard in other shift | Small dashed box at hazard height | Dashed |
 | Current shift | HUD label DAY SHIFT / NIGHT SHIFT + sun/moon icon + background | Text + icon + background pattern (panes vs stars) |
 | Freak (night, active) | Black lumpy silhouette + eyes | Silhouette |
-| Freak (day, frozen) | Dashed silhouette outline, dim eyes | Dashed |
+| Freak (day, frozen) | Dashed silhouette outline in the night echo blue, dim eyes | Dashed |
 | Peeker hidden | Dark slot + small eyes | Shape |
 | Pending prank | Night: two pairs of eyes near the target. Day: yellow MINE note | Eyes / note shape |
 
 **Rule:** any new element must fit this table before it goes in a level.
 
+### 3.1 At-a-glance hierarchy (readability pass, 2026-11-02)
+
+The screen should read in this order: **worker → what's solid now → hazards and freaks → the other shift → exit → HUD → background.** Rules that keep it that way:
+
+| Rule | How |
+|---|---|
+| The worker is always the easiest thing to find | 1.5 px outline around every part of the sprite: `#1b1209` by day, `#d9f6ff` by night |
+| The background is the quietest layer | Window panes and stars at low alpha (§2); never brighter than a solid's edge |
+| Night solids stand out from the night sky | Fill `#2e4173` is lighter than the sky bottom `#1d2a56`, plus the cyan edge |
+| The other shift is visible without looking for it | Echoes at full strength, 2.5 px, long dashes; frozen freaks use the same blue |
+| "Only in this shift" shows on both palettes | Hatch `rgba(255,232,170,0.6)` by day, `rgba(95,242,255,0.35)` by night |
+| HUD text never disappears into a wall | Every HUD line has a 4 px halo in the shift's background colour |
+| Score state at a glance | `CLOCK-INS n · PAR p` turns red (`#e0473c`) once over par |
+| Prank warnings are noticeable | Night tell eyes at 4 px; day MINE note 42×30 |
+
 ## 4. The worker
 
-- Hitbox 18×26 px. Drawn: blue overalls (`#2f6fdc` day, `#3f86ff` night), face `#f2c79a`, eye on the facing side, yellow hard hat `#ffcc33` (wider brim + crown), hi-vis stripe (`#ffe680` day, `#c6ff4d` night).
+- Hitbox 18×26 px. Outlined (§3.1). Drawn: blue overalls (`#2f6fdc` day, `#3f86ff` night), face `#f2c79a`, eye on the facing side, yellow hard hat `#ffcc33` (wider brim + crown), hi-vis stripe (`#ffe680` day, `#c6ff4d` night).
 - Failed-shift feedback: red outline pulse around the worker (0.25 s). No camera shake.
 - *(planned)* Animations (GDD §10.3): idle bob, 4-frame run (legs as two rects), jump (arms up), fall, **spooked gag** (worker pops up, boots stay on the ground for a beat), respawn pop.
 
@@ -90,7 +105,7 @@ Graphics is a rated jam category. Simple shapes score well when they look *chose
 - Silhouette: a 20×22 lumpy shape with 3 fur spikes on top, jittering ±1.2 px (`sin(t·14)`), body `#05060f` with a faint cyan rim so it reads against the night solids.
 - Eyes: two 3×3 px squares, `rgba(255,236,90)`, blink (closed ~0.12 s every ~3.1 s, offset per freak). Lurker eyes glance in its travel direction.
 - Peeker hidden: a dark 6 px slot with small eyes.
-- By day: dashed outline at the frozen position, eyes at 35% opacity.
+- By day: dashed outline (night echo blue, 2 px) at the frozen position, eyes at 60% opacity.
 - *(planned art pass, A1)*: decide size after playtest (they're smaller than the worker now); per-kind silhouette (lurker hunched, peeker tall/thin, squatter wide and smug); a 2-frame walk wobble for lurkers; peeker pop-up squash.
 - *(planned, A1)* **Personality touches**, all inside the existing silhouette language (black body, cyan rim, yellow eyes):
   - tiny **hands** gripping the ledge on the peeker;
@@ -101,7 +116,7 @@ Graphics is a rated jam category. Simple shapes score well when they look *chose
 
 ## 6. Environment
 
-- Background: six big windows across the back wall (40 px margin, 160 px spacing, 4 panes each). Day: bright panes. Night: most windows lit warm, some dark; stars above.
+- Background: six big windows across the back wall (40 px margin, 160 px spacing, 4 panes each), kept faint so they never read as platforms. Day: pale panes. Night: most windows faintly lit warm, some dark; dim stars above.
 - Solids: day = brick courses; night = inset panel seams.
 - *(planned, A3)* Props per level, never collidable: notice board with memos, vents (where peekers live), barrier tape at shafts, pallets on delivery stacks, signage ("CLOSING TIME", "WET FLOOR"), footprints leading to prank targets.
 
@@ -109,8 +124,8 @@ Graphics is a rated jam category. Simple shapes score well when they look *chose
 
 | Element | Spec |
 |---|---|
-| Font | System `monospace`. Sizes: 72 bold (title), 22 bold (timecard title), 16–20 (HUD), 14 (notes), 12 (footnotes) |
-| HUD | Top-left `n/6 LEVEL NAME` (16 bold); top-right shift label + icon; below it `CLOCK-INS n · PAR p` (14); level note for the first 5 s |
+| Font | System `monospace`. Sizes: 72 bold (title), 22 bold (timecard title, tutorial), 15–18 (HUD), 15 (level notes), 12 (footnotes) |
+| HUD | Top-left `n/6 LEVEL NAME` (18 bold); top-right shift label + icon; below it `CLOCK-INS n · PAR p` (15 bold, red over par); level note for the first 5 s (15). All with a halo (§3.1) |
 | Tutorial | Level 1 until first shift: "Press SHIFT (or K) to change shifts" + "Dashed outlines show the other shift" |
 | Shift effect | Screen tint 0.12 s (day: warm `rgba(255,240,200,·0.22)`, night: blue `rgba(40,80,200,·0.18)`), expanding ring 0.3 s from the worker |
 | Death effect | Red tint 0.3 s |
