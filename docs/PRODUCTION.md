@@ -14,7 +14,7 @@ Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-01** (night of d
 | Audio | Synthesized SFX only; **no music yet** |
 | Menus | Title, pause, timecard, end screen. **No settings, no level select, no save** |
 | Tests | 42 passing (`npm test`) |
-| Repo / CI / itch | Local folder only. **No git repo, no CI file, no itch page** |
+| Repo / CI / itch | Local git repo with CI workflow committed. **Not on GitHub yet, no itch page** |
 
 ## 2. Milestones
 
@@ -35,7 +35,7 @@ Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-01** (night of d
 ### Week 1 (Nov 2–8): make it feel right
 - Play everything on Windows; record Sticky Keys result in GDD §3.2 (decides Shift vs K as primary bind).
 - Tuning pass on `PARAMS` (TECH.md §4): run speed, jump height, air control, coyote, shift buffer.
-- Create the public GitHub repo, push, add `.github/workflows/ci.yml` by hand (content in TECH.md §8).
+- Create the public GitHub repo and push (CI workflow already committed, TECH.md §8).
 - Decide **camera vs single-screen rooms** (see §5, open decisions).
 - Freak readability: test freak size (currently 20×22 vs worker 18×26). Bump if testers miss them.
 - First cold playtest on levels 1–6.

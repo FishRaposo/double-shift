@@ -139,7 +139,7 @@ Test style: build tiny ASCII levels with `level(day, night, extra)` and assert o
 
 ## 8. CI
 
-Create `.github/workflows/ci.yml` (couldn't be written remotely):
+`.github/workflows/ci.yml` runs on every push and pull request:
 
 ```yaml
 name: ci
