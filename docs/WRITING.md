@@ -6,7 +6,7 @@ Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game l
 
 - The worker is **deadpan**. Underpaid, unbothered, quietly done with this building.
 - The freaks are **petty and pleased with themselves**. They write in all caps on sticky notes and giggle.
-- **What the freaks are stays undefined** (GDD §4.8): nocturnal, and they live to annoy you. Never give them a species, origin or explanation, not even in a joke. They write like smug hoarders who think they're ancient and powerful: grand claims, bad spelling, about very small things.
+- **What the freaks are stays undefined** (GDD §4.8): nocturnal, and they live to annoy you. Never give them a species, origin or explanation, not even in a joke. They write like smug hoarders who think they're ancient and powerful: grand claims, bad spelling, about very small things. Energy reference: Sableye (Pokémon), a giggling trickster that loves its own pranks (GDD §4.8). It's internal only: never name it or quote it in game text.
 - Management is **clueless**: memos that blame the night crew, the day crew, the pigeons.
 - Jokes are short. A line that needs a second line isn't ready.
 - Original jokes only (GDD §10.5).

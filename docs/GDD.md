@@ -30,7 +30,7 @@ This GDD decides *what* the game is. The production docs in this folder decide *
 | §1.7 Theme: added the readings the jam page itself lists (night shift, Sticky Keys) | Theme interpretation is a rated category |
 | §10.1: art stays **code-drawn, as a deliberate style**; no outside artist for the jam | Fish's decision 2026-11-01. Graphics is rated, so "placeholder" has to become a style (ART.md §1.1). |
 | §18: three jam risks added | Innovation overlap, raters quitting before the freaks, a low rating count |
-| **Freak personality** (§4.8): nocturnal little menaces who exist to annoy you. Reference: *they act like raccoons who know dark magic*. That describes behavior only; **what they actually are stays undefined.** | Fish's direction, 2026-11-02. Gives art, audio and writing one shared attitude to draw from, without answering the mystery. |
+| **Freak personality** (§4.8): nocturnal little menaces who exist to annoy you. References: *they act like raccoons who know dark magic*, and Sableye (Pokémon) as the model prankster. Both describe behavior only; **what they actually are stays undefined.** | Fish's direction, 2026-11-02. Gives art, audio and writing one shared attitude to draw from, without answering the mystery. |
 
 ## v0.3
 
@@ -464,7 +464,14 @@ Layer differentiation never relies on color alone: solid vs. echo is filled vs. 
 
 **What the freaks are stays undefined.** The only facts: they're nocturnal, and they're little menaces who exist to annoy you. Don't give them a species, an origin or an explanation in any doc or in the game.
 
-**How they act.** Fish's reference: *they act like raccoons who know dark magic.* That's about behavior, not what they are:
+**How they act.** Fish's references, both about behavior, not what they are:
+
+- *They act like raccoons who know dark magic.*
+- **Sableye (Pokémon) is the model prankster:** a gleeful little menace that lurks in the dark, giggles, grabs shiny things, and plays tricks with dark powers purely for fun. That's the energy: mischievous, delighted with itself, a bit unsettling, never evil.
+
+**Use it for attitude only, never for looks or names.** Sableye is someone else's character. Don't borrow anything that identifies it: no gem eyes, no gem on the chest, no purple goblin body, no toothy grin. Don't mention it in the game, on the itch page or in marketing either. The freaks keep their own look (ART.md §5): lumpy black silhouettes with plain glowing eyes. This matches the "original jokes only" rule (§10.5).
+
+What that means in play:
 
 - **Nosy, grabby, territorial.** They take what isn't theirs (planks, doors, snacks), hoard it, rearrange it, and claim it with sticky notes. They scatter the moment they're noticed.
 - **Impossible pranks for petty reasons.** They pull off things that shouldn't be possible (a plank somehow over the other pit, a pillar moved without the building falling down), and it's always just to mess with you. Nobody sees how. Pranks happen at the instant of a shift (§4.9).

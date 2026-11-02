@@ -85,6 +85,7 @@ Graphics is a rated jam category. Simple shapes score well when they look *chose
 ## 5. The freaks
 
 - **Nature undefined** (GDD §4.8). Draw attitude (nosy, grabby, smug), never a recognizable animal or creature type.
+- **Attitude reference: Sableye (Pokémon)**: gleeful, lurking in the dark, delighted with its own tricks. Take the *energy* only. Never take its look: no gem eyes, no chest gem, no purple goblin body, no toothy grin. Our freaks stay black lumps with plain square eyes, and expression comes from timing (blinks, narrowing, jitter, peeking).
 - **Never fully shown.** No faces beyond eyes, no full-light view, no close-up.
 - Silhouette: a 20×22 lumpy shape with 3 fur spikes on top, jittering ±1.2 px (`sin(t·14)`), body `#05060f` with a faint cyan rim so it reads against the night solids.
 - Eyes: two 3×3 px squares, `rgba(255,236,90)`, blink (closed ~0.12 s every ~3.1 s, offset per freak). Lurker eyes glance in its travel direction.
