@@ -134,7 +134,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 - ✅ Prank sparkle: plus-shaped twinkles in the freak-eye yellow over the changed tiles (0.5 s). Off with reduced effects.
 - *(post-jam)* Scatterer: scurry pose.
 
-### 5.1 New freaks *(sprites built 2026-11-02; levels pending, tier C)*
+### 5.1 New freaks *(built 2026-11-02; used in `supervisor` and `daywalker`)*
 
 | Freak | Look | Facing / state cue | Colors (existing only) |
 |---|---|---|---|
@@ -146,9 +146,9 @@ The screen should read in this order: **worker → what's solid now → hazards 
 
 - Background: six big windows across the back wall (40 px margin, 160 px spacing, 4 panes each), kept faint so they never read as platforms. Day: pale panes. Night: most windows faintly lit warm, some dark; dim stars above.
 - Solids: day = brick courses; night = inset panel seams.
-- *(planned, A3)* Props per level, never collidable: notice board with memos, vents (where peekers live), barrier tape at shafts, pallets on delivery stacks, signage ("CLOSING TIME", "WET FLOOR"), footprints leading to prank targets.
+- ✅ Props per level, never collidable (§6.2): notice board with memos, vents (where peekers live), barrier tape at shafts, pallets on delivery stacks, signage ("CLOSING TIME", "WET FLOOR"), footprints leading to prank targets.
 
-### 6.1 New tiles and objects *(drawing built 2026-11-02 in `src/art.js`; levels pending)*
+### 6.1 New tiles and objects *(drawing built 2026-11-02 in `src/art.js`; wet floor and the offset floor signs are in use, the rest wait for their levels)*
 
 | Item | Level | Drawing | Colors |
 |---|---|---|---|
@@ -176,15 +176,15 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | `closing` | CLOSING TIME sign, laser warning stickers |
 | `midair` | Eyes in the dark (built), a vent |
 | `inventory` | Notice board with the plank memo, footprints to the second pit |
-| `watch` | Vents (peekers), a squatter's hoard |
+| `watch` | A vent, a mug by the spawn (the squatter's hoard is part of its sprite) |
 | `stairs` | The proud sign, eyes under the stairs |
 | `doors` | Empty frames, the pile, LOST & FOUND box |
-| `wet` | WET FLOOR signs, a mop bucket |
+| `wet` | A WET FLOOR sign, footprints on the wax |
 | `pillar` | Ceiling crack, dust outline, a memo |
-| `supervisor` | A desk on the perch, a NIGHT MANAGEMENT nameplate |
+| `supervisor` | A STAFF ONLY sign, a vent, footprints |
 | `stacked` | Three tells in view, chalk circles |
-| `offset` | Floor signs 3 / 3.5, an elevator button panel |
-| `daywalker` | A coffee mug left on the day floor |
+| `offset` | Floor signs 3 / 3.5 |
+| `daywalker` | A DAY SHIFT sign, a mug, footprints in the day-walker's tunnel |
 | `portrait` | EMPLOYEE OF THE MONTH plaque, the nail |
 | `clockout` | The time clock, a coat rack, eyes everywhere in the dark |
 
@@ -193,7 +193,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | Element | Spec |
 |---|---|
 | Font | The pixel font (§0). Scales: 9 logo, 6 act title, 4 screen titles, 3 headings and tutorial, 2 HUD and body, 1 footnotes and debug |
-| HUD | Top-left `n/6 LEVEL NAME`; top-right shift label + pixel sun / crescent moon; below it `CLOCK-INS n · PAR p` (red over par); the level note centred on the third line for the first 5 s. All scale 2 with a halo (§3.1) |
+| HUD | Top-left `n/N LEVEL NAME`; top-right shift label + pixel sun / crescent moon; below it `CLOCK-INS n · PAR p` (red over par); the level note centred near the bottom of the screen for the first 5 s (where it can't cover an exit, a tell or a freak). All scale 2 with a halo (§3.1) |
 | Tutorial | Level 1 until first shift: "Press SHIFT (or K) to change shifts" + "Dashed outlines show the other shift" |
 | Shift effect | Screen tint 0.12 s (day: warm `rgba(255,240,200,·0.22)`, night: blue `rgba(40,80,200,·0.18)`), expanding ring 0.3 s from the worker |
 | Death effect | Red tint 0.3 s |

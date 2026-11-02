@@ -27,7 +27,7 @@ Everything the finished jam game contains, in one place. Each row has an ID, its
 | Offset layer | `offset` | Nov 17 |
 | Content freeze (everything) | — | Nov 22 |
 
-Levels are referred to by `id` everywhere, never by number, so a cut never renumbers anything.
+Levels are referred to by `id` everywhere, never by number, so a cut never renumbers anything. The `#` in §2 is the slot in the full 16-level plan; the game numbers levels by their position in `src/levels.js` (the HUD shows `n/N`), so in today's build Wet Floor is 7/10, Night Management 8/10, Broad Daylight 9/10 and Floor 3.5 10/10.
 
 ## 2. Levels
 
@@ -47,8 +47,8 @@ Full specs: [LEVELS.md](LEVELS.md) §4 (built) and §5 (planned).
 | 10 | 3 | Structural Integrity | `pillar` | A pillar moves each night clock-in | B | planned |
 | 11 | 3 | Night Management | `supervisor` | Supervisor freak: watched freaks work, the rest slack off | C | ✅ built |
 | 12 | 3 | Stacked | `stacked` | Several queued pranks; the order of clock-ins | A | planned |
-| 13 | 4 · Lights Out | Floor 3.5 | `offset` | Offset layer: night is the day map half a storey up | C | ✅ built |
-| 14 | 4 | Broad Daylight | `daywalker` | Day-walker freak: active by day, frozen by night | C | ✅ built |
+| 13 | 4 · Lights Out | Broad Daylight | `daywalker` | Day-walker freak: active by day, frozen by night; you must freeze it | C | ✅ built |
+| 14 | 4 | Floor 3.5 | `offset` | Offset layer: night is the day map half a storey up | C | ✅ built |
 | 15 | 4 | Employee of the Month | `portrait` | The portrait blocks the exit and is rehung each clock-in | B | planned |
 | 16 | 4 | Clock Out | `clockout` | Finale: everything from tiers A–B, final timecard | A | planned |
 
@@ -84,14 +84,14 @@ Specs: [ART.md](ART.md). Palette rule: existing colors only, unless a color gets
 |---|---|---|---|---|---|
 | ART-1 | Worker animation: idle bob, 4-frame run, jump, fall, spooked boots gag, respawn pop | Every level | P1 | ART §4 | ✅ |
 | ART-2 | Freak art pass: lurker, peeker, squatter personality touches (hands, hoard, smug eyes) | Act 2+ | P0 | ART §5 | ✅ |
-| ART-3 | Supervisor freak: clipboard, head that turns, a readable facing cue | `supervisor` | C | ART §5.1 | ✅ built, level pending |
-| ART-4 | Day-walker freak: dark against the warm day sky; dashed outline by night | `daywalker` | C | ART §5.1 | ✅ built, level pending |
-| ART-5 | Wet floor `~`, both shifts (sheen lines + WET FLOOR sign; non-color cue: wavy top edge) | `wet` | C | ART §6.1 | ✅ built, level pending |
+| ART-3 | Supervisor freak: clipboard, head that turns, a readable facing cue | `supervisor` | C | ART §5.1 | ✅ |
+| ART-4 | Day-walker freak: dark against the warm day sky; dashed outline by night | `daywalker` | C | ART §5.1 | ✅ |
+| ART-5 | Wet floor `~`, both shifts (sheen lines + WET FLOOR sign; non-color cue: wavy top edge) | `wet` | C | ART §6.1 | ✅ |
 | ART-6 | Doors (closed, missing frame) and the door pile | `doors` | B | ART §6.1 | ✅ built, level pending |
 | ART-7 | Pillar (and the ceiling crack where it used to be) | `pillar` | B | ART §6.1 | ✅ built, level pending |
 | ART-8 | Staircase to nowhere + the freaks' proud sign | `stairs` | B | ART §6.1 | ✅ built, level pending |
 | ART-9 | Portrait ("just eyes") | `portrait` | B | ART §6.1 | ✅ built, level pending |
-| ART-10 | Offset-layer echo treatment (floor label "3.5") | `offset` | C | ART §6.1 | ✅ built, level pending |
+| ART-10 | Offset-layer echo treatment (floor label "3.5") | `offset` | C | ART §6.1 | ✅ |
 | ART-11 | Props per level: notice board, vents, barrier tape, pallets, signage, footprints, chalk circles | Every level | P1 | ART §6, §6.2 | ✅ |
 | ART-12 | Effects: prank sparkle, freeze cue on shift to day, checkpoint ping | Every level | P1 | ART §5, §7 | ✅ |
 | ART-13 | UI screens: title with level select ✅, level select ✅, settings, act cards, timecard with comment, end screen with totals, credits | Shell | P0–P1 | ART §7.1 | ✅ except credits |
@@ -111,12 +111,12 @@ Specs: [AUDIO.md](AUDIO.md).
 | SND-3 | Act layers: an extra part added to the music per act | Pacing | *stretch* | AUDIO §3.1 | — |
 | SND-4 | Peeker boing, lurker steps, freeze scratch, prank shimmer, peeker scratch | Act 2+ | P1 | AUDIO §4 | ✅ |
 | SND-5 | UI move/select clicks | Menus | P1 | AUDIO §4 | ✅ |
-| SND-6 | Wet-floor squeak (hard stop) | `wet` | C | AUDIO §4.1 | ✅ built, level pending |
+| SND-6 | Wet-floor squeak (hard stop) | `wet` | C | AUDIO §4.1 | ✅ |
 | SND-7 | Door-steal thunk (layered on the prank giggle) | `doors` | B | AUDIO §4.1 | ✅ built, level pending |
 | SND-8 | Pillar scrape | `pillar` | B | AUDIO §4.1 | ✅ built, level pending |
-| SND-9 | Supervisor clipboard tick + turn whoosh | `supervisor` | C | AUDIO §4.1 | ✅ built, level pending |
-| SND-10 | Offset rumble (on night entry in `offset`) | `offset` | C | AUDIO §4.1 | ✅ built, level pending |
-| SND-11 | Day-walker giggle (by day) | `daywalker` | C | AUDIO §4.1 | ✅ built, level pending |
+| SND-9 | Supervisor clipboard tick + turn whoosh | `supervisor` | C | AUDIO §4.1 | ✅ |
+| SND-10 | Offset rumble (on every shift in `offset`) | `offset` | C | AUDIO §4.1 | ✅ |
+| SND-11 | Day-walker giggle (by day) | `daywalker` | C | AUDIO §4.1 | ✅ |
 | SND-12 | Act-card sting | SYS-8 | P1 | AUDIO §4.1 | ✅ |
 
 ## 6. Text
@@ -125,14 +125,14 @@ Specs and drafts: [WRITING.md](WRITING.md). Fish writes the final words.
 
 | ID | Item | Spec | Status |
 |---|---|---|---|
-| TXT-1 | Level notes: 6 ✅, 10 new (from Fish's idea-pool lines, trimmed to one line) | WRITING §3 | 6 ✅, 10 drafted |
+| TXT-1 | Level notes for all 16 (from Fish's idea-pool lines, trimmed to one line) | WRITING §3 | 10 ✅, 6 drafted |
 | TXT-2 | One notice-board memo per level | WRITING §6 | drafts |
 | TXT-3 | Prank tell variants (MINE and friends) | WRITING §5 | drafts |
-| TXT-4 | Act card titles and one-line subtitles | WRITING §2.1 | drafted |
-| TXT-5 | Timecard comments | WRITING §7 | drafts |
+| TXT-4 | Act card titles and one-line subtitles | WRITING §2.1 | ✅ |
+| TXT-5 | Timecard comments | WRITING §7 | ✅ |
 | TXT-6 | UI strings: level select, settings, credits, Sticky Keys joke | WRITING §2.1 | drafted |
 | TXT-7 | Ending (`clockout`) | WRITING §8 | draft |
-| TXT-8 | itch description refresh when levels ship | [itch/page.md](../itch/page.md) §4 | ✅ for 6 levels |
+| TXT-8 | itch description refresh when levels ship | [itch/page.md](../itch/page.md) §4 | ✅ for 10 levels |
 | TXT-9 | Devlog #1 (launch), #2 (post-jam) | RELEASE §5–6 | planned |
 
 ## 7. Schedule (summary; details in PRODUCTION.md §2–3)

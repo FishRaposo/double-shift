@@ -93,19 +93,19 @@ Same loop, one added part per act so the game builds without new songs: act 2 ad
 | Wet floor slide | Squeak on hard stop |
 | Menu move / select | Soft clicks |
 
-### 4.1 SFX for the new levels *(built 2026-11-02; triggered when their levels are built)*
+### 4.1 SFX for the new levels *(built 2026-11-02; wet, supervisor, offset and day-walker sounds are wired; door and pillar sounds wait for their levels)*
 
 Same `tone()` format as §2; every sound ≤ 0.25 s.
 
 | Event | Level | Sound | Values (starting point) |
 |---|---|---|---|
-| Wet-floor squeak (hard stop on `~`) | `wet` | Rubbery squeak | square 900 → 1300 Hz, 0.08 s, vol 0.1, with a 6 Hz wobble |
+| Wet-floor squeak (hard stop on `~`) | `wet` | Rubbery squeak | square 900 → 1300 Hz, 0.08 s, vol 0.06, 6 Hz wobble, 3 kHz low-pass |
 | Door-steal thunk (layered on the prank giggle) | `doors` | Wooden thunk | sine 180 → 90 Hz, 0.1 s, vol 0.25 |
 | Pillar scrape | `pillar` | Stone scrape | sawtooth 70 → 55 Hz, 0.22 s, vol 0.15 (only on a prank, never per tick) |
-| Supervisor clipboard tick | `supervisor` | Pen tick | square 2000 Hz, 0.02 s, vol 0.06, every turn |
-| Supervisor turn whoosh | `supervisor` | Short whoosh | triangle 600 → 300 Hz, 0.1 s, vol 0.08 |
-| Offset rumble (night entry in `offset`) | `offset` | Low rumble | sine 55 → 45 Hz, 0.25 s, vol 0.2 |
-| Day-walker giggle (by day) | `daywalker` | Giggle, pitched up | 4 triangle blips 1100/1300 → 900 Hz, 0.05 s each, 60 ms apart, vol 0.12 |
+| Supervisor clipboard tick | `supervisor` | Pen tick | square 2000 Hz, 0.02 s, vol 0.04, every turn |
+| Supervisor turn whoosh | `supervisor` | Short whoosh | noise, band-pass 600 → 300 Hz, 0.1 s, vol 0.05 |
+| Offset rumble (every shift in `offset`) | `offset` | Low rumble | sine 55 → 45 Hz, 0.25 s, vol 0.2, plus low-passed noise |
+| Day-walker giggle (by day) | `daywalker` | Giggle, pitched up | 4 triangle blips 1100/1300 → 900 Hz, 0.05 s each, 60 ms apart, vol 0.11 |
 | Act-card sting | act cards | Two-chord sting | triangle 392 + 494 Hz, then 523 + 659 Hz, 0.12 s each |
 
 ## 5. Mixing checklist
@@ -114,4 +114,4 @@ Same `tone()` format as §2; every sound ≤ 0.25 s.
 - [ ] Spook + death tint + giggle at once: still readable.
 - [ ] Music under SFX: shift blip always audible over the night organ.
 - [ ] Mute works on every screen.
-- [ ] Settings volumes (planned) persist with save data.
+- [x] Settings volumes persist (`createSettings`, `src/save.js`).

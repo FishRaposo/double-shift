@@ -8,12 +8,12 @@ Companion to [GDD.md](GDD.md) §6 and §8. Tile = 30 px. Levels are 32×18 tiles
 - 10 built (§4), 6 planned with full specs (§5): 16 levels in four acts. Jam minimum (tier A): the 6 originals + `stacked` + `clockout`.
 - Nothing ships without a scripted par solution in the tests and the §6 checklist.
 
-## 1. Movement metrics (from `PARAMS`, 2026-11-01)
+## 1. Movement metrics (from `PARAMS`, measured 2026-11-02)
 
 | Metric | Value | Design rule |
 |---|---|---|
 | Run speed | 270 px/s = **9 tiles/s** | |
-| Full jump height | ≈ 96 px = **3.2 tiles** | Rises of **≤ 3 tiles** are jumpable. Walls **≥ 4 tiles** block. |
+| Full jump height | ≈ 93.5 px = **3.1 tiles** (measured at 120 Hz) | Rises of **≤ 3 tiles** are jumpable. Walls **≥ 4 tiles** block. |
 | Tap jump height | ~20–40 px | Hold matters; don't require exact heights |
 | Full-jump airtime | 0.62 s | |
 | Flat jump reach at full speed | ≈ 167 px ≈ 5.6 tiles | Gaps: **≤ 4 tiles** comfortable, 5 = skill, 6 = near-impossible, **≥ 7 = impossible** (use 8 for "must shift" gaps to be safe with coyote time) |
@@ -23,7 +23,9 @@ Companion to [GDD.md](GDD.md) §6 and §8. Tile = 30 px. Levels are 32×18 tiles
 | Shift nudge | 4 px | Overlaps of ≤ 4 px into a wall resolve automatically |
 | Freak box | 20 × 22 px, sits on its tile's floor | |
 
-**Shift windows:** wherever the player must be in a specific shift, leave **≥ 1 tile** where both shifts are safe to switch in (≈ 0.11 s at full run). Use **0.5 tile** only in act 3–4 precision levels.
+**Fairness floor (Fish, 2026-11-02), enforced by `test/fairness.test.mjs`:** every shift and jump the scripted solution needs must have **≥ 200 ms** of slack in acts 1–2 and **≥ 100 ms** in acts 3–4 (one press moved earlier/later, everything else unchanged, still wins). At a full run 200 ms ≈ 1.8 tiles: leave about 2 tiles where both shifts are safe to switch in. The same tests check that no spawn or checkpoint sits in a freak's patrol and that no freak patrols over the exit.
+
+`npm run audit` prints, per level: the slack of every required input, how much input lag the solution tolerates, and a random search for wins below par or without shifting. Run it after any level or `PARAMS` change.
 
 **Re-verify all of this after any `PARAMS` change** (`npm test` re-proves every par).
 
@@ -81,62 +83,66 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 - **Lesson:** Shift changes the world; you'll need to go both ways.
 - **Day:** floor with an 8-tile gap (cols 12–19). **Night:** continuous floor, but a full-height gate at col 24.
 - **Solution:** shift to night before the gap, cross, shift back to day before the gate, exit.
-- **Tutorial prompt** shows until the first shift.
-- *Polish:* make the gap read as a renovation shaft (barrier tape, a sign).
+- **Tutorial prompt** shows until the first shift. Barrier tape and a RENOVATION note dress the shaft.
+- **Freak evidence:** a peeker sits on a night-only crate at col 26 (so it can never touch the player) and footprints lead past the gate.
 
 ### 2. Scaffolding: par 1 (act 1)
 - **Lesson:** use the other shift's geometry to get past a block.
-- **Both:** raised block (cols 16–31 from row 8). **Day only:** scaffolding steps (rows 12 and 10) and a full-height delivery stack on the ledge (cols 23–24).
+- **Both:** raised block (cols 16–31 from row 8). **Day only:** scaffolding steps (row 12 cols 6–9, row 10 cols 11–13) and a full-height delivery stack on the ledge (cols 23–24).
 - **Solution:** climb the day scaffolding, shift to night to pass the deliveries.
-- *Polish:* the stack should look like crates/pallets.
+- The first step is 4 tiles wide (was 3): from a full run the jump onto it has ≈ 400 ms of slack.
 
 ### 3. Closing Time: par 2 (act 1)
 - **Lesson:** hazards and walls are per-shift; you choose which shift you're in, section by section.
-- **Night:** gate col 9, lasers cols 20–25, gate col 27. **Day:** rebar cols 11–17, delivery wall col 18.
+- **Night:** gate col 9, lasers cols 21–25, gate col 27. **Day:** rebar cols 12–17, delivery wall col 18.
 - **Solution:** day past the col-9 gate → night over the rebar and past col 18 → day over the lasers and past col 27.
-- *Polish:* this is the first level with timing pressure on the shift; confirm in playtest that the window after col 9 isn't too tight.
+- Each hazard starts two tiles after the wall before it, so each ground shift has ≈ 1.4 tiles (≈ 250 ms at a run). Before the 2026-11-02 audit it was 0.4 tile, passable only thanks to the shift buffer.
+- **First frozen freak:** a peeker at col 28 (between the night gate and the exit). By day you walk through its outline on the way out.
 
 ### 4. Mid-Air: par 3 (act 1)
 - **Lesson:** shift during a jump.
 - **Both:** start ledge (cols 0–5), end ledge (cols 27–31), pit between. **Night:** platforms cols 9–11 and 21–23 (row 13). **Day:** platform cols 15–17 (row 12) with a checkpoint.
 - **Solution:** jump, shift to night mid-air, land; jump, shift to day, land; jump, shift to night, land; run to the exit.
-- **Decor:** two pairs of eyes blink in the dark on the night shift. First hint of the freaks.
+- **Decor:** two pairs of eyes blink in the dark on the night shift.
+- The checkpoint at (16,11) used to save you at night if you passed it mid-air there, with no floor under it — an endless respawn into the pit. Checkpoints now save only in a shift with floor under them (TECH.md §3.2).
 
 ### 5. Inventory: par 3 (act 2)
 - **Lesson:** every clock-in changes the night (first prank).
 - **Both:** floors cols 0–6, 15–19, 28–31; pits cols 7–14 and 20–27 (both 8 wide, unjumpable). **Night:** a plank over the first pit.
 - **Prank `plank`** on night entry 2: the plank moves to the second pit. **Tell** above the second pit (eyes at night, MINE note by day).
 - **Solution:** night across pit 1 → day on the middle floor → night again (plank has moved) across pit 2.
-- *Polish:* the middle floor should invite the step-out (a sign, the note in view).
 
 ### 6. Night Watch: par 4 (act 2)
 - **Lesson:** freaks freeze when you go to day; three freak types.
-- **Both:** floor, and a building mass (cols 6–19) with a one-tile tunnel on row 13. **Day:** crates seal both tunnel mouths (cols 6–8, 17–19); rebar cols 21–25.
-- **Freaks (night):** lurker in the tunnel (col 11, range 3, 55 px/s), peeker at col 23 (1.6 s cycle, out 50%), squatter at col 28.
+- **Both:** floor, and a building mass (cols 6–19) with a one-tile tunnel on row 13. **Day:** crates seal both tunnel mouths (cols 6–8, 17–19); rebar cols 21–25. **Night:** a low roof (row 12, cols 20–29) continues the tunnel over the peeker and squatter.
+- **Freaks (night):** lurker in the tunnel (col 11, range 3, 55 px/s), peeker at col 23 (1.6 s cycle, out 50%), squatter at col 29.
 - **Solution:** night into the tunnel → day to walk past the frozen lurker → night out of the tunnel and past the day rebar, timing the peeker → day around the squatter.
+- The night roof closes a 3-clock-in skip (jumping the peeker and the squatter at night); a test pins it.
 
 ### 7. Wet Floor: par 4 (act 3)
 - **Lesson:** night floors are waxed — you keep sliding; the day shift gives grip back.
-- **Day:** walls split the corridor, and a pit (cols 19–24) keeps the day route from skipping the lurker stretch. **Night:** one long `~` tunnel (cols 5–31, roofed rows 0–12): lasers partway down, a lurker at the far end.
-- **Solution:** night into the tunnel → day over the first wall → night back in → day to brake on the dry strip before the lasers → night through the second stretch → day to stop short of the lurker and walk past its outline.
-- The 1-tile tunnel makes the lasers and the lurker unjumpable: braking on dry ground is the only way. Checkpoints sit before the lasers and before the lurker.
+- **Day:** walls at col 4 and cols 15–16, and a pit (cols 19–24) that keeps the day route from skipping the lurker. **Night:** one long `~` corridor (cols 5–31) under a roof (rows 0–12, cols 8–30): lasers at cols 10–11, a lurker near the far end. Exit at col 31, past the lurker's reach.
+- **Solution:** night onto the wax (the col-4 wall) → day before the lasers (dry floor: you stop) and walk past them → night again before the day wall at 15–16 → day to stop short of the lurker and walk past its outline.
+- Inside the 1-tile tunnel you can't jump, and on wax steering back takes ≈ 2.4 tiles to stop (no turn-around boost, `wetAccel` 500), so the dry day floor is the brake. Checkpoints before the lasers and before the lurker.
 
 ### 8. Night Management: par 2 (act 3)
 - **Lesson:** freaks only work while watched — cross on the side the supervisor isn't facing.
-- **Night:** the supervisor sits mid-screen (2 s per facing). A lurker patrols each side; only the watched one moves. **Day:** solid mass blocks the corridors, so the crossings must be at night.
-- **Solution:** wait for the right facing, cross the far side, reach the perch, wait again, cross back past the other side to the exit.
+- **Night:** the supervisor sits on a perch mid-screen (out of reach) and turns every 2 s. A lurker patrols a 1-tile tunnel on each side; only the watched one moves. **Day:** walls at cols 11–12 and 20–21 force night for both crossings; a night wall at cols 26–27 forces day for the exit.
+- **Solution:** clock into night short of the first tunnel, wait for the supervisor to face right, cross; wait in the nook (cols 14–18, checkpoint at col 16) for it to face left, cross; back to day at the night wall.
 
-### 9. Floor 3.5: par 4 (act 4)
+### 9. Broad Daylight: par 5 (act 4)
+- **Lesson:** day is no longer safe — one freak works the day shift — and each shift freezes the other shift's freaks.
+- **Two tunnels, mirror images.** First a day tunnel under a building (cols 7–15, rows 0–12) with the day-walker in it (col 10, range 2); night gates at cols 6 and 16 let only the day shift in and out. Then `watch`'s tunnel the other way round: a building at cols 19–27 with day pillars at 19 and 27 and a lurker inside (col 22, range 2). Checkpoint at col 17 between them.
+- **Solution:** day into the first tunnel → night inside (the day-walker freezes; walk through its outline) → day before the far gate → night into the second tunnel → day to freeze the lurker → night out → exit.
+- Rebuilt 2026-11-02: the first version let you simply jump over the day-walker, so its mechanic was never needed. Two tests pin it now (staying on day gets you spooked; jumping can't clear it).
+
+### 10. Floor 3.5: par 4 (act 4)
 - **Lesson:** the night shift is the same building half a storey higher — shift at a jump's apex to step onto the other shift's floor.
-- **Day:** a tower of ledges (floor, then ledges at +6 and +12 tiles). **Night** is generated by `offset: { dx: 0, dy: -3 }` plus a laser patch where the day floor has no copy.
+- **Day:** a tower of ledges (floor, then ledges at +6 and +12 tiles; the top ledge runs cols 11–24 with the exit at col 22). **Night** is generated by `offset: { dx: 0, dy: -3 }` plus a laser patch where the day floor has no copy.
 - **Solution:** four hops — jump and shift at the apex, alternating day/night, each time landing on a floor's copy 3 tiles up. Grounded shifts are refused (the copy would embed you), which the first floor teaches.
-- **Window measured at build:** with `dy: -3` and the ≈ 3.2-tile jump, the feet are clear of the copy's floor top for ≈ 0.16 s around the apex; the 80 ms shift buffer covers the rest of the clear zone. Proven tight but fair by the scripted par solution; `dy: -2` remains the fallback if playtests call it too strict.
+- The exit sits at col 22 so it can't be reached by a head-bump jump from the night ledge below (a skip of the hardest hop found in the audit).
+- **Margin:** the full jump peaks at ≈ 93.5 px against the 90 px needed (plus the 4 px nudge): each apex shift has ≈ 250 ms. Any lower `jumpVelocity` breaks this level first — re-run `npm run audit` after tuning. `dy: -2` is the fallback.
 - **Props:** floor signs read 3 and 3.5.
-
-### 10. Broad Daylight: par 3 (act 4)
-- **Lesson:** day is no longer safe — one freak works the day shift, and each shift freezes the other's freaks.
-- **Day:** the day-walker patrols an open corridor whose night version is a 9-tile pit — you must be on day there and dodge it. **Night:** a lurker patrols a sealed-tunnel stretch, like `watch`.
-- **Solution:** dodge the day-walker along the corridor (or ghost through it mid-air), night through the pit stretch, then shift to day inside the tunnel to freeze the lurker and walk past its outline.
 
 ## 5. Planned levels (specs)
 
@@ -153,7 +159,7 @@ Six more levels take the game to 16 in four acts (manifest: [CONTENT.md](CONTENT
 | 15 | 4 | Employee of the Month | `portrait` | B |
 | 16 | 4 | Clock Out | `clockout` | A |
 
-### 7. Under Renovation (`stairs`): target par 2 (act 2, tier B)
+### Under Renovation (`stairs`, slot 7): target par 2 (act 2, tier B)
 - **Lesson:** height you only have on one shift can carry you into the other. A mid-air shift that starts from the top of something.
 - **Fiction:** "They've built an entirely unnecessary staircase. It leads nowhere. They're very proud."
 - **Night:** a staircase of 1-tile steps rising from about col 6 to a top step about 6 tiles above the floor, ending in mid-air (about col 16). Beyond it, nothing.
@@ -163,7 +169,7 @@ Six more levels take the game to 16 in four acts (manifest: [CONTENT.md](CONTENT
 - **Props:** a proud hand-painted sign at the stair top (WRITING.md §5), eyes under the stairs.
 - **Constraints:** step rises of 1 tile; ≥ 1 tile of open air above the ledge where both shifts are clear for the mid-air shift.
 
-### 8. Lost & Found (`doors`): target par 5 (act 2, tier B)
+### Lost & Found (`doors`, slot 8): target par 5 (act 2, tier B)
 - **Lesson:** sometimes you *want* the freaks to act. Clock-ins are a resource you spend on purpose.
 - **Fiction:** "The freaks have stolen every door. Not the keys. The doors."
 - **Both shifts:** three full-height doors (D1–D3, around cols 9, 15 and 21) cut the floor into rooms. The exit is on a ledge about 6 tiles up at the right end.
@@ -172,7 +178,7 @@ Six more levels take the game to 16 in four acts (manifest: [CONTENT.md](CONTENT
 - **Par note:** this level inverts "fewest clock-ins": par is the shifts needed to earn 3 night entries safely, proven by the scripted solution like every other par.
 - **Props:** door frames left behind (empty, non-solid), the pile, a LOST & FOUND box.
 
-### 10. Structural Integrity (`pillar`): target par 4 (act 3, tier B)
+### Structural Integrity (`pillar`, slot 10): target par 4 (act 3, tier B)
 - **Lesson:** one object, moved by each clock-in, is a wall in one place and a step in another. Count your night entries.
 - **Fiction:** "They've moved a load-bearing pillar. The building is somehow fine."
 - **Both shifts:** a mezzanine (top about 7 tiles above the floor) holds the exit.
@@ -182,7 +188,7 @@ Six more levels take the game to 16 in four acts (manifest: [CONTENT.md](CONTENT
 - **Props:** a ceiling crack and a dust outline where the pillar used to be; a memo about it.
 - **Constraints:** tells for all three positions are visible from the start (eyes/notes at P1–P3).
 
-### 12. Stacked (`stacked`): target par 4–5 (act 3, tier A)
+### Stacked (`stacked`, slot 12): target par 4–5 (act 3, tier A)
 - **Lesson:** several pranks are queued; each fixes one obstacle and breaks another. The puzzle is the order and place of your clock-ins.
 - **Fiction:** "They've been busy."
 - **Pranks:** three, on night entries 1, 2 and 3. Example chain: entry 1 bridges gap A but drops gate C; entry 2 opens gate C but takes away bridge A; entry 3 puts a plank over gap B.
@@ -190,7 +196,7 @@ Six more levels take the game to 16 in four acts (manifest: [CONTENT.md](CONTENT
 - **Uses:** existing systems only. A checkpoint between the halves (G3).
 - **Jam-minimum level:** it must ship.
 
-### 15. Employee of the Month (`portrait`): target par 3–4 (act 4, tier B)
+### Employee of the Month (`portrait`, slot 15): target par 3–4 (act 4, tier B)
 - **Lesson:** the obstacle and the tool are the same object, moved by each clock-in.
 - **Fiction:** "The freaks have installed a portrait of themselves. It blocks the exit."
 - **Night:** a big portrait (a solid block, about 2×3 tiles) hangs in front of the exit doorway.
@@ -199,7 +205,7 @@ Six more levels take the game to 16 in four acts (manifest: [CONTENT.md](CONTENT
 - **Solution:** use the portrait as a step at night (entry 2) to get onto the ledge, walk above the exit, shift to day and drop to the exit.
 - **Props:** the portrait is just eyes (WRITING.md §6 memo), a nail where it used to hang.
 
-### 16. Clock Out (`clockout`): target par 5–7 (act 4, tier A)
+### Clock Out (`clockout`, slot 16): target par 5–7 (act 4, tier A)
 - **Lesson:** everything you know, in one run. The ending.
 - **Fiction:** "Almost done. Don't look at the vents."
 - **Rooms:** (1) a mid-air shift chain over a pit (act 1); (2) a frozen-lurker pass through a tunnel (act 2); (3) one last telegraphed prank that has to be timed (act 2–3). Checkpoints between rooms.
@@ -209,7 +215,7 @@ Six more levels take the game to 16 in four acts (manifest: [CONTENT.md](CONTENT
 
 ## 5.1 Idea pool status
 
-All six ideas from Fish's pool (2026-11-02) are now planned levels: *Lost & Found* → `doors`, *Under Renovation* → `stairs`, *Structural Integrity* → `pillar`, *Night Management* → `supervisor`, *Employee of the Month* → `portrait`, *Floor 3.5* → `offset`.
+All six ideas from Fish's pool (2026-11-02) are slotted; `supervisor` and `offset` are built, the rest planned: *Lost & Found* → `doors`, *Under Renovation* → `stairs`, *Structural Integrity* → `pillar`, *Night Management* → `supervisor`, *Employee of the Month* → `portrait`, *Floor 3.5* → `offset`.
 
 **Post-jam pool**
 
@@ -231,11 +237,12 @@ Jam raters often play only the first couple of minutes (GDD §1.8), so act 1 sho
 ## 6. Level checklist (every level, before it ships)
 
 - [ ] Grids are 32×18, parse cleanly (`npm run check`).
-- [ ] A scripted solution in `test/levels.test.mjs` wins at ≤ par with no deaths.
+- [ ] A scripted solution in `test/solutions.mjs` wins at ≤ par with no deaths.
 - [ ] It can't be won without shifting.
 - [ ] Par is the fewest shifts *you* can find; try to beat it by hand once.
 - [ ] Every prank has a tell; every freak is visible or telegraphed before it can spook.
-- [ ] Every required shift has a ≥ 1-tile safe window (≥ 0.5 in acts 3–4).
-- [ ] The note line (5 s) is in WRITING.md and fits on one line at 14 px.
+- [ ] Every checkpoint has floor under it in at least one shift (it saves only in a shift that does).
+- [ ] `npm test` fairness tests pass (≥ 200 / 100 ms per required input; no respawn in a patrol; no freak over the exit), and `npm run audit` finds no win below par.
+- [ ] The note line (5 s, shown low on the screen) is in WRITING.md and fits on one line at scale 2 (14 px tall).
 - [ ] Played once by Fish; played cold by one tester (PLAYTEST.md).
 - [ ] No unintended shortcut that skips the level's lesson (shortcuts that need skill are allowed: GDD §8.6).

@@ -56,7 +56,7 @@ Then:
 | Platforms | HTML5 only |
 | Genre | Platformer (puzzle elements described in tags/description, not repeated as genre) |
 | Languages | English only |
-| Accessibility | Tick only what exists. Currently: none of the itch options (no rebinding yet, no colour-blind mode, no reduced-flash toggle yet). Revisit if A6/G12 ship. |
+| Accessibility | Tick only what exists. The build has a **reduced effects** setting (no screen flashes, rings or sparkles) and adjustable music/sound volume; tick itch's matching options if offered (e.g. reduced motion / flashing). No rebinding, no colour-blind mode yet. |
 | Community | Comments |
 | Theme | Background `#0b1029`, text `#d9f6ff`, links `#5ff2ff`; embed background `#0b1029` (ART.md §8) |
 | Visibility | Draft → play it on the page once → **Public** (the publish date is fixed at that click) |
@@ -91,7 +91,7 @@ Publishing ≠ indexing. After going Public, check in ~1 hour by searching the *
 >
 > You're covering a double shift, day and night, in the same building, at the same time. Press **Shift** to step between them, even mid-jump. The day crew's scaffolding catches you; the night's gate isn't down yet.
 >
-> But clocking in has a cost. Clock into the night a second time and the plank you crossed on is gone, moved over the next pit. Nobody knows what the freaks are. They giggle. They leave notes. And they only move at night, so step into the day shift and they freeze mid-stride.
+> But clocking in has a cost. Clock into the night a second time and the plank you crossed on is gone, moved over the next pit. Nobody knows what the freaks are. They giggle. They leave notes. And they only move at night, so step into the day shift and they freeze mid-stride. (Well. Most of them.)
 >
 > Finish each level clocking in as few times as possible. Your timecard is watching.
 

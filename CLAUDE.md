@@ -10,6 +10,7 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 npm test                                   # node --test test/*.test.mjs
 node --test --test-name-pattern="peeker" test/rules.test.mjs   # single test / subset
 npm run check                              # syntax-check src/*.js + validate every level via parseLevel
+npm run audit                              # per-level fairness: input slack, lag tolerance, below-par random search
 npm start                                  # local server + opens the browser (play.bat does the same on Windows)
 npm run serve                              # http://localhost:8080, no browser; next free port if busy (scripts/serve.mjs)
 npm run zip                                # double-shift-web.zip (index.html + src/) for itch.io
@@ -24,9 +25,9 @@ Tests and scripts target Node 22. URL flags for manual play: `?level=N`, `?autos
 
 - `src/rules.js` — all gameplay, pure (no DOM, no clock). `step(level, state, input)` returns a new state at a fixed `DT = 1/120`; it `structuredClone`s the previous state, so states are immutable snapshots and everything is deterministic. Per-tick `state.events` (`shift`, `prank`, `death`, `win`, …) are how `main.js` learns what to animate and play.
 - Order inside `step()` matters: shift resolves **first** (after any due prank), so a shift and a jump on the same tick see the new world. A blocked shift tries a ≤4 px nudge, then buffers 80 ms, then fails without touching the player.
-- `src/levels.js` — each level is two equal-size ASCII grids (`day`, `night`, currently 32×18 = one screen) plus optional `pranks`, `freaks`, `decor`. `S`/`E`/`C` are shared across layers; `#`/`^` are per layer.
+- `src/levels.js` — each level is two equal-size ASCII grids (`day`, `night`, currently 32×18 = one screen) plus optional `pranks`, `freaks`, `decor`. `S`/`E`/`C` are shared across layers; `#`/`^`/`~` are per layer. A checkpoint saves only in a shift with floor under it.
 - **Pranks** fire on the Nth entry into night (`onNight`) and write tile overrides into `state.overrides` (`'layer,tx,ty' → ch`); checkpoints snapshot and restore them.
-- **Freaks** have no mutable per-freak state: their position/`active` is a pure function of `state.freakClock`, which only advances on the night shift (so day freezes them). Add a kind in `freakBoxes()`, then draw it in `drawFreaks()` in `main.js`.
+- **Freaks** have no mutable per-freak state: their position/`active` is a pure function of a clock that only runs on their own shift (`freakClock` by night, `dayClock` for the day-walker; the supervisor's workers use `watchedClock`). Add a kind in `freakBoxes()`, then draw it in `drawFreak()` in `src/art.js`.
 - `src/input.js` — DOM-free key events → one input frame per tick. One shift per physical key-down; OS key-repeat ignored; presses between ticks are queued.
 - `src/main.js` — fixed-step loop (accumulator, ≤12 steps/frame), screens, draw order, event → sfx/fx; caches each level's static layer per shift × prank state.
 - Art is all code on a 2-px grid: `src/sprites.js` (string-grid sprites + pure `workerFrame`), `src/art.js` (tiles, props, effects, UI), `src/font.js` (pixel font; every printed character needs a glyph — a test checks the source). Review every asset at `/tools/gallery.html`.
@@ -35,7 +36,7 @@ Tests and scripts target Node 22. URL flags for manual play: `?level=N`, `?autos
 ## Tests
 
 - Edge-case tests build tiny ASCII levels with `level(day, night, extra)` from `test/helpers.mjs` and assert on state (`stepN`, `place`).
-- `test/levels.test.mjs` has a `SOLUTIONS` map keyed by level `id`: every level must have a scripted policy that wins at ≤ par with zero deaths, and must be unwinnable without shifting. **A new level needs a `SOLUTIONS` entry or the suite fails.** Policies read state like a player (position, layer, `freakClock`) rather than frame-exact scripts.
+- `test/solutions.mjs` has a `SOLUTIONS` map keyed by level `id`: every level must have a scripted policy that wins at ≤ par with zero deaths, and must be unwinnable without shifting. **A new level needs a `SOLUTIONS` entry or the suite fails.** `test/fairness.test.mjs` then requires ≥ 200 ms of slack on every required input in acts 1–2 (≥ 100 ms in acts 3–4), no respawn point in a patrol, no freak over an exit; `npm run audit` shows the numbers. Policies read state like a player (position, layer, `freakClock`) rather than frame-exact scripts.
 - Gotcha: `play()` turns a held shift into one press — a policy must release shift between two shifts.
 - Changing `PARAMS` (tuning) re-proves every par via `npm test`; also update the metrics table in `docs/LEVELS.md` §1.
 

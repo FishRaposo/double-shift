@@ -16,18 +16,18 @@ One month (GitHub Game Off, Nov 1 – Dec 1, 2026, theme SHIFT), one designer, n
 
 **Shifting has strict rules.** You keep your position and momentum, there's no cooldown, and each key press gives exactly one shift. If a shift would put you inside geometry, it tries a ≤ 4 px corner nudge, then waits up to 80 ms for space, then is refused without touching the player. That's the difference between "the game ate my input" and "I shifted a frame early and it still worked". The shift resolves first in every step, so a shift and a jump on the same frame both see the new world.
 
-**The other shift is frozen.** Nothing moves on the shift you're not in. That removed a whole class of bugs, and then it became a mechanic: the freaks only move at night, so stepping into the day shift freezes them mid-stride.
+**The other shift is frozen.** Nothing moves on the shift you're not in. That removed a whole class of bugs, and then it became a mechanic: each freak only moves on its own shift, so stepping into the other one freezes it mid-stride (later, one of them works days).
 
 **Pranks make clock-ins a resource.** Each entry into the night shift can fire a prank that changes the building (the plank you crossed on moves over the next pit). The timecard counts clock-ins against a par, so the puzzle becomes *when* to shift, not only *where*. Every prank has a visible tell, and dying restores the prank state saved at your last checkpoint, so a prank can never make a level impossible to finish.
 
-**Freaks have no AI.** Each one is a fixed pattern computed from a clock that only runs at night: a patrol, a peek cycle, a sit. That keeps them predictable, makes "freeze by day" free, and makes them testable.
+**Freaks have no AI.** Each one is a fixed pattern computed from a clock that only runs on its own shift: a patrol, a peek cycle, a sit; the supervisor's workers run on "time spent being watched", which has a closed form. That keeps them predictable, makes freezing free, and makes them testable.
 
-**Every level is proven.** Each level has a scripted solution in the tests that must win at par or better with no deaths, and a check that running and jumping without shifting can't win. Change a tuning value and the suite re-checks every par.
+**Every level is proven, and audited for fairness.** Each level has a scripted solution in the tests that must win at par or better with no deaths, and a check that running and jumping without shifting can't win. Change a tuning value and the suite re-checks every par. An audit (`npm run audit`) also measures how much timing slack each required input has; a first pass found a 42 ms shift, two endless respawn loops and three ways to beat a level under par, all fixed and now pinned by tests.
 
 ## The numbers
 
-- 60 automated tests (`npm test`): shift and collision edge cases, nudge/buffer, pranks, freaks, checkpoint restore, input rules, determinism, a 6000-tick fuzz for getting stuck in walls, every level at par, progress and settings saving (including blocked or corrupt storage), and the art and music data (every glyph and sprite well-formed, every sound short).
-- `src/rules.js` is 404 lines. The shell (`src/main.js`) is 706; the art is `src/art.js` (529), `src/sprites.js` (248) and `src/font.js` (192); sound is `src/audio.js` (189) and `src/music.js` (232).
+- 129 automated tests (`npm test`): shift and collision edge cases, nudge/buffer, pranks, freaks, checkpoint restore, input rules, determinism, a 6000-tick fuzz for getting stuck in walls, every level at par, progress and settings saving (including blocked or corrupt storage), the art and music data (every glyph and sprite well-formed, every sound short), and **fairness**: every input a level requires has ≥ 200 ms of slack in acts 1–2 and ≥ 100 ms in acts 3–4, no respawn point sits in a patrol, no freak guards an exit.
+- `src/rules.js` is 523 lines. The shell (`src/main.js`) is 730; the art is `src/art.js` (529), `src/sprites.js` (248) and `src/font.js` (192); sound is `src/audio.js` (193) and `src/music.js` (238).
 - Drawing a frame costs about 0.4 ms (the static layer is cached), measured headless by `npm run media`.
 - CI runs the syntax check, level validation and the tests on every push.
 
@@ -35,7 +35,7 @@ One month (GitHub Game Off, Nov 1 – Dec 1, 2026, theme SHIFT), one designer, n
 
 - A camera and larger levels (single-screen rooms were chosen so every puzzle reads at a glance; GDD §21).
 - Gamepad support and rebindable keys (Shift can trigger Windows Sticky Keys; K is the workaround today).
-- Shared-state objects (levers, doors that exist in both shifts) and "offset" levels where the freaks move the whole floor.
+- Shared-state objects (levers, doors that exist in both shifts).
 - A task pack of bugs and features with automated checks, like the ones for Fish's earlier games.
 
 ## Sixty seconds, out loud

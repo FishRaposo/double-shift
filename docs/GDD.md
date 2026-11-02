@@ -24,7 +24,7 @@
 | Verbs | Move, jump, shift. Nothing else. | §3 |
 | Shift rules | Same spot, momentum kept, instant, no cooldown, one shift per key press, separate geometry per shift, a blocked shift nudges ≤ 4 px → waits 80 ms → is refused | §3.3 (S-01…S-08) |
 | The other shift | Shown as dashed outlines; geometry that exists only in your current shift is hatched; nothing on the other shift moves | §4.6, §7 |
-| The freaks | Undefined, nocturnal, out to annoy you. Pranks fire on the Nth night clock-in; visible freaks (lurker, peeker, squatter) freeze by day. Never chase, always telegraphed. | §4.8–4.10 |
+| The freaks | Undefined, nocturnal, out to annoy you. Pranks fire on the Nth night clock-in; visible freaks (lurker, peeker, squatter, supervisor) freeze by day, and the day-walker freezes by night. Never chase, always telegraphed. | §4.8–4.10 |
 | Score | Timecard: clock-ins vs. par (fewest shifts the designer found, proven by tests) | §15.3 |
 | Tone | Mock horror: petty monsters, deadpan worker, no gore, no jump scares | §10.5 |
 | Look and sound | Crisp pixel art on a 2-px grid, a hand-made pixel font, a spooky-goofy theme whose day/night arrangements crossfade on every shift; all made in code (built 2026-11-02) | §10, §11, ART.md, AUDIO.md |
@@ -536,7 +536,7 @@ Example (*Inventory*): the night plank spans the first pit on the first visit. O
 | Day-walker | Patrols like a lurker, but on the **day** shift; frozen by night | Each shift now freezes the other's freaks | Act 4 (`daywalker`) |
 | Scatterer *(post-jam)* | Flees when approached, knocking things over (real-time geometry change) | — | — |
 
-Touching an active freak on the night shift: the worker is **spooked** (yelp, leaps out of their boots, respawn at checkpoint). Overlapping a freak's frozen outline by day is safe; shifting into an active freak is a spook.
+Touching an active freak on its own shift (night for most, day for the day-walker): the worker is **spooked** (yelp, leaps out of their boots, respawn at checkpoint). Overlapping a freak's frozen outline on the other shift is safe; shifting into an active freak is a spook.
 
 
 ---
@@ -838,17 +838,17 @@ A linear progression is sufficient.
 
 | Level | Focus | Intended Lesson | Fiction | Tier |
 |---|---|---|---|---|
-| 9. Wet Floor | Wet floor `~` | Slide at night, grip by day | Floors waxed at night (by whom?) | C |
+| 9. Wet Floor ✅ | Wet floor `~` | Slide at night, grip by day | Floors waxed at night (by whom?) | C |
 | 10. Structural Integrity | Moving object | Count your night entries: the pillar is a wall, then a step | The load-bearing pillar moved | B |
-| 11. Night Management | Supervisor freak | Cross on the side it isn't watching | One of them has a clipboard | C |
+| 11. Night Management ✅ | Supervisor freak | Cross on the side it isn't watching | One of them has a clipboard | C |
 | 12. Stacked | Multiple pranks | Order your clock-ins | Several pranks queued | A |
 
 **Act 4: Lights Out** (they're getting bold; the rules bend)
 
 | Level | Focus | Intended Lesson | Fiction | Tier |
 |---|---|---|---|---|
-| 13. Floor 3.5 | Offset layer | Shift at the apex to climb between floors | Night is half a storey up | C |
-| 14. Broad Daylight | Day-walker freak | Each shift freezes the other shift's freaks | One of them works days now | C |
+| 13. Broad Daylight ✅ | Day-walker freak | Each shift freezes the other shift's freaks; you must freeze it | One of them works days now | C |
+| 14. Floor 3.5 ✅ | Offset layer | Shift at the apex to climb between floors | Night is half a storey up | C |
 | 15. Employee of the Month | Obstacle as tool | The portrait blocks the exit, then becomes the step | Their portrait. It's just eyes. | B |
 | 16. Clock Out | Combined mechanics | Demonstrate mastery | Get out. Final timecard. They wave from the dark. | A |
 

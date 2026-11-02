@@ -1,10 +1,10 @@
 # Technical Reference
 
-Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-01.
+Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-02 (after the level audit).
 
 **At a glance**
 - **The one rule:** `src/rules.js` decides everything that matters; the screen only draws it (§2).
-- `npm start` to play, `npm test` (91 tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
+- `npm start` to play, `npm test` (129 tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
 - Add a level: grids in `src/levels.js` + a `SOLUTIONS` entry in `test/levels.test.mjs` (§6).
 - The tier-C mechanics (wet floor, day-walker, supervisor, offset layer) are built — §6.5 documents them.
 
@@ -38,7 +38,6 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-01.
 | `scripts/serve.mjs` | Zero-dependency local server, no caching (`npm start` opens the browser; `npm run serve` doesn't). `play.bat` wraps it for double-click on Windows. | — |
 | `scripts/check.mjs` | Syntax-check modules, validate levels | — |
 | `scripts/media.mjs` | `npm run media`: drives headless Edge/Chrome over the DevTools protocol (no dependencies). Saves the cover, screenshots and gallery to `media/`; fails if level 1 can't be cleared with real keys, the page logs an error, the audio clips, or a frame takes > 8 ms to draw. | — |
-| `tools/cover.html` | Draws the 1260×1000 itch cover in code | — |
 | `scripts/zip.mjs` | Builds `double-shift-web.zip` for itch | — |
 
 **The one architectural rule:** the screen only draws what `rules.js` decided. Anything that affects whether the player lives, dies, wins or where they are belongs in `rules.js` and gets a test.
@@ -57,7 +56,7 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-01.
 5. **Gravity**, clamp to max fall.
 6. **Move X then Y**, resolve against the active layer's tiles (with prank overrides). Recompute grounding with a 1 px probe.
 7. **Death checks**: hazard, freak contact (night only), fell below the level.
-8. **Shared objects**: checkpoints (stores position, layer, prank state), exit (sets `won`).
+8. **Shared objects**: checkpoints (store position, layer, prank state; a checkpoint saves in the shift you touched it in only if there's floor under its respawn point there, else in the other shift if that has floor, else not at all, so a respawn can never drop you into a pit forever), exit (sets `won`).
 
 Shift happens first so a shift and a jump on the same tick see the new world (GDD §13.7 case 10).
 
@@ -95,7 +94,7 @@ Shift happens first so a shift and a jump on the same tick see the new world (GD
 | `supervisorTurn` | `id`, `facing` | A supervisor changed facing (once per window) |
 
 ### 3.5 Public API
-`TILE` (30), `DT`, `PARAMS`, `DAY`, `NIGHT`, `FREAK` ({w:20,h:22}), `parseLevel(def)`, `initState(level)`, `step(level, state, input)`, `NO_INPUT`, `tileAt(level, layer, tx, ty, overrides)`, `overlapsSolid(...)`, `overlapsHazard(...)`, `freakBoxes(level, state)`, `isEmbedded(level, state)`.
+`TILE` (30), `DT`, `PARAMS`, `DAY`, `NIGHT`, `FREAK` ({w:20,h:22}), `parseLevel(def)`, `initState(level)`, `step(level, state, input)`, `NO_INPUT`, `tileAt(level, layer, tx, ty, overrides)`, `overlapsSolid(...)`, `overlapsHazard(...)`, `freakBoxes(level, state)`, `isSolidChar(ch)`, `supervisorFacing(f, t)`, `watchedClock(side, sup, t)`, `isEmbedded(level, state)`. Death events carry `cause`, `by` (freak kind) and `layer` (the shift you died in).
 
 Input frame: `{ left, right, jumpHeld, jumpPressed, shiftPressed }`.
 
@@ -116,7 +115,7 @@ Input frame: `{ left, right, jumpHeld, jumpPressed, shiftPressed }`.
 | `shiftBuffer` | 0.08 | s | Blocked-shift retry window (S-08) |
 | `shiftNudge` | 4 | px | Corner nudge reach (up, travel dir, back, down) |
 | `hazardHeight` | 0.45 | tile | Hazard hitbox is the bottom 45% of its tile |
-| `wetAccel` / `wetDecel` | 900 / 250 | px/s² | Friction while grounded on `~` (grip: 2600 / 3000) |
+| `wetAccel` / `wetDecel` | 500 / 250 | px/s² | Friction while grounded on `~` (grip: 2600 / 3000); no turn-around boost on wax, so steering back from full speed takes ≈ 2.4 tiles |
 
 Derived metrics for level design are in [LEVELS.md](LEVELS.md) §1. **Any change here: re-run `npm test` (par proofs) and update LEVELS.md §1.**
 
@@ -135,9 +134,9 @@ See [LEVELS.md](LEVELS.md) §2 for the full format. Summary: `{ id, name, act, n
 Add to the level's `pranks`: `{ id, onNight: N, tell: { tx, ty }, set: [{ layer: 'day'|'night', x0, x1, y0, y1, ch }] }`. The engine handles validation, tells, the giggle, and checkpoint restore.
 
 ### 6.3 Add a freak kind
-1. In `freakBoxes()` give the kind its position/`active` rule as a pure function of `s.freakClock` (no per-freak mutable state).
+1. In `freakBoxes()` give the kind its position/`active` rule as a pure function of its shift's clock (`s.freakClock` by night, `s.dayClock` by day, or `watchedClock` under a supervisor), with no per-freak mutable state.
 2. Add a rules test (frozen by day, spooks on contact at night, any timing behavior).
-3. Draw it in `drawFreaks()` in `main.js`.
+3. Draw it in `drawFreak()` in `src/art.js` (sprite in `src/sprites.js`).
 
 ### 6.4 Add a tile type
 1. Decide whether it's solid for collision (`overlapsSolid`) and what else it changes (e.g. friction read in step 3).
@@ -151,7 +150,7 @@ The four tier-C mechanics from [CONTENT.md](CONTENT.md) §3 — all built, teste
 
 #### Wet floor `~` (SYS-1, level `wet`)
 - **Collision:** `~` is solid. One `isSolidChar(ch)` exported from `rules.js` is the single solidity test for rules (`overlapsSolid`) and renderer (`main.js`), so the two can't drift.
-- **Friction:** in the horizontal step, when grounded **and every tile under the feet is `~`**, `PARAMS.wetAccel` (900) / `wetDecel` (250) replace the ground values. Any dry tile under the feet gives grip. Max speed is unchanged.
+- **Friction:** in the horizontal step, when grounded **and every tile under the feet is `~`**, `PARAMS.wetAccel` (500) / `wetDecel` (250) replace the ground values, and turning around gets no boost. Any dry floor under a foot gives grip; air under a foot doesn't. Max speed is unchanged.
 - **Events:** a wet slide that decelerates to zero emits `wetStop` (sfx).
 - **Shifting:** friction is read from the active layer each tick, so shifting from night `~` to a dry day floor gives grip on the next tick. That's the level's whole lesson.
 - **Tests:** slide distance from full speed on `~` vs. dry floor; one dry tile under the feet gives grip; shift night→day on `~` stops you within the dry-floor stopping distance; jump buffer and coyote unchanged on `~`; `isSolidChar` treats `~` as solid in both the rules and the echo outline.
@@ -160,7 +159,7 @@ The four tier-C mechanics from [CONTENT.md](CONTENT.md) §3 — all built, teste
 #### Day-walker freak (SYS-2, level `daywalker`)
 - **State:** `dayClock` advances by `dt` only while `s.layer === DAY` (mirror of `freakClock`, which advances only at night). Neither clock is checkpointed — like `freakClock` before it, `dayClock` is a timing pattern, not prank state.
 - **Freak field:** every freak carries `shift` (`NIGHT` by default); `kind: 'daywalker'` gets `shift: DAY` and patrols like a lurker (`range`, `speed`) on `dayClock`.
-- **Contact:** `touchesFreak` is "the player overlaps an active freak **whose `shift` is the current layer**"; the frozen outline on the other shift is harmless.
+- **Contact:** `touchedFreak` is "the player overlaps an active freak **whose `shift` is the current layer**"; the frozen outline on the other shift is harmless.
 - **Shifting into it:** shifting to day onto an active day-walker is a spook, mirroring the night rule.
 - **Tests:** `dayClock` advances only on day; frozen at night (position constant while on night); spooks on contact by day; overlapping its outline at night is safe; shifting into it by day spooks; night freaks frozen simultaneously on day; existing night-freak tests unchanged.
 - **Drawing:** dark silhouette by day; dashed outline in the day echo color at night (ART.md §5.1). A spook by a day-walker plays `daywalkerGiggle` (death event `by` field).
@@ -169,7 +168,7 @@ The four tier-C mechanics from [CONTENT.md](CONTENT.md) §3 — all built, teste
 - **Definition:** `{ kind: 'supervisor', tx, ty, period, startFacing: 'left'|'right' }`. It never moves and never spooks (it's management).
 - **Facing:** at night time `t = freakClock`, `supervisorFacing` returns `startFacing` during `[2kP, (2k+1)P)` and the other way otherwise (P = `period`). A facing change emits `supervisorTurn` once per window (sfx + cue).
 - **Who works:** a freak is *watched* if the supervisor faces its side (decided by the freak's base `tx` against the supervisor's `tx`). Unwatched freaks are frozen and `active: false`, so they're harmless.
-- **Staying pure:** `watchedClock(f, t)` is the closed form of "night time during which `f`'s side was watched": with `k = floor(t / 2P)` and `r = t − 2kP`, time watched on the start side = `kP + min(r, P)`, and on the other side = `t − that`. It stands in for `freakClock` in the freak's existing pattern (lurker pingpong, peeker cycle). No mutable per-freak state, so the TECH §6.3 rule holds.
+- **Staying pure:** `watchedClock(side, sup, t)` is the closed form of "night time during which `f`'s side was watched": with `k = floor(t / 2P)` and `r = t − 2kP`, time watched on the start side = `kP + min(r, P)`, and on the other side = `t − that`. It stands in for `freakClock` in the freak's existing pattern (lurker pingpong, peeker cycle). No mutable per-freak state, so the TECH §6.3 rule holds.
 - **Tests:** alternating facing; a lurker on the unwatched side doesn't move and doesn't spook; on the watched side it moves and spooks and resumes where its watched clock left off; the closed form matches a tick-by-tick accumulation over 10,000 ticks (determinism); supervisor is harmless and stationary; everything is frozen by day, facing included; one `supervisorTurn` per facing window.
 - **Drawing:** clipboard, a head turned toward the watched side, an eye glow on that side, a squint just before each turn; non-color cue (ART.md §5.1).
 
@@ -184,8 +183,9 @@ The four tier-C mechanics from [CONTENT.md](CONTENT.md) §3 — all built, teste
 
 | Command | What it covers |
 |---|---|
-| `npm test` | 91 tests: GDD §13.7 cases 1–10, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data |
+| `npm test` | 129 tests: GDD §13.7 cases 1–10, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
 | `npm run check` | Every module parses; every level validates |
+| `npm run audit` | Per level: the slack of every required shift and jump (fails under the act floor), input-lag tolerance 0–150 ms, and a random search for wins below par or without shifting (`scripts/audit-levels.mjs`). |
 | `npm run media` | Real browser (headless Edge/Chrome, no dependencies): plays level 1 with key presses, fails on page errors, a wrong outcome, audio clipping or a slow frame; saves the cover, screenshots and gallery. |
 
 Test style: build tiny ASCII levels with `level(day, night, extra)` and assert on state. Policies for `play()` read state like a player would (position, layer, `freakClock`), so they survive small tuning changes better than frame-exact scripts.
@@ -225,7 +225,6 @@ GitHub Pages serves `main` (root) at <https://fishraposo.github.io/double-shift/
 ## 11. Known limitations
 
 - No camera: levels are single-screen (open decision, PRODUCTION.md §5).
-- No music, no settings, no save, no level select yet.
 - No gamepad or touch.
 - `structuredClone` per tick is fine at this state size; revisit only if levels grow a lot.
 - Browsers can't suppress OS shortcuts (Sticky Keys).

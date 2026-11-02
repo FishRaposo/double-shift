@@ -34,7 +34,7 @@ Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game l
 | Timecard ✅ | NEW BEST (when a saved best is beaten) |
 | HUD ✅ | DAY SHIFT / NIGHT SHIFT · CLOCK-INS n · PAR p |
 | Timecard ✅ | TIMECARD · Clock-ins · Par · Time · Incidents · stamps ON PAR / UNDER PAR! / +n OVERTIME |
-| End ✅ *(prototype)* | END OF PROTOTYPE · Thanks for working overtime. · SPACE: clock in again |
+| End ✅ | SHIFT COMPLETE · Thanks for working overtime. · every level with clock-ins / par · Total clock-ins · SPACE: clock in again |
 
 ### 2.1 Planned UI text *(drafts)*
 
@@ -59,16 +59,16 @@ Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game l
 | 6 Night Watch ✅ | Something is in the tunnel. It only moves at night. |
 | 7 Under Renovation (`stairs`) | They built a staircase. It leads nowhere. They're very proud. |
 | 8 Lost & Found (`doors`) | The freaks have stolen every door. Not the keys. The doors. |
-| 9 Wet Floor (`wet`) | Someone waxed the floors. Nobody on the payroll waxes floors. |
+| 9 Wet Floor (`wet`) ✅ | Someone waxed the floors. Nobody on the payroll waxes floors. |
 | 10 Structural Integrity (`pillar`) | They moved a load-bearing pillar. The building is somehow fine. |
-| 11 Night Management (`supervisor`) | One of them has a clipboard now. It's supervising the others. |
+| 11 Night Management (`supervisor`) ✅ | One of them has a clipboard now. It supervises the others. |
 | 12 Stacked (`stacked`) | They've been busy. |
-| 13 Floor 3.5 (`offset`) | There is no Floor 3 anymore. It's now Floor 3.5. |
-| 14 Broad Daylight (`daywalker`) | One of them clocked in for the day shift. |
+| 13 Broad Daylight (`daywalker`) ✅ | One of them clocked in for the day shift. |
+| 14 Floor 3.5 (`offset`) ✅ | There is no Floor 3 anymore. It's now Floor 3.5. |
 | 15 Employee of the Month (`portrait`) | They installed a portrait of themselves. It blocks the exit. |
 | 16 Clock Out (`clockout`) | Almost done. Don't look at the vents. |
 
-Notes 7, 8, 10, 11, 13 and 15 come from Fish's idea pool (2026-11-02). 8 and 13 are unchanged; 7, 10, 11 and 15 are lightly trimmed to fit one line at 15 px (his full lines are the "Fiction" lines in LEVELS.md §5). *Freight* ("The crates were stacked properly. They were.") is kept for post-jam.
+Notes 7, 8, 10, 11, 13 and 15 come from Fish's idea pool (2026-11-02). 8 and 13 are unchanged; 7, 10, 11 and 15 are lightly trimmed to fit one line at scale 2 (14 px tall) (his full lines are the "Fiction" lines in LEVELS.md §5). *Freight* ("The crates were stacked properly. They were.") is kept for post-jam.
 
 ## 4. Spook lines (random on freak contact) ✅
 

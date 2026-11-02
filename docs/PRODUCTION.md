@@ -3,8 +3,9 @@
 Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-02**.
 
 **At a glance**
-- **Next milestone:** M0 Feel check (Nov 2–3): play all 6 levels, Sticky Keys test, tuning. Repo + CI are done.
+- **Next milestone:** M0 Feel check (Nov 2–3): play all 10 levels, Sticky Keys test, tuning. Repo + CI are done.
 - **The game:** 16 levels in four acts, in tiers A = 8 / B = 12 / C = 16 ([CONTENT.md](CONTENT.md)).
+- **Level audit (Nov 2):** every level beatable at par, fair timing (≥ 200/100 ms), no skips, no respawn loops; `npm run audit` keeps it that way.
 - **Key P0 items:** tuning, level select, music, freaks in the first minutes, freak art, `stacked` + `clockout`, media, itch page (§4).
 - **Cut dates:** wet floor + day-walker Nov 12; supervisor + offset Nov 17; content freeze Nov 22 (§2).
 
@@ -14,12 +15,12 @@ Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-02**.
 |---|---|
 | Core rules (move, jump, shift, buffer/nudge, coyote, jump buffer) | Built, tested |
 | Pranks (Nth night entry, tells, checkpoint restore) | Built, tested |
-| Freaks: lurker, peeker, squatter (frozen by day) | Built, tested |
+| Freaks: lurker, peeker, squatter, supervisor (frozen by day), day-walker (frozen by night) | Built, tested |
 | Levels | 10 built (act 1: 4, act 2: 2, act 3: 2, act 4: 2), all proven solvable at par; 6 more planned (CONTENT.md). Tier-C mechanics shipped: wet floor, supervisor, offset layer, day-walker |
 | Rendering | **Pixel art** (Nov 2): sprites, animated worker and freaks, pixel tiles and props, pixel font, effects; every asset in `/tools/gallery.html` |
 | Audio | Mix bus, 25 SFX (incl. planned-level sounds), **music** (day/night arrangements crossfading on every shift) |
 | Menus | Title, level select + saved bests, settings (volumes, reduced effects), act cards, pause, timecard with comment, end screen with totals |
-| Tests | 91 passing (`npm test`) |
+| Tests | 129 passing (`npm test`), including fairness; `npm run audit` clean |
 | Repo / CI / itch | Public repo [FishRaposo/double-shift](https://github.com/FishRaposo/double-shift), CI green, playable on [GitHub Pages](https://fishraposo.github.io/double-shift/). **No itch page** |
 
 ## 2. Milestones
@@ -28,10 +29,10 @@ The whole game is listed in [CONTENT.md](CONTENT.md): **16 levels in tiers** (A 
 
 | Date | Milestone | Exit criterion (must be true to move on) |
 |---|---|---|
-| **Nov 2–3** | **M0: Feel check** | Fish has played all 6 levels on Windows. Sticky Keys result recorded. Movement tuning pass done. ~~Public GitHub repo with CI green~~ (done). |
+| **Nov 2–3** | **M0: Feel check** | Fish has played all 10 levels on Windows. Sticky Keys result recorded. Movement tuning pass done. ~~Public GitHub repo with CI green~~ (done). |
 | **Nov 8** | **M1: Core locked** | Shift, freeze and prank feel good to Fish. One cold playtest. `PARAMS` frozen except small tweaks. Level select + save in. `stairs` and `doors` built and at par. |
 | **Nov 12** | **Cut date 1** | Wet floor and day-walker done (rules, tests, drawing), or `wet` / `daywalker` move to post-jam. |
-| **Nov 15** | **M2: Tier B complete** | 12-level path playable (6 built + `stairs`, `doors`, `pillar`, `portrait`), plus `wet` and `daywalker` if they made cut 1. Music v1. Freak art pass. |
+| **Nov 15** | **M2: Tier B complete** | 12-level path playable (the 10 built + two of `stairs`, `doors`, `pillar`, `portrait`); all four tier-C levels already shipped. Music v1. Freak art pass. |
 | **Nov 17** | **Cut date 2** | Supervisor and offset layer done, or `supervisor` / `offset` move to post-jam. If M2 itself slipped, drop to tier A now. |
 | **Nov 22** | **M3: Content freeze** | Every level that's still in is built and proven at par, including `stacked` and `clockout`. Act cards, timecard comments, settings, all copy in. Second playtest round. **No new features after this date.** |
 | **Nov 26** | **M4: Release candidate** | Bug-free on Chrome/Firefox/Edge. itch draft with fresh cover, screenshots, GIF. |
@@ -88,19 +89,19 @@ Priority: **P0** = the game doesn't ship without it. **P1** = expected in the ja
 |---|---|---|---|
 | G1 | Movement tuning pass | P0 | TECH.md §4; play-feel, not tests |
 | G2 | Sticky Keys test + primary bind decision | P0 | GDD §3.2 |
-| G3 | Checkpoints used in longer levels | P0 | System exists (`C` tile); no built level uses one yet except Mid-Air |
-| G4 | Wet floor tile `~` | Tier C, cut Nov 12 | TECH.md §6.5; level `wet` |
+| G3 | Checkpoints used in longer levels | P0 | Used in Mid-Air, Wet Floor, Night Management, Broad Daylight; a checkpoint saves only in a shift with floor under it (fixed 2026-11-02) |
+| G4 | ~~Wet floor tile `~`~~ Done | Tier C, cut Nov 12 | TECH.md §6.5; level `wet` |
 | G5 | Multiple pranks per level, ordering puzzles | P0 | System supports it; used by `stacked` (tier A), `doors`, `pillar`, `portrait` |
 | G6 | Prank types beyond tile swaps (e.g. move a freak, flip a hazard) | P2 | Keep deterministic |
 | G7 | Scatterer freak (real-time geometry change) | Post | GDD §4.10 |
-| G8 | Day-walker freak + day-only clock | Tier C, cut Nov 12 | TECH.md §6.5; level `daywalker` |
-| G9 | Offset layer | Tier C, cut Nov 17 | TECH.md §6.5; level `offset` |
+| G8 | ~~Day-walker freak + day-only clock~~ Done | Tier C, cut Nov 12 | TECH.md §6.5; level `daywalker` |
+| G9 | ~~Offset layer~~ Done | Tier C, cut Nov 17 | TECH.md §6.5; level `offset` |
 | G10 | Shared-state objects (levers/doors) | Post | GDD §8.2 |
 | G11 | Gamepad support | P2 | Gamepad API polling into `input.js` frames |
 | G12 | Rebindable controls | P2 | Stretch in GDD §12.5 |
 | G13 | Speedrun timer display | P2 | `state.time` already tracked |
 | G14 | Sticky Keys in-joke (memo from the freaks on title/pause, practical advice kept) | P1 | GDD §1.7; the jam page jokes about it too |
-| G15 | Supervisor freak (facing decides which freaks work) | Tier C, cut Nov 17 | TECH.md §6.5; level `supervisor` |
+| G15 | ~~Supervisor freak (facing decides which freaks work)~~ Done | Tier C, cut Nov 17 | TECH.md §6.5; level `supervisor` |
 
 ### Levels
 | ID | Item | Pri |
@@ -122,7 +123,7 @@ Priority: **P0** = the game doesn't ship without it. **P1** = expected in the ja
 |---|---|---|
 | A1 | ~~Freak art pass~~ Done Nov 2 (pixel sprites, eyes, squint, freeze cue); freak size still to confirm in playtest | P0 |
 | A2 | ~~Worker animation~~ Done Nov 2 (run, jump, fall, land, spooked boots gag) | P1 |
-| A3 | ~~Background props~~ Done Nov 2 for the 6 built levels; new levels add theirs | P1 |
+| A3 | ~~Background props~~ Done Nov 2 for all 10 built levels; new levels add theirs | P1 |
 | A4 | Camera or room decision implemented | P0 |
 | A5 | ~~Music: day + night arrangement with crossfade~~ Done Nov 2 | P0 |
 | A6 | ~~Settings menu~~ Done Nov 2 | P1 |

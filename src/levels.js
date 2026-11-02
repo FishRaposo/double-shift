@@ -1,12 +1,15 @@
 // Double Shift — levels. Two equal-size ASCII grids per level.
-// Legend: # solid, ^ hazard, S spawn, E exit, C checkpoint, . empty.
-// S, E and C are shared between shifts. `par` = fewest shifts found (verified in test/levels.test.mjs).
+// Legend: # solid, ^ hazard, ~ wet floor (solid, slick), S spawn, E exit, C checkpoint, . empty.
+// S, E and C are shared between shifts. `par` = the scripted solution's clock-ins (test/solutions.mjs);
+// the tests also check fair timing and that no route wins below par (npm run audit).
 //
 // pranks: what the freaks change on the Nth entry into night. `set` rectangles override tiles;
 //         `tell` is where the warning (eyes at night, a note by day) appears before it happens.
-// freaks: night-only, fixed patterns, frozen while you are on day shift.
+// freaks: fixed patterns on their own shift's clock, frozen while you're on the other shift.
 //         lurker (patrols `range` tiles at `speed` px/s), peeker (out for `duty` of `period` s),
-//         squatter (never moves).
+//         squatter (never moves), supervisor (turns every `period` s from `startFacing`; only the
+//         freaks on the side it faces work), daywalker (a lurker that works the day shift).
+// offset: { dx, dy } instead of a night grid: night is the day grid moved; `nightPatch` adds differences.
 // decor:  cosmetic only.
 // props:  cosmetic scenery from PROPS in src/art.js: { kind, tx, ty, layer?: 'day'|'night', w?, text?, style? }.
 // act:    which act the level belongs to (the first level of each act is always open in level select).
