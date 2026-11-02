@@ -1,7 +1,7 @@
 // GDD §13.7 collision/shift edge cases, plus S-rules. Each runs headless against src/rules.js.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { step, initState, NO_INPUT, DAY, NIGHT, TILE, PARAMS, isEmbedded, isSolidChar, overlapsSolid, freakBoxes, tileAt } from '../src/rules.js';
+import { step, initState, NO_INPUT, DAY, NIGHT, TILE, DT, PARAMS, isEmbedded, isSolidChar, overlapsSolid, freakBoxes, tileAt, supervisorFacing, watchedClock } from '../src/rules.js';
 import { level, stepN, place, play } from './helpers.mjs';
 
 const OPEN = [
@@ -515,4 +515,89 @@ test('day-walker: each shift wakes one freak and freezes the other', () => {
   const [dw2, lu2] = freakBoxes(both, s);
   assert.equal(dw2.x, dw.x);
   assert.notEqual(lu2.x, lu.x);
+});
+
+// ---------- supervisor freak (SYS-3) ----------
+// Management, mid-screen: faces left/right on a cycle; only the watched side's freaks work.
+const SUP_LVL = level(OPEN_E_UP, BLANK, {
+  freaks: [
+    { kind: 'supervisor', tx: 5, ty: 6, period: 1, startFacing: 'left' },
+    { kind: 'lurker', tx: 2, ty: 6, range: 1, speed: 60 },
+    { kind: 'lurker', tx: 8, ty: 6, range: 1, speed: 60 },
+  ],
+});
+
+test('supervisor: facing alternates every period on the night clock, frozen by day', () => {
+  let s = step(SUP_LVL, initState(SUP_LVL), SHIFT); // to night
+  assert.equal(freakBoxes(SUP_LVL, s)[0].facing, -1, 'starts facing left');
+  s = stepN(SUP_LVL, s, 120); // ~1 s: turned
+  assert.equal(freakBoxes(SUP_LVL, s)[0].facing, 1);
+  s = stepN(SUP_LVL, s, 120); // ~2 s: back
+  assert.equal(freakBoxes(SUP_LVL, s)[0].facing, -1);
+  const f = freakBoxes(SUP_LVL, s)[0].facing;
+  s = step(SUP_LVL, s, SHIFT); // to day: the clipboard freezes mid-turn
+  s = stepN(SUP_LVL, s, 240);
+  assert.equal(freakBoxes(SUP_LVL, s)[0].facing, f);
+});
+
+test('supervisor: the watched lurker works; the other slacks off frozen and harmless', () => {
+  let s = step(SUP_LVL, initState(SUP_LVL), SHIFT);
+  s = stepN(SUP_LVL, s, 60); // ~0.5 s: left watched, right slack
+  const [, left, right] = freakBoxes(SUP_LVL, s);
+  assert.ok(left.active, 'watched side works');
+  assert.equal(right.active, false, 'slack side is frozen and harmless');
+  s = place(s, 8, 6, { dx: 5 }); // stand on the slack lurker's outline
+  s = stepN(SUP_LVL, s, 5);
+  assert.equal(s.deaths, 0);
+});
+
+test('supervisor: stepping onto the watched lurker still spooks', () => {
+  let s = step(SUP_LVL, initState(SUP_LVL), SHIFT);
+  s = stepN(SUP_LVL, s, 60); // left watched
+  const left = freakBoxes(SUP_LVL, s)[1];
+  s = place(s, 0, 6, { dx: left.x });
+  s = step(SUP_LVL, s);
+  assert.equal(s.deaths, 1);
+});
+
+test('supervisor: never moves and never spooks (it is management)', () => {
+  let s = step(SUP_LVL, initState(SUP_LVL), SHIFT);
+  s = stepN(SUP_LVL, s, 240); // two full cycles
+  assert.equal(freakBoxes(SUP_LVL, s)[0].x, 5 * TILE + 5, 'it never leaves the perch');
+  s = place(s, 5, 6, { dx: 5 }); // stand on the clipboard itself
+  s = stepN(SUP_LVL, s, 60);
+  assert.equal(s.deaths, 0);
+});
+
+test('supervisor: an unwatched lurker freezes mid-pose and resumes on the next watch', () => {
+  let s = step(SUP_LVL, initState(SUP_LVL), SHIFT);
+  s = stepN(SUP_LVL, s, 150); // t≈1.3 s: right is watched now
+  const frozen = freakBoxes(SUP_LVL, s)[1].x;
+  s = stepN(SUP_LVL, s, 60); // still right-watched: the left lurker holds its pose
+  assert.equal(freakBoxes(SUP_LVL, s)[1].x, frozen);
+  s = stepN(SUP_LVL, s, 40); // t≈2.1 s: left watched again, patrol resumes
+  assert.notEqual(freakBoxes(SUP_LVL, s)[1].x, frozen);
+});
+
+test('supervisor: watched clock closed form matches counting watched ticks', () => {
+  const sup = { startDir: -1, period: 1.7 };
+  for (const side of [-1, 1]) {
+    let acc = 0;
+    let maxErr = 0;
+    for (let t = 0; t < 83; t += DT) { // ~10 000 ticks
+      if (supervisorFacing(sup, t) === side) acc += DT;
+      maxErr = Math.max(maxErr, Math.abs(watchedClock(side, sup, t) - acc));
+    }
+    assert.ok(maxErr < 2 * DT, `side ${side}: closed form drifted ${maxErr}`);
+  }
+});
+
+test('supervisor: emits supervisorTurn when the facing flips, once per window', () => {
+  let s = step(SUP_LVL, initState(SUP_LVL), SHIFT);
+  let turns = 0;
+  for (let i = 0; i < 360; i++) {
+    s = step(SUP_LVL, s);
+    turns += s.events.filter((e) => e.type === 'supervisorTurn').length;
+  }
+  assert.ok(turns >= 2, `expected turns in 3 s of night, got ${turns}`);
 });

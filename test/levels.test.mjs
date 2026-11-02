@@ -71,6 +71,21 @@ const SOLUTIONS = {
     const jump = s.layer === DAY && (s.player.grounded ? gap > 25 && gap < 60 : s.player.vy < 0);
     return { right: true, jump, shift: want(s, target) };
   },
+  supervisor: (s) => {
+    const x = tx(s);
+    const sup = freakBoxes(L.supervisor, s).find((b) => b.kind === 'supervisor');
+    let right = true;
+    let target = s.layer;
+    if (s.layer === DAY && x > 7.5 && x < 8.4) target = NIGHT; // clock in short of the lurker's reach
+    if (s.layer === NIGHT) {
+      // left tunnel: cross only while the clipboard points right, with a full window left
+      if (x > 7.2 && x < 8.5 && (sup.facing !== 1 || sup.turnIn < 1.2)) right = false;
+      // the nook: wait for the left watch before the right tunnel
+      if (x > 16 && x < 18.6 && (sup.facing !== -1 || sup.turnIn < 1.2)) right = false;
+      if (x > 24.5 && x < 26.3) target = DAY; // the night wall: clock back out
+    }
+    return { right, shift: want(s, target) };
+  },
 };
 
 test('every level has a scripted solution', () => {

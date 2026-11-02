@@ -222,6 +222,7 @@ function handleEvents(events) {
       case 'jump': sfx.jump(); fx.dust.push({ x: cx, y: p.y + PARAMS.playerH, t: 0 }); break;
       case 'land': sfx.land(); fx.land = 0.1; fx.dust.push({ x: cx, y: p.y + PARAMS.playerH, t: 0 }); break;
       case 'wetStop': sfx.wetStop(); break;
+      case 'supervisorTurn': sfx.supervisorTurn(); break;
       case 'death':
         if (ev.cause === 'spooked') {
           (ev.by === 'daywalker' ? sfx.daywalkerGiggle : sfx.spooked)();
@@ -523,8 +524,11 @@ function drawPlay() {
   drawTells(lvl, s, layer, t);
   freakBoxes(lvl, s).forEach((b, i) => {
     const clock = b.shift === DAY ? s.dayClock : s.freakClock;
-    const look = b.kind === 'lurker' || b.kind === 'daywalker' ? Math.sign(Math.sin(clock * 0.9 + i)) : 0;
-    drawFreak(g, b, i, t, { layer, freakShift: b.shift, frozenFlash: game.fx.freeze, prankSquint: game.fx.squint, look });
+    let look = b.kind === 'lurker' || b.kind === 'daywalker' ? Math.sign(Math.sin(clock * 0.9 + i)) : 0;
+    if (b.kind === 'supervisor') look = b.facing; // the clipboard's gaze is the tell
+    // supervisors squint just before they turn: the readable anticipation cue
+    const squint = Math.max(game.fx.squint, b.kind === 'supervisor' && b.turnIn < 0.35 ? 1 : 0);
+    drawFreak(g, b, i, t, { layer, freakShift: b.shift, frozenFlash: game.fx.freeze, prankSquint: squint, look });
   });
   if (game.fx.spook) drawSpookGag();
   else drawWorker(s, layer);

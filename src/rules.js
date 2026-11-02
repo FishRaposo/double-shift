@@ -79,6 +79,7 @@ export function parseLevel(def) {
     period: f.period ?? 1,
     duty: f.duty ?? 1,
     phase: f.phase ?? 0,
+    startDir: f.startFacing === 'left' ? -1 : 1, // supervisor: first facing
   }));
   return {
     name: def.name,
@@ -195,24 +196,54 @@ function pingpong(d, len) {
   return m < len ? m : 2 * len - m;
 }
 
+// The supervisor faces startDir for each [2kP,(2k+1)P) window of the night clock, the other
+// way otherwise. A freak is watched while the facing matches its side; its own pattern sees
+// only the accumulated watched time, so unwatched freaks freeze mid-pose instead of jumping.
+export function supervisorFacing(f, t) {
+  return Math.floor(t / f.period) % 2 === 0 ? f.startDir : -f.startDir;
+}
+
+export function watchedClock(side, sup, t) {
+  const P = sup.period;
+  const k = Math.floor(t / (2 * P));
+  const r = t - 2 * k * P;
+  const startSide = k * P + Math.min(r, P); // night-time the start side has been watched
+  return side === sup.startDir ? startSide : t - startSide;
+}
+
 export function freakBoxes(level, s) {
+  const sup = level.freaks.find((f) => f.kind === 'supervisor');
+  const facing = sup ? supervisorFacing(sup, s.freakClock) : 0;
   return level.freaks.map((f) => {
     const baseX = f.tx * TILE + (TILE - FREAK.w) / 2;
     const y = (f.ty + 1) * TILE - FREAK.h;
     let x = baseX;
     let active = true;
-    const t = f.shift === DAY ? s.dayClock : s.freakClock; // each shift runs its own clock
-    if (f.kind === 'lurker' || f.kind === 'daywalker') x = baseX + pingpong(f.phase + t * f.speed, f.range * TILE);
-    if (f.kind === 'peeker') active = ((t + f.phase) % f.period) < f.duty * f.period;
-    return { id: f.id, kind: f.kind, shift: f.shift, x, y, w: FREAK.w, h: FREAK.h, active };
+    let face = 0;
+    let turnIn = Infinity;
+    if (f.kind === 'supervisor') {
+      face = facing;
+      turnIn = (Math.floor(s.freakClock / f.period) + 1) * f.period - s.freakClock;
+    } else {
+      let t = f.shift === DAY ? s.dayClock : s.freakClock; // each shift runs its own clock
+      if (sup && f.shift === NIGHT) {
+        const side = Math.sign(f.tx - sup.tx) || 0;
+        active = side !== 0 && facing === side; // only works while the clipboard points its way
+        t = watchedClock(side, sup, s.freakClock);
+      }
+      if (f.kind === 'lurker' || f.kind === 'daywalker') x = baseX + pingpong(f.phase + t * f.speed, f.range * TILE);
+      if (f.kind === 'peeker') active = active && ((t + f.phase) % f.period) < f.duty * f.period;
+    }
+    return { id: f.id, kind: f.kind, shift: f.shift, x, y, w: FREAK.w, h: FREAK.h, active, facing: face, turnIn };
   });
 }
 
-// The freak currently touching the player on its own shift, if any.
+// The freak currently touching the player on its own shift, if any. The supervisor is
+// management: it never spooks.
 function touchedFreak(level, s) {
   const p = s.player;
   return freakBoxes(level, s).find((b) =>
-    b.shift === s.layer && b.active &&
+    b.kind !== 'supervisor' && b.shift === s.layer && b.active &&
     p.x < b.x + b.w && p.x + PARAMS.playerW > b.x && p.y < b.y + b.h && p.y + PARAMS.playerH > b.y);
 }
 
@@ -347,8 +378,14 @@ export function step(level, prev, input = NO_INPUT, dt = DT) {
   }
 
   // 2. Each shift's clock moves only while you're in it.
-  if (s.layer === NIGHT) s.freakClock += dt;
-  else s.dayClock += dt;
+  if (s.layer === NIGHT) {
+    for (const f of level.freaks) {
+      if (f.kind === 'supervisor' && supervisorFacing(f, s.freakClock) !== supervisorFacing(f, s.freakClock + dt)) {
+        s.events.push({ type: 'supervisorTurn', id: f.id, facing: supervisorFacing(f, s.freakClock + dt) });
+      }
+    }
+    s.freakClock += dt;
+  } else s.dayClock += dt;
 
   // 3. Horizontal intent. Wet floor `~` swaps the ground accel/decel for the slick pair.
   const wet = onWetFloor(level, s);
