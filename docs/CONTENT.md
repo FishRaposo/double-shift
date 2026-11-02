@@ -16,6 +16,7 @@ Everything the finished jam game contains, in one place. Each row has an ID, its
 | **A** (jam minimum) | 8: the six originals + `stacked` + `clockout` | A complete game with a finale | Always |
 | **B** | 12: + `stairs`, `doors`, `pillar`, `portrait` | Four levels using only existing systems | On schedule at M2 (Nov 15) |
 | **C** | 16: + `wet`, `supervisor`, `offset`, `daywalker` | The four new mechanics | Each mechanic is done by its cut date |
+| **C+** (act 5) | 19: + `upside`, `fallup`, `ceiling` | Upside Down: the night is the map flipped, gravity up | The gravity flip is done by Nov 20 |
 
 **Cut dates.** A new mechanic is "done" when its rules, tests and drawing are in and its level is proven at par. If it misses its date, its level moves to post-jam and the remaining levels keep their order.
 
@@ -25,9 +26,10 @@ Everything the finished jam game contains, in one place. Each row has an ID, its
 | Day-walker freak | `daywalker` | Nov 12 |
 | Supervisor freak | `supervisor` | Nov 17 |
 | Offset layer | `offset` | Nov 17 |
+| Upside Down (night flipped, gravity up) | `upside`, `fallup`, `ceiling` | Nov 20 |
 | Content freeze (everything) | — | Nov 22 |
 
-Levels are referred to by `id` everywhere, never by number, so a cut never renumbers anything. The `#` in §2 is the slot in the full 16-level plan; the game numbers levels by their position in `src/levels.js` (the HUD shows `n/N`), so in today's build Wet Floor is 7/12, Night Management 8/12, Stacked 9/12, Broad Daylight 10/12, Floor 3.5 11/12 and Clock Out 12/12.
+Levels are referred to by `id` everywhere, never by number, so a cut never renumbers anything. The `#` in §2 is the slot in the full plan (19 levels with act 5; slot 16 is empty since Clock Out moved to 20); the game numbers levels by their position in `src/levels.js` (the HUD shows `n/N`), so in today's build Wet Floor is 7/12, Night Management 8/12, Stacked 9/12, Broad Daylight 10/12, Floor 3.5 11/12 and Clock Out 12/12.
 
 ## 2. Levels
 
@@ -50,11 +52,12 @@ Full specs: [LEVELS.md](LEVELS.md) §4 (built) and §5 (planned).
 | 13 | 4 · Lights Out | Broad Daylight | `daywalker` | Day-walker freak: active by day, frozen by night; you must freeze it | C | ✅ built |
 | 14 | 4 | Floor 3.5 | `offset` | Offset layer: night is the day map half a storey up | C | ✅ built |
 | 15 | 4 | Employee of the Month | `portrait` | The portrait blocks the exit and is rehung each clock-in | B | planned |
-| 16 | 4 | Clock Out | `clockout` | Finale: everything from tiers A–B, final timecard, the ending | A | ✅ built |
+| 17 | 5 · Upside Down | Mind Your Head | `upside` | At night the map is upside down and gravity points up: the ceiling is the floor | C | planned |
+| 18 | 5 | Falling Up | `fallup` | Shift mid-fall to reverse it; climb a shaft by flipping | C | planned |
+| 19 | 5 | Ceiling Walker | `ceiling` | A freak on the ceiling, a prank on the flipped map | C | planned |
+| 20 | 5 | Clock Out | `clockout` | Finale (moves from act 4 to close act 5): everything from tiers A–B, final timecard, the ending | A | ✅ built |
 
 *Post-jam pool:* Freight (crates restack on a cycle). It's covered by `doors` and `stacked`, so it's not needed for the jam.
-
-*Idea, not slotted:* **Upside Down** (Fish, 2026-11-02): the night shift is the map flipped top to bottom, with gravity flipped on that shift. It works as a level (act 4) or as a level modifier (`upsideDown: 'night'`). It needs a new rule, so it's tier C if slotted. Spec and open questions: [LEVELS.md](LEVELS.md) §5.1.
 
 ## 3. Systems
 
@@ -66,6 +69,7 @@ Specs: [TECH.md](TECH.md) §6 (mechanics), [GDD.md](GDD.md) §12 (UI).
 | SYS-2 | Day-walker freak + day-only clock | `daywalker` | C, cut Nov 12 | G8 | ✅ built |
 | SYS-3 | Supervisor freak (facing decides which freaks work) | `supervisor` | C, cut Nov 17 | G15 | ✅ built |
 | SYS-4 | Offset layer (`offset` field generates the night grid) | `offset` | C, cut Nov 17 | G9 | ✅ built |
+| SYS-16 | Upside Down: `upsideDown: true` generates the night as the day grid flipped vertically (+ `nightPatch`); gravity, jump, coyote, grounding and max fall follow a per-shift gravity sign | act 5 | C+, cut Nov 20 | G16 | planned |
 | SYS-5 | Level select + save progress (localStorage, try/catch) | Raters reaching act 2+ | P0 | A7 | ✅ (act starts always open) |
 | SYS-6 | Music engine (step sequencer, two synced arrangements, crossfade on shift) | Audio score | P0 | A5 | ✅ |
 | SYS-7 | Settings: master / music / SFX volume, reduced effects | Accessibility | P1 | A6 | ✅ |
@@ -94,6 +98,7 @@ Specs: [ART.md](ART.md). Palette rule: existing colors only, unless a color gets
 | ART-8 | Staircase to nowhere + the freaks' proud sign | `stairs` | B | ART §6.1 | ✅ built, level pending |
 | ART-9 | Portrait ("just eyes") | `portrait` | B | ART §6.1 | ✅ built, level pending |
 | ART-10 | Offset-layer echo treatment (floor label "3.5") | `offset` | C | ART §6.1 | ✅ |
+| ART-18 | Upside Down: worker sprite flipped vertically at night in act 5, upside-down freak outlines, tells hanging from the ceiling | act 5 | C+ | ART §5, §6.1 | planned |
 | ART-11 | Props per level: notice board, vents, barrier tape, pallets, signage, footprints, chalk circles | Every level | P1 | ART §6, §6.2 | ✅ |
 | ART-12 | Effects: prank sparkle, freeze cue on shift to day, checkpoint ping | Every level | P1 | ART §5, §7 | ✅ |
 | ART-13 | UI screens: title with level select ✅, level select ✅, settings, act cards, timecard with comment, end screen with totals, credits | Shell | P0–P1 | ART §7.1 | ✅ except credits |
@@ -120,6 +125,7 @@ Specs: [AUDIO.md](AUDIO.md).
 | SND-10 | Offset rumble (on every shift in `offset`) | `offset` | C | AUDIO §4.1 | ✅ |
 | SND-11 | Day-walker giggle (by day) | `daywalker` | C | AUDIO §4.1 | ✅ |
 | SND-12 | Act-card sting | SYS-8 | P1 | AUDIO §4.1 | ✅ |
+| SND-13 | Gravity flip "whoomp" layered on the shift sound in act 5 | act 5 | C+ | AUDIO §4.1 | planned |
 
 ## 6. Text
 
@@ -127,7 +133,8 @@ Specs and drafts: [WRITING.md](WRITING.md). Fish writes the final words.
 
 | ID | Item | Spec | Status |
 |---|---|---|---|
-| TXT-1 | Level notes for all 16 (from Fish's idea-pool lines, trimmed to one line) | WRITING §3 | 12 ✅, 4 drafted |
+| TXT-1 | Level notes for all 19 (from Fish's idea-pool lines, trimmed to one line) | WRITING §3 | 12 ✅, 7 drafted |
+| TXT-10 | Act 5 card: ACT 5 · UPSIDE DOWN · "The night shift turned the building over." | WRITING §2.1 | drafted |
 | TXT-2 | One notice-board memo per level | WRITING §6 | drafts |
 | TXT-3 | Prank tell variants (MINE and friends) | WRITING §5 | drafts |
 | TXT-4 | Act card titles and one-line subtitles | WRITING §2.1 | ✅ |

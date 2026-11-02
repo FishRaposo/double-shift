@@ -179,6 +179,15 @@ The four tier-C mechanics from [CONTENT.md](CONTENT.md) §3 — all built, teste
 - **Tests:** a generated night grid equals a hand-written equivalent; `nightPatch` applies after the offset; shifting on the ground in an offset level is refused and leaves the player unchanged; shifting at the apex of a jump lands on the night copy (scripted with the real jump).
 - **Drawing:** nothing new beyond the floor-number signs (ART.md §6.1).
 
+#### Upside Down (SYS-16, act 5) *(planned, cut Nov 20)*
+- **Format:** `upsideDown: true` on a level: `parseLevel` generates `night[y] = day[H − 1 − y]` (S, E, C stay shared and unmoved), then applies `nightPatch`. It can't be combined with `night` or `offset` (validation throws, like today's night/offset check).
+- **Gravity:** a per-shift sign `g = level.upsideDown && s.layer === NIGHT ? −1 : 1`. Gravity, jump velocity, the variable-jump cut (`rising` means moving against gravity), max fall, coyote and jump buffer all use it. Grounding probes 1 px in the gravity direction (the tile above the head at night). The horizontal step is unchanged.
+- **Shift:** unchanged transaction (S-08: clean, ≤ 4 px nudge, 80 ms buffer, reject), checked against the flipped geometry. Velocity is kept as-is in screen space (S-02), so a rise becomes a fall the other way; that is the mechanic.
+- **Shared objects:** checkpoints save only where they're standable under that shift's gravity (the existing "standable" check takes the gravity sign).
+- **Freaks:** boxes for night freaks hang from the solid above (`y = ty × TILE` instead of the floor).
+- **Tests (first):** generated grid equals a hand-flipped one; gravity sign per layer; jumping and landing on the ceiling at night; a mid-air shift reverses the fall and keeps speed; a grounded shift into embedded flipped geometry is refused; ceiling checkpoint standable; hanging freak boxes; determinism. The fairness test and `npm run audit` cover the levels.
+- **Drawing:** the worker sprite flips vertically when gravity is up; freak sprites and outlines flip on the night shift; tells hang under solids.
+
 ## 7. Testing
 
 | Command | What it covers |

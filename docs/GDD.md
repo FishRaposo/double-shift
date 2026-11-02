@@ -28,7 +28,7 @@
 | Score | Timecard: clock-ins vs. par (fewest shifts the designer found, proven by tests) | §15.3 |
 | Tone | Mock horror: petty monsters, deadpan worker, no gore, no jump scares | §10.5 |
 | Look and sound | Crisp pixel art on a 2-px grid, a hand-made pixel font, a spooky-goofy theme whose day/night arrangements crossfade on every shift; all made in code (built 2026-11-02) | §10, §11, ART.md, AUDIO.md |
-| Levels | 12 built, **tier A (jam minimum) complete**; 16 planned in four acts, in tiers: A = 8, B = 12, C = 16 with four new mechanics (wet floor, supervisor, offset layer, day-walker — all shipped) | §8.2, [CONTENT.md](CONTENT.md) |
+| Levels | 12 built, **tier A (jam minimum) complete**; 19 planned in five acts (act 5: Upside Down, the night is the map flipped with gravity up), in tiers: A = 8, B = 12, C = 16 with four new mechanics (wet floor, supervisor, offset layer, day-walker — all shipped) | §8.2, [CONTENT.md](CONTENT.md) |
 | Jam | Game Off 2026, theme SHIFT, due Dec 1 13:37 PST. Lead with the pranks and freezing freaks: two overlapping worlds alone is one of the jam page's example ideas. | §1.8 |
 
 **Living sections** (kept current): §0, §1, §3, §4, §8.2, §10.5, §15.3, §18, §21. **Historical sections** (the original pre-v0.2 plan, kept for the record): §13.1–13.8, §16, §22. Their banners say what replaced them.
@@ -851,6 +851,15 @@ A linear progression is sufficient.
 | 14. Floor 3.5 ✅ | Offset layer | Shift at the apex to climb between floors | Night is half a storey up | C |
 | 15. Employee of the Month | Obstacle as tool | The portrait blocks the exit, then becomes the step | Their portrait. It's just eyes. | B |
 | 16. Clock Out ✅ | Combined mechanics | Demonstrate mastery | Get out. Final timecard. They wave from the dark. | A |
+
+**Act 5: Upside Down** *(planned, decided 2026-11-02)*: by day you play the map as drawn; at night you play the same map upside down, with gravity pointing up. Every shift is also a gravity flip. Clock Out moves to close this act.
+
+| Level | Focus | Intended Lesson | Fiction | Tier |
+|---|---|---|---|---|
+| 17. Mind Your Head | Night flipped, gravity up | At night you fall up; the ceiling is the floor | They flipped the night shift | C |
+| 18. Falling Up | Mid-fall flips | Shift mid-fall to reverse it; climb a shaft by flipping | The floor is up there now | C |
+| 19. Ceiling Walker | Flip + freak + prank | Freeze a ceiling lurker; read a prank on the flipped map | Something walks on the ceiling | C |
+| 20. Clock Out ✅ | Finale (moved) | Demonstrate mastery | Get out. | A |
 
 **Tiers and cut dates.** A = 8 levels (the six originals + Stacked + Clock Out), B = 12, C = 16. A new mechanic that isn't done (rules, tests, drawing, level at par) by its cut date moves to post-jam with its level: wet floor and day-walker by **Nov 12**, supervisor and offset layer by **Nov 17**. Content freeze **Nov 22**. Levels are referred to by id, so cuts never renumber anything.
 

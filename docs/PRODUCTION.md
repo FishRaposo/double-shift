@@ -34,6 +34,7 @@ The whole game is listed in [CONTENT.md](CONTENT.md): **16 levels in tiers** (A 
 | **Nov 12** | **Cut date 1** | Wet floor and day-walker done (rules, tests, drawing), or `wet` / `daywalker` move to post-jam. |
 | **Nov 15** | **M2: Tier B complete** | 14-level path playable (the 12 built + two of `stairs`, `doors`, `pillar`, `portrait`). Music v1. Freak art pass. |
 | **Nov 17** | **Cut date 2** | Supervisor and offset layer done, or `supervisor` / `offset` move to post-jam. If M2 itself slipped, drop to tier A now. |
+| **Nov 20** | **Cut date 3** | Upside Down (gravity flip: rules, tests, drawing) done and its first level proven, or act 5 moves to post-jam. |
 | **Nov 22** | **M3: Content freeze** | Every level that's still in is built and proven at par, including `stacked` and `clockout`. Act cards, timecard comments, settings, all copy in. Second playtest round. **No new features after this date.** |
 | **Nov 26** | **M4: Release candidate** | Bug-free on Chrome/Firefox/Edge. itch draft with fresh cover, screenshots, GIF. |
 | **Nov 30** | **M5: Submitted** | itch page public, submitted to the jam, repo linked, played from the itch page itself. |
@@ -101,6 +102,7 @@ Priority: **P0** = the game doesn't ship without it. **P1** = expected in the ja
 | G12 | Rebindable controls | P2 | Stretch in GDD §12.5 |
 | G13 | Speedrun timer display | P2 | `state.time` already tracked |
 | G14 | Sticky Keys in-joke (memo from the freaks on title/pause, practical advice kept) | P1 | GDD §1.7; the jam page jokes about it too |
+| G16 | Upside Down: night = map flipped, gravity up (act 5, three levels) | Tier C+, cut Nov 20 | TECH.md §6.5; LEVELS.md §5.2 |
 | G15 | ~~Supervisor freak (facing decides which freaks work)~~ Done | Tier C, cut Nov 17 | TECH.md §6.5; level `supervisor` |
 
 ### Levels
