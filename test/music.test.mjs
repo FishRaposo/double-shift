@@ -1,0 +1,43 @@
+// The theme's note data: whole bars, both arrangements the same length, notes in range, night = minor mode.
+import test from 'node:test';
+import assert from 'node:assert/strict';
+import { MELODY, HALF_BAR_CHORDS, LOOP_STEPS, STEPS_PER_BAR, BARS, bassNote, chordNotes, minorize, LOOP_SECONDS, BPM } from '../src/music.js';
+import { SOUNDS } from '../src/audio.js';
+
+test('the loop is whole bars, and day and night share one timeline', () => {
+  assert.equal(MELODY.length, BARS * STEPS_PER_BAR);
+  assert.equal(LOOP_STEPS, MELODY.length);
+  assert.equal(HALF_BAR_CHORDS.length, BARS * 2);
+  assert.ok(Math.abs(LOOP_SECONDS - (BARS * 4 * 60) / BPM) < 1e-9, 'loop length = bars × 4 beats at the tempo');
+  assert.equal(typeof MELODY[0], 'number', 'the loop starts on a note');
+});
+
+test('every note is in a playable range, for both arrangements', () => {
+  for (const n of MELODY) if (typeof n === 'number') assert.ok(n >= 60 && n <= 96, `melody ${n}`);
+  for (let beat = 0; beat < BARS * 4; beat++) {
+    for (const night of [false, true]) {
+      const b = bassNote(beat, night);
+      assert.ok(b >= 30 && b <= 60, `bass ${b} at beat ${beat}`);
+    }
+  }
+  for (let h = 0; h < BARS * 2; h++) for (const n of chordNotes(h)) assert.ok(n >= 60 && n <= 72);
+});
+
+test('night is the same melody in the minor mode: only E and A move, down a semitone', () => {
+  for (const n of MELODY) {
+    if (typeof n !== 'number') continue;
+    const m = minorize(n);
+    const pc = n % 12;
+    assert.equal(m, pc === 4 || pc === 9 ? n - 1 : n);
+  }
+});
+
+test('every sound effect is short (≤ 0.25 s plus delay) and not too loud', () => {
+  for (const [name, voices] of Object.entries(SOUNDS)) {
+    assert.ok(voices.length > 0, name);
+    for (const v of voices) {
+      assert.ok((v.dur ?? 0.08) <= 0.25, `${name}: ${v.dur}s`);
+      assert.ok((v.vol ?? 0.3) <= 0.35, `${name}: vol ${v.vol}`);
+    }
+  }
+});

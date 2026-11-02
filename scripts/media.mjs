@@ -69,7 +69,7 @@ function send(method, params = {}) {
 const KEYS = { Space: [' ', 32], KeyK: ['k', 75], KeyL: ['l', 76], ArrowRight: ['ArrowRight', 39] };
 const key = (type, code) => send('Input.dispatchKeyEvent', { type, code, key: KEYS[code][0], windowsVirtualKeyCode: KEYS[code][1] });
 const press = async (code) => { await key('keyDown', code); await sleep(40); await key('keyUp', code); };
-const evaluate = async (expr) => (await send('Runtime.evaluate', { expression: expr, returnByValue: true })).result.value;
+const evaluate = async (expr) => (await send('Runtime.evaluate', { expression: expr, returnByValue: true, awaitPromise: true })).result.value;
 
 async function open(path, w = 960, h = 540) {
   await send('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: false });
@@ -130,6 +130,16 @@ try {
   const sel = await evaluate('__doubleShift.screen');
   await shot('09-level-select.png');
   if (sel !== 'select') { failed = true; console.error(`level select did not open: ${sel}`); }
+
+  // asset gallery + offline audio loudness check (peaks before the master gain; must not clip)
+  await open('tools/gallery.html', 1280, 1500);
+  await sleep(500);
+  await shot('11-gallery.png');
+  const audio = await evaluate('window.__audioCheck()');
+  const peaks = [...Object.entries(audio.sfx), ...Object.entries(audio.music).map(([k, v]) => [`music ${k}`, v.peak])];
+  const loudest = peaks.sort((a, b) => b[1] - a[1])[0];
+  console.log(`  audio: loudest ${loudest[0]} peak ${loudest[1]}; music day ${audio.music.day.peak}, night ${audio.music.night.peak} over ${audio.music.day.seconds}s each`);
+  if (loudest[1] >= 1 || audio.music.day.seconds !== audio.music.night.seconds) { failed = true; console.error('audio check failed', audio); }
 } catch (e) {
   failed = true;
   console.error(e.message);

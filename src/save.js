@@ -50,3 +50,41 @@ export function isUnlocked(defs, i, save) {
   if (i === 0 || defs[i].act !== defs[i - 1].act) return true;
   return save.cleared(defs[i].id) || save.cleared(defs[i - 1].id);
 }
+
+// ---------- settings ----------
+// Volumes (0–1) and reduced effects, under their own key, with the same blocked/corrupt-storage fallback.
+
+const SETTINGS_KEY = 'double-shift.settings.v1';
+export const DEFAULT_SETTINGS = Object.freeze({ master: 0.8, music: 0.6, sfx: 0.8, reduced: false });
+
+const clamp01 = (v, d) => (Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : d);
+
+function cleanSettings(s) {
+  return {
+    master: clamp01(s?.master, DEFAULT_SETTINGS.master),
+    music: clamp01(s?.music, DEFAULT_SETTINGS.music),
+    sfx: clamp01(s?.sfx, DEFAULT_SETTINGS.sfx),
+    reduced: typeof s?.reduced === 'boolean' ? s.reduced : DEFAULT_SETTINGS.reduced,
+  };
+}
+
+export function createSettings(storage) {
+  let data;
+  try {
+    data = cleanSettings(JSON.parse(storage?.getItem(SETTINGS_KEY) ?? 'null'));
+  } catch {
+    data = cleanSettings(null);
+  }
+  return {
+    get() {
+      return { ...data };
+    },
+    set(patch) {
+      data = cleanSettings({ ...data, ...patch });
+      try {
+        storage?.setItem(SETTINGS_KEY, JSON.stringify(data));
+      } catch { /* blocked: keep for this session */ }
+      return { ...data };
+    },
+  };
+}

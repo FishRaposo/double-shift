@@ -4,8 +4,8 @@
 import { step, initState, parseLevel, tileAt, freakBoxes, TILE, DT, DAY, NIGHT, PARAMS } from './rules.js';
 import { LEVELS, ACTS } from './levels.js';
 import { createInput, GAME_KEYS } from './input.js';
-import { sfx, unlockAudio, toggleMute } from './audio.js';
-import { createSave, isUnlocked } from './save.js';
+import { sfx, unlockAudio, toggleMute, setVolumes, setMusicShift, setMenu } from './audio.js';
+import { createSave, createSettings, isUnlocked } from './save.js';
 import { drawText, measureText } from './font.js';
 import { drawSprite, workerFrame, ART, SPRITES } from './sprites.js';
 import {
@@ -24,12 +24,17 @@ g.imageSmoothingEnabled = false;
 const input = createInput();
 const NIGHT_PAL = SPRITES.worker.nightPalette;
 const levels = LEVELS.map(parseLevel);
-const save = createSave((() => { try { return localStorage; } catch { return null; } })());
+const storage = (() => { try { return localStorage; } catch { return null; } })();
+const save = createSave(storage);
+const settings = createSettings(storage);
+setVolumes(settings.get());
 
 const params = new URLSearchParams(location.search);
 const freshFx = () => ({ flash: 0, flashLayer: DAY, fail: 0, death: 0, land: 0, rings: [], pops: [], dust: [], puffs: [], sparkles: [], spook: null, freeze: 0, squint: 0, ping: 0 });
 const game = {
-  screen: 'title', // title | select | act | play | card | end | paused
+  screen: 'title', // title | select | settings | act | play | card | end | paused
+  settingsFrom: 'title', // where Esc returns to from settings
+  settingsRow: 0,
   selected: 0, // highlighted card on the level select screen
   newBest: false, // the last clear beat a saved best
   index: Math.min(Math.max((parseInt(params.get('level'), 10) || 1) - 1, 0), levels.length - 1),
@@ -65,6 +70,24 @@ function startLevel(i, { card = true } = {}) {
   } else setScreen('play');
 }
 
+function openSettings() {
+  game.settingsFrom = game.screen;
+  game.settingsRow = 0;
+  setScreen('settings');
+  input.clear();
+}
+
+// Settings rows: three volumes, then reduced effects.
+const SETTING_ROWS = [['master', 'MASTER'], ['music', 'MUSIC'], ['sfx', 'SOUND'], ['reduced', 'REDUCED EFFECTS']];
+
+function adjustSetting(row, dir) {
+  const [key] = SETTING_ROWS[row];
+  const cur = settings.get();
+  const next = key === 'reduced' ? settings.set({ reduced: !cur.reduced }) : settings.set({ [key]: Math.round((cur[key] + dir * 0.1) * 10) / 10 });
+  setVolumes(next);
+  sfx.uiMove();
+}
+
 function openSelect() {
   game.selected = game.index;
   setScreen('select');
@@ -82,6 +105,16 @@ addEventListener('keydown', (e) => {
   if (game.screen === 'title') {
     if (e.code === 'Space' || e.code === 'Enter') startLevel(game.index);
     else if (e.code === 'KeyL') openSelect();
+    else if (e.code === 'KeyO') openSettings();
+    return;
+  }
+  if (game.screen === 'settings') {
+    if (e.code === 'ArrowUp' || e.code === 'KeyW') { game.settingsRow = (game.settingsRow + SETTING_ROWS.length - 1) % SETTING_ROWS.length; sfx.uiMove(); }
+    else if (e.code === 'ArrowDown' || e.code === 'KeyS') { game.settingsRow = (game.settingsRow + 1) % SETTING_ROWS.length; sfx.uiMove(); }
+    else if (e.code === 'ArrowLeft' || e.code === 'KeyA') adjustSetting(game.settingsRow, -1);
+    else if (e.code === 'ArrowRight' || e.code === 'KeyD') adjustSetting(game.settingsRow, 1);
+    else if ((e.code === 'Space' || e.code === 'Enter') && SETTING_ROWS[game.settingsRow][0] === 'reduced') adjustSetting(game.settingsRow, 0);
+    else if (e.code === 'Escape' || e.code === 'KeyO') setScreen(game.settingsFrom);
     return;
   }
   if (game.screen === 'act') { setScreen('play'); return; }
@@ -107,6 +140,7 @@ addEventListener('keydown', (e) => {
     if (e.code === 'Escape' || e.code === 'Space') setScreen('play');
     else if (e.code === 'KeyR') startLevel(game.index, { card: false });
     else if (e.code === 'KeyL') openSelect();
+    else if (e.code === 'KeyO') openSettings();
     return;
   }
   // play
@@ -126,7 +160,13 @@ canvas.addEventListener('pointerdown', (e) => {
   const inside = (b) => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h;
   if (game.screen === 'title') {
     if (inside(TITLE_SELECT)) openSelect();
+    else if (inside(TITLE_SETTINGS)) openSettings();
     else startLevel(game.index);
+  } else if (game.screen === 'settings') {
+    SETTING_ROWS.forEach((_, row) => {
+      const r = settingRect(row);
+      if (inside(r)) adjustSetting(row, x < r.x + r.w / 2 ? -1 : 1);
+    });
   } else if (game.screen === 'act') {
     setScreen('play');
   } else if (game.screen === 'select') {
@@ -139,7 +179,9 @@ canvas.addEventListener('pointerdown', (e) => {
 // One row of timecards per act. Act starts are always open (src/save.js).
 
 const CARD = { w: 200, h: 74, gap: 24, top: 120, rowH: 104 };
-const TITLE_SELECT = { x: W / 2 - 120, y: 444, w: 240, h: 32 };
+const TITLE_SELECT = { x: W / 2 - 250, y: 444, w: 240, h: 32 };
+const TITLE_SETTINGS = { x: W / 2 + 10, y: 444, w: 240, h: 32 };
+const settingRect = (row) => ({ x: W / 2 - 260, y: 150 + row * 58, w: 520, h: 46 });
 const SELECT_KEYS = {
   ArrowLeft: [-1, 0], KeyA: [-1, 0], ArrowRight: [1, 0], KeyD: [1, 0],
   ArrowUp: [0, -1], KeyW: [0, -1], ArrowDown: [0, 1], KeyS: [0, 1],
@@ -251,6 +293,10 @@ function frame(now) {
     fx[k] = fx[k].filter((q) => (q.t += elapsed) < life);
   }
   if (fx.spook && (fx.spook.t += elapsed) > 0.35) fx.spook = null;
+  const inLevel = game.screen === 'play' || game.screen === 'paused' || game.screen === 'card';
+  setMenu(!(game.screen === 'play'));
+  const musicLayer = inLevel && game.state ? game.state.layer : DAY;
+  if (musicLayer !== game.musicLayer) { game.musicLayer = musicLayer; setMusicShift(musicLayer); }
   render();
   requestAnimationFrame(frame);
 }
@@ -465,7 +511,7 @@ function drawPlay() {
   const s = game.state;
   const layer = s.layer;
   const t = s.time;
-  const reduced = false;
+  const reduced = settings.get().reduced;
   g.drawImage(background(layer), 0, 0);
   g.drawImage(staticLayer(lvl, def, layer, s.overrides), 0, 0);
   drawHazards(lvl, layer, t, s.overrides);
@@ -507,9 +553,10 @@ function drawTitle() {
   drawText(g, 'Change shift  Shift or K      Restart  R', W / 2, 334, { scale: 2, color: '#d9f6ff', align: 'center' });
   const blink = Math.floor(game.clock * 2) % 2 === 0;
   drawText(g, 'Click or press SPACE to clock in', W / 2, 380, { scale: 2, color: blink ? '#ffec5a' : '#ffffff', align: 'center' });
-  const b = TITLE_SELECT;
-  drawPanel(g, b.x, b.y, b.w, b.h, false);
-  drawText(g, 'LEVEL SELECT (L)', W / 2, b.y + 9, { scale: 2, color: '#ffffff', align: 'center' });
+  for (const [b, label] of [[TITLE_SELECT, 'LEVEL SELECT (L)'], [TITLE_SETTINGS, 'SETTINGS (O)']]) {
+    drawPanel(g, b.x, b.y, b.w, b.h, false);
+    drawText(g, label, b.x + b.w / 2, b.y + 9, { scale: 2, color: '#ffffff', align: 'center' });
+  }
   drawText(g, 'Windows: hammering Shift can open Sticky Keys — use K, or turn off the Sticky Keys shortcut.', W / 2, H - 16, { scale: 1, color: 'rgba(255,255,255,0.8)', align: 'center' });
 }
 
@@ -605,9 +652,32 @@ function drawSelect() {
 }
 
 function drawPause() {
-  drawPanel(g, W / 2 - 200, H / 2 - 64, 400, 128, false);
+  drawPanel(g, W / 2 - 300, H / 2 - 64, 600, 128, false);
   drawText(g, 'ON BREAK', W / 2, H / 2 - 40, { scale: 3, color: '#d9f6ff', align: 'center' });
-  drawText(g, 'Esc: resume   R: restart   L: levels', W / 2, H / 2 + 12, { scale: 2, color: '#d9f6ff', align: 'center' });
+  drawText(g, 'Esc: resume   R: restart   L: levels   O: settings', W / 2, H / 2 + 12, { scale: 2, color: '#d9f6ff', align: 'center' });
+}
+
+function drawSettings() {
+  const pal = PAL[NIGHT];
+  g.drawImage(background(NIGHT), 0, 0);
+  drawText(g, 'SETTINGS', W / 2, 60, { scale: 4, color: pal.hud, halo: pal.halo, align: 'center' });
+  const s = settings.get();
+  SETTING_ROWS.forEach(([key, label], row) => {
+    const r = settingRect(row);
+    const sel = row === game.settingsRow;
+    drawPanel(g, r.x, r.y, r.w, r.h, false);
+    if (sel) drawText(g, '>', r.x + 14, r.y + 16, { scale: 2, color: '#ffec5a' });
+    drawText(g, label, r.x + 36, r.y + 16, { scale: 2, color: sel ? '#ffffff' : pal.hudSoft });
+    if (key === 'reduced') {
+      drawText(g, s.reduced ? 'ON' : 'OFF', r.x + r.w - 24, r.y + 16, { scale: 2, color: s.reduced ? '#9dffb8' : pal.hudSoft, align: 'right' });
+    } else {
+      const v = Math.round(s[key] * 10);
+      for (let i = 0; i < 10; i++) px(g, r.x + 250 + i * 18, r.y + 14, 7, 9, i < v ? (sel ? '#5ff2ff' : '#3aa8bd') : 'rgba(95,242,255,0.15)');
+      drawText(g, `${v * 10}%`, r.x + r.w - 24, r.y + 16, { scale: 2, color: pal.hudSoft, align: 'right' });
+    }
+  });
+  drawText(g, 'Up/Down: choose · Left/Right: change · Esc: back', W / 2, H - 40, { scale: 2, color: pal.hudSoft, halo: pal.halo, align: 'center' });
+  drawText(g, 'Reduced effects turns off screen flashes, rings and sparkles.', W / 2, H - 70, { scale: 1, color: pal.hudSoft, align: 'center' });
 }
 
 function render() {
@@ -615,6 +685,11 @@ function render() {
   g.clearRect(0, 0, W, H);
   if (game.screen === 'title') { drawTitle(); return; }
   if (game.screen === 'select') { drawSelect(); return; }
+  if (game.screen === 'settings') {
+    if (game.settingsFrom === 'paused') { drawPlay(); g.fillStyle = 'rgba(0,0,0,0.5)'; g.fillRect(0, 0, W, H); }
+    drawSettings();
+    return;
+  }
   if (game.screen === 'end') { drawEnd(); return; }
   if (game.screen === 'act') { drawAct(); return; }
   drawPlay();

@@ -229,19 +229,20 @@ export function drawSprite(g, name, frame, x, y, { flip = false, palette = null,
 }
 
 // Eyes on a freak drawn with drawSprite at (x, y). state: 'open' | 'shut' | 'squint'. look: -1..1 glance.
-export function drawEyes(g, name, x, y, { state = 'open', look = 0, flip = false, color = C.freakEye, alpha = 1 } = {}) {
+export function drawEyes(g, name, x, y, { state = 'open', look = 0, flip = false, color = C.freakEye, alpha = 1, scale = ART } = {}) {
   const s = SPRITES[name];
   const w = SPRITES[name].frames.a[0].length;
   const [ex0, ey] = s.eyes;
   const ex = flip ? w - ex0 - (s.gap + 2) : ex0;
-  const left = Math.round(x) - s.anchor[0] * ART + (ex + look) * ART;
-  const top = Math.round(y) - s.anchor[1] * ART + ey * ART;
+  const P = scale;
+  const left = Math.round(x) - s.anchor[0] * P + (ex + look) * P;
+  const top = Math.round(y) - s.anchor[1] * P + ey * P;
   const prevAlpha = g.globalAlpha;
   g.globalAlpha = prevAlpha * alpha;
   g.fillStyle = color;
   for (const dx of [0, 1 + s.gap]) {
-    if (state === 'open') g.fillRect(left + dx * ART, top, ART, ART * 2);
-    else g.fillRect(left + dx * ART - (state === 'squint' ? ART / 2 : 0), top + ART, state === 'squint' ? ART * 2 : ART * 1.5, ART);
+    if (state === 'open') g.fillRect(left + dx * P, top, P, P * 2);
+    else g.fillRect(left + dx * P - (state === 'squint' ? P / 2 : 0), top + P, state === 'squint' ? P * 2 : P * 1.5, P);
   }
   g.globalAlpha = prevAlpha;
 }

@@ -1,0 +1,261 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Double Shift asset gallery</title>
+<style>
+  html, body { margin: 0; background: #0b1029; color: #d9f6ff; font: 14px system-ui, sans-serif; }
+  canvas { display: block; image-rendering: pixelated; }
+  #audio { padding: 12px 16px 24px; display: flex; flex-wrap: wrap; gap: 6px; max-width: 1280px; }
+  #audio h2 { width: 100%; margin: 8px 0 4px; font-size: 15px; }
+  button { background: #1d2a56; color: #d9f6ff; border: 1px solid #5ff2ff; padding: 4px 8px; cursor: pointer; font: inherit; }
+  #check { width: 100%; white-space: pre; font: 12px ui-monospace, monospace; color: #9dffb8; }
+</style>
+</head>
+<body>
+<!-- Every asset in the game, including those for levels that aren't built yet (docs/CONTENT.md §4–5).
+     Serve the repo (npm run serve) and open /tools/gallery.html. scripts/media.mjs captures it. -->
+<canvas id="c" width="1280" height="1500"></canvas>
+<div id="audio"><h2>Audio board (click once to enable sound)</h2></div>
+<script type="module">
+import { drawText } from '../src/font.js';
+import { drawSprite, drawEyes, SPRITES, ART } from '../src/sprites.js';
+import * as art from '../src/art.js';
+import { unlockAudio, playSound, SOUNDS, setMusicShift, setMenu, voice, makeNoise } from '../src/audio.js';
+import { scheduleStep, STEP, STEPS_PER_BAR } from '../src/music.js';
+
+const { PAL, DAY, NIGHT, TILE, PROPS } = art;
+const cv = document.getElementById('c');
+const g = cv.getContext('2d');
+const W = cv.width;
+const A = ART;
+const NIGHT_PAL = SPRITES.worker.nightPalette;
+
+function section(y, h, title, layer = NIGHT) {
+  const pal = PAL[layer];
+  g.fillStyle = layer === DAY ? '#efd9ae' : '#141d3d';
+  g.fillRect(0, y, W, h);
+  drawText(g, title, 16, y + 10, { scale: 2, color: pal.hud });
+}
+function label(text, x, y, layer = NIGHT) {
+  drawText(g, text, x, y, { scale: 1, color: PAL[layer].hudSoft });
+}
+
+function draw(t) {
+  g.imageSmoothingEnabled = false;
+  g.clearRect(0, 0, W, cv.height);
+  let y = 0;
+
+  // ---- type ----
+  section(y, 150, 'TYPE · hand-made 5x7 pixel font');
+  drawText(g, 'ABCDEFGHIJKLMNOPQRSTUVWXYZ 0123456789', 16, y + 40, { scale: 2, color: '#ffffff' });
+  drawText(g, "abcdefghijklmnopqrstuvwxyz .,:;!?'\"-+/()&%#*=<>[]^~·×—…←→↑↓", 16, y + 66, { scale: 2, color: '#ffffff' });
+  drawText(g, 'Scale 1 footnotes · Scale 2 body and HUD', 16, y + 96, { scale: 1, color: '#d9f6ff' });
+  drawText(g, 'Scale 3 headings', 400, y + 92, { scale: 3, color: '#ffec5a' });
+  art.drawLogo(g, 1000, y + 70, 5);
+  y += 150;
+
+  // ---- worker ----
+  for (const layer of [DAY, NIGHT]) {
+    section(y, 110, layer === DAY ? 'WORKER · day' : 'WORKER · night', layer);
+    const frames = ['idle0', 'idle1', 'run0', 'run1', 'run2', 'run3', 'jump', 'fall', 'land', 'spookBody', 'boots'];
+    frames.forEach((f, i) => {
+      const x = 30 + i * 80;
+      drawSprite(g, 'worker', f, x, y + 50, { palette: layer === NIGHT ? NIGHT_PAL : null, scale: 3 });
+      label(f, x - 4, y + 96, layer);
+    });
+    const run = `run${Math.floor(t * 12) % 4}`;
+    drawSprite(g, 'worker', run, 960, y + 50, { palette: layer === NIGHT ? NIGHT_PAL : null, scale: 3 });
+    drawSprite(g, 'worker', run, 1060, y + 50, { palette: layer === NIGHT ? NIGHT_PAL : null, scale: 3, flip: true });
+    label('animated', 980, y + 96, layer);
+    y += 110;
+  }
+
+  // ---- freaks ----
+  section(y, 130, 'THE FREAKS · night (frozen outlines on the right)');
+  const freaks = [['lurker', 'a'], ['lurker', 'b'], ['peeker', 'a'], ['squatter', 'a'], ['supervisor', 'a']];
+  freaks.forEach(([k, f], i) => {
+    const x = 40 + i * 90;
+    drawSprite(g, k, f, x, y + 54, { scale: 3 });
+    drawEyes(g, k, x, y + 54, { state: Math.floor(t * 0.9 + i) % 3 ? 'open' : 'shut', scale: 3, flip: false });
+    label(`${k} ${f}`, x - 6, y + 112);
+  });
+  drawSprite(g, 'supervisor', 'a', 500, y + 54, { scale: 3, flip: true });
+  drawEyes(g, 'supervisor', 500, y + 54, { state: 'open', scale: 3, flip: true });
+  label('supervisor facing left', 470, y + 112);
+  drawSprite(g, 'lurker', 'a', 620, y + 54, { scale: 3 });
+  drawEyes(g, 'lurker', 620, y + 54, { state: 'shut', scale: 3 });
+  label('slacking', 618, y + 112);
+  drawSprite(g, 'lurker', 'a', 720, y + 54, { scale: 3 });
+  drawEyes(g, 'lurker', 720, y + 54, { state: 'squint', scale: 3 });
+  label('smug (prank)', 708, y + 112);
+  // peeker hidden
+  art.px(g, 820, y + 90, 12, 3, 'rgba(0,0,0,0.6)');
+  drawEyes(g, 'peeker', 820, y + 66, { state: 'open' });
+  label('peeker hidden', 806, y + 112);
+  ['lurker', 'peeker', 'squatter', 'supervisor'].forEach((k, i) => {
+    drawSprite(g, k, 'a', 940 + i * 80, y + 54, { outline: PAL[NIGHT].echo, scale: 3 });
+  });
+  label('frozen by day (night echo blue)', 950, y + 112);
+  y += 130;
+
+  section(y, 100, 'DAY-WALKER · day, and frozen by night', DAY);
+  drawSprite(g, 'daywalker', Math.floor(t * 6) % 2 ? 'b' : 'a', 40, y + 40, { scale: 3 });
+  drawEyes(g, 'daywalker', 40, y + 40, { state: 'open', scale: 3 });
+  drawSprite(g, 'daywalker', 'a', 160, y + 40, { outline: PAL[DAY].echo, scale: 3 });
+  label('day-walker', 36, y + 86, DAY);
+  label('its outline at night (day echo orange)', 150, y + 86, DAY);
+  y += 100;
+
+  // ---- tiles ----
+  for (const layer of [DAY, NIGHT]) {
+    section(y, 140, layer === DAY ? 'TILES · day' : 'TILES · night', layer);
+    g.save();
+    g.translate(0, y + 40);
+    const open = { up: true, down: true, left: true, right: true };
+    art.drawSolidTile(g, 1, 0, layer, { ...open, right: false });
+    art.drawSolidTile(g, 2, 0, layer, { ...open, left: false });
+    art.drawSolidTile(g, 1, 1, layer, { up: false, down: true, left: true, right: false });
+    art.drawSolidTile(g, 2, 1, layer, { up: false, down: true, left: false, right: true });
+    art.drawSolidTile(g, 4, 0, layer, open);
+    art.drawHatch(g, 4, 0, layer);
+    art.drawEchoEdges(g, [[180, 0, 210, 0, 'top'], [180, 0, 180, 30, 'left'], [210, 0, 210, 30, 'right'], [180, 30, 210, 30, 'bot']], PAL[1 - layer].echo);
+    if (layer === DAY) art.drawRebar(g, 8, 1); else art.drawLaser(g, 8, 1, t, true, false), art.drawLaser(g, 9, 1, t, false, true);
+    art.drawHazardEcho(g, 11, 1, PAL[1 - layer].echo);
+    art.drawWetTile(g, 14, 1, layer, open, t);
+    art.drawWetTile(g, 15, 1, layer, open, t);
+    art.drawDoor(g, 17, 2, layer, 3);
+    art.drawEmptyFrame(g, 19, 2, layer, 3);
+    art.drawDoorPile(g, 21, 2, layer, 2);
+    art.drawPillar(g, 25, 0, 2, layer);
+    art.drawCrack(g, 27, 0, layer);
+    for (let i = 0; i < 3; i++) art.drawSolidTile(g, 29 + i, 2 - i, layer, { up: true, down: true, left: true, right: true });
+    g.restore();
+    const L = (s, tx) => label(s, tx * TILE, y + 128, layer);
+    L('solids', 1); L('hatch', 4); L('echo', 6); L(layer === DAY ? 'rebar' : 'laser', 8); L('hazard echo', 11); L('wet floor', 14);
+    L('door', 17); L('stolen', 19); L('door pile', 21); L('pillar', 25); L('crack', 27); L('stairs', 29);
+    y += 140;
+  }
+
+  // ---- objects ----
+  section(y, 140, 'OBJECTS AND SIGNS');
+  g.save();
+  g.translate(0, y + 30);
+  art.drawExit(g, 1, 2, DAY);
+  art.drawExit(g, 3, 2, NIGHT);
+  art.drawCheckpoint(g, 5, 2, false);
+  art.drawCheckpoint(g, 6, 2, true, Math.abs(Math.sin(t * 3)));
+  art.drawSign(g, 270, 40, 'MINE', 'note', 2);
+  art.drawSign(g, 370, 40, 'MINE NOW', 'note');
+  art.drawSign(g, 370, 70, 'HEXED. NO TUCH', 'note');
+  art.drawSign(g, 500, 40, 'RENOVATION', 'paper');
+  art.drawSign(g, 500, 70, 'LASERS', 'red');
+  art.drawSign(g, 610, 40, 'OUR STARES!', 'note');
+  art.drawSign(g, 610, 70, 'FLOOR 3', 'paper');
+  art.drawSign(g, 700, 70, 'FLOOR 3.5', 'paper');
+  art.drawPortrait(g, 760, 10, t);
+  art.drawSign(g, 960, 40, 'LOST & FOUND', 'paper');
+  art.drawSign(g, 960, 70, 'NIGHT MANAGEMENT', 'green');
+  art.drawSign(g, 1130, 40, 'WET FLOOR', 'note');
+  art.drawSign(g, 1130, 70, 'CLOSING TIME', 'paper');
+  g.restore();
+  y += 140;
+
+  // ---- props ----
+  section(y, 130, 'PROPS', DAY);
+  const kinds = Object.keys(PROPS).filter((k) => !['sign', 'eyes'].includes(k));
+  kinds.forEach((k, i) => {
+    const x = 20 + i * 76;
+    g.save();
+    g.translate(0, y + 50);
+    PROPS[k](g, x + 8, 30, k === 'barrierTape' ? 2 : {}, {});
+    g.restore();
+    label(k, x, y + 118, DAY);
+  });
+  y += 130;
+
+  // ---- effects and UI ----
+  section(y, 170, 'EFFECTS AND UI');
+  const k = (t % 0.6) / 0.6;
+  art.drawShiftRing(g, 70, y + 90, k, NIGHT);
+  art.drawShiftRing(g, 170, y + 90, k, DAY);
+  art.drawDust(g, 260, y + 110, k);
+  art.drawPuff(g, 340, y + 90, k);
+  art.drawSparkle(g, 430, y + 90, k, 3);
+  label('shift rings', 40, y + 150); label('dust', 248, y + 150); label('puff', 330, y + 150); label('sparkle', 410, y + 150);
+  art.drawPanel(g, 500, y + 40, 200, 100, true);
+  art.drawPanel(g, 720, y + 40, 200, 100, false);
+  art.drawStamp(g, 600, y + 90, 'ON PAR', '#c0392b', 3, Math.min(1, (t % 2) / 0.12));
+  art.drawStamp(g, 820, y + 90, '+2 OVERTIME', '#7f6a50', 2);
+  art.drawStamp(g, 1000, y + 90, 'UNDER PAR!', '#c0392b', 2);
+  label('paper and night panels, stamps', 560, y + 150);
+  y += 170;
+
+  cv.height !== y && (cv.height = y);
+}
+
+let start = performance.now();
+function loop(now) { draw((now - start) / 1000); requestAnimationFrame(loop); }
+requestAnimationFrame(loop);
+
+// ---- audio board ----
+const board = document.getElementById('audio');
+for (const name of Object.keys(SOUNDS)) {
+  const b = document.createElement('button');
+  b.textContent = name;
+  b.onclick = () => { unlockAudio(); playSound(name); };
+  board.appendChild(b);
+}
+for (const [txt, layer] of [['music: day', 0], ['music: night', 1]]) {
+  const b = document.createElement('button');
+  b.textContent = txt;
+  b.onclick = () => { unlockAudio(); setMenu(false); setMusicShift(layer); };
+  board.appendChild(b);
+}
+const out = document.createElement('div');
+out.id = 'check';
+board.appendChild(out);
+
+// Offline loudness check: every SFX and 8 bars of each arrangement, rendered without speakers.
+// Peaks are before the master gain and compressor; the game's mix scales them down (audio.js MASTER).
+async function peakOf(seconds, build) {
+  const sr = 44100;
+  const off = new OfflineAudioContext(1, Math.ceil(sr * seconds), sr);
+  build(off);
+  const buf = await off.startRendering();
+  const d = buf.getChannelData(0);
+  let peak = 0;
+  for (let i = 0; i < d.length; i++) peak = Math.max(peak, Math.abs(d[i]));
+  return { peak, length: buf.length / sr };
+}
+
+window.__audioCheck = async () => {
+  const report = { sfx: {}, music: {} };
+  for (const [name, voices] of Object.entries(SOUNDS)) {
+    const r = await peakOf(0.6, (off) => {
+      const noise = makeNoise(off);
+      for (const v of voices) voice(off, off.destination, { ...v, noiseBuf: noise });
+    });
+    report.sfx[name] = +r.peak.toFixed(3);
+  }
+  for (const [name, layer] of [['day', 0], ['night', 1]]) {
+    const bars = 8;
+    const r = await peakOf(bars * STEPS_PER_BAR * STEP + 0.5, (off) => {
+      const noise = makeNoise(off);
+      const day = off.createGain();
+      const night = off.createGain();
+      day.gain.value = layer === 0 ? 1 : 0;
+      night.gain.value = layer === 1 ? 1 : 0;
+      day.connect(off.destination);
+      night.connect(off.destination);
+      for (let s = 0; s < bars * STEPS_PER_BAR; s++) scheduleStep(off, { day, night }, s, 0.05 + s * STEP, noise);
+    });
+    report.music[name] = { peak: +r.peak.toFixed(3), seconds: +(bars * STEPS_PER_BAR * STEP).toFixed(3) };
+  }
+  out.textContent = JSON.stringify(report, null, 1);
+  return report;
+};
+</script>
+</body>
+</html>

@@ -1,7 +1,7 @@
 // Progress saving and level-select unlocking. Storage is faked; the real one is localStorage.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createSave, isUnlocked, better } from '../src/save.js';
+import { createSave, isUnlocked, better, createSettings, DEFAULT_SETTINGS } from '../src/save.js';
 import { LEVELS, ACTS } from '../src/levels.js';
 
 function memoryStorage(initial = {}) {
@@ -68,4 +68,22 @@ test('every level belongs to a named act, acts never go backwards, and act 1 sta
     assert.ok(ACTS[d.act], `${d.name}: act ${d.act} has a name`);
     if (i > 0) assert.ok(d.act >= LEVELS[i - 1].act, `${d.name}: act order`);
   });
+});
+
+
+test('settings: defaults, saved changes survive a reload, values are clamped', () => {
+  const storage = memoryStorage();
+  const s = createSettings(storage);
+  assert.deepEqual(s.get(), { ...DEFAULT_SETTINGS });
+  s.set({ music: 0.3, reduced: true });
+  assert.deepEqual(createSettings(storage).get(), { ...DEFAULT_SETTINGS, music: 0.3, reduced: true });
+  assert.equal(s.set({ sfx: 7 }).sfx, 1, 'clamped to 1');
+  assert.equal(s.set({ master: -2 }).master, 0, 'clamped to 0');
+});
+
+test('settings: blocked or corrupt storage falls back to defaults without throwing', () => {
+  assert.deepEqual(createSettings(throwing).get(), { ...DEFAULT_SETTINGS });
+  assert.equal(createSettings(throwing).set({ music: 0.1 }).music, 0.1);
+  const bad = memoryStorage({ 'double-shift.settings.v1': '{"music":"loud","reduced":"yes"}' });
+  assert.deepEqual(createSettings(bad).get(), { ...DEFAULT_SETTINGS });
 });
