@@ -6,6 +6,7 @@ Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game l
 
 - The worker is **deadpan**. Underpaid, unbothered, quietly done with this building.
 - The freaks are **petty and pleased with themselves**. They write in all caps on sticky notes and giggle.
+- **Who the freaks really are:** raccoons who know dark magic (GDD §4.8). They write like hoarders who think they're ancient sorcerers: grand claims, bad spelling, about very small things. **Never write the word "raccoon" in a freak line.** Only management may say it, and only to deny it.
 - Management is **clueless**: memos that blame the night crew, the day crew, the pigeons.
 - Jokes are short. A line that needs a second line isn't ready.
 - Original jokes only (GDD §10.5).
@@ -55,6 +56,7 @@ SPOOKED! · AAAGH! · NOPE! · EEP! · NOT PAID ENOUGH
 | Prank fires ✅ | hee hee hee |
 | Sticky note tell (day) ✅ | MINE |
 | More tells | MINE NOW · DO NOT TUCH · FINDERS KEEPERS · (a drawing of eyes) |
+| Hex-flavored tells *(candidates)* | MINE BY ANSHENT LAW · HEXED. NO TUCH · THE PLANK IS OURS NOW · WE SEE YOU (WE R SHINY) |
 
 ## 6. Notice board memos *(planned, A3)*
 
@@ -67,6 +69,10 @@ Shown as props; readable when the worker stands near (or always, small).
 - "Pest control visit cancelled. Pest control would like to not talk about it."
 - "Employee of the Month: [photo is just eyes]"
 - "Overtime is mandatory. So are the freaks, apparently."
+- "It is NOT raccoons. Stop saying it is raccoons. — Management"
+- "Whoever keeps drawing circles in chalk on the loading dock: stop."
+- "Break room: all snacks have been taken. The wrappers have been arranged in a circle. With candles."
+- "Do not leave shiny objects unattended."
 
 ## 7. Timecard comments *(planned, A8)*
 

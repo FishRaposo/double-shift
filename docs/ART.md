@@ -84,12 +84,20 @@ Graphics is a rated jam category. Simple shapes score well when they look *chose
 
 ## 5. The freaks
 
+- **They're raccoons who know dark magic** (GDD §4.8), drawn so the player can work it out and the game never says it.
 - **Never fully shown.** No faces beyond eyes, no full-light view, no close-up.
 - Silhouette: a 20×22 lumpy shape with 3 fur spikes on top, jittering ±1.2 px (`sin(t·14)`), body `#05060f` with a faint cyan rim so it reads against the night solids.
 - Eyes: two 3×3 px squares, `rgba(255,236,90)`, blink (closed ~0.12 s every ~3.1 s, offset per freak). Lurker eyes glance in its travel direction.
 - Peeker hidden: a dark 6 px slot with small eyes.
 - By day: dashed outline at the frozen position, eyes at 35% opacity.
 - *(planned art pass, A1)*: decide size after playtest (they're smaller than the worker now); per-kind silhouette (lurker hunched, peeker tall/thin, squatter wide and smug); a 2-frame walk wobble for lurkers; peeker pop-up squash.
+- *(planned, A1)* **Raccoon clues**, all inside the existing silhouette language (black body, cyan rim, yellow eyes):
+  - a darker **mask band** behind the eyes (a slightly lighter body tone so the band reads);
+  - two **round ears** replacing the middle fur spike;
+  - a **ringed tail** on the lurker (alternating body/rim bands);
+  - tiny **hands** gripping the ledge on the peeker;
+  - the squatter sits on a small **hoard** (a plank end, a hard hat, something shiny).
+- *(planned, A1)* **Magic clues:** when a prank fires, a brief **sparkle** (a few 2 px squares in the freak-eye yellow, about 0.4 s) on the changed tiles. Prank tells get a faint **glyph** (simple strokes, never a real-world symbol) next to the eyes or the MINE note. Both reuse existing colors, so no new palette rows. Keep it subtle: the sparkle must never hide geometry.
 - *(planned)* Scatterer: scurry pose; Day-walker: same silhouette, readable in daylight (dark against warm sky, eyes still glow).
 
 ## 6. Environment

@@ -30,6 +30,7 @@ This GDD decides *what* the game is. The production docs in this folder decide *
 | §1.7 Theme: added the readings the jam page itself lists (night shift, Sticky Keys) | Theme interpretation is a rated category |
 | §10.1: art stays **code-drawn, as a deliberate style**; no outside artist for the jam | Fish's decision 2026-11-01. Graphics is rated, so "placeholder" has to become a style (ART.md §1.1). |
 | §18: three jam risks added | Innovation overlap, raters quitting before the freaks, a low rating count |
+| **The freaks are raccoons who know dark magic** (§4.8 character bible). On screen they're still only "the freaks": the game shows raccoon and magic clues and never says the word. | Fish's direction, 2026-11-02. Gives art, audio and writing one shared idea to draw from, explains the pranks (hexes), and keeps the mystery as a joke the player gets. |
 
 ## v0.3
 
@@ -118,6 +119,8 @@ The game should reward both deliberate problem-solving and fast, skillful execut
 The player is a maintenance worker covering a double shift in an old building. In this building, day and night happen at the same time, and the worker can step between them.
 
 Something lives in the building at night. Nobody calls them anything but **the freaks**. They are real monsters, but ridiculous ones: petty, giggling pranksters who steal planks, restack crates and jam gates for reasons of their own. They are never fully revealed. The player sees eyes in the dark, a lumpy silhouette ducking behind a crate, a sticky note that says MINE, and, mostly, the results.
+
+Behind the curtain, the freaks are **raccoons who know dark magic** (§4.8). The game never says so. It leaves enough clues for the player to work it out.
 
 The fiction does three jobs:
 
@@ -456,6 +459,18 @@ Layer differentiation never relies on color alone: solid vs. echo is filled vs. 
 3. **Deterministic.** Fixed patterns only, no AI. Same inputs, same freaks: predictable, testable, par-proof.
 4. **Night creatures.** Visible freaks exist only on the night shift and obey S-06/§4.6: when the player is on day shift, every freak freezes mid-stride. By day they are drawn as dashed outlines where they will be on return.
 5. **Fair.** Every prank and every freak is telegraphed before it can hurt (§6.3 rule 2).
+
+**Who they are (character bible, decided 2026-11-02)**
+
+The freaks are **raccoons who know dark magic**. This is the direction for every freak-related choice in art, sound and writing. The in-game name stays "the freaks".
+
+- **Raccoon instincts.** Nocturnal, nosy, and hoarders of anything shiny or useful. They steal planks, restack crates, raid the break room. Clever little hands, zero respect for property, and they flee the moment they're noticed.
+- **Dark magic, used for petty ends.** They know real sorcery and use it for pranks. A prank is a hex: the plank doesn't get carried over the pit, it's *spirited* over the pit while you weren't looking. That's why pranks fire at the instant of a shift (§4.9).
+- **Smug about it.** They think they're ancient and terrifying. They're raccoons. The comedy is the gap between the two.
+- **Shown, never told.** No line in the game says "raccoon". Clues only: a dark mask band around the glowing eyes, round ears, a ringed tail in the silhouette, tiny hands, chittering, and a faint sparkle where a prank landed. The one exception allowed is management denying it ("It is NOT raccoons."). Mystery stays the joke (§10.5).
+- **Never cute enough to cuddle, never scary.** Rubber-suit-monster energy still applies: lumpy, jittering, glowing eyes, but petty.
+
+Specs: ART.md §5 (look), AUDIO.md §2 and §4 (sound), WRITING.md §1 (voice).
 
 ## 4.9 Pranks (signature mechanic)
 
@@ -991,10 +1006,10 @@ Not a horror game. Rubber-suit-monster energy: real monsters, ridiculous ones, m
 - **No gore, no jump scares.** Getting caught is a gag: yelp, the worker leaps out of their boots, instant respawn. Failure stays fast (§9.5).
 - **The freaks are petty, not evil.** They steal, restack, jam and giggle.
 - **The worker plays it straight.** Deadpan memos, notice-board grievances and timecard comments carry the comedy ("Incident report: was spooked. Again.").
-- **Mystery is the punchline.** The freaks are never explained or fully shown.
+- **Mystery is the punchline.** The freaks are never explained or fully shown. (They're raccoons who know dark magic, §4.8. The player can figure that out; the game never confirms it.)
 - **Original jokes only.** The tone is inspired by classic cartoon monster capers and absurdist TV, but no characters, catchphrases or famous bits are borrowed.
 
-The freaks are drawn in code: a dark lumpy, jittering silhouette with fur spikes and a pair of blinking yellow eyes.
+The freaks are drawn in code: a dark lumpy, jittering silhouette with fur spikes and a pair of blinking yellow eyes. The art pass adds the raccoon clues from §4.8 (ART.md §5).
 
 ---
 
@@ -1745,7 +1760,7 @@ The following decisions require prototypes or further discussion.
 | Moving objects in inactive layers | Frozen | Locked |
 | Level count | 6 minimum, 12 full (three acts) | Provisional |
 | Offset levels | Act 3 stretch ("they moved the floor") | Medium |
-| Antagonist | The freaks, never fully shown | Locked |
+| Antagonist | The freaks, never fully shown; secretly raccoons who know dark magic (§4.8) | Locked |
 | Tone | Mock horror | Locked |
 | Pranks trigger | Nth entry into night | Locked |
 | Freak AI | None: fixed patterns, frozen by day | Locked |
