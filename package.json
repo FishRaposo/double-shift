@@ -9,7 +9,8 @@
     "check": "node scripts/check.mjs",
     "start": "node scripts/serve.mjs --open",
     "serve": "node scripts/serve.mjs",
-    "zip": "node scripts/zip.mjs"
+    "zip": "node scripts/zip.mjs",
+    "media": "node scripts/media.mjs"
   },
   "license": "MIT"
 }

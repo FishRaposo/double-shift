@@ -70,6 +70,12 @@ addEventListener('keydown', (e) => {
 });
 addEventListener('keyup', (e) => { input.keyUp(e); });
 addEventListener('blur', () => input.clear());
+// In an itch.io embed the first click is what gives the game keyboard focus, so let it clock in too.
+canvas.addEventListener('pointerdown', () => {
+  canvas.focus();
+  unlockAudio();
+  if (game.screen === 'title') startLevel(game.index);
+});
 
 // ---------- simulation ----------
 
@@ -624,7 +630,7 @@ function drawTitle() {
   g.fillText('Move: A/D or ←/→    Jump: Space/W/↑', W / 2, 335);
   g.fillText('Change shift: Shift or K    Restart: R', W / 2, 358);
   g.font = 'bold 18px monospace';
-  g.fillText('Press SPACE to clock in', W / 2, 400);
+  g.fillText('Click or press SPACE to clock in', W / 2, 400);
   g.font = '12px monospace';
   g.fillStyle = 'rgba(255,255,255,0.75)';
   g.fillText('Windows: hammering Shift can open Sticky Keys — use K, or turn off the Sticky Keys shortcut.', W / 2, H - 24);

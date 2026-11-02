@@ -29,6 +29,8 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-01.
 | `scripts/serve.mjs` | Zero-dependency local server, no caching (`npm start` opens the browser; `npm run serve` doesn't). `play.bat` wraps it for double-click on Windows. | — |
 | `scripts/check.mjs` | Syntax-check modules, validate levels | — |
 | `scripts/smoke.mjs` | Headless Chromium plays level 1 with real keys, screenshots | — |
+| `scripts/media.mjs` | `npm run media`: drives headless Edge/Chrome over the DevTools protocol (no dependencies). Saves the itch cover (`tools/cover.html`) and screenshots to `media/`, and fails if level 1 can't be cleared with real keys at full speed. | — |
+| `tools/cover.html` | Draws the 1260×1000 itch cover in code | — |
 | `scripts/zip.mjs` | Builds `double-shift-web.zip` for itch | — |
 
 **The one architectural rule:** the screen only draws what `rules.js` decided. Anything that affects whether the player lives, dies, wins or where they are belongs in `rules.js` and gets a test.

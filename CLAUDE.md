@@ -13,6 +13,7 @@ npm run check                              # syntax-check src/*.js + validate ev
 npm start                                  # local server + opens the browser (play.bat does the same on Windows)
 npm run serve                              # http://localhost:8080, no browser; next free port if busy (scripts/serve.mjs)
 npm run zip                                # double-shift-web.zip (index.html + src/) for itch.io
+npm run media                              # itch cover + screenshots via headless Edge/Chrome; also a full-speed level-1 smoke test
 node scripts/smoke.mjs http://localhost:8080/ media   # headless Chromium plays level 1; needs Playwright
 ```
 

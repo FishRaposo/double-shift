@@ -42,6 +42,8 @@ Then:
 
 ## 2. itch.io page settings
 
+**Paste-ready kit: [itch/page.md](../itch/page.md)** (every field in dashboard order, media list, description). `npm run zip` builds the upload and `npm run media` renders the cover and screenshots. The zip was tested on 2026-11-02 inside a 960×540 iframe: one click starts the game, and keys reach it after that click.
+
 | Setting | Value |
 |---|---|
 | Title | **Double Shift: The Freaks Come Out at Night** (the subtitle helps title search; confirm final, PRODUCTION.md §5) |
@@ -71,8 +73,9 @@ Rules: no synonyms, no engine/tool tags, no repeating the genre or platform, no 
 - The jam also asks you to disclose AI use in the submission; say the same thing in the page's "How it was made".
 
 ### Media (ART.md §8)
-- [ ] Cover 1260×1000
-- [ ] Demo GIF first, then 3–5 screenshots (day/night pair, prank tell, Night Watch, timecard)
+- [x] Cover 1260×1000: `npm run media` → `media/cover.png` (drawn by `tools/cover.html`)
+- [x] Screenshots: `npm run media` → `media/01…08-*.png`; upload order in itch/page.md §3
+- [ ] Demo GIF *(planned)*
 
 ## 3. Getting indexed
 

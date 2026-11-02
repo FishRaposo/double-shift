@@ -15,6 +15,7 @@ Everything needed to finish, ship and maintain *Double Shift* for GitHub Game Of
 | [AUDIO.md](AUDIO.md) | Every sound with its synthesis values, music plan, mixing rules. | Making or changing sound |
 | [WRITING.md](WRITING.md) | Copy deck: level notes, memos, sticky notes, spook lines, timecard comments, UI text. Drafts for Fish to edit. | Writing any in-game text |
 | [PLAYTEST.md](PLAYTEST.md) | How to run a playtest, what to watch for, the feedback form, the log. | Before and after every playtest |
+| [../itch/page.md](../itch/page.md) | The itch.io page, paste-ready: every dashboard field, media order, description draft. | Creating or updating the itch page |
 | [RELEASE.md](RELEASE.md) | Jam rules (§0), GitHub repo, itch.io page settings, AI disclosure, tags, media, the jam submission checklist, post-jam. | Weeks 3–4 and submission day |
 
 **Rules for these docs**

@@ -23,7 +23,7 @@ Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game l
 | Title ✅ | DOUBLE SHIFT |
 | Subtitle *(provisional)* | The Freaks Come Out at Night |
 | Tagline ✅ | One building. Two shifts. One worker. |
-| Start ✅ | Press SPACE to clock in |
+| Start ✅ | Click or press SPACE to clock in |
 | Sticky Keys note ✅ | Windows: hammering Shift can open Sticky Keys — use K, or turn off the Sticky Keys shortcut. |
 | Tutorial ✅ | Press SHIFT (or K) to change shifts / Dashed outlines show the other shift |
 | Pause ✅ | ON BREAK · Esc: resume · R: restart |
