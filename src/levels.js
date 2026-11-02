@@ -8,11 +8,15 @@
 //         lurker (patrols `range` tiles at `speed` px/s), peeker (out for `duty` of `period` s),
 //         squatter (never moves).
 // decor:  cosmetic only.
+// act:    which act the level belongs to (the first level of each act is always open in level select).
+
+export const ACTS = { 1: 'Renovation', 2: 'Overtime', 3: 'Graveyard Shift', 4: 'Lights Out' };
 
 export const LEVELS = [
   {
     id: 'clock',
     name: 'Clock In',
+    act: 1,
     note: 'Gap in the floor by day. The night crew laid planks, and locked the gate.',
     par: 2,
     day: [
@@ -59,6 +63,7 @@ export const LEVELS = [
   {
     id: 'scaff',
     name: 'Scaffolding',
+    act: 1,
     note: 'The day crew put up scaffolding. Deliveries came in.',
     par: 1,
     day: [
@@ -105,6 +110,7 @@ export const LEVELS = [
   {
     id: 'closing',
     name: 'Closing Time',
+    act: 1,
     note: 'Rebar by day, lasers by night. Gates go down at closing.',
     par: 2,
     day: [
@@ -151,6 +157,7 @@ export const LEVELS = [
   {
     id: 'midair',
     name: 'Mid-Air',
+    act: 1,
     note: 'Something up there blinked.',
     par: 3,
     day: [
@@ -198,6 +205,7 @@ export const LEVELS = [
   {
     id: 'inventory',
     name: 'Inventory',
+    act: 2,
     note: 'Every time you clock in, something gets moved.',
     par: 3,
     day: [
@@ -255,6 +263,7 @@ export const LEVELS = [
   {
     id: 'watch',
     name: 'Night Watch',
+    act: 2,
     note: 'Something is in the tunnel. It only moves at night.',
     par: 4,
     day: [

@@ -18,8 +18,8 @@ Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-02**.
 | Levels | 6 built (act 1: 4, act 2: 2), all proven solvable at par; 10 more planned (CONTENT.md) |
 | Rendering | Code-drawn placeholder-plus: palettes, echoes, hatching, freaks, timecard |
 | Audio | Synthesized SFX only; **no music yet** |
-| Menus | Title, pause, timecard, end screen. **No settings, no level select, no save** |
-| Tests | 42 passing (`npm test`) |
+| Menus | Title, level select + saved bests (Nov 2), pause, timecard, end screen. **No settings yet** |
+| Tests | 49 passing (`npm test`) |
 | Repo / CI / itch | Public repo [FishRaposo/double-shift](https://github.com/FishRaposo/double-shift), CI green, playable on [GitHub Pages](https://fishraposo.github.io/double-shift/). **No itch page** |
 
 ## 2. Milestones
@@ -47,7 +47,7 @@ The whole game is listed in [CONTENT.md](CONTENT.md): **16 levels in tiers** (A 
 ### Week 1 (Nov 2–8): feel, shell, first new levels
 - Play everything on Windows; record the Sticky Keys result in GDD §3.2 (decides Shift vs K as the primary bind).
 - Tuning pass on `PARAMS` (TECH.md §4), then re-prove pars (`npm test`).
-- Level select + save (A7) and freak evidence from the first night shift (L8).
+- ~~Level select + save (A7)~~ done Nov 2. Freak evidence from the first night shift (L8).
 - Build `stairs` and `doors` (LEVELS.md §5).
 - Start music (A5): sequencer + day arrangement.
 - Start wet floor and day-walker **tests** (TECH.md §6.5).
@@ -126,7 +126,7 @@ Priority: **P0** = the game doesn't ship without it. **P1** = expected in the ja
 | A4 | Camera or room decision implemented | P0 |
 | A5 | Music: day + night arrangement with crossfade (Audio is a rated category; there's no music today) | P0 |
 | A6 | Settings menu (volumes, reduced effects) | P1 |
-| A7 | Level select + save, reachable from the title screen so raters can jump to the freak levels | **P0** (was P1; GDD §1.8) |
+| A7 | ~~Level select + save, reachable from the title screen so raters can jump to the freak levels~~ Done Nov 2: act starts always open, saved bests | **P0** (was P1; GDD §1.8) |
 | A8 | Timecard comments, end-screen totals | P1 |
 | A9 | Cover 1260×1000, screenshots, demo GIF (`npm run media`; GIF planned) | P0 |
 | A10 | Act title cards (4) | P1 |

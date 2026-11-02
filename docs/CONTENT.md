@@ -63,7 +63,7 @@ Specs: [TECH.md](TECH.md) §6 (mechanics), [GDD.md](GDD.md) §12 (UI).
 | SYS-2 | Day-walker freak + day-only clock | `daywalker` | C, cut Nov 12 | G8 | planned |
 | SYS-3 | Supervisor freak (facing decides which freaks work) | `supervisor` | C, cut Nov 17 | G15 | planned |
 | SYS-4 | Offset layer (`offset` field generates the night grid) | `offset` | C, cut Nov 17 | G9 | planned |
-| SYS-5 | Level select + save progress (localStorage, try/catch) | Raters reaching act 2+ | P0 | A7 | planned |
+| SYS-5 | Level select + save progress (localStorage, try/catch) | Raters reaching act 2+ | P0 | A7 | ✅ (act starts always open) |
 | SYS-6 | Music engine (step sequencer, two synced arrangements, crossfade on shift) | Audio score | P0 | A5 | planned |
 | SYS-7 | Settings: master / music / SFX volume, reduced effects | Accessibility | P1 | A6 | planned |
 | SYS-8 | Act title cards between acts | Structure, pacing | P1 | A10 | planned |
@@ -93,7 +93,7 @@ Specs: [ART.md](ART.md). Palette rule: existing colors only, unless a color gets
 | ART-10 | Offset-layer echo treatment (floor label "3.5") | `offset` | C | ART §6.1 | planned |
 | ART-11 | Props per level: notice board, vents, barrier tape, pallets, signage, footprints, chalk circles | Every level | P1 | ART §6, §6.2 | planned |
 | ART-12 | Effects: prank sparkle, freeze cue on shift to day, checkpoint ping | Every level | P1 | ART §5, §7 | planned |
-| ART-13 | UI screens: title with level select, level select, settings, act cards, timecard with comment, end screen with totals, credits | Shell | P0–P1 | ART §7.1 | planned |
+| ART-13 | UI screens: title with level select ✅, level select ✅, settings, act cards, timecard with comment, end screen with totals, credits | Shell | P0–P1 | ART §7.1 | partly ✅ |
 | ART-14 | Cover image 1260×1000 | itch | P0 | ART §8 | ✅ (`npm run media`) |
 | ART-15 | Screenshots 960×540 | itch | P0 | ART §8 | ✅ (refresh when new levels ship) |
 | ART-16 | Demo GIF ≤ 10 s | itch | P1 | ART §8 | planned |

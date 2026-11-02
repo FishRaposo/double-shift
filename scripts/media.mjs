@@ -66,7 +66,7 @@ function send(method, params = {}) {
   return new Promise((r) => pending.set(id, (msg) => r(msg.result)));
 }
 
-const KEYS = { Space: [' ', 32], KeyK: ['k', 75], ArrowRight: ['ArrowRight', 39] };
+const KEYS = { Space: [' ', 32], KeyK: ['k', 75], KeyL: ['l', 76], ArrowRight: ['ArrowRight', 39] };
 const key = (type, code) => send('Input.dispatchKeyEvent', { type, code, key: KEYS[code][0], windowsVirtualKeyCode: KEYS[code][1] });
 const press = async (code) => { await key('keyDown', code); await sleep(40); await key('keyUp', code); };
 const evaluate = async (expr) => (await send('Runtime.evaluate', { expression: expr, returnByValue: true })).result.value;
@@ -119,6 +119,14 @@ try {
     if (night) { await press('KeyK'); await sleep(400); }
     await shot(name);
   }
+
+  // level select, after the level-1 clear above was saved (same browser profile)
+  await open('');
+  await press('KeyL');
+  await sleep(300);
+  const sel = await evaluate('__doubleShift.screen');
+  await shot('09-level-select.png');
+  if (sel !== 'select') { failed = true; console.error(`level select did not open: ${sel}`); }
 } catch (e) {
   failed = true;
   console.error(e.message);

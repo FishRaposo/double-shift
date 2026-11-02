@@ -1827,7 +1827,7 @@ The following decisions require prototypes or further discussion.
 
 # 22. Immediate Next Steps
 
-> **Historical.** Steps 1–3 are done (the prototype has 6 levels and 42 tests). The current next steps are the milestones in [PRODUCTION.md](PRODUCTION.md) §2.
+> **Historical.** Steps 1–3 are done (the prototype has 6 levels, level select and a full test suite). The current next steps are the milestones in [PRODUCTION.md](PRODUCTION.md) §2.
 
 ## Step 1: Select Engine — done (v0.2)
 

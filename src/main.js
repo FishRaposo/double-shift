@@ -2,9 +2,10 @@
 // Draws only what src/rules.js decided.
 
 import { step, initState, parseLevel, tileAt, freakBoxes, TILE, DT, DAY, NIGHT, PARAMS } from './rules.js';
-import { LEVELS } from './levels.js';
+import { LEVELS, ACTS } from './levels.js';
 import { createInput, GAME_KEYS } from './input.js';
 import { sfx, unlockAudio, toggleMute } from './audio.js';
+import { createSave, isUnlocked } from './save.js';
 
 const W = 960;
 const H = 540;
@@ -12,10 +13,13 @@ const canvas = document.getElementById('game');
 const g = canvas.getContext('2d');
 const input = createInput();
 const levels = LEVELS.map(parseLevel);
+const save = createSave((() => { try { return localStorage; } catch { return null; } })());
 
 const params = new URLSearchParams(location.search);
 const game = {
-  screen: 'title', // title | play | card | end | paused
+  screen: 'title', // title | select | play | card | end | paused
+  selected: 0, // highlighted card on the level select screen
+  newBest: false, // the last clear beat a saved best
   index: Math.min(Math.max((parseInt(params.get('level'), 10) || 1) - 1, 0), levels.length - 1),
   state: null,
   results: [],
@@ -25,6 +29,12 @@ const game = {
 };
 
 function level() { return levels[game.index]; }
+
+function openSelect() {
+  game.selected = game.index;
+  game.screen = 'select';
+  input.clear();
+}
 
 function startLevel(i) {
   game.index = i;
@@ -45,6 +55,14 @@ addEventListener('keydown', (e) => {
   if (e.code === 'Backquote') { game.debug = !game.debug; return; }
   if (game.screen === 'title') {
     if (e.code === 'Space' || e.code === 'Enter') startLevel(game.index);
+    else if (e.code === 'KeyL') openSelect();
+    return;
+  }
+  if (game.screen === 'select') {
+    const dir = SELECT_KEYS[e.code];
+    if (dir) moveSelect(dir[0], dir[1]);
+    else if ((e.code === 'Space' || e.code === 'Enter') && isUnlocked(LEVELS, game.selected, save)) startLevel(game.selected);
+    else if (e.code === 'Escape' || e.code === 'KeyL') game.screen = 'title';
     return;
   }
   if (game.screen === 'card') {
@@ -61,6 +79,7 @@ addEventListener('keydown', (e) => {
   if (game.screen === 'paused') {
     if (e.code === 'Escape' || e.code === 'Space') game.screen = 'play';
     else if (e.code === 'KeyR') startLevel(game.index);
+    else if (e.code === 'KeyL') openSelect();
     return;
   }
   // play
@@ -71,11 +90,45 @@ addEventListener('keydown', (e) => {
 addEventListener('keyup', (e) => { input.keyUp(e); });
 addEventListener('blur', () => input.clear());
 // In an itch.io embed the first click is what gives the game keyboard focus, so let it clock in too.
-canvas.addEventListener('pointerdown', () => {
+canvas.addEventListener('pointerdown', (e) => {
   canvas.focus();
   unlockAudio();
-  if (game.screen === 'title') startLevel(game.index);
+  const r = canvas.getBoundingClientRect();
+  const x = ((e.clientX - r.left) * W) / r.width;
+  const y = ((e.clientY - r.top) * H) / r.height;
+  const inside = (b) => x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h;
+  if (game.screen === 'title') {
+    if (inside(TITLE_SELECT)) openSelect();
+    else startLevel(game.index);
+  } else if (game.screen === 'select') {
+    const i = LEVELS.findIndex((_, k) => inside(cardRect(k)));
+    if (i >= 0 && isUnlocked(LEVELS, i, save)) startLevel(i);
+  }
 });
+
+// ---------- level select ----------
+// One row of timecards per act. Act starts are always open (src/save.js).
+
+const CARD = { w: 200, h: 74, gap: 24, top: 120, rowH: 104 };
+const TITLE_SELECT = { x: W / 2 - 120, y: 434, w: 240, h: 30 };
+const SELECT_KEYS = {
+  ArrowLeft: [-1, 0], KeyA: [-1, 0], ArrowRight: [1, 0], KeyD: [1, 0],
+  ArrowUp: [0, -1], KeyW: [0, -1], ArrowDown: [0, 1], KeyS: [0, 1],
+};
+const actRows = [...new Set(LEVELS.map((d) => d.act))].map((act) => LEVELS.flatMap((d, i) => (d.act === act ? [i] : [])));
+
+function cardRect(i) {
+  const row = actRows.findIndex((r) => r.includes(i));
+  const col = actRows[row].indexOf(i);
+  const x0 = (W - (4 * CARD.w + 3 * CARD.gap)) / 2;
+  return { x: x0 + col * (CARD.w + CARD.gap), y: CARD.top + row * CARD.rowH, w: CARD.w, h: CARD.h, row, col };
+}
+
+function moveSelect(dx, dy) {
+  const { row, col } = cardRect(game.selected);
+  const r = actRows[Math.min(Math.max(row + dy, 0), actRows.length - 1)];
+  game.selected = r[Math.min(Math.max(col + dx, 0), r.length - 1)];
+}
 
 // ---------- simulation ----------
 
@@ -108,6 +161,11 @@ function handleEvents(events) {
         sfx.win();
         setTimeout(() => sfx.stamp(), 450);
         game.results[game.index] = { shifts: ev.shifts, par: ev.par, deaths: game.state.deaths, time: game.state.time };
+        {
+          const id = LEVELS[game.index].id;
+          const hadBest = save.cleared(id);
+          game.newBest = save.record(id, game.results[game.index]) && hadBest;
+        }
         game.screen = 'card';
         break;
     }
@@ -631,6 +689,16 @@ function drawTitle() {
   g.fillText('Change shift: Shift or K    Restart: R', W / 2, 358);
   g.font = 'bold 18px monospace';
   g.fillText('Click or press SPACE to clock in', W / 2, 400);
+  // level select button (also L)
+  const b = TITLE_SELECT;
+  g.fillStyle = 'rgba(0,0,0,0.55)';
+  g.fillRect(b.x, b.y, b.w, b.h);
+  g.strokeStyle = 'rgba(255,255,255,0.6)';
+  g.lineWidth = 1.5;
+  g.strokeRect(b.x + 0.5, b.y + 0.5, b.w - 1, b.h - 1);
+  g.fillStyle = '#fff';
+  g.font = 'bold 14px monospace';
+  g.fillText('LEVEL SELECT (L)', W / 2, b.y + 20);
   g.font = '12px monospace';
   g.fillStyle = 'rgba(255,255,255,0.75)';
   g.fillText('Windows: hammering Shift can open Sticky Keys — use K, or turn off the Sticky Keys shortcut.', W / 2, H - 24);
@@ -676,6 +744,63 @@ function drawCard() {
   g.font = '13px monospace';
   g.fillStyle = '#3b2d1f';
   g.fillText('SPACE: next   R: retry', W / 2 - 170, 395);
+  if (game.newBest) {
+    g.textAlign = 'right';
+    g.font = 'bold 13px monospace';
+    g.fillStyle = '#c0392b';
+    g.fillText('NEW BEST', W / 2 + 185, 132);
+  }
+}
+
+function drawSelect() {
+  const pal = PAL[NIGHT];
+  drawBackground(NIGHT);
+  g.textAlign = 'center';
+  g.font = 'bold 26px monospace';
+  hudText('TIMECARDS', W / 2, 54, pal.hud, pal.halo);
+  for (const row of actRows) {
+    const c = cardRect(row[0]);
+    const act = LEVELS[row[0]].act;
+    g.textAlign = 'left';
+    g.font = 'bold 13px monospace';
+    hudText(`ACT ${act} · ${ACTS[act].toUpperCase()}`, c.x, c.y - 9, pal.hudSoft, pal.halo);
+  }
+  LEVELS.forEach((def, i) => {
+    const c = cardRect(i);
+    const open = isUnlocked(LEVELS, i, save);
+    const best = save.best(def.id);
+    g.globalAlpha = open ? 1 : 0.35;
+    g.fillStyle = '#f7efdc';
+    g.fillRect(c.x, c.y, c.w, c.h);
+    g.globalAlpha = 1;
+    if (i === game.selected) {
+      g.strokeStyle = '#5ff2ff';
+      g.lineWidth = 3;
+      g.strokeRect(c.x - 4, c.y - 4, c.w + 8, c.h + 8);
+    }
+    g.textAlign = 'left';
+    g.fillStyle = '#3b2d1f';
+    g.font = 'bold 13px monospace';
+    g.fillText(`${i + 1}. ${def.name.toUpperCase()}`, c.x + 10, c.y + 24);
+    g.font = '13px monospace';
+    g.fillText(!open ? 'NOT YET' : best ? `BEST ${best.shifts} · PAR ${def.par}` : `PAR ${def.par}`, c.x + 10, c.y + 48);
+    if (best) {
+      const diff = best.shifts - def.par;
+      g.save();
+      g.translate(c.x + c.w - 42, c.y + 56);
+      g.rotate(-0.15);
+      g.strokeStyle = g.fillStyle = diff <= 0 ? '#c0392b' : '#7f6a50';
+      g.lineWidth = 2;
+      g.strokeRect(-34, -11, 68, 18);
+      g.font = 'bold 11px monospace';
+      g.textAlign = 'center';
+      g.fillText(diff < 0 ? 'UNDER!' : diff === 0 ? 'ON PAR' : `+${diff}`, 0, 2);
+      g.restore();
+    }
+  });
+  g.textAlign = 'center';
+  g.font = '13px monospace';
+  hudText('Arrows: choose · SPACE or click: clock in · Esc: back', W / 2, H - 16, pal.hudSoft, pal.halo);
 }
 
 function drawEnd() {
@@ -701,6 +826,7 @@ function drawEnd() {
 function render() {
   g.clearRect(0, 0, W, H);
   if (game.screen === 'title') { drawTitle(); return; }
+  if (game.screen === 'select') { drawSelect(); return; }
   if (game.screen === 'end') { drawEnd(); return; }
   const lvl = level();
   const s = game.state;
@@ -722,13 +848,13 @@ function render() {
   if (game.debug) drawDebug(lvl, s);
   if (game.screen === 'card') drawCard();
   if (game.screen === 'paused') {
-    panel(W / 2 - 150, H / 2 - 60, 300, 120, false);
+    panel(W / 2 - 190, H / 2 - 60, 380, 120, false);
     g.textAlign = 'center';
     g.fillStyle = '#d9f6ff';
     g.font = 'bold 20px monospace';
     g.fillText('ON BREAK', W / 2, H / 2 - 15);
     g.font = '14px monospace';
-    g.fillText('Esc: resume   R: restart', W / 2, H / 2 + 20);
+    g.fillText('Esc: resume   R: restart   L: levels', W / 2, H / 2 + 20);
   }
 }
 

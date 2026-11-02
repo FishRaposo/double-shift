@@ -4,7 +4,7 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-01.
 
 **At a glance**
 - **The one rule:** `src/rules.js` decides everything that matters; the screen only draws it (§2).
-- `npm start` to play, `npm test` (42 tests), `npm run check` (§7).
+- `npm start` to play, `npm test` (49 tests), `npm run check` (§7).
 - Add a level: grids in `src/levels.js` + a `SOLUTIONS` entry in `test/levels.test.mjs` (§6).
 - Planned mechanics (wet floor, day-walker, supervisor, offset layer) are designed in §6.5, not built.
 
@@ -24,6 +24,7 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-01.
 | `src/levels.js` | Level data (ASCII grids + pranks/freaks/decor) | No |
 | `src/input.js` | Key events → one input frame per physics tick | No (takes event-like objects) |
 | `src/main.js` | Fixed-step loop, screens, rendering, event → sfx/fx | Yes |
+| `src/save.js` | Best result per level in localStorage (key `double-shift.progress.v1`); unlock rule for level select. Storage is passed in; blocked or corrupt storage falls back to memory | No (takes a storage object) |
 | `src/audio.js` | WebAudio synth, `sfx.*` | Yes (AudioContext) |
 | `test/*.test.mjs` | `node --test` suites against the real rules | No |
 | `test/helpers.mjs` | `level()`, `stepN()`, `place()`, `play(level, policy)` | No |
@@ -111,7 +112,7 @@ Derived metrics for level design are in [LEVELS.md](LEVELS.md) §1. **Any change
 
 ## 5. Level format
 
-See [LEVELS.md](LEVELS.md) §2 for the full format. Summary: `{ id, name, note, par, day: [...], night: [...], pranks?, freaks?, decor?, spawnLayer? }`. Grids must be equal size; the current game uses 32×18 (exactly one screen).
+See [LEVELS.md](LEVELS.md) §2 for the full format. Summary: `{ id, name, act, note, par, day: [...], night: [...], pranks?, freaks?, decor?, spawnLayer? }`. Act names are `ACTS` in `src/levels.js`. Grids must be equal size; the current game uses 32×18 (exactly one screen).
 
 ## 6. Extending
 
@@ -172,7 +173,7 @@ The four tier-C mechanics from [CONTENT.md](CONTENT.md) §3. Each follows the sa
 
 | Command | What it covers |
 |---|---|
-| `npm test` | 42 tests: GDD §13.7 cases 1–10, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, every level at par + unwinnable without shifting |
+| `npm test` | 49 tests: GDD §13.7 cases 1–10, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, every level at par + unwinnable without shifting, progress saving and level-select unlocks |
 | `npm run check` | Every module parses; every level validates |
 | `node scripts/smoke.mjs <url> <outdir>` | Real browser: plays level 1 with keyboard events, fails on console errors or wrong outcome, saves screenshots. Needs Playwright. |
 

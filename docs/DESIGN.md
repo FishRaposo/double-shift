@@ -26,7 +26,7 @@ One month (GitHub Game Off, Nov 1 – Dec 1, 2026, theme SHIFT), one designer, n
 
 ## The numbers
 
-- 42 automated tests (`npm test`): shift and collision edge cases, nudge/buffer, pranks, freaks, checkpoint restore, input rules, determinism, a 6000-tick fuzz for getting stuck in walls, and every level at par.
+- 49 automated tests (`npm test`): shift and collision edge cases, nudge/buffer, pranks, freaks, checkpoint restore, input rules, determinism, a 6000-tick fuzz for getting stuck in walls, every level at par, and progress saving (including blocked or corrupt storage).
 - `src/rules.js` is 404 lines; rendering (`src/main.js`) is 715.
 - CI runs the syntax check, level validation and the tests on every push.
 
@@ -41,4 +41,4 @@ One month (GitHub Game Off, Nov 1 – Dec 1, 2026, theme SHIFT), one designer, n
 
 > *Double Shift* is a puzzle-platformer for GitHub Game Off. You work the day and night shift in the same building at once, and the Shift key moves you between them, even mid-jump. The twist is the freaks: every time you clock into the night they move something, and they freeze when you go back to day. So your clock-ins are a resource, and each level has a par.
 >
-> I designed it and built it with AI assistance, so I made it provable. The game rules are a pure function with no DOM and no clock, which means 42 tests play the real game headless: every collision edge case, every prank, and a scripted solution proving each level can be won at par. No engine, no assets. Everything is drawn and synthesized in code, and it runs in the browser.
+> I designed it and built it with AI assistance, so I made it provable. The game rules are a pure function with no DOM and no clock, which means the tests play the real game headless: every collision edge case, every prank, and a scripted solution proving each level can be won at par. No engine, no assets. Everything is drawn and synthesized in code, and it runs in the browser.

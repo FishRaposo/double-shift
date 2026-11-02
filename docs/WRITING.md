@@ -26,7 +26,10 @@ Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game l
 | Start ✅ | Click or press SPACE to clock in |
 | Sticky Keys note ✅ | Windows: hammering Shift can open Sticky Keys — use K, or turn off the Sticky Keys shortcut. |
 | Tutorial ✅ | Press SHIFT (or K) to change shifts / Dashed outlines show the other shift |
-| Pause ✅ | ON BREAK · Esc: resume · R: restart |
+| Pause ✅ | ON BREAK · Esc: resume · R: restart · L: levels |
+| Title button ✅ | LEVEL SELECT (L) |
+| Level select ✅ | TIMECARDS · ACT n · NAME · BEST n · PAR p · NOT YET · stamps ON PAR / UNDER! / +n · Arrows: choose · SPACE or click: clock in · Esc: back |
+| Timecard ✅ | NEW BEST (when a saved best is beaten) |
 | HUD ✅ | DAY SHIFT / NIGHT SHIFT · CLOCK-INS n · PAR p |
 | Timecard ✅ | TIMECARD · Clock-ins · Par · Time · Incidents · stamps ON PAR / UNDER PAR! / +n OVERTIME |
 | End ✅ *(prototype)* | END OF PROTOTYPE · Thanks for working overtime. · SPACE: clock in again |
@@ -35,8 +38,6 @@ Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game l
 
 | Where | Text |
 |---|---|
-| Title hint | L: level select |
-| Level select | TIMECARDS · locked: NOT YET · Esc: back |
 | Settings | SETTINGS · Master · Music · Sound · Reduced effects ON/OFF · Esc: back |
 | Act 1 card | ACT 1 · RENOVATION · "Pardon our dust." |
 | Act 2 card | ACT 2 · OVERTIME · "Something keeps moving things." |

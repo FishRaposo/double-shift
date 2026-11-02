@@ -35,6 +35,7 @@ Companion to [GDD.md](GDD.md) §6 and §8. Tile = 30 px. Levels are 32×18 tiles
   name: 'Inventory',
   note: 'Every time you clock in, something gets moved.',   // shown for 5 s at level start
   par: 3,                       // fewest shifts found; proven by test
+  act: 2,                       // act number; ACTS in src/levels.js names it. First level of each act is always open in level select
   spawnLayer: 0,                // optional, default DAY
   day:   [ 18 strings of 32 chars ... ],
   night: [ ... same size ... ],

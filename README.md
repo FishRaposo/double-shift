@@ -39,6 +39,7 @@ URL options: `?level=3` start at a level, `?autostart` skip the title, `?debug` 
 | Jump | Space, W, ↑ (hold for higher) |
 | Change shift | Shift (either), K |
 | Restart level | R |
+| Level select | L (title or pause), or click LEVEL SELECT |
 | Pause | Esc |
 | Mute | M |
 
@@ -65,7 +66,7 @@ scripts/        check, zip for itch, browser smoke test
 ## Tests
 
 ```sh
-npm test         # 42 tests: GDD §13.7 shift/collision edge cases, pranks and freaks, input rules,
+npm test         # 49 tests: GDD §13.7 shift/collision edge cases, pranks and freaks, input rules, saving,
                  # every level solvable at par and unwinnable without shifting
 npm run check    # syntax + level validation
 ```

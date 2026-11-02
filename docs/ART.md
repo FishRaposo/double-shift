@@ -197,7 +197,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 
 | Screen / effect | Spec |
 |---|---|
-| Title + level select *(P0, A7)* | Title as now, plus `L: level select` (and a click target). Level select: a 4×4 grid of timecards by act; each shows name, best clock-ins vs. par (stamped ON/UNDER PAR in red ink), locked levels greyed. Unlock: the next level after any clear; all act starts unlock once seen. |
+| Title + level select ✅ (A7) | Title: a LEVEL SELECT (L) button under the panel. Level select (night background): one row of 200×74 paper timecards per act, act label above each row; each card shows `n. NAME`, `BEST n · PAR p` or `PAR p`, and a small rotated stamp (ON PAR / UNDER! in `#c0392b`, `+n` in `#7f6a50`). Locked cards at 35% opacity reading NOT YET. Selection: 3 px `#5ff2ff` frame. Unlock: act starts always open; otherwise after the previous level is cleared. |
 | Settings *(P1, A6)* | Night-palette panel: master / music / SFX sliders (keyboard: ↑↓ select, ←→ adjust), Reduced effects on/off. Opened from title and pause. |
 | Act cards *(P1, A10)* | 1.5 s full-screen card between acts: act number + title + one line (WRITING.md §2.1), split day/night like the title; any key skips. |
 | Timecard comment *(P1, A8)* | One line under the stamp, 13 px italic ink (WRITING.md §7). |
