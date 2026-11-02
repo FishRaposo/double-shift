@@ -149,10 +149,10 @@ try {
   flow('settings from pause keep the night music', m.screen === 'settings' && m.music === 1, m);
   // 4. the end screen fits every level
   await evaluate('(() => { const g = __doubleShift; g.results = g.results.length ? g.results : []; for (let i = 0; i < 16; i++) if (!g.results[i] && i < 10) g.results[i] = { shifts: 3, par: 3, deaths: 0, time: 4 }; g.screen = "end"; })()');
-  await sleep(200);
+  await sleep(3500); // let the ending play: eyes open one by one, then one waves
   await shot('12-end.png');
 
-  for (const [lvl, night, name] of [[5, false, '05-inventory-day.png'], [5, true, '06-inventory-night.png'], [6, true, '07-night-watch-night.png'], [6, false, '08-night-watch-day.png']]) {
+  for (const [lvl, night, name] of [[5, false, '05-inventory-day.png'], [5, true, '06-inventory-night.png'], [6, true, '07-night-watch-night.png'], [6, false, '08-night-watch-day.png'], [9, true, '13-stacked-night.png'], [12, false, '14-clock-out-day.png'], [12, true, '15-clock-out-night.png']]) {
     await open(`?level=${lvl}&autostart`);
     if (night) { await press('KeyK'); await sleep(400); }
     await shot(name);

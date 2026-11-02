@@ -78,3 +78,29 @@ test('Broad Daylight: the day-walker cannot be jumped (the tunnel roof stops you
   const { events } = play(L.daywalker, (s, m, f) => ({ right: true, jump: f % 30 < 15 }), 120 * 8);
   assert.ok(events.some((e) => e.type === 'death' && e.by === 'daywalker'));
 });
+
+test('Stacked: clocking in twice before gap A takes the bridge away; the pit resets the pranks', () => {
+  // in, out, in again on the spawn floor: entry 2 removes the bridge before you've crossed it
+  const policy = (s, m) => {
+    const x = tx(s);
+    m.n = m.n ?? 0;
+    if (s.deaths > 0) return { right: false };
+    let target = s.layer;
+    if (x > 2.5 && s.nightEntries === 0) target = NIGHT;
+    else if (x > 3.2 && x < 3.8 && s.nightEntries === 1) target = DAY;
+    else if (x >= 3.8 && s.nightEntries === 1 && s.layer === DAY) target = NIGHT;
+    return { right: true, shift: s.layer !== target };
+  };
+  const { state, events } = play(L.stacked, policy, 120 * 6);
+  assert.ok(events.some((e) => e.type === 'death' && e.cause === 'fall'), 'fell where the bridge used to be');
+  assert.equal(state.nightEntries, 0, 'respawn restored the pranks');
+  assert.equal(state.won, false);
+});
+
+test('Clock Out: without the fourth clock-in the step stays gone and the time clock is out of reach', () => {
+  const { state } = play(L.clockout, (s, m, f) => {
+    const want = SOLUTIONS.clockout(s, m, f);
+    return s.nightEntries >= 3 && tx(s) > 25 ? { right: true, jump: s.player.grounded || s.player.vy < 0 } : want;
+  }, 120 * 12);
+  assert.equal(state.won, false);
+});

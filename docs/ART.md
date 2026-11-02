@@ -167,7 +167,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | Floor signs "3" / "3.5" | `offset` | Wall signs at each landing | Timecard paper `#f7efdc`, ink `#3b2d1f` |
 | Time clock (the exit) | `clockout` | The exit door with a punch clock beside it | Exit colors + checkpoint clock `#ffd23f` |
 
-### 6.2 Props per level *(prop drawings built; the 10 built levels have their props via the `props` field; planned levels add theirs when built)*
+### 6.2 Props per level *(prop drawings built; the 12 built levels have their props via the `props` field; planned levels add theirs when built)*
 
 | Level | Props |
 |---|---|
@@ -182,11 +182,11 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | `wet` | A WET FLOOR sign, footprints on the wax |
 | `pillar` | Ceiling crack, dust outline, a memo |
 | `supervisor` | A STAFF ONLY sign, a vent, footprints |
-| `stacked` | Three tells in view, chalk circles |
+| `stacked` | Three tells in view from the spawn, a notice board, chalk circles and footprints on the middle floor (night) |
 | `offset` | Floor signs 3 / 3.5 |
 | `daywalker` | A DAY SHIFT sign, a mug, footprints in the day-walker's tunnel |
 | `portrait` | EMPLOYEE OF THE MONTH plaque, the nail |
-| `clockout` | The time clock, a coat rack, eyes everywhere in the dark |
+| `clockout` | The time clock on the ledge, a coat rack, a vent, a LAST SHIFT sign, eyes everywhere in the dark |
 
 ## 7. UI and effects
 
@@ -209,7 +209,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | Settings ✅ (A6) | Opened with O from title (button) and pause. Four night panels: MASTER, MUSIC, SOUND (10-block bars + %), REDUCED EFFECTS (ON/OFF). ↑↓ choose, ←→ change (or click the left/right half of a row), Esc back. Saved. |
 | Act cards ✅ (A10) | 1.6 s split day/night card: ACT n (scale 3, yellow), the act name (scale 6, haloed), one line (WRITING.md §2.1); any key or click skips; a two-chord sting. Shown the first time an act starts in a run. |
 | Timecard comment ✅ (A8) | One line under the stamp, scale 2 when it fits, else 1 (`timecardComment` in `src/copy.js`, WRITING.md §7). |
-| End screen totals ✅ (A8) | Paper panel listing every level with clock-ins / par, and total clock-ins vs. total par. The `clockout` ending comes with that level. |
+| End screen totals ✅ (A8) | Paper panel listing every level with clock-ins / par, and total clock-ins vs. total par. The ending: a dozen pairs of eyes open one by one in the margins, one freak waves (a small hand with a cyan rim), then "See you tonight." |
 | Credits *(planned)* | Night panel in the pixel font, from WRITING.md §8. |
 | Freeze cue ✅ | On a shift to day, frozen freak outlines flash white once (0.15 s), with a scratch sound. |
 | Checkpoint ping ✅ | The clock face grows by 2 art px and settles over 0.2 s when taken. |

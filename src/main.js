@@ -7,7 +7,7 @@ import { createInput, GAME_KEYS } from './input.js';
 import { sfx, unlockAudio, toggleMute, setVolumes, setMusicShift, setMenu } from './audio.js';
 import { createSave, createSettings, isUnlocked } from './save.js';
 import { drawText, measureText } from './font.js';
-import { drawSprite, workerFrame, ART, SPRITES } from './sprites.js';
+import { drawSprite, drawEyes, workerFrame, ART, SPRITES } from './sprites.js';
 import {
   PAL, PROPS, drawBackground, drawSolidTile, drawHatch, drawEchoEdges, drawRebar, drawLaser, drawHazardEcho,
   drawExit, drawCheckpoint, drawSign, drawFreak, drawShiftRing, drawDust, drawPuff, drawSparkle, drawPanel,
@@ -638,6 +638,35 @@ function drawEnd() {
   drawText(g, 'Total clock-ins', W / 2 - 220, y + 12, { scale: 2, color: ink });
   drawText(g, `${total} / par ${totalPar}`, W / 2 + 220, y + 12, { scale: 2, color: ink, align: 'right' });
   drawText(g, 'SPACE: clock in again', W / 2, bottom - 36, { scale: 2, color: ink, align: 'center' });
+  drawEndingEyes(top, bottom);
+}
+
+// The ending (WRITING.md §8): a dozen pairs of eyes in the dark margins open one after another,
+// and once they're all open, one of them waves.
+function drawEndingEyes(top, bottom) {
+  const t = game.screenTime;
+  const spots = [];
+  for (let i = 0; i < 6; i++) {
+    const y = top + 40 + i * ((bottom - top - 100) / 5);
+    spots.push([90 + (i % 2) * 50, y], [W - 140 + (i % 2) * 40, y + 20]);
+  }
+  spots.forEach(([x, y], i) => {
+    if (t < 0.4 + i * 0.18) return; // one after another
+    const blink = (t * 0.9 + i * 0.37) % 3.1 < 0.12;
+    drawEyes(g, 'lurker', x, y, { state: blink ? 'shut' : 'open', scale: 3 });
+  });
+  const all = 0.4 + spots.length * 0.18;
+  if (t > all + 0.3) {
+    // a small dark hand beside the last pair, waving
+    const [x, y] = spots[spots.length - 1];
+    const wave = Math.round(Math.sin((t - all) * 9)) * A;
+    const hx = x + 15 * A + wave;
+    px(g, hx - A, y - 4 * A, 6, 7, 'rgba(95,242,255,0.6)'); // rim, so it reads against the dark
+    px(g, hx, y - 2 * A, 4, 4, '#05060f');
+    px(g, hx, y - 3 * A, 1, 1, '#05060f');
+    px(g, hx + 2 * A, y - 3 * A, 1, 1, '#05060f');
+    if (t > all + 0.8) drawText(g, 'See you tonight.', W / 2, bottom + 6, { scale: 2, color: '#ffec5a', align: 'center' });
+  }
 }
 
 function drawSelect() {

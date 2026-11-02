@@ -27,7 +27,7 @@ Everything the finished jam game contains, in one place. Each row has an ID, its
 | Offset layer | `offset` | Nov 17 |
 | Content freeze (everything) | — | Nov 22 |
 
-Levels are referred to by `id` everywhere, never by number, so a cut never renumbers anything. The `#` in §2 is the slot in the full 16-level plan; the game numbers levels by their position in `src/levels.js` (the HUD shows `n/N`), so in today's build Wet Floor is 7/10, Night Management 8/10, Broad Daylight 9/10 and Floor 3.5 10/10.
+Levels are referred to by `id` everywhere, never by number, so a cut never renumbers anything. The `#` in §2 is the slot in the full 16-level plan; the game numbers levels by their position in `src/levels.js` (the HUD shows `n/N`), so in today's build Wet Floor is 7/12, Night Management 8/12, Stacked 9/12, Broad Daylight 10/12, Floor 3.5 11/12 and Clock Out 12/12.
 
 ## 2. Levels
 
@@ -46,11 +46,11 @@ Full specs: [LEVELS.md](LEVELS.md) §4 (built) and §5 (planned).
 | 9 | 3 · Graveyard Shift | Wet Floor | `wet` | Wet floor `~`: slide at night, grip by day | C | ✅ built |
 | 10 | 3 | Structural Integrity | `pillar` | A pillar moves each night clock-in | B | planned |
 | 11 | 3 | Night Management | `supervisor` | Supervisor freak: watched freaks work, the rest slack off | C | ✅ built |
-| 12 | 3 | Stacked | `stacked` | Several queued pranks; the order of clock-ins | A | planned |
+| 12 | 3 | Stacked | `stacked` | Several queued pranks; the order of clock-ins | A | ✅ built |
 | 13 | 4 · Lights Out | Broad Daylight | `daywalker` | Day-walker freak: active by day, frozen by night; you must freeze it | C | ✅ built |
 | 14 | 4 | Floor 3.5 | `offset` | Offset layer: night is the day map half a storey up | C | ✅ built |
 | 15 | 4 | Employee of the Month | `portrait` | The portrait blocks the exit and is rehung each clock-in | B | planned |
-| 16 | 4 | Clock Out | `clockout` | Finale: everything from tiers A–B, final timecard | A | planned |
+| 16 | 4 | Clock Out | `clockout` | Finale: everything from tiers A–B, final timecard, the ending | A | ✅ built |
 
 *Post-jam pool:* Freight (crates restack on a cycle). It's covered by `doors` and `stacked`, so it's not needed for the jam.
 
@@ -125,14 +125,14 @@ Specs and drafts: [WRITING.md](WRITING.md). Fish writes the final words.
 
 | ID | Item | Spec | Status |
 |---|---|---|---|
-| TXT-1 | Level notes for all 16 (from Fish's idea-pool lines, trimmed to one line) | WRITING §3 | 10 ✅, 6 drafted |
+| TXT-1 | Level notes for all 16 (from Fish's idea-pool lines, trimmed to one line) | WRITING §3 | 12 ✅, 4 drafted |
 | TXT-2 | One notice-board memo per level | WRITING §6 | drafts |
 | TXT-3 | Prank tell variants (MINE and friends) | WRITING §5 | drafts |
 | TXT-4 | Act card titles and one-line subtitles | WRITING §2.1 | ✅ |
 | TXT-5 | Timecard comments | WRITING §7 | ✅ |
 | TXT-6 | UI strings: level select, settings, credits, Sticky Keys joke | WRITING §2.1 | drafted |
-| TXT-7 | Ending (`clockout`) | WRITING §8 | draft |
-| TXT-8 | itch description refresh when levels ship | [itch/page.md](../itch/page.md) §4 | ✅ for 10 levels |
+| TXT-7 | Ending (`clockout`) | WRITING §8 | ✅ (credits planned) |
+| TXT-8 | itch description refresh when levels ship | [itch/page.md](../itch/page.md) §4 | ✅ for 12 levels |
 | TXT-9 | Devlog #1 (launch), #2 (post-jam) | RELEASE §5–6 | planned |
 
 ## 7. Schedule (summary; details in PRODUCTION.md §2–3)

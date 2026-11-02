@@ -62,11 +62,11 @@ Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game l
 | 9 Wet Floor (`wet`) ✅ | Someone waxed the floors. Nobody on the payroll waxes floors. |
 | 10 Structural Integrity (`pillar`) | They moved a load-bearing pillar. The building is somehow fine. |
 | 11 Night Management (`supervisor`) ✅ | One of them has a clipboard now. It supervises the others. |
-| 12 Stacked (`stacked`) | They've been busy. |
+| 12 Stacked (`stacked`) ✅ | They've been busy. |
 | 13 Broad Daylight (`daywalker`) ✅ | One of them clocked in for the day shift. |
 | 14 Floor 3.5 (`offset`) ✅ | There is no Floor 3 anymore. It's now Floor 3.5. |
 | 15 Employee of the Month (`portrait`) | They installed a portrait of themselves. It blocks the exit. |
-| 16 Clock Out (`clockout`) | Almost done. Don't look at the vents. |
+| 16 Clock Out (`clockout`) ✅ | Almost done. Don't look at the vents. |
 
 Notes 7, 8, 10, 11, 13 and 15 come from Fish's idea pool (2026-11-02). 8 and 13 are unchanged; 7, 10, 11 and 15 are lightly trimmed to fit one line at scale 2 (14 px tall) (his full lines are the "Fiction" lines in LEVELS.md §5). *Freight* ("The crates were stacked properly. They were.") is kept for post-jam.
 
@@ -135,11 +135,11 @@ One line under the stamp, picked in this order (`timecardComment` in `src/copy.j
 
 Unused, kept for later: "Efficient. Suspiciously efficient." 
 
-## 8. Ending *(planned, `clockout`)*
+## 8. Ending ✅ (after `clockout`)
 
-- Final timecard totals across all levels.
-- Last line: "Shift complete. See you tonight." Then, in the dark, a dozen pairs of eyes blink in sequence. One waves.
-- Credits: Designed by Vinícius Raposo. Built with AI assistance (Claude). [Design partner, as they choose to be credited.] Made for GitHub Game Off 2026.
+- ✅ The end screen: SHIFT COMPLETE, totals across all levels (every level's clock-ins / par, total vs. total par).
+- ✅ In the dark margins a dozen pairs of eyes open one after another; once they're all open, one freak waves, and "See you tonight." appears below the card.
+- *(planned)* Credits: Designed by Vinícius Raposo. Built with AI assistance (Claude). [Design partner, as they choose to be credited.] Made for GitHub Game Off 2026.
 
 ## 9. itch page copy
 

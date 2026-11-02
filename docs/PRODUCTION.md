@@ -3,10 +3,10 @@
 Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-02**.
 
 **At a glance**
-- **Next milestone:** M0 Feel check (Nov 2–3): play all 10 levels, Sticky Keys test, tuning. Repo + CI are done.
+- **Next milestone:** M0 Feel check (Nov 2–3): play all 12 levels, Sticky Keys test, tuning. Repo + CI are done.
 - **The game:** 16 levels in four acts, in tiers A = 8 / B = 12 / C = 16 ([CONTENT.md](CONTENT.md)).
 - **Level audit (Nov 2):** every level beatable at par, fair timing (≥ 200/100 ms), no skips, no respawn loops; `npm run audit` keeps it that way.
-- **Key P0 items:** tuning, level select, music, freaks in the first minutes, freak art, `stacked` + `clockout`, media, itch page (§4).
+- **Key P0 items:** tuning, level select, music, freaks in the first minutes, freak art, media, itch page (§4). `stacked` + `clockout` done.
 - **Cut dates:** wet floor + day-walker Nov 12; supervisor + offset Nov 17; content freeze Nov 22 (§2).
 
 ## 1. Where we are
@@ -16,11 +16,11 @@ Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-02**.
 | Core rules (move, jump, shift, buffer/nudge, coyote, jump buffer) | Built, tested |
 | Pranks (Nth night entry, tells, checkpoint restore) | Built, tested |
 | Freaks: lurker, peeker, squatter, supervisor (frozen by day), day-walker (frozen by night) | Built, tested |
-| Levels | 10 built (act 1: 4, act 2: 2, act 3: 2, act 4: 2), all proven solvable at par; 6 more planned (CONTENT.md). Tier-C mechanics shipped: wet floor, supervisor, offset layer, day-walker |
+| Levels | **12 built** (act 1: 4, act 2: 2, act 3: 3, act 4: 3), all proven solvable at par and fair; **tier A (jam minimum) complete** with `stacked` and `clockout`. Tier-C mechanics shipped. 4 tier-B levels planned (CONTENT.md) |
 | Rendering | **Pixel art** (Nov 2): sprites, animated worker and freaks, pixel tiles and props, pixel font, effects; every asset in `/tools/gallery.html` |
 | Audio | Mix bus, 25 SFX (incl. planned-level sounds), **music** (day/night arrangements crossfading on every shift) |
 | Menus | Title, level select + saved bests, settings (volumes, reduced effects), act cards, pause, timecard with comment, end screen with totals |
-| Tests | 129 passing (`npm test`), including fairness; `npm run audit` clean |
+| Tests | 141 passing (`npm test`), including fairness; `npm run audit` clean |
 | Repo / CI / itch | Public repo [FishRaposo/double-shift](https://github.com/FishRaposo/double-shift), CI green, playable on [GitHub Pages](https://fishraposo.github.io/double-shift/). **No itch page** |
 
 ## 2. Milestones
@@ -29,10 +29,10 @@ The whole game is listed in [CONTENT.md](CONTENT.md): **16 levels in tiers** (A 
 
 | Date | Milestone | Exit criterion (must be true to move on) |
 |---|---|---|
-| **Nov 2–3** | **M0: Feel check** | Fish has played all 10 levels on Windows. Sticky Keys result recorded. Movement tuning pass done. ~~Public GitHub repo with CI green~~ (done). |
+| **Nov 2–3** | **M0: Feel check** | Fish has played all 12 levels on Windows. Sticky Keys result recorded. Movement tuning pass done. ~~Public GitHub repo with CI green~~ (done). |
 | **Nov 8** | **M1: Core locked** | Shift, freeze and prank feel good to Fish. One cold playtest. `PARAMS` frozen except small tweaks. Level select + save in. `stairs` and `doors` built and at par. |
 | **Nov 12** | **Cut date 1** | Wet floor and day-walker done (rules, tests, drawing), or `wet` / `daywalker` move to post-jam. |
-| **Nov 15** | **M2: Tier B complete** | 12-level path playable (the 10 built + two of `stairs`, `doors`, `pillar`, `portrait`); all four tier-C levels already shipped. Music v1. Freak art pass. |
+| **Nov 15** | **M2: Tier B complete** | 14-level path playable (the 12 built + two of `stairs`, `doors`, `pillar`, `portrait`). Music v1. Freak art pass. |
 | **Nov 17** | **Cut date 2** | Supervisor and offset layer done, or `supervisor` / `offset` move to post-jam. If M2 itself slipped, drop to tier A now. |
 | **Nov 22** | **M3: Content freeze** | Every level that's still in is built and proven at par, including `stacked` and `clockout`. Act cards, timecard comments, settings, all copy in. Second playtest round. **No new features after this date.** |
 | **Nov 26** | **M4: Release candidate** | Bug-free on Chrome/Firefox/Edge. itch draft with fresh cover, screenshots, GIF. |
@@ -64,7 +64,7 @@ The whole game is listed in [CONTENT.md](CONTENT.md): **16 levels in tiers** (A 
 
 ### Week 3 (Nov 16–22): mechanics batch 2 and content freeze
 - Finish **supervisor + offset layer by Nov 17** (cut date 2); build `supervisor`, `offset`.
-- Build `stacked` and `clockout` (tier A: these never slip).
+- ~~Build `stacked` and `clockout`~~ Done Nov 2.
 - Act cards (A10), timecard comments and end-screen totals (A8), settings (A6), props (A3), memos.
 - Second playtest round on the full run.
 - → **M3 content freeze Nov 22.**
@@ -109,8 +109,8 @@ Priority: **P0** = the game doesn't ship without it. **P1** = expected in the ja
 | L1 | Polish pass on the built levels after playtest | P0 |
 | L2 | `stairs` *Under Renovation* | Tier B |
 | L3 | `doors` *Lost & Found* | Tier B |
-| L4 | `stacked` *Stacked* | **Tier A** (jam minimum) |
-| L5 | `clockout` *Clock Out* | **Tier A** (jam minimum) |
+| L4 | ~~`stacked` *Stacked*~~ Done Nov 2, par 5 | **Tier A** (jam minimum) |
+| L5 | ~~`clockout` *Clock Out*~~ Done Nov 2, par 7, with the ending | **Tier A** (jam minimum) |
 | L6 | `pillar` *Structural Integrity*, `portrait` *Employee of the Month* | Tier B |
 | L9 | ~~`wet` *Wet Floor*, `daywalker` *Broad Daylight*~~ done | Tier C |
 | L10 | ~~`supervisor` *Night Management*, `offset` *Floor 3.5*~~ done | Tier C |
@@ -123,7 +123,7 @@ Priority: **P0** = the game doesn't ship without it. **P1** = expected in the ja
 |---|---|---|
 | A1 | ~~Freak art pass~~ Done Nov 2 (pixel sprites, eyes, squint, freeze cue); freak size still to confirm in playtest | P0 |
 | A2 | ~~Worker animation~~ Done Nov 2 (run, jump, fall, land, spooked boots gag) | P1 |
-| A3 | ~~Background props~~ Done Nov 2 for all 10 built levels; new levels add theirs | P1 |
+| A3 | ~~Background props~~ Done Nov 2 for all 12 built levels; new levels add theirs | P1 |
 | A4 | Camera or room decision implemented | P0 |
 | A5 | ~~Music: day + night arrangement with crossfade~~ Done Nov 2 | P0 |
 | A6 | ~~Settings menu~~ Done Nov 2 | P1 |

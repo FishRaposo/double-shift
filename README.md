@@ -10,7 +10,7 @@ A puzzle-platformer for [GitHub Game Off 2026](https://itch.io/jam/game-off-2026
 
 **Play in the browser: [fishraposo.github.io/double-shift](https://fishraposo.github.io/double-shift/)** (the itch.io page comes at jam submission).
 
-> Status: **prototype**, 10 levels spanning all four acts (all four new mechanics shipped; the finale levels `stacked` and `clockout` are next). Design: [`docs/GDD.md`](docs/GDD.md) (v0.5). How and why it was built: [`docs/DESIGN.md`](docs/DESIGN.md). Production docs (schedule, tech, levels, art, audio, writing, playtest, release): [`docs/INDEX.md`](docs/INDEX.md).
+> Status: **prototype**, 12 levels spanning all four acts, from Clock In to the Clock Out finale: the jam minimum is complete, and all four new mechanics shipped. Design: [`docs/GDD.md`](docs/GDD.md) (v0.5). How and why it was built: [`docs/DESIGN.md`](docs/DESIGN.md). Production docs (schedule, tech, levels, art, audio, writing, playtest, release): [`docs/INDEX.md`](docs/INDEX.md).
 
 ## Game Off 2026
 
@@ -75,7 +75,7 @@ scripts/        serve, check, zip for itch, media + headless checks
 ## Tests
 
 ```sh
-npm test         # 129 tests: GDD §13.7 shift/collision edge cases, pranks and freaks, wet floor, day/night
+npm test         # 141 tests: GDD §13.7 shift/collision edge cases, pranks and freaks, wet floor, day/night
                  # freak clocks, supervisor watched clock, offset layers, input rules, saving,
                  # every level solvable at par and unwinnable without shifting, font/sprite/music data
 npm run check    # syntax + level validation

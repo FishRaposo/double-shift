@@ -8,7 +8,7 @@ One month (GitHub Game Off, Nov 1 – Dec 1, 2026, theme SHIFT), one designer, n
 
 - **No engine, no dependencies, no asset files.** Plain JavaScript modules on one 960×540 canvas. Everything on screen is drawn by code and every sound is synthesized with WebAudio. Nothing to license, nothing to load, and it runs in any browser.
 - **The game must be provable, not just playable.** With AI writing code, "it seemed to work" isn't enough. Every rule that decides whether you live, die or win has a test.
-- **Scope to the deadline.** 10 levels exist; 16 are planned in tiers, with a cut line at 8 so any cut still ships a complete game (CONTENT.md).
+- **Scope to the deadline.** 12 levels exist, including the finale; 16 are planned in tiers, with a cut line at 8 so any cut still ships a complete game (CONTENT.md).
 
 ## The decisions
 
@@ -26,7 +26,7 @@ One month (GitHub Game Off, Nov 1 – Dec 1, 2026, theme SHIFT), one designer, n
 
 ## The numbers
 
-- 129 automated tests (`npm test`): shift and collision edge cases, nudge/buffer, pranks, freaks, checkpoint restore, input rules, determinism, a 6000-tick fuzz for getting stuck in walls, every level at par, progress and settings saving (including blocked or corrupt storage), the art and music data (every glyph and sprite well-formed, every sound short), and **fairness**: every input a level requires has ≥ 200 ms of slack in acts 1–2 and ≥ 100 ms in acts 3–4, no respawn point sits in a patrol, no freak guards an exit.
+- 141 automated tests (`npm test`): shift and collision edge cases, nudge/buffer, pranks, freaks, checkpoint restore, input rules, determinism, a 6000-tick fuzz for getting stuck in walls, every level at par, progress and settings saving (including blocked or corrupt storage), the art and music data (every glyph and sprite well-formed, every sound short), and **fairness**: every input a level requires has ≥ 200 ms of slack in acts 1–2 and ≥ 100 ms in acts 3–4, no respawn point sits in a patrol, no freak guards an exit.
 - `src/rules.js` is 523 lines. The shell (`src/main.js`) is 730; the art is `src/art.js` (529), `src/sprites.js` (248) and `src/font.js` (192); sound is `src/audio.js` (193) and `src/music.js` (238).
 - Drawing a frame costs about 0.4 ms (the static layer is cached), measured headless by `npm run media`.
 - CI runs the syntax check, level validation and the tests on every push.

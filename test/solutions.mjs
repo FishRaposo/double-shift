@@ -56,6 +56,35 @@ export const SOLUTIONS = {
     else target = DAY; // grip and freeze it, then walk to the exit
     return { right: true, shift: want(s, target) };
   },
+  stacked: (s) => {
+    const x = tx(s);
+    let target = s.layer;
+    if (s.nightEntries === 0 && x > 3.5) target = NIGHT; // entry 1: the bridge over gap A
+    else if (s.nightEntries === 1 && x > 14.3 && x < 15.5) target = DAY; // over A: out on the middle floor...
+    else if (s.nightEntries === 1 && x >= 15.5) target = NIGHT; // ...and in: entry 2 lifts the gate at col 18
+    else if (s.nightEntries === 2 && x > 19.3 && x < 20.5) target = DAY; // past the gate: out on the landing...
+    else if (s.nightEntries === 2 && x >= 20.5) target = NIGHT; // ...and in: entry 3 lays the plank over gap B
+    return { right: true, shift: want(s, target) };
+  },
+  clockout: (s) => {
+    const x = tx(s);
+    const p = s.player;
+    let target = s.layer;
+    // room 1: jump stone to stone, shifting mid-air to the stone ahead (night, then day)
+    if (x > 2 && x < 8.5) target = NIGHT;
+    else if (x >= 8.5 && x < 15) target = DAY;
+    // room 2: night past the day crate, day to freeze the lurker, night past the far crate (clock-in 3: the step goes)
+    else if (x > 15.3 && x < 18.1) target = NIGHT;
+    else if (x >= 18.1 && x < 21.9) target = DAY;
+    else if (x >= 21.9 && x < 25.1) target = NIGHT;
+    // room 3: out and back in (clock-in 4: the step comes back), then up the step to the time clock
+    else if (x >= 25.1 && x < 25.8) target = DAY;
+    else if (x >= 25.8) target = NIGHT;
+    const onStone = p.grounded && ((x > 1.0 && x < 1.5) || (x > 4.5 && x < 13));
+    const climb = p.grounded && s.nightEntries >= 4 && x > 25.9;
+    const jump = onStone || climb || (!p.grounded && p.vy < 0);
+    return { right: true, jump, shift: want(s, target) };
+  },
   daywalker: (s) => {
     const x = tx(s);
     let target = s.layer;
