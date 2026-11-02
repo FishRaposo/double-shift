@@ -117,6 +117,15 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 
 **Jam minimum:** 1–6, 9, 12.
 
+### Showing the freaks early *(planned, PRODUCTION.md L8)*
+
+Jam raters often play only the first couple of minutes (GDD §1.8), and today the first prank is in level 5. Act 1 should show freak *evidence* from the very first night shift, without new rules:
+- eyes decor on the night shift of *Clock In* and *Scaffolding* (`decor: [{ kind: 'eyes', ... }]` already exists);
+- a MINE note or a moved prop between levels;
+- level select from the title screen (A7), so anyone can reach *Inventory* and *Night Watch*.
+
+Keep act 1's lessons clean: evidence only, no pranks before level 5.
+
 ## 6. Level checklist (every level, before it ships)
 
 - [ ] Grids are 32×18, parse cleanly (`npm run check`).

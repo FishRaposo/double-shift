@@ -1,6 +1,6 @@
 # Art Bible
 
-Companion to [GDD.md](GDD.md) §4.7, §7, §10. Everything is drawn in code on a 960×540 canvas; there are no image files. Values below are the ones in `src/main.js` on 2026-11-01. If a design partner joins, this is their brief; credit them as they choose.
+Companion to [GDD.md](GDD.md) §4.7, §7, §10. Everything is drawn in code on a 960×540 canvas; there are no image files. Values below are the ones in `src/main.js` on 2026-11-01. **Decided 2026-11-01: the jam build stays code-drawn** (GDD §10.1). Post-jam, if a design partner joins, this is their brief; credit them as they choose.
 
 ## 1. Pillars
 
@@ -8,6 +8,17 @@ Companion to [GDD.md](GDD.md) §4.7, §7, §10. Everything is drawn in code on a
 2. **Day and night are the same building.** Same architecture, different light. Never make night dark enough to hide geometry.
 3. **Mock horror.** The freaks are funny-creepy: lumpy silhouettes and blinking eyes. Never gore, never a jump scare.
 4. **Never color alone.** Every distinction also has a shape, line style, pattern or label.
+
+### 1.1 Code-drawn as a style, not a placeholder
+
+Graphics is a rated jam category. Simple shapes score well when they look *chosen*. Rules for every new element:
+
+- **Only the palettes in §2.** No new color unless it gets a row in §2 first.
+- **One line language.** Solid edges use the 2 px edge of their shift. "Other shift" is always dashed. "Only in this shift" is always hatched. Don't invent a new line style per element.
+- **Motion before detail.** An animated simple shape (§4 animations, freak jitter and blinks, effect rings) reads as finished. A detailed static one reads as a placeholder. Spend art time on animation and effects first (A2, A1).
+- **Same building, two lights.** Every room is drawn twice from the same shapes; only light and props change (pillar 2).
+- **Consistent type.** Monospace only, at the sizes in §7.
+- **Props tell the story** (§6, A3): signage, memos and tape make it a place. They're cheap and they carry the jokes.
 
 ## 2. Palettes
 

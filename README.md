@@ -1,14 +1,25 @@
 # Double Shift
 
-**One building. Two shifts. One worker.**
+[![ci](https://github.com/FishRaposo/double-shift/actions/workflows/ci.yml/badge.svg)](https://github.com/FishRaposo/double-shift/actions/workflows/ci.yml)
 
-A puzzle-platformer for [GitHub Game Off 2026](https://itch.io/jam/game-off-2026) (theme: **SHIFT**). You work the day shift and the night shift in the same building at once. Press Shift to step between them, mid-jump if you like. Things changed between shifts: the day crew's scaffolding catches you, the night's locked gate isn't down yet. And every time you clock into the night shift, **the freaks** have moved something. Nobody knows what they are. They giggle. Finish each level clocking in as few times as possible.
+**Every time you clock into the night shift, the freaks move something.**
+
+A puzzle-platformer for [GitHub Game Off 2026](https://itch.io/jam/game-off-2026) (theme: **SHIFT**). You work the day shift and the night shift in the same building at once. Press Shift to step between them, mid-jump if you like. Things changed between shifts: the day crew's scaffolding catches you, the night's locked gate isn't down yet. But each clock-in gives **the freaks** another chance to prank the building, and they only move at night: step into the day shift and they freeze mid-stride. Nobody knows what they are. They giggle. Finish each level clocking in as few times as possible.
 
 *The freaks come out at night.*
 
-> Status: **prototype**, 6 levels (act 1 + the first two freak levels). Design: [`docs/GDD.md`](docs/GDD.md) (v0.3). Production docs (schedule, tech, levels, art, audio, writing, playtest, release): [`docs/INDEX.md`](docs/INDEX.md).
+**Play in the browser: [fishraposo.github.io/double-shift](https://fishraposo.github.io/double-shift/)** (the itch.io page comes at jam submission).
 
-## Play
+> Status: **prototype**, 6 levels (act 1 + the first two freak levels). Design: [`docs/GDD.md`](docs/GDD.md) (v0.4). How and why it was built: [`docs/DESIGN.md`](docs/DESIGN.md). Production docs (schedule, tech, levels, art, audio, writing, playtest, release): [`docs/INDEX.md`](docs/INDEX.md).
+
+## Game Off 2026
+
+- **Jam:** [GitHub Game Off 2026](https://itch.io/jam/game-off-2026), Nov 1 – Dec 1, 2026. Theme: **SHIFT**.
+- **The theme, three ways:** the Shift key is the only new verb; the work shift is the story; and the building itself shifts, because the freaks move things between your shifts.
+- **Timeline:** design and code started on Nov 1, 2026, after the theme was announced. Everything in this repo was made during the jam.
+- **AI use:** the code was written with AI assistance (Claude) to the design document, and in-game text was drafted with AI assistance. Graphics and sound are drawn and synthesized by code; no image or audio models.
+
+## Play locally
 
 Serve the folder over HTTP (ES modules don't load from `file://`):
 

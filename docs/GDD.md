@@ -1,7 +1,7 @@
 # DOUBLE SHIFT
 ## Game Design Document
 
-**Version:** 0.3.0  
+**Version:** 0.4.0  
 **Status:** Prototype  
 **Project:** Game Off 2026  
 **Theme:** SHIFT  
@@ -21,6 +21,15 @@ This GDD decides *what* the game is. The production docs in this folder decide *
 ---
 
 # 0. Changes
+
+## v0.4
+
+| Change | Why |
+|---|---|
+| Added **§1.8 Jam fit and scoring**: the six rated categories, the overlap with the jam page's example idea, the rating-count rule | Read the jam page and the host's FAQ (2026-11-02). Our core premise is one of the host's own example ideas, so Innovation depends on the freaks and pranks leading everywhere. |
+| §1.7 Theme: added the readings the jam page itself lists (night shift, Sticky Keys) | Theme interpretation is a rated category |
+| §10.1: art stays **code-drawn, as a deliberate style**; no outside artist for the jam | Fish's decision 2026-11-01. Graphics is rated, so "placeholder" has to become a style (ART.md §1.1). |
+| §18: three jam risks added | Innovation overlap, raters quitting before the freaks, a low rating count |
 
 ## v0.3
 
@@ -125,6 +134,27 @@ SHIFT is read three ways at once:
 - **The Shift key** is the only new verb.
 - **The work shift** is the fiction.
 - **Things shifted** is the antagonist: the freaks move things around between shifts, up to whole floors in act 3.
+
+The jam page's own theme text mentions "work the night shift" and jokes that Shift is the key that "accidentally enable[s] sticky keys". We already have both: the night shift is the fiction, and the Sticky Keys warning is a real design constraint (§3.2). *(planned)* Turn the warning into an in-joke: a memo on the title or pause screen from the freaks, written as if they set off Sticky Keys on purpose. Keep the practical advice next to it.
+
+## 1.8 Jam Fit and Scoring
+
+Game Off is rated by other participants in six categories (RELEASE.md §0). What earns each:
+
+| Category | What earns it here | Gap today |
+|---|---|---|
+| Overall | A complete, short, polished run with a satisfying final timecard | Levels 7–12 not built yet |
+| Gameplay | Tight movement (§5), mid-air shifting, par as a second puzzle per level | Tuning pass (G1), playtests |
+| Graphics | A deliberate code-drawn style: two palettes of one building, echoes, readable freaks (ART.md §1.1) | Freak art pass, worker animation, props |
+| Audio | Theme in two arrangements crossfaded on shift (§11.3); yelp, giggle, stamp | **No music yet** |
+| Innovation | **Pranks**: each night clock-in can change the building, so clock-ins are a resource. **Freaks freeze by day**: the other shift is a pause button for the monsters. Timecard par. | Freaks appear late (level 5+) |
+| Theme | The Shift key, the work shift, and the building that shifts, all at once (§1.7) | Sticky Keys joke (planned) |
+
+**Overlap warning.** The jam page's list of example ideas includes a puzzle-platformer where you shift between two overlapping realities and a monster might be standing on the bridge in the other one. That is our core premise, so many entries will look like ours at first glance. Everywhere a rater forms a first impression (the itch hook, cover, GIF, the first two minutes of play), lead with what only this game does: the freaks prank the building every time you clock in, and freeze when you leave the night.
+
+**Raters play dozens of entries**, often for a minute or two each. The pranks and the freezing freaks have to show up before they quit. Two ways to make sure: show freak evidence from the very first night shift, and add a level select so anyone can reach act 2 (PRODUCTION.md A7, L8).
+
+**Rating count.** Itch lowers the score of entries rated fewer times than the jam's median (in 2025 the median was 16). Being easy to play in the browser and rating other entries actively are part of the plan (RELEASE.md §6).
 
 ---
 
@@ -892,7 +922,9 @@ Long death animations or lengthy restart sequences are inconsistent with the int
 
 ## 10.1 Initial Art Strategy
 
-Use simple placeholder graphics until the movement and shifting systems are validated.
+**Decision (v0.4): the jam build stays code-drawn, as a deliberate style rather than placeholder.** No outside artist and no image or audio models. Graphics is a rated category, so the style rules are in ART.md §1.1.
+
+The original prototype guidance, still true for anything new: use simple shapes until the movement and shifting systems are validated.
 
 Recommended prototype visuals:
 
@@ -920,7 +952,7 @@ Potential artistic directions include:
 
 **Selected: day versus night in the same building**, with the freaks' evidence growing across the acts. See §4.7.
 
-Art is drawn in code (shapes, gradients, patterns) with no image assets in the prototype. Any later art from a design partner is credited as they choose.
+Art is drawn in code (shapes, gradients, patterns) with no image assets. For the jam this is the final style, not a stand-in (§10.1). Any post-jam art from a design partner is credited as they choose.
 
 ## 10.3 Animation
 
@@ -1590,6 +1622,10 @@ The minimum release is complete when:
 | Unintended routes break progression | Medium | Systematic level testing |
 | Pranks feel unfair | High | Tells before every prank; checkpoint restore |
 | Freaks read as generic enemies | Medium | Keep them pranksters: no chasing, comedic sound, notes |
+| Premise matches the jam page's own example idea, so Innovation scores suffer | High | Lead with pranks and freezing freaks on the itch page, cover, GIF and in the first minutes of play (§1.8) |
+| Raters quit before the freaks show up (level 5+) | High | Freak evidence from the first night shift; level select from the title screen |
+| Too few ratings lowers the adjusted score | Medium | Browser-playable, short, quick to start; rate 30+ entries early in voting (RELEASE.md §6) |
+| Code-drawn art reads as unfinished, hurting Graphics | Medium | One consistent style (ART.md §1.1); animation and effects over detail |
 
 ---
 
@@ -1703,7 +1739,7 @@ The following decisions require prototypes or further discussion.
 | Shift input | Shift key, rebindable if feasible | Locked |
 | Shift direction | Binary toggle | Locked |
 | Movement physics | Responsive, momentum-preserving | High |
-| Visual identity | Contrasting related worlds | Medium |
+| Visual identity | Code-drawn as a deliberate style; one building in two lights | Locked (v0.4) |
 | Hazards | Simple and dimension-specific | Medium |
 | Checkpoint frequency | Based on challenge length | Medium |
 | Moving objects in inactive layers | Frozen | Locked |

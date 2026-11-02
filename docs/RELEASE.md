@@ -1,6 +1,22 @@
 # Release Plan
 
-Companion to [GDD.md](GDD.md) §16.4–16.5. Jam rules: public GitHub repo with the source, playable game submitted on itch.io, AI use disclosed. Deadline **Dec 1, 2026, 13:37 PST = 18:37 BRT**. Target: submitted **Nov 30**.
+Companion to [GDD.md](GDD.md) §1.8 and §16.4–16.5. Deadline **Dec 1, 2026, 13:37 PST = 18:37 BRT**. Target: submitted **Nov 30**.
+
+## 0. Jam rules (from the [host's FAQ](https://itch.io/jam/game-off-2026/topic/7290154/frequently-asked-questions-faq), read 2026-11-02)
+
+| Rule | What it means for us | Status |
+|---|---|---|
+| Start the game during the jam (Nov 1, 13:37 PST); templates and libraries are fine, the bulk of the work happens in November | All design, code and docs were made from Nov 1 after the theme announcement. The README states the timeline. If anything was prepared earlier, the host asks you to say so openly. | Met |
+| Public GitHub repo with the source (any license) | [FishRaposo/double-shift](https://github.com/FishRaposo/double-shift), MIT | Met |
+| Any tools; **AI is allowed** but must be disclosed when submitting. AI use doesn't affect eligibility or score. | Disclose on the submission form, in the itch AI Disclosure, and in the README, using the same words everywhere (§2) | At submission |
+| Submit on itch.io before the deadline; pushing to GitHub doesn't enter the game | The submission form asks for the repo URL | At submission |
+| Free to play is recommended | $0 or donate | Planned |
+| Updates allowed during the submission period. **Once voting starts, only critical bug fixes, each with a note explaining what changed** | Content freeze at submission; see §6 | — |
+| Only participants with a submitted game can rate. Six rated categories: **Overall, Gameplay, Graphics, Audio, Innovation, Theme interpretation**. Code quality is not judged. | See GDD §1.8 for how each category is earned | — |
+| Content: itch rules only; adult/graphic content is less likely to be featured by GitHub | Mock horror, no gore (GDD §10.5) | Met |
+| Voting ends **Jan 1, 2027, 13:37 PST**; winners featured on the GitHub Blog and socials. No prizes. | — | — |
+
+Hashtag: **#GitHubGameOff**. Community: the jam's itch community and its community-run Discord.
 
 ## 1. GitHub repository (do this in week 1)
 
@@ -15,8 +31,8 @@ gh repo create double-shift --public --source . --push --description "Double Shi
 Then:
 - [x] Add `.github/workflows/ci.yml` (TECH.md §8), push, confirm CI is green.
 - [x] Repo topics: `game-off`, `game-off-2026`, `javascript`, `html5-game`, `puzzle-platformer`.
-- [ ] *(P1)* GitHub Pages from `main` (root) as a secondary play link.
-- [ ] README play line: itch link first, Pages second, once they exist.
+- [x] *(P1)* GitHub Pages from `main` (root) as a secondary play link: <https://fishraposo.github.io/double-shift/> (`.nojekyll` at the root; it rebuilds on every push to `main`). Also set as the repo homepage.
+- [ ] README play line: itch link first, Pages second (Pages line is in; add itch at submission).
 - [ ] Push before 13:37 PST Dec 1, and again after any final fix.
 
 ## 2. itch.io page settings
@@ -37,6 +53,7 @@ Then:
 | Community | Comments |
 | Theme | Background `#0b1029`, text `#d9f6ff`, links `#5ff2ff`; embed background `#0b1029` (ART.md §8) |
 | Visibility | Draft → play it on the page once → **Public** (the publish date is fixed at that click) |
+| Jam submission form | Repo URL `https://github.com/FishRaposo/double-shift`; AI-use disclosure in the same words as below |
 
 ### Tags (verify each tag page on itch before adding; tags feed browse, not title search)
 Candidates: `Puzzle-Platformer`, `2D`, `Short`, `Singleplayer`, `Funny`, `Monsters`, `Minimalist`, `game-off-2026` *(check the jam's own tag convention)*.
@@ -62,15 +79,15 @@ Publishing ≠ indexing. After going Public, check in ~1 hour by searching the *
 
 ## 4. Page description (draft; Fish writes the final words)
 
-> **One building. Two shifts. One worker.**
+> **Every time you clock into the night shift, the freaks move something.**
 >
 > You're covering a double shift, day and night, in the same building, at the same time. Press **Shift** to step between them, even mid-jump. The day crew's scaffolding catches you; the night's gate isn't down yet.
 >
-> And every time you clock into the night shift, the freaks have moved something.
+> But clocking in has a cost. Clock into the night a second time and the plank you crossed on is gone, moved over the next pit. Nobody knows what the freaks are. They giggle. They leave notes. And they only move at night, so step into the day shift and they freeze mid-stride.
 >
-> Nobody knows what the freaks are. They giggle. They leave notes. They only move at night, so when you step into the day shift, they freeze mid-stride.
->
-> Finish each level clocking in as few times as possible.
+> Finish each level clocking in as few times as possible. Your timecard is watching.
+
+*Hook rule:* lead with the pranks and the freezing freaks, not "switch between two worlds". Switching between two overlapping worlds is one of the example ideas on the jam page itself, so many entries will have it (GDD §1.8). Every example in the hook must exist in the shipped levels (the plank is the *Inventory* prank).
 >
 > | | Keyboard |
 > |---|---|
@@ -96,6 +113,7 @@ Publishing ≠ indexing. After going Public, check in ~1 hour by searching the *
 
 - [ ] `npm test` and `npm run check` green; CI green on the final commit.
 - [ ] `npm run zip`; unzip into an empty folder, serve it, play level 1 and the last level.
+- [ ] **First 60 seconds** (raters play dozens of entries): from the itch embed, one keypress gets from the title screen to playing; sound starts after the first input and isn't too loud; level 1 teaches the shift without reading; fullscreen works; level select reaches the freak levels.
 - [ ] Upload to itch, play the full game **from the itch page** in a fresh browser profile (Chrome + Firefox).
 - [ ] Page: description checked against the build, media, tags, AI disclosure, theme.
 - [ ] Public; title search check scheduled for +1 h.
@@ -106,8 +124,14 @@ Publishing ≠ indexing. After going Public, check in ~1 hour by searching the *
 
 ## 6. After submission
 
-- Voting runs until **Jan 1, 2027, 13:37 PST**. Play and rate other entries; comment thoughtfully (it's also how people find yours).
-- Respond to comments on the page.
-- No content changes to the jam build during voting beyond what the jam rules allow; check the jam page before uploading fixes.
+- Voting runs until **Jan 1, 2027, 13:37 PST**.
+- **Build freeze:** from Dec 1 13:37 PST until voting ends, upload only critical bug fixes, and post a note on the page (and a devlog) saying exactly what changed. No new levels, art or balance changes.
+- **The number of ratings matters.** Itch lowers the score of entries rated fewer times than the jam's median: `score × √(ratings ÷ median)`. In Game Off 2025 there were 709 entries, the median was 16 ratings, and the top entries had 16–60. **Goal: at least 25 ratings.**
+- **Ratings plan.** Only entrants can rate, and people mostly find games through the rate queue and through who has played theirs.
+  - Rate 30+ entries in the first week of voting, each with a specific comment (what worked, one suggestion).
+  - Reply to every comment on our page.
+  - Post once in the jam community with the GIF.
+  - Share the itch link on X and LinkedIn with #GitHubGameOff (Fish writes the posts).
+  - Never trade ratings or ask for high scores; just ask people to play.
 - Post-jam: devlog #2 with results and what's next; task pack (PRODUCTION.md R7); decide whether *Double Shift* grows (acts 3 stretch items, gamepad, rebinding).
 - Sync every public surface (README, site, profile) per the gamedev checklist, with identical counts and claims.

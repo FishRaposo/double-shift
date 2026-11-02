@@ -155,7 +155,7 @@ jobs:
       - run: npm test
 ```
 
-*(planned)* Add a Pages deploy job publishing `index.html` + `src/` for a secondary play link.
+GitHub Pages serves `main` (root) at <https://fishraposo.github.io/double-shift/>; `.nojekyll` disables Jekyll processing. Every push to `main` updates the public build, so anything pushed must be playable.
 
 ## 9. Debug
 

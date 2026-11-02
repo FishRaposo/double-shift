@@ -36,9 +36,13 @@ Tests and scripts target Node 22. URL flags for manual play: `?level=N`, `?autos
 - Gotcha: `play()` turns a held shift into one press — a policy must release shift between two shifts.
 - Changing `PARAMS` (tuning) re-proves every par via `npm test`; also update the metrics table in `docs/LEVELS.md` §1.
 
+## Jam constraints
+
+The jam rules and how they apply are in `docs/RELEASE.md` §0, and the category-by-category scoring plan is in `docs/GDD.md` §1.8. GitHub Pages serves `main`, so every push is the public build and must be playable. After Dec 1, 13:37 PST, the voting-period freeze applies: critical bug fixes only, each with a note explaining what changed.
+
 ## Docs
 
-`docs/INDEX.md` maps the doc set. `docs/GDD.md` is the design source of truth (rule IDs S-01…S-08, §13.7 edge cases referenced in tests); `docs/TECH.md` is the detailed code reference (state shape, event table, `PARAMS`, how to add a level/prank/freak/tile); `docs/LEVELS.md` has movement metrics and the level authoring format.
+`docs/INDEX.md` maps the doc set. `docs/GDD.md` is the design source of truth (rule IDs S-01…S-08, §13.7 edge cases referenced in tests); `docs/TECH.md` is the detailed code reference (state shape, event table, `PARAMS`, how to add a level/prank/freak/tile); `docs/LEVELS.md` has movement metrics and the level authoring format. `docs/DESIGN.md` is the one-page portfolio write-up.
 
 Doc rules from `docs/INDEX.md`:
 - GDD decides *what*, other docs decide *how*; if they disagree, the GDD wins and the other doc gets fixed.

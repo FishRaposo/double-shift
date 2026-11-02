@@ -14,7 +14,7 @@ Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-01** (night of d
 | Audio | Synthesized SFX only; **no music yet** |
 | Menus | Title, pause, timecard, end screen. **No settings, no level select, no save** |
 | Tests | 42 passing (`npm test`) |
-| Repo / CI / itch | Public repo [FishRaposo/double-shift](https://github.com/FishRaposo/double-shift), CI green. **No itch page** |
+| Repo / CI / itch | Public repo [FishRaposo/double-shift](https://github.com/FishRaposo/double-shift), CI green, playable on [GitHub Pages](https://fishraposo.github.io/double-shift/). **No itch page** |
 
 ## 2. Milestones
 
@@ -28,6 +28,8 @@ Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-01** (night of d
 | **Nov 30** | **M5: Submitted** | itch page public, submitted to the jam, repo linked, play-tested from the itch page itself. |
 | Dec 1 18:37 BRT | Jam deadline | — (buffer day; only emergency fixes) |
 
+**Jam scoring** (GDD §1.8): Overall, Gameplay, Graphics, Audio, Innovation and Theme are rated by other entrants. Priorities below are set so no category is left empty. That's why music and level select are P0, along with showing the freaks early.
+
 **Cut line:** if M2 slips past Nov 17, cut to the jam minimum (GDD §8.2: levels 1–6 + 9 + 12) and drop all *(stretch)* items. A polished short game beats an unfinished long one.
 
 ## 3. Weekly plan
@@ -37,6 +39,7 @@ Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-01** (night of d
 - Tuning pass on `PARAMS` (TECH.md §4): run speed, jump height, air control, coyote, shift buffer.
 - ~~Create the public GitHub repo, push, add CI~~ Done Nov 1: [FishRaposo/double-shift](https://github.com/FishRaposo/double-shift), CI green.
 - Decide **camera vs single-screen rooms** (see §5, open decisions).
+- Freak evidence from the first night shift (L8): design it with the act 1 polish pass.
 - Freak readability: test freak size (currently 20×22 vs worker 18×26). Bump if testers miss them.
 - First cold playtest on levels 1–6.
 
@@ -45,6 +48,7 @@ Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-01** (night of d
 - Music v1 (AUDIO.md §3).
 - Freak art pass (ART.md §5): silhouettes, eyes, idle jitter, peek animation.
 - Notice-board memos and sticky notes in levels (WRITING.md).
+- Sticky Keys in-joke on the title/pause screen (G14).
 - Settings: master/music/sfx volume, reduced screen effects.
 
 ### Week 3 (Nov 16–22): act 3 and content complete
@@ -59,6 +63,11 @@ Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-01** (night of d
 - Cover art, screenshots, demo GIF (ART.md §8).
 - itch page (RELEASE.md), draft → play on page → public → submit.
 - Devlog #1 on itch; X posts (Fish writes the final words).
+- Run the first-60-seconds check from the itch embed (RELEASE.md §5).
+
+### Voting (Dec 1 – Jan 1)
+- Build freeze: critical fixes only, each with a note (RELEASE.md §6).
+- Ratings campaign: rate 30+ entries in week 1 with real comments; reply to every comment; goal ≥ 25 ratings.
 
 ## 4. Backlog
 
@@ -80,6 +89,7 @@ Priority: **P0** = the game doesn't ship without it. **P1** = expected in the ja
 | G11 | Gamepad support | P2 | Gamepad API polling into `input.js` frames |
 | G12 | Rebindable controls | P2 | Stretch in GDD §12.5 |
 | G13 | Speedrun timer display | P2 | `state.time` already tracked |
+| G14 | Sticky Keys in-joke (memo from the freaks on title/pause, practical advice kept) | P1 | GDD §1.7; the jam page jokes about it too |
 
 ### Levels
 | ID | Item | Pri |
@@ -91,17 +101,18 @@ Priority: **P0** = the game doesn't ship without it. **P1** = expected in the ja
 | L5 | Level 12 *Clock Out* | P0 (jam minimum) |
 | L6 | Levels 10 *Moved Floor*, 11 *Broad Daylight* | P2 |
 | L7 | Re-verify every par with scripted solutions after any tuning change | P0 |
+| L8 | Show the freaks before raters quit: evidence on the first night shift (eyes, a giggle) and a prank tell visible in act 1 | P0 (jam scoring, GDD §1.8) |
 
 ### Presentation
 | ID | Item | Pri |
 |---|---|---|
-| A1 | Freak art pass (size, silhouette, eyes, peek) | P0 |
-| A2 | Worker animation: run cycle, jump, fall, spooked boots gag | P1 |
+| A1 | Freak art pass (size, silhouette, eyes, peek), in the code-drawn style (ART.md §1.1) | P0 |
+| A2 | Worker animation: run cycle, jump, fall, spooked boots gag; motion is what makes simple shapes read as finished | P1 |
 | A3 | Background props: notice board, vents, signage per level | P1 |
 | A4 | Camera or room decision implemented | P0 |
-| A5 | Music: day + night arrangement with crossfade | P0 |
+| A5 | Music: day + night arrangement with crossfade (Audio is a rated category; there's no music today) | P0 |
 | A6 | Settings menu (volumes, reduced effects) | P1 |
-| A7 | Level select + save | P1 |
+| A7 | Level select + save, reachable from the title screen so raters can jump to the freak levels | **P0** (was P1; GDD §1.8) |
 | A8 | Timecard comments, end-screen totals | P1 |
 | A9 | Cover 1260×1000, 3–5 screenshots, demo GIF | P0 |
 
@@ -110,7 +121,7 @@ Priority: **P0** = the game doesn't ship without it. **P1** = expected in the ja
 |---|---|---|
 | R1 | Public GitHub repo, MIT license, README | P0 |
 | R2 | CI workflow (`.github/workflows/ci.yml`) | P0 |
-| R3 | GitHub Pages build (secondary play link) | P1 |
+| R3 | ~~GitHub Pages build (secondary play link)~~ Done Nov 2 | P1 |
 | R4 | itch page, AI disclosure, tags | P0 |
 | R5 | Jam submission + repo link | P0 |
 | R6 | Devlog #1 (launch), #2 (post-jam) | P1 |
@@ -124,7 +135,7 @@ Priority: **P0** = the game doesn't ship without it. **P1** = expected in the ja
 | Primary shift bind | Shift vs K | Decided by the Sticky Keys test | Nov 3 |
 | Subtitle | *The Freaks Come Out at Night* vs none | Keep: it's the tone in one line and helps itch title search | Nov 22 |
 | Freak size | 20×22 (current) vs worker-sized or bigger | Decide after first playtest | Nov 8 |
-| Design partner involvement | Art pass by partner vs code-drawn only | Fish's call; credit as they choose | Nov 9 |
+| ~~Design partner involvement~~ | **Decided 2026-11-01: code-drawn only for the jam**, polished as a deliberate style (GDD §10.1, ART.md §1.1) | — | Closed |
 
 ## 6. Definition of done (jam build)
 
