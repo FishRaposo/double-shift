@@ -47,3 +47,16 @@ test('held movement keys report while held', () => {
   inp.keyUp(down('ArrowRight'));
   assert.equal(inp.consume().right, false);
 });
+
+test('a key held through a screen change (input cleared) comes back on its next OS repeat, with no new press', () => {
+  const inp = createInput();
+  inp.keyDown(down('ArrowRight'));
+  inp.keyDown(down('ShiftLeft'));
+  inp.clear(); // the act card, a resume or a restart
+  assert.equal(inp.consume().right, false);
+  inp.keyDown(down('ArrowRight', true));
+  inp.keyDown(down('ShiftLeft', true));
+  const f = inp.consume();
+  assert.equal(f.right, true, 'still holding right');
+  assert.equal(f.shiftPressed, false, 'a repeat is never a new shift press');
+});

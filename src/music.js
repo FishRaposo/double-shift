@@ -206,6 +206,12 @@ export function createMusic(ctx, out, noise) {
   let next = ctx.currentTime + 0.1;
   let timer = null;
   const tick = () => {
+    // a throttled background tab can miss many ticks: skip the missed steps rather than play them at once
+    if (next < ctx.currentTime) {
+      const missed = Math.ceil((ctx.currentTime - next) / STEP);
+      step += missed;
+      next += missed * STEP;
+    }
     while (next < ctx.currentTime + 0.12) {
       scheduleStep(ctx, { day, night }, step, next, noise);
       step++;

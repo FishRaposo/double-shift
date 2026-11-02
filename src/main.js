@@ -117,15 +117,19 @@ addEventListener('keydown', (e) => {
     else if (e.code === 'Escape' || e.code === 'KeyO') setScreen(game.settingsFrom);
     return;
   }
-  if (game.screen === 'act') { setScreen('play'); return; }
+  if (game.screen === 'act') { setScreen('play'); input.keyDown(e); return; }
   if (game.screen === 'select') {
     const dir = SELECT_KEYS[e.code];
     if (dir) { moveSelect(dir[0], dir[1]); sfx.uiMove?.(); }
-    else if ((e.code === 'Space' || e.code === 'Enter') && isUnlocked(LEVELS, game.selected, save)) { sfx.uiSelect?.(); startLevel(game.selected); }
+    else if (e.code === 'Space' || e.code === 'Enter') {
+      if (isUnlocked(LEVELS, game.selected, save)) { sfx.uiSelect?.(); startLevel(game.selected); }
+      else sfx.shiftFail(); // NOT YET
+    }
     else if (e.code === 'Escape' || e.code === 'KeyL') setScreen('title');
     return;
   }
   if (game.screen === 'card') {
+    if (game.screenTime < 0.6) return; // let the stamp land
     if (e.code === 'Space' || e.code === 'Enter') {
       if (game.index + 1 < levels.length) startLevel(game.index + 1);
       else setScreen('end');
@@ -163,15 +167,21 @@ canvas.addEventListener('pointerdown', (e) => {
     else if (inside(TITLE_SETTINGS)) openSettings();
     else startLevel(game.index);
   } else if (game.screen === 'settings') {
-    SETTING_ROWS.forEach((_, row) => {
-      const r = settingRect(row);
-      if (inside(r)) adjustSetting(row, x < r.x + r.w / 2 ? -1 : 1);
-    });
+    const row = SETTING_ROWS.findIndex((_, k) => inside(settingRect(k)));
+    if (row >= 0) { const r = settingRect(row); adjustSetting(row, x < r.x + r.w / 2 ? -1 : 1); }
+    else setScreen(game.settingsFrom); // click outside the rows: back
   } else if (game.screen === 'act') {
     setScreen('play');
   } else if (game.screen === 'select') {
     const i = LEVELS.findIndex((_, k) => inside(cardRect(k)));
-    if (i >= 0 && isUnlocked(LEVELS, i, save)) startLevel(i);
+    if (i < 0) setScreen('title'); // click outside the cards: back
+    else if (isUnlocked(LEVELS, i, save)) startLevel(i);
+    else { game.selected = i; sfx.shiftFail(); } // NOT YET
+  } else if (game.screen === 'card' && game.screenTime >= 0.6) {
+    if (game.index + 1 < levels.length) startLevel(game.index + 1);
+    else setScreen('end');
+  } else if (game.screen === 'end') {
+    game.results = []; game.actShown = 0; startLevel(0);
   }
 });
 
@@ -217,7 +227,7 @@ function handleEvents(events) {
         fx.flash = 1;
         fx.flashLayer = ev.layer;
         fx.rings.push({ x: cx, y: p.y + PARAMS.playerH / 2, t: 0, layer: ev.layer });
-        if (ev.layer === DAY && level().freaks.length) { fx.freeze = 1; sfx.freeze?.(); }
+        if (freakBoxes(level(), game.state).some((b) => b.shift !== ev.layer)) { fx.freeze = 1; sfx.freeze?.(); }
         break;
       case 'shiftFail': sfx.shiftFail(); fx.fail = 1; break;
       case 'jump': sfx.jump(); fx.dust.push({ x: cx, y: p.y + PARAMS.playerH, t: 0 }); break;
@@ -228,7 +238,7 @@ function handleEvents(events) {
         if (ev.cause === 'spooked') {
           (ev.by === 'daywalker' ? sfx.daywalkerGiggle : sfx.spooked)();
           fx.pops.push({ x: ev.x + PARAMS.playerW / 2, y: ev.y - 20, t: 0, text: SPOOK_LINES[spookIx++ % SPOOK_LINES.length] });
-          fx.spook = { x: ev.x, y: ev.y, t: 0, layer: game.state.layer };
+          fx.spook = { x: ev.x, y: ev.y, t: 0, layer: ev.layer ?? game.state.layer };
         } else {
           sfx.death();
           fx.puffs.push({ x: ev.x + PARAMS.playerW / 2, y: ev.y + PARAMS.playerH / 2, t: 0 });
@@ -296,7 +306,7 @@ function frame(now) {
     fx[k] = fx[k].filter((q) => (q.t += elapsed) < life);
   }
   if (fx.spook && (fx.spook.t += elapsed) > 0.35) fx.spook = null;
-  const inLevel = game.screen === 'play' || game.screen === 'paused' || game.screen === 'card';
+  const inLevel = game.screen === 'play' || game.screen === 'paused' || game.screen === 'card' || (game.screen === 'settings' && game.settingsFrom === 'paused');
   setMenu(!(game.screen === 'play'));
   const musicLayer = inLevel && game.state ? game.state.layer : DAY;
   if (musicLayer !== game.musicLayer) { game.musicLayer = musicLayer; setMusicShift(musicLayer); }
@@ -306,11 +316,10 @@ function frame(now) {
 
 // ---------- rendering ----------
 
-const isSolidCh = isSolidChar; // one definition, owned by the rules
 
 function solidAt(lvl, layer, tx, ty, ov) {
   if (tx < 0 || tx >= lvl.w || ty < 0 || ty >= lvl.h) return false;
-  return isSolidCh(tileAt(lvl, layer, tx, ty, ov));
+  return isSolidChar(tileAt(lvl, layer, tx, ty, ov));
 }
 
 // Outer edges of a layer's solid region, as segments: [x0, y0, x1, y1, 'top'|'bot'|'left'|'right'].
@@ -357,7 +366,7 @@ function staticLayer(lvl, def, layer, ov) {
   for (let ty = 0; ty < lvl.h; ty++) {
     for (let tx = 0; tx < lvl.w; tx++) {
       const ch = tileAt(lvl, layer, tx, ty, ov);
-      if (isSolidCh(ch)) {
+      if (isSolidChar(ch)) {
         const open = {
           up: !solidAt(lvl, layer, tx, ty - 1, ov) && ty > 0,
           down: !solidAt(lvl, layer, tx, ty + 1, ov) && ty + 1 < lvl.h,
@@ -366,16 +375,15 @@ function staticLayer(lvl, def, layer, ov) {
         };
         if (ch === '~') drawWetTile(ctx, tx, ty, layer, open);
         else drawSolidTile(ctx, tx, ty, layer, open);
-        if (!isSolidCh(tileAt(lvl, other, tx, ty, ov))) drawHatch(ctx, tx, ty, layer);
+        if (!isSolidChar(tileAt(lvl, other, tx, ty, ov))) drawHatch(ctx, tx, ty, layer);
       }
       if (tileAt(lvl, other, tx, ty, ov) === '^') drawHazardEcho(ctx, tx, ty, PAL[other].echo);
     }
   }
   drawExit(ctx, lvl.exit.tx, lvl.exit.ty, layer);
   if (staticCache.size > 24) staticCache.delete(staticCache.keys().next().value);
-  const out = c;
-  staticCache.set(key, out);
-  return out;
+  staticCache.set(key, c);
+  return c;
 }
 
 const bgCache = {};
@@ -490,24 +498,25 @@ function drawHud(lvl, s, layer) {
   const over = s.shifts > lvl.par;
   hud(`CLOCK-INS ${s.shifts}  ·  PAR ${lvl.par}`, W - 14, 36, layer, { align: 'right', color: over ? '#e0473c' : pal.hud });
   const note = LEVELS[game.index].note;
-  if (game.levelTime < 5 && note) hud(note, W / 2, 62, layer, { align: 'center', color: pal.hudSoft });
+  if (game.levelTime < 5 && note) hud(note, W / 2, H - 30, layer, { align: 'center', color: pal.hud });
   if (game.index === 0 && s.shifts === 0) {
     hud('Press SHIFT (or K) to change shifts', W / 2, 140, layer, { align: 'center', scale: 3 });
     hud('Dashed outlines show the other shift', W / 2, 172, layer, { align: 'center', color: pal.hudSoft });
   }
 }
 
-function drawDebug(lvl, s) {
+function drawDebug(s) {
   const p = s.player;
   g.strokeStyle = '#ff00ff';
   g.lineWidth = 1;
   g.strokeRect(p.x + 0.5, p.y + 0.5, PARAMS.playerW - 1, PARAMS.playerH - 1);
   g.fillStyle = 'rgba(0,0,0,0.6)';
-  g.fillRect(10, H - 76, 470, 66);
+  g.fillRect(10, H - 76, 470, 72);
   const t = (str, y) => drawText(g, str, 16, y, { scale: 1, color: '#00ff00' });
   t(`pos ${p.x.toFixed(1)},${p.y.toFixed(1)}  tile ${(p.x / TILE).toFixed(2)},${(p.y / TILE).toFixed(2)}`, H - 70);
   t(`vel ${p.vx.toFixed(0)},${p.vy.toFixed(0)}  grounded ${p.grounded}  coyote ${p.coyote.toFixed(3)}`, H - 54);
   t(`layer ${s.layer}  pending ${s.shiftPending.toFixed(3)}  deaths ${s.deaths}`, H - 38);
+  t(`night clock ${s.freakClock.toFixed(2)}  day clock ${s.dayClock.toFixed(2)}  night entries ${s.nightEntries}`, H - 22);
 }
 
 function drawPlay() {
@@ -535,7 +544,7 @@ function drawPlay() {
   else drawWorker(s, layer);
   drawFx(layer, reduced);
   drawHud(lvl, s, layer);
-  if (game.debug) drawDebug(lvl, s);
+  if (game.debug) drawDebug(s);
 }
 
 // ---------- screens ----------
@@ -606,23 +615,29 @@ function drawCard() {
 
 function drawEnd() {
   g.drawImage(background(NIGHT), 0, 0);
-  drawPanel(g, W / 2 - 250, 60, 500, 420, true);
+  const top = 24;
+  const bottom = H - 24;
+  drawPanel(g, W / 2 - 260, top, 520, bottom - top, true);
   const ink = '#3b2d1f';
-  drawText(g, 'END OF PROTOTYPE', W / 2, 84, { scale: 3, color: ink, align: 'center' });
-  drawText(g, 'Thanks for working overtime.', W / 2, 116, { scale: 2, color: ink, align: 'center' });
+  drawText(g, 'SHIFT COMPLETE', W / 2, top + 18, { scale: 3, color: ink, align: 'center' });
+  drawText(g, 'Thanks for working overtime.', W / 2, top + 48, { scale: 2, color: ink, align: 'center' });
+  // rows share the space between the header and the totals, whatever the level count
+  const rowsTop = top + 80;
+  const rowH = Math.min(30, Math.floor((bottom - 96 - rowsTop) / levels.length));
   let total = 0;
   let totalPar = 0;
   levels.forEach((lvl, i) => {
     const r = game.results[i];
-    drawText(g, lvl.name, W / 2 - 210, 156 + i * 30, { scale: 2, color: ink });
-    drawText(g, r ? `${r.shifts} / par ${r.par}` : '—', W / 2 + 210, 156 + i * 30, { scale: 2, color: ink, align: 'right' });
+    const y = rowsTop + i * rowH;
+    drawText(g, `${i + 1}. ${lvl.name}`, W / 2 - 220, y, { scale: 2, color: ink });
+    drawText(g, r ? `${r.shifts} / par ${r.par}` : '—', W / 2 + 220, y, { scale: 2, color: ink, align: 'right' });
     if (r) { total += r.shifts; totalPar += r.par; }
   });
-  const y = 156 + levels.length * 30 + 10;
-  px(g, W / 2 - 210, y, 210, 1, 'rgba(59,45,31,0.4)');
-  drawText(g, 'Total clock-ins', W / 2 - 210, y + 14, { scale: 2, color: ink });
-  drawText(g, `${total} / par ${totalPar}`, W / 2 + 210, y + 14, { scale: 2, color: ink, align: 'right' });
-  drawText(g, 'SPACE: clock in again', W / 2, 446, { scale: 2, color: ink, align: 'center' });
+  const y = bottom - 86;
+  px(g, W / 2 - 220, y, 220, 1, 'rgba(59,45,31,0.4)');
+  drawText(g, 'Total clock-ins', W / 2 - 220, y + 12, { scale: 2, color: ink });
+  drawText(g, `${total} / par ${totalPar}`, W / 2 + 220, y + 12, { scale: 2, color: ink, align: 'right' });
+  drawText(g, 'SPACE: clock in again', W / 2, bottom - 36, { scale: 2, color: ink, align: 'center' });
 }
 
 function drawSelect() {

@@ -39,7 +39,7 @@ const pending = new Map();
 const errors = [];
 
 async function connect() {
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < 150; i++) { // up to 30 s: a cold Edge start can be slow
     try {
       const targets = await (await fetch(`http://127.0.0.1:${DEBUG_PORT}/json`)).json();
       const page = targets.find((t) => t.type === 'page');
@@ -66,7 +66,7 @@ function send(method, params = {}) {
   return new Promise((r) => pending.set(id, (msg) => r(msg.result)));
 }
 
-const KEYS = { Space: [' ', 32], KeyK: ['k', 75], KeyL: ['l', 76], ArrowRight: ['ArrowRight', 39] };
+const KEYS = { Space: [' ', 32], KeyK: ['k', 75], KeyL: ['l', 76], KeyO: ['o', 79], Escape: ['Escape', 27], ArrowRight: ['ArrowRight', 39] };
 const key = (type, code) => send('Input.dispatchKeyEvent', { type, code, key: KEYS[code][0], windowsVirtualKeyCode: KEYS[code][1] });
 const press = async (code) => { await key('keyDown', code); await sleep(40); await key('keyUp', code); };
 const evaluate = async (expr) => (await send('Runtime.evaluate', { expression: expr, returnByValue: true, awaitPromise: true })).result.value;
@@ -121,6 +121,36 @@ try {
   const l1 = await evaluate('({ screen: __doubleShift.screen, shifts: __doubleShift.state.shifts, deaths: __doubleShift.state.deaths })');
   await shot('04-timecard.png');
   if (l1.screen !== 'card') { failed = true; console.error(`level 1 not cleared with real keys: ${JSON.stringify(l1)}`); }
+
+  // ---- flow checks (real keys) ----
+  const flow = (name, ok, detail) => { console.log(`  flow: ${name} ${ok ? 'ok' : 'FAILED'}${ok ? '' : ` ${JSON.stringify(detail)}`}`); if (!ok) failed = true; };
+  // 1. a key pressed to skip the act card keeps working: hold Right from the card into the level
+  await open('');
+  await press('Space'); // title -> act card
+  await sleep(200);
+  const x0 = await tileX();
+  await key('keyDown', 'ArrowRight'); // skips the card AND is held
+  await sleep(500);
+  await key('keyUp', 'ArrowRight');
+  const x1 = await tileX();
+  flow('hold Right through the act card moves the worker', x1 > x0 + 1, { x0, x1 });
+  // 2. mashing Space at the exit can't skip the timecard before the stamp lands
+  await evaluate('(() => { const g = __doubleShift; g.state.won = false; g.screen = "card"; g.screenTime = 0; g.results[g.index] = { shifts: 2, par: 2, deaths: 0, time: 3 }; })()');
+  await press('Space');
+  flow('Space in the first 0.6 s keeps the timecard up', (await evaluate('__doubleShift.screen')) === 'card');
+  // 3. settings opened from pause keep the night music
+  await open('?level=6&autostart');
+  await press('KeyK');
+  await sleep(200);
+  await press('Escape');
+  await press('KeyO');
+  await sleep(100);
+  const m = await evaluate('({ screen: __doubleShift.screen, music: __doubleShift.musicLayer })');
+  flow('settings from pause keep the night music', m.screen === 'settings' && m.music === 1, m);
+  // 4. the end screen fits every level
+  await evaluate('(() => { const g = __doubleShift; g.results = g.results.length ? g.results : []; for (let i = 0; i < 16; i++) if (!g.results[i] && i < 10) g.results[i] = { shifts: 3, par: 3, deaths: 0, time: 4 }; g.screen = "end"; })()');
+  await sleep(200);
+  await shot('12-end.png');
 
   for (const [lvl, night, name] of [[5, false, '05-inventory-day.png'], [5, true, '06-inventory-night.png'], [6, true, '07-night-watch-night.png'], [6, false, '08-night-watch-day.png']]) {
     await open(`?level=${lvl}&autostart`);

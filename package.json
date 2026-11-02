@@ -10,7 +10,8 @@
     "start": "node scripts/serve.mjs --open",
     "serve": "node scripts/serve.mjs",
     "zip": "node scripts/zip.mjs",
-    "media": "node scripts/media.mjs"
+    "media": "node scripts/media.mjs",
+    "audit": "node scripts/audit-levels.mjs"
   },
   "license": "MIT"
 }

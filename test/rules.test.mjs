@@ -232,6 +232,54 @@ test('checkpoint respawn uses the shift the checkpoint was touched in', () => {
   assert.equal(s.player.x, s.checkpoint.x);
 });
 
+// The Mid-Air / Wet Floor death loop: a checkpoint touched mid-air over a pit used to save you in that
+// shift, so every respawn dropped you straight back into the pit.
+test('a checkpoint touched over a pit saves in the shift that has floor there, never over the pit', () => {
+  const day = [
+    '..........',
+    '..........',
+    '..........',
+    '..........',
+    '..........',
+    '..........',
+    '.S..C...E.',
+    '##########',
+  ];
+  const night = [
+    '..........',
+    '..........',
+    '..........',
+    '..........',
+    '..........',
+    '..........',
+    '..........',
+    '###....###',
+  ];
+  const lvl = level(day, night);
+  let s = step(lvl, initState(lvl), SHIFT); // night: the checkpoint at col 4 hangs over the night pit
+  for (let i = 0; i < 240 && !s.checkpoint.id && s.deaths === 0; i++) s = step(lvl, s, RIGHT);
+  assert.ok(s.checkpoint.id, 'checkpoint taken while falling past it at night');
+  assert.equal(s.checkpoint.layer, DAY, 'saved in the shift with floor under it');
+  for (let i = 0; i < 240 && s.deaths === 0; i++) s = step(lvl, s);
+  assert.equal(s.deaths, 1, 'fell into the night pit');
+  assert.equal(s.layer, DAY, 'respawned standing on the day floor');
+  s = stepN(lvl, s, 120);
+  assert.equal(s.deaths, 1, 'and stays alive: no loop');
+});
+
+test('a death event says which shift you died in (the spook gag draws in those colors)', () => {
+  const lvl = level(OPEN_FLOORED_HAZARD_DAY, OPEN_FLOORED_HAZARD_NIGHT);
+  let s = step(lvl, initState(lvl), SHIFT);
+  let death = null;
+  for (let i = 0; i < 240 && !death; i++) {
+    s = step(lvl, s, RIGHT);
+    death = s.events.find((e) => e.type === 'death');
+  }
+  assert.ok(death, 'ran into the night laser');
+  assert.equal(death.layer, NIGHT);
+  assert.equal(s.layer, DAY, 'respawned on the spawn shift');
+});
+
 test('determinism: identical inputs give identical states', () => {
   const policy = (s, m, f) => ({ right: true, jump: f % 50 < 20, shift: f % 37 === 0 });
   const a = play(twin, policy, 600).state;
@@ -668,4 +716,30 @@ test('offset: shifting at a jump apex lands on the raised night copy', () => {
   assert.equal(state.layer, NIGHT);
   assert.equal(state.player.grounded, true, 'landed on the copy');
   assert.ok(state.player.y < 100, `up on the copy (y ${state.player.y})`);
+});
+
+const OPEN_FLOORED_HAZARD_DAY = ['..........', '..........', '.S......E.', '##########'];
+const OPEN_FLOORED_HAZARD_NIGHT = ['..........', '..........', '.....^....', '##########'];
+
+test('wet floor: air under one foot does not count as grip at a waxed ledge', () => {
+  const day = ['..........', '..........', '.S......E.', '##########'];
+  const night = ['..........', '..........', '..........', '~~~~......'];
+  const lvl = level(day, night);
+  let s = initState(lvl);
+  s.layer = NIGHT;
+  s = place(s, 3, 2, { dx: 18, dy: TILE - PARAMS.playerH, player: { vx: 200, grounded: true } }); // feet on col 3 (wax) and over col 4 (air)
+  const before = s.player.vx;
+  s = step(lvl, s, NO_INPUT);
+  assert.ok(s.player.vx > before - PARAMS.wetDecel * DT - 1e-9 && s.player.vx < before, 'slides with wet decel, no grip from the air');
+});
+
+test('parseLevel rejects definitions that would misbehave', () => {
+  const day = ['.S.E', '####'];
+  const night = ['....', '####'];
+  assert.throws(() => level(day, night, { offset: { dx: 0, dy: 0 } }), /not both/);
+  assert.throws(() => level(day, null, { offset: { dx: 0, dy: 0 }, nightPatch: [{ x0: 0, y0: 0, ch: 'E' }] }), /shared/);
+  const sup = { kind: 'supervisor', tx: 1, ty: 0, period: 2 };
+  assert.throws(() => level(day, night, { freaks: [sup, sup] }), /one supervisor/);
+  assert.throws(() => level(day, night, { freaks: [{ kind: 'peeker', tx: 1, ty: 0, period: 0 }] }), /period/);
+  assert.throws(() => level(day, night, { freaks: [{ kind: 'peeker', tx: 1, ty: 0, period: 1, duty: 0 }] }), /duty/);
 });

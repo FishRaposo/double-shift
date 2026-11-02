@@ -22,7 +22,7 @@ export const PARAMS = Object.freeze({
   shiftBuffer: 0.08,
   shiftNudge: 4, // px
   hazardHeight: 0.45, // fraction of a tile, measured from the tile bottom
-  wetAccel: 900, // px/s² while grounded on wet floor `~` (grip is 2600)
+  wetAccel: 500, // px/s² while grounded on wet floor `~` (grip is 2600): steering back barely helps
   wetDecel: 250, // px/s² (grip is 3000): you keep sliding
 });
 
@@ -37,8 +37,18 @@ export const NIGHT = 1;
 // S, E and C are shared between shifts and may be written in either grid.
 export function parseLevel(def) {
   const { day } = def;
+  if (def.night && def.offset) throw new Error(`${def.name}: give a night grid or an offset, not both`);
+  for (const r of def.nightPatch ?? []) {
+    if ('SEC'.includes(r.ch)) throw new Error(`${def.name}: nightPatch can't place S, E or C (they're shared)`);
+  }
   const night = def.night ?? generateOffset(def);
   if (!night) throw new Error(`${def.name}: needs a night grid or an offset`);
+  const sups = (def.freaks ?? []).filter((f) => f.kind === 'supervisor');
+  if (sups.length > 1) throw new Error(`${def.name}: one supervisor per level`);
+  for (const f of def.freaks ?? []) {
+    if (f.period !== undefined && !(f.period > 0)) throw new Error(`${def.name}: ${f.kind} period must be > 0`);
+    if (f.duty !== undefined && !(f.duty > 0 && f.duty <= 1)) throw new Error(`${def.name}: ${f.kind} duty must be in (0, 1]`);
+  }
   if (day.length !== night.length) throw new Error(`${def.name}: day/night height differs`);
   const h = day.length;
   const w = day[0].length;
@@ -210,10 +220,13 @@ function onWetFloor(level, s) {
   if (!p.grounded) return false;
   const ty = Math.floor((p.y + PARAMS.playerH + 1) / TILE);
   const [x0, x1] = tileSpan(p.x, PARAMS.playerW);
+  let wet = false;
   for (let tx = x0; tx <= x1; tx++) {
-    if (tileAt(level, s.layer, tx, ty, s.overrides) !== '~') return false;
+    const ch = tileAt(level, s.layer, tx, ty, s.overrides);
+    if (ch === '~') wet = true;
+    else if (isSolidChar(ch)) return false; // any dry floor under a foot gives grip; air doesn't
   }
-  return true;
+  return wet;
 }
 
 const solidAt = (level, s, layer, x, y) => overlapsSolid(level, layer, x, y, undefined, undefined, s.overrides);
@@ -375,7 +388,7 @@ function approach(v, target, amount) {
 
 function die(level, s, cause, by) {
   s.deaths += 1;
-  s.events.push({ type: 'death', cause, by, x: s.player.x, y: s.player.y });
+  s.events.push({ type: 'death', cause, by, x: s.player.x, y: s.player.y, layer: s.layer });
   const p = s.player;
   p.x = s.checkpoint.x;
   p.y = s.checkpoint.y;
@@ -428,8 +441,8 @@ export function step(level, prev, input = NO_INPUT, dt = DT) {
   const dir = (input.right ? 1 : 0) - (input.left ? 1 : 0);
   if (dir !== 0) p.facing = dir;
   if (dir !== 0) {
-    // turning around uses decel + accel for snappier reversals
-    const boost = Math.sign(p.vx) === -dir ? decel : 0;
+    // turning around uses decel + accel for snappier reversals — but not on wax, where only grip stops you
+    const boost = !wet && Math.sign(p.vx) === -dir ? decel : 0;
     p.vx = approach(p.vx, dir * P.maxSpeed, (accel + boost) * dt);
   } else {
     const before = p.vx;
@@ -484,10 +497,16 @@ export function step(level, prev, input = NO_INPUT, dt = DT) {
   if (p.y > level.h * TILE + 60) { die(level, s, 'fall'); return s; }
 
   // 8. Shared objects: checkpoints and exit exist in both shifts.
+  // A checkpoint saves you in the shift you touched it in, but only where you'd respawn standing on
+  // floor: touched mid-air over a pit, it saves in the other shift if that one has floor, else not at all.
+  // (Otherwise a respawn would drop straight back into the pit, forever.)
   for (const c of level.checkpoints) {
     if (c.id !== s.checkpoint.id && overlapsTile(p, c.tx, c.ty)) {
       const pos = spawnPoint(c.tx, c.ty);
-      s.checkpoint = { ...pos, layer: s.layer, id: c.id, overrides: s.overrides, nightEntries: s.nightEntries };
+      const standable = (layer) => !solidAt(level, s, layer, pos.x, pos.y) && isGrounded(level, layer, pos, s.overrides);
+      const layer = standable(s.layer) ? s.layer : standable(1 - s.layer) ? 1 - s.layer : null;
+      if (layer === null) continue;
+      s.checkpoint = { ...pos, layer, id: c.id, overrides: s.overrides, nightEntries: s.nightEntries };
       s.events.push({ type: 'checkpoint', id: c.id });
     }
   }

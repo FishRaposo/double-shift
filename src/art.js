@@ -5,10 +5,10 @@
 import { ART, C, drawSprite, drawEyes, eyesOpen } from './sprites.js';
 import { drawText, measureText } from './font.js';
 
-export const TILE = 30;
+import { TILE, DAY, NIGHT } from './rules.js';
+
+export { TILE, DAY, NIGHT };
 const A = ART;
-export const DAY = 0;
-export const NIGHT = 1;
 
 // Per-shift palette (docs/ART.md §2). `echo` is how THIS shift's geometry looks when seen from the other one.
 export const PAL = {
@@ -238,8 +238,9 @@ export function drawSign(g, cx, cy, text, style = 'note', scale = 1) {
 
 // b: freak box from rules.freakBoxes. layer: shift being drawn. freakShift: the shift it lives on.
 export function drawFreak(g, b, i, t, { layer, freakShift = NIGHT, frozenFlash = 0, prankSquint = 0, look = 0 }) {
-  const kind = b.kind === 'daywalker' ? 'daywalker' : b.kind;
+  const kind = b.kind;
   const live = layer === freakShift;
+  const flip = kind === 'supervisor' && b.facing < 0; // its facing is the planning tell, frozen or not
   if (live) {
     if (kind === 'peeker' && !b.active) {
       // ducked in: a dark slot with eyes
@@ -249,16 +250,15 @@ export function drawFreak(g, b, i, t, { layer, freakShift = NIGHT, frozenFlash =
     }
     const jitter = b.active ? Math.round(Math.sin(t * 14 + i) * 0.6) * A : 0;
     const frame = (kind === 'lurker' || kind === 'daywalker') && b.active ? (Math.floor(t * 6 + i) % 2 ? 'b' : 'a') : 'a';
-    const flip = kind === 'supervisor' ? b.facing < 0 : false;
     drawSprite(g, kind, frame, b.x + jitter, b.y, { flip });
     const state = !b.active ? 'shut' : prankSquint > 0 ? 'squint' : eyesOpen(t, i) ? 'open' : 'shut';
     drawEyes(g, kind, b.x + jitter, b.y, { state, look, flip });
   } else {
     // frozen on the other shift: dotted outline in its own shift's echo color
     const color = PAL[freakShift].echo;
-    drawSprite(g, kind, 'a', b.x, b.y, { outline: color, alpha: frozenFlash > 0 ? 1 : 0.85 });
-    if (frozenFlash > 0) drawSprite(g, kind, 'a', b.x, b.y, { outline: '#ffffff', alpha: frozenFlash });
-    if (b.active) drawEyes(g, kind, b.x, b.y, { state: 'open', alpha: 0.6 });
+    drawSprite(g, kind, 'a', b.x, b.y, { outline: color, alpha: frozenFlash > 0 ? 1 : 0.85, flip });
+    if (frozenFlash > 0) drawSprite(g, kind, 'a', b.x, b.y, { outline: '#ffffff', alpha: frozenFlash, flip });
+    if (b.active || kind === 'supervisor') drawEyes(g, kind, b.x, b.y, { state: 'open', alpha: 0.6, flip });
   }
 }
 

@@ -25,8 +25,10 @@ export function createInput() {
     keyDown(e) {
       const a = actionOf(e.code);
       if (!a) return false;
-      if (e.repeat) return true; // still a game key (caller may preventDefault), but no new press
+      // OS auto-repeat: never a new press, but it re-asserts the hold. So a key held through a screen
+      // change (act card, resume, restart all clear input) starts working again ~30 ms later.
       held.add(e.code);
+      if (e.repeat) return true;
       if (a === 'jump') jumpPresses++;
       if (a === 'shift') shiftPresses++;
       return true;
