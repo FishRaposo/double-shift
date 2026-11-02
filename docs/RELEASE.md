@@ -13,8 +13,8 @@ gh repo create double-shift --public --source . --push --description "Double Shi
 ```
 
 Then:
-- [ ] Add `.github/workflows/ci.yml` (TECH.md §8), push, confirm CI is green.
-- [ ] Repo topics: `game-off`, `game-off-2026`, `javascript`, `html5-game`, `puzzle-platformer`.
+- [x] Add `.github/workflows/ci.yml` (TECH.md §8), push, confirm CI is green.
+- [x] Repo topics: `game-off`, `game-off-2026`, `javascript`, `html5-game`, `puzzle-platformer`.
 - [ ] *(P1)* GitHub Pages from `main` (root) as a secondary play link.
 - [ ] README play line: itch link first, Pages second, once they exist.
 - [ ] Push before 13:37 PST Dec 1, and again after any final fix.
