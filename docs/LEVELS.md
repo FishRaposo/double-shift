@@ -220,6 +220,47 @@ All six ideas from Fish's pool (2026-11-02) are slotted; `supervisor` and `offse
 | Freight | Loading dock; crates restack on each night entry along a fixed cycle; one arrangement connects to the exit | Prank chains are covered by `doors`, `stacked` and `pillar` |
 | Scatterer | A freak that flees and knocks things over (real-time geometry change) | Breaks the "pranks only on shift" rule; needs new rules |
 | Shared state | Levers and doors that keep one state across both shifts | New system; GDD §8.2 |
+| Upside Down | The night shift is the map flipped top to bottom, and gravity flips with it; usable as a level or a modifier (below) | New rule (per-shift gravity); Fish to decide jam vs. post-jam |
+
+### Upside Down *(idea, Fish 2026-11-02; not slotted)*
+
+**The idea:** the map is upside down. It works as one level, or as a **modifier** that any level can use: one shift is the building flipped, ceiling for floor.
+
+**Recommended version: the night shift is the day map flipped top to bottom, and on that shift gravity flips with it.** The worker stands on what is the ceiling by day. Shifting is then also a gravity flip: you keep your position and momentum (S-01, S-02), and you start falling the other way. That makes it more than a new layout:
+- **Shift to cross a pit:** walk off a day ledge, shift mid-fall, and "fall" up onto the night copy of the ceiling above.
+- **Shift as a brake:** shifting at the top of a jump turns the rise into a fall the other way, landing you on the ceiling.
+- **Freaks:** a night freak patrols the ceiling. Seen from the day it's an outline hanging upside down: the dread is that it's right above you.
+
+**Other versions considered:**
+- **Layout only:** the night grid is the day grid mirrored, but gravity stays normal. It's cheap (the offset layer's machinery generalises: `flip: 'y'` instead of `offset`), but it reads as just another map; the theme of "the building moved" is already Floor 3.5.
+- **Screen only:** the whole view rotates 180° for a level, with the same rules. It's disorienting and nearly free to build, but it has no puzzle in it, and it fights the readability pillars.
+
+**As a level (fiction):** "They flipped the night shift. Mind your head." Act 4, after Floor 3.5: Lights Out is where the building stops making sense. It needs no prank and no new freak to teach: one room to learn the flip, one to use it mid-jump, one with a ceiling lurker.
+
+**As a modifier:** a level field like `upsideDown: 'night'` (night = day grid flipped vertically, plus an optional `nightPatch`, like `offset`). Any level can opt in, so later levels can combine it with pranks or the supervisor.
+
+**Rules sketch (for TECH §6.5 when it's built):**
+- `PARAMS.gravity` gets a per-layer sign; jump velocity, variable jump cut, coyote time, max fall and the 1-px grounding probe all follow it.
+- Grounding checks the tile above the head on the flipped shift.
+- The shift transaction (S-08) is unchanged: nudge ≤ 4 px, buffer, reject. A shift that lands you embedded is still refused.
+- Spawn, checkpoints and the exit are shared tiles. They need floor in at least one shift's gravity direction (the checkpoint rule already checks "standable").
+- Tests:
+  - gravity sign per layer;
+  - jumping on the ceiling;
+  - momentum kept through a flip;
+  - landing on the ceiling copy mid-fall;
+  - grounded flip refused when embedded;
+  - fairness windows (the existing test covers new levels automatically).
+
+**Art and sound:**
+- The worker sprite flips vertically on that shift (hard hat down). The freeze cue and shift ring are unchanged.
+- The HUD stays upright. The level note stays at the bottom.
+- A short "whoomp" (sine sweep down) layered on the shift sound in flipped levels.
+
+**Open questions for Fish:**
+1. Gravity flip or layout only?
+2. Which shift is upside down: night (fits "the freaks did it") or a per-level choice?
+3. One level for the jam, or post-jam as a modifier?
 
 ### Showing the freaks early (built, PRODUCTION.md L8)
 

@@ -54,6 +54,8 @@ Full specs: [LEVELS.md](LEVELS.md) §4 (built) and §5 (planned).
 
 *Post-jam pool:* Freight (crates restack on a cycle). It's covered by `doors` and `stacked`, so it's not needed for the jam.
 
+*Idea, not slotted:* **Upside Down** (Fish, 2026-11-02): the night shift is the map flipped top to bottom, with gravity flipped on that shift. It works as a level (act 4) or as a level modifier (`upsideDown: 'night'`). It needs a new rule, so it's tier C if slotted. Spec and open questions: [LEVELS.md](LEVELS.md) §5.1.
+
 ## 3. Systems
 
 Specs: [TECH.md](TECH.md) §6 (mechanics), [GDD.md](GDD.md) §12 (UI).

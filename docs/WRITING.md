@@ -68,7 +68,7 @@ Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game l
 | 15 Employee of the Month (`portrait`) | They installed a portrait of themselves. It blocks the exit. |
 | 16 Clock Out (`clockout`) ✅ | Almost done. Don't look at the vents. |
 
-Notes 7, 8, 10, 11, 13 and 15 come from Fish's idea pool (2026-11-02). 8 and 13 are unchanged; 7, 10, 11 and 15 are lightly trimmed to fit one line at scale 2 (14 px tall) (his full lines are the "Fiction" lines in LEVELS.md §5). *Freight* ("The crates were stacked properly. They were.") is kept for post-jam.
+Notes 7, 8, 10, 11, 13 and 15 come from Fish's idea pool (2026-11-02). 8 and 13 are unchanged; 7, 10, 11 and 15 are lightly trimmed to fit one line at scale 2 (14 px tall) (his full lines are the "Fiction" lines in LEVELS.md §5). *Freight* ("The crates were stacked properly. They were.") is kept for post-jam. *Upside Down* (idea, LEVELS.md §5.1) draft notes: "They flipped the night shift. Mind your head." / "The floor is up there now."
 
 ## 4. Spook lines (random on freak contact) ✅
 
