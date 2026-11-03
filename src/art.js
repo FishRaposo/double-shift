@@ -51,15 +51,39 @@ const hash = (a, b) => {
 };
 
 // ---------- background ----------
+// The sky (flat bands; stars at night), then the backdrop: the back wall and one quiet motif per act, so each
+// act has its own look (ART.md §6). Everything in the backdrop stays ≤ 1.35:1 against the sky behind it,
+// overlaps included: test/palette.test.mjs rasterizes every act's backdrop on both shifts.
 
-export function drawBackground(g, layer, W, H, t = 0) {
+// Flat bands instead of a smooth gradient: reads as pixel art. Pure, so the palette test uses the same rows.
+export function skyBands(layer, H, bands = 8) {
   const pal = PAL[layer];
-  // flat bands instead of a smooth gradient: reads as pixel art
-  const bands = 8;
-  for (let i = 0; i < bands; i++) {
-    const k = i / (bands - 1);
-    g.fillStyle = mix(pal.skyTop, pal.skyBot, k);
-    g.fillRect(0, Math.floor((i * H) / bands), W, Math.ceil(H / bands) + 1);
+  return Array.from({ length: bands }, (_, i) => ({
+    y0: Math.floor((i * H) / bands),
+    y1: Math.floor(((i + 1) * H) / bands),
+    color: mix(pal.skyTop, pal.skyBot, i / (bands - 1)),
+  }));
+}
+
+// Backdrop colors (ART.md §2). `line` draws structure (poles, pipes, shelves, fixtures), `fill` large quiet
+// shapes (tarps, boxes), `light` and `glow` what shines. The finale's dawn tints the low day sky pink in three
+// steps, lighter, never darker: the echoes and the rebar hold 3:1 on it (the palette test checks).
+export const BACKDROP = {
+  [DAY]: {
+    line: 'rgba(110,80,45,0.13)', fill: 'rgba(110,80,45,0.07)', light: 'rgba(255,255,240,0.5)', glow: 'rgba(255,255,240,0.25)',
+    dawn: ['rgba(255,200,200,0.12)', 'rgba(255,200,200,0.22)', 'rgba(255,200,200,0.32)'], sun: 'rgba(255,248,225,0.6)',
+  },
+  [NIGHT]: {
+    line: 'rgba(120,150,255,0.1)', fill: 'rgba(120,150,255,0.05)', light: 'rgba(255,214,110,0.1)',
+    emergency: 'rgba(230,240,255,0.1)', emergencyGlow: 'rgba(230,240,255,0.03)', exitSign: 'rgba(43,220,106,0.14)',
+    moon: 'rgba(217,246,255,0.1)',
+  },
+};
+
+export function drawBackground(g, layer, W, H, t = 0, act = 0) {
+  for (const b of skyBands(layer, H)) {
+    g.fillStyle = b.color;
+    g.fillRect(0, b.y0, W, b.y1 - b.y0);
   }
   if (layer === NIGHT) {
     for (let i = 0; i < 70; i++) {
@@ -69,15 +93,212 @@ export function drawBackground(g, layer, W, H, t = 0) {
       px(g, x, y, 1, 1, `rgba(255,255,255,${tw})`);
     }
   }
-  // the back wall's windows: quiet, never brighter than a solid's edge. At night most are dark, two are lit.
+  drawBackdrop(g, layer, W, H, act);
+}
+
+// One act's backdrop, drawn with art-px rects only (the palette test's raster canvas allows nothing else).
+// Act 0 is the plain back wall the menus use. The Upside Down's night is its day backdrop, upside down.
+export function drawBackdrop(g, layer, W, H, act = 0) {
+  const motif = MOTIFS[act] ?? MOTIFS[0];
+  const flip = motif.flipAtNight && layer === NIGHT;
+  const r = (x, y, w, h, color) => px(g, x, flip ? H - y - h * A : y, w, h, color);
+  motif.draw(r, layer, W, H);
+}
+
+// The back wall's six windows: quiet, never brighter than a solid's edge. At night most are dark; `lit` are the
+// warm ones. The frame is drawn around and between the panes, never under them, so nothing compounds.
+// `blinds` (act 2) gives each window's blind depth in px from the top pane's top edge.
+function backWall(r, layer, { lit = [1, 4], blinds = null } = {}) {
+  const pal = PAL[layer];
+  const b = BACKDROP[layer];
   for (let i = 0; i < 6; i++) {
     const x = 40 + i * 160;
-    px(g, x - 6, 60, 56, 100, pal.frame);
-    const lit = layer === DAY || i === 1 || i === 4;
-    g.fillStyle = lit ? pal.window : pal.windowDark;
-    for (const [dx, dy] of [[0, 6], [52, 6], [0, 102], [52, 102]]) g.fillRect(x + dx, 60 + dy, 48, 92);
+    r(x - 6, 60, 56, 3, pal.frame);
+    r(x - 6, 254, 56, 3, pal.frame);
+    r(x - 6, 66, 3, 94, pal.frame);
+    r(x + 100, 66, 3, 94, pal.frame);
+    r(x + 48, 66, 2, 94, pal.frame); // mullion
+    r(x, 158, 24, 2, pal.frame); // transoms
+    r(x + 52, 158, 24, 2, pal.frame);
+    const color = layer === DAY || lit.includes(i) ? pal.window : pal.windowDark;
+    for (const [dx, dy] of [[0, 6], [52, 6], [0, 102], [52, 102]]) {
+      const bottom = 60 + dy + 92;
+      let y = 60 + dy;
+      // under a blind: a slat, then the pane showing through, every 3 art px
+      for (; blinds && y < Math.min(bottom, 66 + blinds[i]); y += 3 * A) {
+        r(x + dx, y, 24, 1, b.line);
+        const h = Math.min(2, (bottom - y - A) / A);
+        if (h > 0) r(x + dx, y + A, 24, h, color);
+      }
+      if (y < bottom) r(x + dx, y, 24, (bottom - y) / A, color);
+    }
   }
 }
+
+// Rows of a pixel disc of radius R art px around (cx, cy), each row drawn once (no overlaps to compound).
+function disc(r, cx, cy, R, color, { upperHalf = false } = {}) {
+  for (let j = -R; j <= (upperHalf ? 0 : R); j++) {
+    const hw = Math.floor(Math.sqrt(R * R - j * j));
+    r(cx - hw * A, cy + j * A, 2 * hw + 1, 1, color);
+  }
+}
+
+// A wall clock (act 2): a ring, four ticks and two hands, every art pixel drawn once.
+function wallClock(r, cx, cy, R, hour, color) {
+  const cells = new Set();
+  for (let j = -R; j <= R; j++) {
+    const outer = Math.floor(Math.sqrt(R * R - j * j));
+    const inner = Math.abs(j) < R - 1 ? Math.floor(Math.sqrt((R - 1) * (R - 1) - j * j)) : -1;
+    for (let i = -outer; i <= outer; i++) if (Math.abs(i) > inner) cells.add(`${i},${j}`);
+  }
+  for (const [i, j] of [[0, 2 - R], [R - 2, 0], [0, R - 2], [2 - R, 0]]) cells.add(`${i},${j}`);
+  for (const [angle, len] of [[(hour / 12) * 2 * Math.PI, R * 0.55], [0, R * 0.8]]) {
+    for (let k = 0; k <= len; k++) cells.add(`${Math.round(Math.sin(angle) * k)},${Math.round(-Math.cos(angle) * k)}`);
+  }
+  for (const c of cells) {
+    const [i, j] = c.split(',').map(Number);
+    r(cx + i * A, cy + j * A, 1, 1, color);
+  }
+}
+
+// Act 1's scaffold poles stand in the gaps between the windows, so nothing quiet is drawn over anything else.
+const POLES = [170, 330, 490, 650, 810];
+
+const MOTIFS = {
+  0: { draw: (r, layer) => backWall(r, layer) },
+
+  // Act 1, Renovation: scaffolding in front of the back wall, tarps hung from it, braces and a ladder.
+  1: {
+    draw(r, layer, W, H) {
+      const b = BACKDROP[layer];
+      backWall(r, layer);
+      for (const x of POLES) r(x, 40, 2, (H - 40) / A, b.line);
+      const edges = [0, ...POLES.flatMap((x) => [x, x + 2 * A]), W];
+      for (const y of [50, 270, 440]) {
+        for (let k = 0; k < edges.length; k += 2) r(edges[k], y, (edges[k + 1] - edges[k]) / A, 2, b.line);
+      }
+      const brace = (x0, x1, y0, y1) => {
+        const steps = (x1 - x0) / A;
+        for (let k = 0; k < steps; k++) r(x0 + k * A, Math.round((y0 + ((y1 - y0) * k) / steps) / A) * A, 1, 2, b.line);
+      };
+      brace(POLES[0] + 2 * A, POLES[1], 274, 436 - 2 * A);
+      brace(POLES[2] + 2 * A, POLES[3], 436 - 2 * A, 274);
+      // tarps: vertical strips with a fold gap between them and a sagging hem
+      for (const [x0, x1, top, bottom] of [[POLES[1] + 2 * A, POLES[2], 54, 236], [POLES[4] + 2 * A, W, 274, 400]]) {
+        for (let x = x0 + 2 * A; x + 4 * A <= x1; x += 10 * A) {
+          const w = Math.min(9, (x1 - 2 * A - x) / A);
+          const sag = Math.round(Math.sin(((x - x0) / (x1 - x0)) * Math.PI) * 5) * A;
+          r(x, top, w, (bottom - top + sag) / A, b.fill);
+        }
+      }
+      // a ladder up the lower storey
+      r(700, 274, 1, 81, b.line);
+      r(726, 274, 1, 81, b.line);
+      for (let y = 282; y < 436; y += 16) r(702, y, 12, 1, b.line);
+    },
+  },
+
+  // Act 2, Overtime: office blinds half drawn, and a wall clock: five by day, three in the morning by night.
+  2: {
+    draw(r, layer) {
+      backWall(r, layer, { blinds: [92, 60, 80, 36, 188, 48] });
+      wallClock(r, 490, 330, 13, layer === DAY ? 5 : 3, BACKDROP[layer].line);
+    },
+  },
+
+  // Act 3, Graveyard Shift: warehouse shelving full of boxes, pipes along the ceiling. No windows.
+  3: {
+    draw(r, layer, W, H) {
+      const b = BACKDROP[layer];
+      for (const y of [66, 84]) {
+        r(0, y, W / A, 3, b.line);
+        for (let x = 80; x < W; x += 160) r(x, y === 66 ? y + 3 * A : y - A, 2, 1, b.line); // flanges
+      }
+      r(930, 90, 3, (H - 90) / A, b.line); // a drop pipe down the right wall
+      [60, 360, 660].forEach((x0, u) => {
+        r(x0, 140, 2, (H - 140) / A, b.line);
+        r(x0 + 236, 140, 2, (H - 140) / A, b.line);
+        [200, 290, 380].forEach((y, s) => {
+          r(x0 + 2 * A, y, 116, 1, b.line);
+          for (let x = x0 + 8, k = 0; ; k++) {
+            const w = 12 + Math.floor(hash(u * 7 + s, k) * 14);
+            const h = 10 + Math.floor(hash(k, u * 7 + s) * 12);
+            if (x + w * A > x0 + 228) break;
+            if (hash(u + k, s) > 0.2) r(x, y - h * A, w, h, b.fill);
+            x += w * A + 3 * A;
+          }
+        });
+      });
+    },
+  },
+
+  // Act 4, Lights Out: no windows, rows of fluorescent fixtures. By day the tubes are dim; at night they're dead,
+  // and only the emergency lights and the EXIT signs glow (pictograms, no text: only the real exit reads EXIT).
+  4: {
+    draw(r, layer) {
+      const b = BACKDROP[layer];
+      const night = layer === NIGHT;
+      for (const [y, xs] of [[80, [80, 320, 560, 800]], [170, [200, 440, 680]], [260, [80, 320, 560, 800]]]) {
+        for (const x of xs) {
+          r(x + 10, y - 30, 1, 15, b.line); // hangers
+          r(x + 68, y - 30, 1, 15, b.line);
+          r(x, y, 40, 2, b.line); // the housing
+          if (night) continue;
+          r(x + 2 * A, y + 2 * A, 36, 1, b.light); // the tube, and its light
+          for (let k = 1; k <= 8; k++) r(x + 2 * A - k * A, y + (2 + k) * A, 36 + 2 * k, 1, b.glow);
+        }
+      }
+      if (!night) return;
+      // twin-head emergency lights, lamps at the ends of a flat box (nothing like a freak's ears on top),
+      // glowing down the wall; white, not red: red at night means a laser
+      for (const x of [240, 480, 720]) {
+        r(x - 10, 330, 10, 3, b.line);
+        r(x - 16, 332, 3, 3, b.emergency);
+        r(x + 10, 332, 3, 3, b.emergency);
+        for (let k = 0; k < 8; k++) r(x - 16 - k * A, 338 + k * A, 16 + 2 * k, 1, b.emergencyGlow);
+      }
+      for (const x of [300, 624]) {
+        const y = 116;
+        r(x, y, 18, 1, b.exitSign); // the sign's frame
+        r(x, y + 7 * A, 18, 1, b.exitSign);
+        r(x, y + A, 1, 6, b.exitSign);
+        r(x + 17 * A, y + A, 1, 6, b.exitSign);
+        r(x + 4 * A, y + 3 * A, 8, 2, b.exitSign); // an arrow
+        r(x + 12 * A, y + 2 * A, 1, 4, b.exitSign);
+        r(x + 13 * A, y + 3 * A, 1, 2, b.exitSign);
+      }
+    },
+  },
+
+  // Act 5, Upside Down: lamps hanging between the windows. At night the whole backdrop hangs the other way.
+  5: {
+    flipAtNight: true,
+    draw(r, layer) {
+      const b = BACKDROP[layer];
+      backWall(r, layer);
+      for (const [x, bottom] of [[170, 150], [330, 210], [490, 170], [650, 230], [810, 160]]) {
+        r(x, 0, 1, (bottom - 5 * A) / A, b.line); // the cord
+        for (let k = 0; k < 5; k++) r(x + 1 - (3 + 2 * k), bottom - (5 - k) * A, 3 + 2 * k, 1, b.line); // the shade
+        r(x - A, bottom, 3, 1, b.light); // the bulb
+        for (let k = 0; k < 10; k++) r(x + 1 - (5 + 2 * k), bottom + (1 + k) * A, 5 + 2 * k, 1, b.light);
+      }
+    },
+  },
+
+  // The finale: dawn by day (the low sky warms to pink, the sun's rim on the horizon); the moon low by night.
+  6: {
+    draw(r, layer, W, H) {
+      const b = BACKDROP[layer];
+      if (layer === DAY) {
+        b.dawn.forEach((c, i) => r(0, 300 + i * 60, W / A, (i === 2 ? H - 420 : 60) / A, c));
+        disc(r, 150, 480, 30, b.sun, { upperHalf: true });
+      } else {
+        disc(r, 800, 430, 23, b.moon);
+      }
+      backWall(r, layer);
+    },
+  },
+};
 
 function mix(a, b, k) {
   const pa = parseInt(a.slice(1), 16);

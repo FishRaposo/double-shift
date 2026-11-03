@@ -221,7 +221,30 @@ function draw(t) {
   label('paper and night panels, stamps', 560, y + 150);
   y += 170;
 
+  // ---- backdrops: one per act, day over night (drawn once, then scaled down) ----
+  section(y, 300, 'BACKDROPS · one quiet motif per act, day over night');
+  BACKDROP_ACTS.forEach(([act, name], i) => {
+    const x = 16 + i * 210;
+    for (const [row, layer] of [[0, DAY], [1, NIGHT]]) g.drawImage(backdrop(layer, act), x, y + 40 + row * 116, 192, 108);
+    label(name, x, y + 278);
+  });
+  y += 300;
+
   cv.height !== y && (cv.height = y);
+}
+
+const BACKDROP_ACTS = [[1, '1 RENOVATION'], [2, '2 OVERTIME'], [3, '3 GRAVEYARD SHIFT'], [4, '4 LIGHTS OUT'], [5, '5 UPSIDE DOWN'], [6, 'FINALE']];
+const backdrops = new Map();
+function backdrop(layer, act) {
+  const key = `${act},${layer}`;
+  if (!backdrops.has(key)) {
+    const c = document.createElement('canvas');
+    c.width = 960;
+    c.height = 540;
+    art.drawBackground(c.getContext('2d'), layer, 960, 540, 0, act);
+    backdrops.set(key, c);
+  }
+  return backdrops.get(key);
 }
 
 let start = performance.now();

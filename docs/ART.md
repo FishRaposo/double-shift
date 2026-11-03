@@ -79,6 +79,17 @@ Graphics is a rated jam category. Simple shapes score well when they look *chose
 | Timecard paper / ink / stamp | `#f7efdc` / `#3b2d1f` / `#c0392b` (on/under par), `#7f6a50` (overtime) |
 | Debug | `#ff00ff` hitbox, `#0f0` text |
 
+### Backdrops (`BACKDROP` in `src/art.js`, Nov 3)
+Behind everything, one motif per act (§6). Every color stays ≤ 1.35:1 against the sky it's drawn on, overlaps included (§3.1).
+
+| Role | Day | Night |
+|---|---|---|
+| `line`: poles, pipes, shelves, blind slats, fixtures, the wall clock | `rgba(110,80,45,0.13)` | `rgba(120,150,255,0.1)` |
+| `fill`: tarps, boxes | `rgba(110,80,45,0.07)` | `rgba(120,150,255,0.05)` |
+| `light`: tubes, bulbs and their cones | `rgba(255,255,240,0.5)`; fixture glow `rgba(255,255,240,0.25)` | `rgba(255,214,110,0.1)` |
+| Finale | dawn: the low sky in three steps of `rgba(255,200,200,0.12 / 0.22 / 0.32)` (lighter, never darker, so echoes and rebar keep 3:1); sun `rgba(255,248,225,0.6)` | moon `rgba(217,246,255,0.1)` |
+| Act 4 night | — | emergency lights `rgba(230,240,255,0.1)` (white: red at night means a laser), their glow `rgba(230,240,255,0.03)`; EXIT pictograms `rgba(43,220,106,0.14)` (an arrow, no text: only the real exit reads EXIT) |
+
 ## 3. Readability system
 
 | Thing | How it's shown | Non-color cue |
@@ -118,7 +129,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | Prank warnings are noticeable | Night tell and decor eyes at 4×8 px each with a soft glow `rgba(255,236,90,0.25)`, blinking (`drawGlowEyes`, Nov 3: 2×); day MINE note 42×30 |
 | Pixels stay square | The canvas snaps to a whole multiple of 960×540 once the window allows 2× or more (`canvasScale` in `src/layout.js`); below that it fits the window |
 
-**These rules are tests** (`test/palette.test.mjs`, 2026-11-03): WCAG contrast between the colors that actually meet on screen, rgba composited over what it's drawn on, checked against both sky bands of each shift.
+**These rules are tests** (`test/palette.test.mjs`, 2026-11-03): WCAG contrast between the colors that actually meet on screen, rgba composited over what it's drawn on, checked against both sky bands of each shift (by day also the finale's dawn-tinted low sky).
 
 | Pair | Minimum | Measured (Nov 3) |
 |---|---|---|
@@ -131,6 +142,8 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | Hazards vs sky, in every color they flicker through (`HAZARD`) | ≥ 3:1 | passes since the identity pass (rebar spikes `#b04a20` / `#8f3a18`, dim laser `#e8324f`); before it, the rebar was 1.8–3.6 and the dim laser 2.4 |
 | Freak eyes vs freak body | ≥ 4.5:1 | 16.7 |
 | Background windows and frames vs sky (the quiet layer) | ≤ 1.35:1 | 1.05–1.33 |
+| Every act's backdrop vs the sky behind it, pixel by pixel with overlaps (the test rasterizes each backdrop; it may only draw rects) | ≤ 1.35:1 | day 1.14–1.32, night 1.18–1.33 |
+| Every act looks different from every other | ≥ 3 % of the screen differs | passes |
 
 ## 4. The worker
 
@@ -161,7 +174,17 @@ The screen should read in this order: **worker → what's solid now → hazards 
 
 ## 6. Environment
 
-- Background: six big windows across the back wall (40 px margin, 160 px spacing, 4 panes each), kept faint so they never read as platforms. Day: pale panes. Night: two windows faintly lit warm, the rest dark (`windowDark`, Nov 3: four lit windows read as grey boxes); dim stars above.
+- Background: the sky in 8 flat bands (dim stars at night), then the backdrop. The back wall has six big windows (40 px margin, 160 px spacing, 4 panes each), kept faint so they never read as platforms; the frame is drawn around and between the panes, never under them. Day: pale panes. Night: two windows faintly lit warm, the rest dark (`windowDark`, Nov 3: four lit windows read as grey boxes). The menus use this plain wall.
+- Per-act backdrops (Nov 3, `drawBackdrop`; colors in §2), so each act has its own look at a glance:
+
+  | Act | Day | Night |
+  |---|---|---|
+  | 1 Renovation | Scaffolding in front of the wall: poles in the gaps between the windows, three ledgers, two braces, two tarps (strips with fold gaps and a sagging hem), a ladder | The same |
+  | 2 Overtime | Blinds half drawn in every window (slats with the pane between them), a wall clock at five | The clock reads three in the morning; the two lit windows glow through their blinds |
+  | 3 Graveyard Shift | No windows: three warehouse shelving units full of boxes, two pipes along the ceiling with flanges, a drop pipe on the right | The same |
+  | 4 Lights Out | No windows: three rows of fluorescent fixtures with dim tubes and light cones | The fixtures are dead; three twin-head emergency lights glow down the wall, and two EXIT pictogram signs |
+  | 5 Upside Down | Lamps hanging between the windows, light cones under them | The whole backdrop upside down |
+  | Finale | Dawn: the low sky warms to pink in three steps, the sun's rim on the horizon | The moon, low |
 - Checkpoint (Nov 3): a punch clock on a post, a metal box with a clock face and a card slot (`checkpointRect`, always on screen, tested). Grey face when unset; once taken the face lights `#ffd23f` and a timecard sticks out of the top. The face swells on the ping.
 - Exit (Nov 3): the lit EXIT sign sits above the door, or beside it when there's no room above, and never leaves the screen (`exitRects`, tested).
 - Barrier tape (Nov 3): a cordon of two stanchions standing on the floor with striped tape sagging between their tops, never a line across a gap at floor height (it read as a bridge).

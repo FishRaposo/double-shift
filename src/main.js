@@ -399,14 +399,20 @@ function staticLayer(lvl, def, layer, ov) {
   return out;
 }
 
-const bgCache = {};
-function background(layer) {
-  if (!bgCache[layer]) {
-    const [c, ctx] = makeCanvas();
-    drawBackground(ctx, layer, W, H, 0);
-    bgCache[layer] = c;
+// The sky and the act's backdrop (act 0: the menus' plain back wall), cached per act × shift. A run visits
+// one act at a time, so the cache keeps the last few (2 MB each).
+const bgCache = new Map();
+function background(layer, act = 0) {
+  const key = `${act},${layer}`;
+  let c = bgCache.get(key);
+  if (!c) {
+    let ctx;
+    [c, ctx] = makeCanvas();
+    drawBackground(ctx, layer, W, H, 0, act);
+    if (bgCache.size >= 6) bgCache.delete(bgCache.keys().next().value);
+    bgCache.set(key, c);
   }
-  return bgCache[layer];
+  return c;
 }
 
 function drawHazards(lvl, layer, t, ov) {
@@ -562,7 +568,7 @@ function drawPlay() {
   const layer = s.layer;
   const t = s.time;
   const reduced = settings.get().reduced;
-  g.drawImage(background(layer), 0, 0);
+  g.drawImage(background(layer, def.act), 0, 0);
   const still = staticLayer(lvl, def, layer, s.overrides);
   g.drawImage(still.canvas, 0, 0);
   drawHazards(lvl, layer, t, s.overrides);
@@ -630,8 +636,9 @@ function drawAct() {
   const def = LEVELS[game.index];
   const act = def.act;
   const finale = act === FINALE_ACT; // FINALE · CLOCK OUT · "One more shift."
-  g.save(); g.beginPath(); g.rect(0, 0, W / 2, H); g.clip(); g.drawImage(background(DAY), 0, 0); g.restore();
-  g.save(); g.beginPath(); g.rect(W / 2, 0, W / 2, H); g.clip(); g.drawImage(background(NIGHT), 0, 0); g.restore();
+  // the act card previews the act's backdrop, day on the left and night on the right
+  g.save(); g.beginPath(); g.rect(0, 0, W / 2, H); g.clip(); g.drawImage(background(DAY, act), 0, 0); g.restore();
+  g.save(); g.beginPath(); g.rect(W / 2, 0, W / 2, H); g.clip(); g.drawImage(background(NIGHT, act), 0, 0); g.restore();
   const k = Math.min(1, game.screenTime / 0.25);
   g.fillStyle = 'rgba(0,0,0,0.55)';
   g.fillRect(0, H / 2 - 90, W, 180);

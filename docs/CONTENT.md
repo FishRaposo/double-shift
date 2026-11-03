@@ -110,7 +110,7 @@ Specs: [ART.md](ART.md). Palette rule: existing colors only, unless a color gets
 | ART-16 | Demo GIF ≤ 10 s | itch | P1 | ART §8 | planned |
 | ART-17 | Devlog images (before/after readability, a prank GIF) | Devlogs | P2 | ART §8 | gallery capture ✅; devlog images planned |
 | ART-20 | Identity and readability pass: text on plates and paper strips, hatched rims, one silhouette per freak kind, glowing eyes, freaks and the subtitle on the title, punch-clock checkpoint, exit sign always on screen, barrier-tape cordon, the ending's wave, whole-pixel scaling | Every level, shell | P0 | ART §3, §3.1, §5–§7 | ✅ (Nov 3) |
-| ART-21 | Per-act backdrops: one quiet motif per act behind everything | Every level | P1 | ART §6 | planned |
+| ART-21 | Per-act backdrops: one quiet motif per act behind everything | Every level | P1 | ART §2, §6 | ✅ (Nov 3; acts 5 and the finale show once their levels move there) |
 
 ## 5. Audio (all synthesized)
 
