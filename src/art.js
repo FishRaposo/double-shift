@@ -699,6 +699,15 @@ export const PROPS = {
     px(g, x + TILE + TILE / 2 - A, y - 2 * A, 2, 2, '#8a8f99');
     px(g, x + TILE + TILE / 2 - A, y - 2 * A, 1, 1, '#d9dde3');
   },
+  // a spare hard hat, management's white one (never the worker's yellow); Head Over Heels sticks it to the ceiling
+  hardHat(g, x, y) {
+    const f = y + TILE;
+    px(g, x + 5 * A, f - 6 * A, 5, 1, '#f7efdc');
+    px(g, x + 4 * A, f - 5 * A, 7, 3, '#f7efdc');
+    px(g, x + 7 * A, f - 6 * A, 1, 4, '#c9ad84'); // the ridge
+    px(g, x + 2 * A, f - 2 * A, 11, 1, '#f7efdc'); // the brim
+    px(g, x + 2 * A, f - A, 11, 1, '#5a3d10');
+  },
   plaque(g, x, y) {
     px(g, x - 2 * A, y, 19, 13, '#b8862f');
     px(g, x - A, y + A, 17, 11, '#e2b955');

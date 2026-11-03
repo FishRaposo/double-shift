@@ -1132,6 +1132,57 @@ export const LEVELS = [
     ],
   },
   {
+    id: 'heels',
+    name: 'Head Over Heels',
+    act: 5,
+    note: 'Up is a matter of opinion now.',
+    par: 7,
+    // A loop: right along the bottom, up a shaft, back left along the top. The floor (rows 14-17) and the walkway
+    // (row 5) each carry one corridor by day and the other by night: by day you stand on the floor (bottom) or the
+    // walkway (top); on the flipped night you hang under the walkway's copy (bottom) or the floor's (top), 4 px from
+    // where you stood. A block (cols 13-19) leaves one slot through each corridor, and a day-walker and a lurker
+    // share each slot: every clock-in or out freezes the one in your way and wakes the other, so you flip past
+    // each in turn, never on top of the one waking up. Bottom: the pit (cols 20-27) is crossed hanging, and at the
+    // walkway's gap (col 31) you fall up the shaft. Top: the last gap (cols 2-9, no floor, no walkway) has a
+    // ceiling only while their plank is in it. It starts over the pit's copy and moves over the gap on the 4th
+    // clock-in, back on the 5th, and so on: arrive with a clock-in to spare and it isn't there yet.
+    upsideDown: true,
+    nightPatch: [{ x0: 20, x1: 27, y0: 3, ch: '#' }], // the plank, over the pit's copy until they move it
+    pranks: relocations('plank', { start: 20, loop: [2, 20], rect: (x0) => ({ x0, x1: x0 + 7, y0: 3 }), entries: 8, first: 4, tells: 1 }),
+    freaks: [
+      { kind: 'daywalker', tx: 13, ty: 13, range: 1, speed: 45 },
+      { kind: 'lurker', tx: 18, ty: 13, range: 1, speed: 45 },
+      { kind: 'daywalker', tx: 18, ty: 4, range: 1, speed: 45 },
+      { kind: 'lurker', tx: 13, ty: 4, range: 1, speed: 45 },
+    ],
+    props: [
+      { kind: 'sign', tx: 24, ty: 9, text: 'HARD HAT AREA', style: 'paper', layer: 'day' },
+      { kind: 'noticeBoard', tx: 11, ty: 10, layer: 'day' },
+      { kind: 'hardHat', tx: 24, ty: 13, layer: 'night', flip: true },
+    ],
+    decor: [{ kind: 'eyes', tx: 5, ty: 9 }],
+    day: [
+      '.............#######............',
+      '.............#######............',
+      '.............#######............',
+      '.............#######............',
+      '.E.........C.................C..',
+      '##........#####################.',
+      '.............#######............',
+      '.............#######............',
+      '.............#######............',
+      '.............#######............',
+      '.............#######............',
+      '.............#######............',
+      '.............#######............',
+      '..........S.....................',
+      '##........##########........####',
+      '##........##########........####',
+      '##........##########........####',
+      '##........##########........####',
+    ],
+  },
+  {
     id: 'clockout',
     name: 'Clock Out',
     act: FINALE_ACT,

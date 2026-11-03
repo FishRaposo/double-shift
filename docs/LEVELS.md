@@ -5,7 +5,7 @@ Companion to [GDD.md](GDD.md) §6 and §8. Tile = 30 px. Levels are 32×18 tiles
 **At a glance**
 - Jumpable rise: **≤ 3 tiles**. Gaps: **≤ 4** comfortable, **≥ 7** impossible (use 8 for "must shift") (§1).
 - A level is two ASCII grids (day, night) plus optional pranks, freaks and decor (§2).
-- **The game is 21 levels: five acts of four plus the finale (§5.0).** <!-- n:levels -->20<!-- /n --> built (§4): tiers A and B, and three of act 5's four (§5.2); `heels` and the finale rework (§5.3) planned. Tier A (a complete game) is built.
+- **The game is 21 levels: five acts of four plus the finale (§5.0).** <!-- n:levels -->21<!-- /n --> built (§4): tiers A and B and all of act 5 (§5.2); the finale rework (§5.3) planned. Tier A (a complete game) is built.
 - Leave **≥ 200 ms** of slack per required input in acts 1–2, **≥ 100 ms** in acts 3–5 (tested).
 - Nothing ships without a scripted par solution in the tests and the §6 checklist.
 
@@ -232,7 +232,18 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 - **Margin:** clock-ins 433–708 ms; input lag up to 150 ms still wins (`npm run audit`).
 - **Props:** an IT'S FINE sign and a notice board (day), footprints on the ceiling under the plank (night, `flip`), eyes in the dark over pit A.
 
-### 20. Clock Out: par 7 (the finale; #21 in the full game, rework planned in §5.3)
+### 20. Head Over Heels: par 7 (act 5, built Nov 3)
+- **Lesson:** act 5's combination: every shift freezes one freak, wakes the other, and flips gravity.
+- **Day:** a loop on two corridors. The floor (rows 14–17) is the bottom corridor's floor, the walkway (row 5) the top one's. A block (cols 13–19) is solid but for one slot through each corridor (rows 4 and 13). Bottom: the spawn floor (cols 10–12), the slot, a pit (cols 20–27, 8 wide) and the far floor (cols 28–31). Top: the far walkway (cols 20–30) with a gap at col 31, the slot, the walkway at cols 10–12, a last gap with no floor and no walkway (cols 2–9, 8 wide) and the exit on a walkway stub (cols 0–1). **Night** is that map turned over (`upsideDown`): you hang under the walkway's copy along the bottom and under the floor's copy along the top, 4 px from where you stood, so a shift flips you in place; the slots map onto each other. A `nightPatch` lays their plank over the pit's copy (row 3, cols 20–27).
+- **The freaks:** each slot holds a day-walker and a lurker, one awake per shift (bottom: the day-walker at col 13, the lurker at 18; top: the reverse). In a 1-tile slot nothing is jumped: you pass the frozen one's outline and must not clock in or out on top of the one that's about to wake.
+- **The plank** (`relocations` from the 4th clock-in): over the last gap on entry 4, back over the pit's copy on 5, and so on (8 moves). Day tell MINE over the gap; at night the eyes hang under it.
+- **Solution (7):** clock in before the bottom day-walker; out before the lurker; in again past it (entry 2) and cross the pit hanging; at the walkway's gap you fall up the shaft to the top. Clock out onto the walkway and walk back over the pit; in before the top day-walker (3), out before its lurker, then in on the walkway at cols 10–12: the 4th clock-in brings the plank over the last gap, and you cross it hanging to the exit.
+- **Why par holds:** the exit is only reachable at night over the plank, which first covers the last gap on the 4th clock-in, so every route clocks in 4 times from a day start: 7 shifts. Staying on night along the top under their plank skips a clock-out and in, and then the 4th clock-in hasn't happened at the gap: clock out and in once more.
+- **Checkpoints** at (29, 4) after the shaft and (11, 4) before the last gap, both standable in both shifts.
+- **Margin:** clock-ins 367–842 ms; input lag up to 150 ms still wins (`npm run audit`).
+- **Props:** a HARD HAT AREA sign and a notice board (day), a hard hat stuck to the ceiling (night, `flip`, `PROPS.hardHat`), eyes in the dark over the last gap.
+
+### 21. Clock Out: par 7 (the finale, rework planned in §5.3)
 - **Lesson:** everything you know, in one run.
 - **Room 1 (cols 0–14):** a pit with a 3-wide night stone (cols 5–7, row 13) and a higher day stone (cols 10–12, row 12): jump off each as you land, shifting mid-air to the one ahead.
 - **Room 2 (cols 15–24):** `watch`'s tunnel under a building: day crates at cols 17 and 24 force night in and out; the lurker inside (col 20) forces a day freeze. Checkpoint at col 15.
@@ -264,7 +275,7 @@ Five acts of four, then the finale. Each act introduces one idea, practises it, 
 | 17 | **5 · Upside Down** (the building turns over) | Mind Your Head (`upside`) | **Upside Down**: at night the map is flipped and gravity points up | ✅ |
 | 18 | 5 | Falling Up (`fallup`) | Mid-fall flips; climb a shaft by flipping | ✅ |
 | 19 | 5 | Ceiling Walker (`ceiling`) | A freak on the ceiling; a prank on the flipped map | ✅ |
-| 20 | 5 | Head Over Heels (`heels`) | Act 5's combination: every shift freezes one freak and flips gravity | spec (§5.2) |
+| 20 | 5 | Head Over Heels (`heels`) | Act 5's combination: every shift freezes one freak and flips gravity | ✅ |
 | 21 | **Finale** | Clock Out (`clockout`) | Pays everything off, then the ending | ✅ built (3 rooms); rework spec §5.3 |
 
 **Freak and mechanic ladder** (first seen → first required):
@@ -388,7 +399,7 @@ The levels still to build in acts 2–4, in the §5.0 order (manifest: [CONTENT.
 - **Fiction:** "Something is walking on the ceiling. It's fine."
 - **Concept:** a lurker patrols the night ceiling route; by day it's an upside-down outline above you (freeze it by being on day, walk under its outline). Then a prank: on a night clock-in the freaks move a plank on the flipped map, telegraphed by tells hanging from the ceiling.
 
-### Head Over Heels (`heels`, #20): target par 6–8 (act 5, tier C)
+### Head Over Heels (`heels`, #20): target par 6–8 (act 5, tier C) ✅ built Nov 3 at par 7 (§4)
 - **Lesson:** act 5's combination: every shift freezes one freak, wakes the other, and flips gravity.
 - **Fiction:** "Up is a matter of opinion now."
 - **Concept:** `upsideDown: true`. A day-walker patrols the floor by day; a lurker walks the flipped ceiling by night. Each shift both flips you to the other side of the room and swaps which freak is moving, so you route through the moments when the one on your side is frozen. It ends on a prank: a plank moved on the flipped map, telegraphed by a tell hanging from the ceiling.
@@ -398,7 +409,7 @@ The levels still to build in acts 2–4, in the §5.0 order (manifest: [CONTENT.
 
 ## 5.3 The finale: Clock Out reworked *(planned, tier C; today's version is the fallback)*
 
-The built Clock Out (§4, #20 in today's build) is a complete finale and ships as-is if act 5 slips. The rework makes it pay off every act:
+The built Clock Out (§4, #21) is a complete finale and ships as-is if act 5 slips. The rework makes it pay off every act:
 - **One screen, `upsideDown: true`, four rooms**, each recalling an act:
   1. mid-air shifts across stones (act 1);
   2. a frozen-lurker tunnel and a telegraphed prank (act 2);

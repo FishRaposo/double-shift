@@ -74,7 +74,7 @@ In the order of the 21-level game (LEVELS.md §5.0). ✅ = in the build.
 | 17 Mind Your Head (`upside`) ✅ | They flipped the night shift. Mind your head. |
 | 18 Falling Up (`fallup`) ✅ | The floor is up there now. |
 | 19 Ceiling Walker (`ceiling`) ✅ | Something is walking on the ceiling. It's fine. |
-| 20 Head Over Heels (`heels`) | Up is a matter of opinion now. |
+| 20 Head Over Heels (`heels`) ✅ | Up is a matter of opinion now. |
 | 21 Clock Out (`clockout`) ✅ | Almost done. Don't look at the vents. |
 
 Notes 7, 8, 10, 11, 13 and 15 come from Fish's idea pool (2026-11-02). 8 and 15 are unchanged; 7, 10, 11 and 13 are lightly trimmed to fit one line at scale 2 (14 px tall) (his full lines are the "Fiction" lines in LEVELS.md §5). Act 5 is Fish's Upside Down idea (LEVELS.md §5.2). *Freight* ("The crates were stacked properly. They were.") is kept for post-jam.
@@ -111,6 +111,7 @@ SPOOKED! · AAAGH! · NOPE! · EEP! · NOT PAID ENOUGH
 | `upside` | MIND YOUR HEAD |
 | `fallup` | THIS WAY UP |
 | `ceiling` | IT'S FINE |
+| `heels` | HARD HAT AREA |
 | `clockout` | LAST SHIFT |
 
 ## 6. Notice board memos *(planned, A3)*

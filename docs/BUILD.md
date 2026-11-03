@@ -255,7 +255,7 @@ Seven milestone PRs (decided 2026-11-03). Each one passes every gate in §1.2 pl
 - **Solution policy:** gravity-aware. When airborne, read `s.player.vy` with the sign, and when to shift by position.
 - **Then:** T13 (act 5 card) can land.
 
-### T9 · Falling Up (`fallup`, #18) · T10 · Ceiling Walker (`ceiling`, #19) · T11 · Head Over Heels (`heels`, #20) · need T7, after T8 *(✅ T9 and T10 built Nov 3, par 4 and 4; LEVELS.md §4)*
+### T9 · Falling Up (`fallup`, #18) · T10 · Ceiling Walker (`ceiling`, #19) · T11 · Head Over Heels (`heels`, #20) · need T7, after T8 *(✅ all three built Nov 3, par 4, 4 and 7; LEVELS.md §4)*
 - **Specs:** LEVELS.md §5.2. Pars: 4–6, 4–6 and 6–8. All `upsideDown: true`, `act: 5`, in this order after `upside`.
 - **Falling Up:** a tall shaft with ledges on alternating sides at unjumpable heights; flip mid-fall to "fall" onto the opposite side. One beat uses a flip as a brake over a pit. Space the ledges against the jump (≈ 93.5 px) and give every flip ≥ 100 ms; check with the audit.
 - **Ceiling Walker:** a lurker on the night ceiling route (hanging box from T7); by day it's an upside-down outline above you. Then a telegraphed plank prank on the flipped map, with tells hanging under solids.

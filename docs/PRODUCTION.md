@@ -17,11 +17,11 @@ Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-03**.
 | Core rules (move, jump, shift, buffer/nudge, coyote, jump buffer) | Built, tested |
 | Pranks (Nth night entry, tells, checkpoint restore) | Built, tested |
 | Freaks: lurker, peeker, squatter, supervisor (frozen by day), day-walker (frozen by night) | Built, tested |
-| Levels | **<!-- n:levels -->20<!-- /n --> built** (act 1: 4, act 2: 4, act 3: 4, act 4: 4, act 5: 3, finale: 1), all proven solvable at par and fair; **tier A (jam minimum) complete** with `stacked` and `clockout`. Tier-C mechanics shipped. All 5 tier-B levels built (Nov 3); act 5's other three levels and the finale rework planned (CONTENT.md) |
+| Levels | **<!-- n:levels -->21<!-- /n --> built** (act 1: 4, act 2: 4, act 3: 4, act 4: 4, act 5: 4, finale: 1), all proven solvable at par and fair; **tier A (jam minimum) complete** with `stacked` and `clockout`. Tier-C mechanics shipped. All 5 tier-B levels built (Nov 3); act 5's other three levels and the finale rework planned (CONTENT.md) |
 | Rendering | **Pixel art** (Nov 2): sprites, animated worker and freaks, pixel tiles and props, pixel font, effects; every asset in `/tools/gallery.html` |
 | Audio | Mix bus, 25 SFX (incl. planned-level sounds), **music** (day/night arrangements crossfading on every shift) |
 | Menus | Title, level select + saved bests, settings (volumes, reduced effects), act cards, pause, timecard with comment, end screen with totals |
-| Tests | <!-- n:tests -->290<!-- /n --> passing (`npm test`), including fairness; `npm run audit` clean |
+| Tests | <!-- n:tests -->299<!-- /n --> passing (`npm test`), including fairness; `npm run audit` clean |
 | Repo / CI / itch | Public repo [FishRaposo/double-shift](https://github.com/FishRaposo/double-shift), CI green, playable on [GitHub Pages](https://fishraposo.github.io/double-shift/). **No itch page** |
 
 ## 2. Milestones
@@ -110,7 +110,7 @@ Priority: **P0** = the game doesn't ship without it. **P1** = expected in the ja
 | L6 | ~~`pillar` *Structural Integrity*, `portrait` *Employee of the Month*~~ done Nov 3, par 3 each | Tier B |
 | L12 | ~~`audit` *Night Audit* (act 4 exam, #16)~~ done Nov 3, par 6 | Tier B |
 | L13 | ~~`upside` *Mind Your Head*, `fallup` *Falling Up*, `ceiling` *Ceiling Walker*~~ done Nov 3, par 2, 4 and 4 | Tier C, cut Nov 18 |
-| L14 | `heels` *Head Over Heels* (act 5 combination, #20) | Tier C |
+| L14 | ~~`heels` *Head Over Heels* (act 5 combination, #20)~~ done Nov 3, par 7 | Tier C |
 | L15 | Finale rework: Clock Out upside down, one room per act (LEVELS.md §5.3) | Tier C (fallback: today's Clock Out) |
 | L9 | ~~`wet` *Wet Floor*, `daywalker` *Broad Daylight*~~ done | Tier C |
 | L10 | ~~`supervisor` *Night Management*, `offset` *Floor 3.5*~~ done | Tier C |

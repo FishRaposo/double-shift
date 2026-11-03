@@ -198,6 +198,22 @@ export const SOLUTIONS = {
     const drop = s.layer === NIGHT && p.grounded && x > 28; // hanging on the far side: drop to the exit
     return { right: true, shift: (!!due && s.layer !== due[2]) || brake || drop };
   },
+  // A loop. Bottom, rightward: in before the day-walker, out before the lurker, in over the pit and up the shaft.
+  // Top, leftward: out onto the walkway, in before the day-walker, out before the lurker, in for the plank (the
+  // 4th clock-in brings it over the last gap).
+  heels: (s, m) => {
+    const x = tx(s);
+    if (s.player.y > 9 * TILE && !m.top) {
+      const plan = [[11.2, 12.2, NIGHT], [15.6, 16.6, DAY], [21, 30, NIGHT]];
+      const due = plan.find(([a, b]) => x >= a && x <= b);
+      return { right: true, shift: !!due && s.layer !== due[2] };
+    }
+    if (!s.player.grounded && !m.top) return { right: true }; // rising up the shaft
+    m.top = true;
+    const plan = [[22, 28.5, DAY], [16.8, 21.4, NIGHT], [12.6, 16.2, DAY], [0, 11, NIGHT]];
+    const due = plan.find(([a, b]) => x >= a && x <= b);
+    return { left: true, shift: !!due && s.layer !== due[2] };
+  },
   // in under the walkway (entry 1: the plank's over pit A); out past the pit, walk under the lurker's outline; in
   // past its tunnel (entry 2: they move the plank over pit B); out over the exit
   ceiling: (s) => {

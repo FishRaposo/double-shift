@@ -356,3 +356,48 @@ test("Ceiling Walker: the plank isn't there on the wrong night entry", () => {
   assert.ok(death && death.cause === 'fall' && death.layer === NIGHT, `died of ${death?.cause}`);
   assert.ok(death.x > 21 * TILE && death.x < 30 * TILE, `fell up through the second pit's copy (x ${death.x})`);
 });
+
+test('Head Over Heels: staying on day meets the day-walker', () => {
+  const lvl = L.heels;
+  // never clocking in: the bottom slot through the block is one tile high, so no rhythm of jumps gets past it
+  for (const period of [0, 18, 30, 48, 90]) {
+    const policy = (s, m, f) => ({ right: true, jump: period > 0 && f % period < period / 2 });
+    const { events } = play(lvl, policy, 120 * 6);
+    const death = events.find((e) => e.type === 'death');
+    assert.ok(death && death.cause === 'spooked' && death.by === 'daywalker', `jump period ${period}: died of ${death?.cause}`);
+  }
+});
+
+test('Head Over Heels: staying on night meets the lurker', () => {
+  const lvl = L.heels;
+  // the solution's first clock-in, then never out: the lurker further along the slot is awake all night
+  for (const period of [0, 18, 30, 48, 90]) {
+    const jump = (s, f) => s.layer === NIGHT && period > 0 && f % period < period / 2;
+    const policy = (s, m, f) => ({ right: true, shift: s.shifts === 0 && SOLUTIONS.heels(s, m, f).shift, jump: jump(s, f) });
+    const { events } = play(lvl, policy, 120 * 6);
+    assert.equal(events.filter((e) => e.type === 'shift').length, 1);
+    const death = events.find((e) => e.type === 'death');
+    assert.ok(death && death.cause === 'spooked' && death.by === 'lurker', `jump period ${period}: died of ${death?.cause}`);
+  }
+});
+
+test('Head Over Heels: the final plank needs the right night entry', () => {
+  const lvl = L.heels;
+  // the solution, except that it stays on night along the top under their plank over the pit (no clock-out and
+  // in): it reaches the last gap with a clock-in to spare, so the clock-in there is entry 3, and the plank only
+  // comes over on the 4th
+  const policy = (s, m, f) => {
+    const want = SOLUTIONS.heels(s, m, f);
+    return m.top && tx(s) > 16.8 ? { ...want, shift: s.layer === DAY } : want;
+  };
+  const { events: all } = play(lvl, policy, 120 * 20);
+  const events = all.slice(0, all.findIndex((e) => e.type === 'death') + 1); // up to the first death
+  assert.equal(events.filter((e) => e.type === 'shift' && e.layer === NIGHT).length, 3);
+  assert.deepEqual(events.filter((e) => e.type === 'prank').map((e) => e.id), []);
+  const death = events.at(-1);
+  assert.ok(death?.type === 'death' && death.cause === 'fall' && death.layer === NIGHT, `ended on ${death?.type} ${death?.cause}`);
+  assert.ok(death.x < 10 * TILE, `fell up through the last gap (x ${death.x})`);
+  // the solution gets there on the 4th clock-in, and the plank is over the gap
+  const { events: won } = play(lvl, SOLUTIONS.heels, 120 * 20);
+  assert.deepEqual(won.filter((e) => e.type === 'prank').map((e) => e.id), ['plank1']);
+});
