@@ -252,10 +252,10 @@ const MOTIFS = {
       // twin-head emergency lights, lamps at the ends of a flat box (nothing like a freak's ears on top),
       // glowing down the wall; white, not red: red at night means a laser
       for (const x of [240, 480, 720]) {
-        r(x - 10, 330, 10, 3, b.line);
-        r(x - 16, 332, 3, 3, b.emergency);
-        r(x + 10, 332, 3, 3, b.emergency);
-        for (let k = 0; k < 8; k++) r(x - 16 - k * A, 338 + k * A, 16 + 2 * k, 1, b.emergencyGlow);
+        r(x - 10, 296, 10, 3, b.line);
+        r(x - 16, 298, 3, 3, b.emergency);
+        r(x + 10, 298, 3, 3, b.emergency);
+        for (let k = 0; k < 8; k++) r(x - 16 - k * A, 304 + k * A, 16 + 2 * k, 1, b.emergencyGlow);
       }
       for (const x of [300, 624]) {
         const y = 116;
