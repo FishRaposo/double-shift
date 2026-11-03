@@ -1,7 +1,7 @@
 // Scripted solutions: one policy per level, reading the state like a player would (position, layer,
 // clocks), not frame-exact scripts. Shared by the level tests, the fairness tests and `npm run audit`.
 import { LEVELS } from '../src/levels.js';
-import { parseLevel, freakBoxes, DAY, NIGHT, PARAMS } from '../src/rules.js';
+import { parseLevel, freakBoxes, tileAt, isSolidChar, DAY, NIGHT, PARAMS, TILE } from '../src/rules.js';
 import { tx } from './helpers.mjs';
 
 export const L = Object.fromEntries(LEVELS.map((l) => [l.id, parseLevel(l)]));
@@ -110,6 +110,16 @@ export const SOLUTIONS = {
       if (x > 24.5 && x < 26.3) target = DAY; // the night wall: clock back out
     }
     return { right, shift: want(s, target) };
+  },
+  // night at the start; hop up the stairs; jump off the top step; past the stairs, mid-air, day onto the tower
+  stairs: (s) => {
+    const p = s.player;
+    const x = tx(s);
+    // hop each riser as it comes (a step face about a tile ahead at foot height), and off the end of the top step
+    const ground = Math.round((p.y + PARAMS.playerH) / TILE);
+    const riser = isSolidChar(tileAt(L.stairs, s.layer, Math.floor((p.x + PARAMS.playerW) / TILE + 0.9), ground - 1));
+    const shift = (x < 2 && want(s, NIGHT)) || (!p.grounded && x > 23.6 && want(s, DAY));
+    return { right: true, shift, jump: p.grounded ? s.layer === NIGHT && (riser || (x > 21.8 && x < 23.2)) : p.vy < 0 };
   },
   // under the walkway, clock in and fall up onto it; past the pit, clock out and drop to the floor
   upside: (s) => ({ right: true, shift: (tx(s) > 7 && tx(s) < 16 && want(s, NIGHT)) || (tx(s) > 19 && want(s, DAY)) }),

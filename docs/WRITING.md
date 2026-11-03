@@ -61,7 +61,7 @@ In the order of the 21-level game (LEVELS.md §5.0). ✅ = in the build.
 | 4 Mid-Air ✅ | Something up there blinked. |
 | 5 Inventory ✅ | Every time you clock in, something gets moved. |
 | 6 Night Watch ✅ | Something is in the tunnel. It only moves at night. |
-| 7 Under Renovation (`stairs`) | They built a staircase. It leads nowhere. They're very proud. |
+| 7 Under Renovation (`stairs`) ✅ | They built a staircase. It leads nowhere. They're very proud. |
 | 8 Lost & Found (`doors`) | The freaks have stolen every door. Not the keys. The doors. |
 | 9 Wet Floor (`wet`) ✅ | Someone waxed the floors. Nobody on the payroll waxes floors. |
 | 10 Structural Integrity (`pillar`) | They moved a load-bearing pillar. The building is somehow fine. |
@@ -93,6 +93,7 @@ SPOOKED! · AAAGH! · NOPE! · EEP! · NOT PAID ENOUGH
 | Sticky note tell (day) ✅ | MINE |
 | More tells | MINE NOW · DO NOT TUCH · FINDERS KEEPERS · (a drawing of eyes) |
 | Hex-flavored tells *(candidates)* | MINE BY ANSHENT LAW · HEXED. NO TUCH · THE PLANK IS OURS NOW · WE SEE YOU (WE R SHINY) |
+| The freaks' proud sign over the staircase (`stairs`) *(draft)* | OUR STARES! |
 
 ## 6. Notice board memos *(planned, A3)*
 

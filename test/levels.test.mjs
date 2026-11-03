@@ -125,3 +125,13 @@ test('Mind Your Head: staying on night after the walkway never reaches the exit'
     assert.equal(state.shifts, 1);
   }
 });
+
+test('Under Renovation: night alone never reaches the exit', () => {
+  const lvl = L.stairs;
+  for (const jumpEvery of [0, 25, 40, 60]) {
+    const policy = (s, m, f) => ({ right: true, shift: s.shifts === 0, jump: jumpEvery ? f % jumpEvery < 16 : s.player.grounded || s.player.vy < 0 });
+    const { state } = play(lvl, policy, 120 * 15);
+    assert.equal(state.won, false, `won at night with jumpEvery=${jumpEvery}`);
+    assert.equal(state.shifts, 1);
+  }
+});

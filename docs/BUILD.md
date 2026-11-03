@@ -146,7 +146,7 @@ Seven milestone PRs (decided 2026-11-03). Each one passes every gate in §1.2 pl
 - **Gallery:** already shows these objects.
 - **Done when:** a test level with a door skin removed by a prank shows the door, then the empty frame (check in a screenshot). Docs: TECH.md §5 (level format) and LEVELS.md §2 (authoring format).
 
-### T2 · Under Renovation (`stairs`, #7, act 2, tier B)
+### T2 · Under Renovation (`stairs`, #7, act 2, tier B) *(✅ built Nov 3, par 2; LEVELS.md §4)*
 - **Spec:** LEVELS.md §5 "Under Renovation". A night staircase of 1-tile steps climbs about 6 tiles and ends in mid-air; a day ledge (unjumpable from the floor, about 6 up) starts ≤ 4 tiles past the top step and runs to the exit. Solution: night, climb, run off the top, shift to day mid-air, land on the ledge. **Target par 2.**
 - **Place:** after `watch` in `LEVELS`, `act: 2`.
 - **Props:** the proud sign (`sign` text `OUR STARES!` or a WRITING draft), eyes under the stairs; optional squatter on a landing (you jump over it).

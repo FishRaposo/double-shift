@@ -223,7 +223,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | `midair` | Eyes in the dark (built), a vent |
 | `inventory` | Notice board with the plank memo, footprints to the second pit |
 | `watch` | A vent, a mug by the spawn (the squatter's hoard is part of its sprite) |
-| `stairs` | The proud sign, eyes under the stairs |
+| `stairs` ✅ | The proud sign OUR STARES! over the top step and eyes under the stairs (night); a notice board and barrier tape (day) |
 | `doors` | Empty frames, the pile, LOST & FOUND box |
 | `wet` | A WET FLOOR sign, footprints on the wax |
 | `pillar` | Ceiling crack, dust outline, a memo |
