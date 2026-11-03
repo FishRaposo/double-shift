@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { LEVELS, ACTS, FINALE_ACT } from '../src/levels.js';
 import {
-  levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, actLabel, endSummary, CARD, TAB, SELECT_BOUNDS,
+  levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, actLabel, endSummary, selectClick, CARD, TAB, SELECT_BOUNDS,
 } from '../src/layout.js';
 import { wrapText, measureText } from '../src/font.js';
 
@@ -73,6 +73,17 @@ test('layout: moveSelect clamps', () => {
   const last = LEVELS.length - 1;
   assert.equal(moveSelect(LEVELS, last, 0, 1), last, 'down from the bottom row stays');
   assert.equal(moveSelect(LEVELS, rows[0][3], 0, 1), rows[1][rows[1].length - 1], 'down into a shorter row clamps the column');
+});
+
+test('layout: a click on a card picks it; on the detail bar, the selection; tabs and gaps do nothing; outside goes back', () => {
+  const c = cardRect(LEVELS, 5);
+  assert.deepEqual(selectClick(LEVELS, c.x + 5, c.y + 5), { kind: 'card', index: 5 });
+  assert.deepEqual(selectClick(LEVELS, detailRect.x + 50, detailRect.y + 10), { kind: 'detail' });
+  const t = tabRect(LEVELS, 1);
+  assert.deepEqual(selectClick(LEVELS, t.x + 10, t.y + 10), { kind: 'none' }, 'an act tab');
+  assert.deepEqual(selectClick(LEVELS, c.x + c.w + CARD.gap / 2, c.y + 10), { kind: 'none' }, 'the gap between two cards');
+  assert.deepEqual(selectClick(LEVELS, 480, 20), { kind: 'back' }, 'the header');
+  assert.deepEqual(selectClick(LEVELS, 480, 525), { kind: 'back' }, 'the key hints');
 });
 
 test('layout: actLabel names acts and the finale', () => {

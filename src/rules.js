@@ -89,6 +89,7 @@ export function parseLevel(def) {
   }));
   const skins = (def.skins ?? []).map((sk) => {
     if (!SKIN_KINDS.includes(sk.kind)) throw new Error(`${def.name}: unknown skin kind "${sk.kind}"`);
+    if (sk.kind === 'doorPile' && sk.w !== undefined && sk.w !== 2) throw new Error(`${def.name}: a door pile is 2 tiles wide (two doors lying flat)`);
     const [w, h] = SKIN_SIZE[sk.kind];
     const layer = sk.layer === 'night' ? NIGHT : sk.layer === 'day' ? DAY : null;
     return { kind: sk.kind, tx: sk.tx, ty: sk.ty, w: sk.w ?? w, h: sk.h ?? h, layer };

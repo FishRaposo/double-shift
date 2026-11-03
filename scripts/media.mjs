@@ -117,8 +117,9 @@ async function reviewShots(ids) {
     ...(flag('--cvd') ? Object.keys(CVD).map((k) => [`-${k.slice(0, 4)}`, `url(#cvd-${k})`]) : [])];
   for (const id of ids) {
     await open(`?level=${encodeURIComponent(id)}&autostart`);
-    const found = await evaluate(`(() => { const g = __doubleShift; return g.state && g.screen === 'play'; })()`);
-    if (!found) throw new Error(`review: level ${id} did not start`);
+    // ?level= falls back to level 1 for an unknown id: check the level that actually started
+    const started = await evaluate(`(async () => { const g = __doubleShift; if (!g.state || g.screen !== 'play') return null; const { LEVELS } = await import('/src/levels.js'); return LEVELS[g.index].id; })()`);
+    if (started !== id) throw new Error(`review: level "${id}" did not start (${started ? `got "${started}"` : 'nothing started'}); check the id`);
     await evaluate(`(() => { const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('width', '0'); s.setAttribute('height', '0'); s.style.position = 'absolute'; s.innerHTML = '${CVD_SVG}'; document.body.appendChild(s); })()`);
     for (const [shiftName, layer] of [['day', 0], ['night', 1]]) {
       await evaluate(`(() => { const s = __doubleShift.state; s.layer = ${layer}; s.won = true; })()`);

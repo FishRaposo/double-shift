@@ -49,6 +49,18 @@ export function moveSelect(defs, i, dx, dy) {
   return r[Math.min(Math.max(col + dx, 0), r.length - 1)];
 }
 
+// What a click on the level select screen means. Cards pick a level and the detail bar clocks into the selected
+// one; tabs and the gaps between cards do nothing (a near miss shouldn't throw you out of the menu); only the
+// header and the key hints, outside the grid, go back to the title.
+export function selectClick(defs, x, y) {
+  const hit = (r) => x >= r.x && x <= r.x + r.w && y >= r.y && y <= r.y + r.h;
+  const index = defs.findIndex((_, i) => hit(cardRect(defs, i)));
+  if (index >= 0) return { kind: 'card', index };
+  if (hit(detailRect)) return { kind: 'detail' };
+  if (y >= SELECT_BOUNDS.top && y <= SELECT_BOUNDS.bottom) return { kind: 'none' };
+  return { kind: 'back' };
+}
+
 export function actLabel(act) {
   return act === FINALE_ACT ? 'FINALE' : `ACT ${act} · ${(ACTS[act] ?? '').toUpperCase()}`;
 }

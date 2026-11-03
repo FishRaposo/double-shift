@@ -5,6 +5,7 @@ import assert from 'node:assert/strict';
 import { DAY, NIGHT, SKIN_KINDS } from '../src/rules.js';
 import { skinPlan } from '../src/skins.js';
 import { LEVELS } from '../src/levels.js';
+import { SOUNDS } from '../src/audio.js';
 import { level } from './helpers.mjs';
 import { initState, step, NO_INPUT } from '../src/rules.js';
 
@@ -28,6 +29,17 @@ test('parseLevel: unknown skin kind throws; defaults; prank sound kept', () => {
   assert.equal(lvl.pranks[0].sound, null);
   assert.equal(lvl.pranks[1].sound, 'doorThunk');
   assert.deepEqual(level(['S....E'], ['......']).skins, [], 'no skins by default');
+});
+
+test('parseLevel: a door pile is always 2 tiles wide (its art is two doors lying flat)', () => {
+  assert.throws(() => level(['S....E'], ['......'], { skins: [{ kind: 'doorPile', tx: 1, ty: 0, w: 3 }] }), /door pile is 2 tiles wide/);
+  assert.equal(level(['S....E'], ['......'], { skins: [{ kind: 'doorPile', tx: 1, ty: 0, w: 2 }] }).skins[0].w, 2);
+});
+
+test('every prank sound names a SOUNDS entry (a typo would play nothing, silently)', () => {
+  const unknown = (defs) => defs.flatMap((d) => (d.pranks ?? []).map((p) => p.sound).filter((s) => s && !(s in SOUNDS)));
+  assert.deepEqual(unknown([{ pranks: [{ sound: 'doorThud' }, { sound: 'doorThunk' }, {}] }]), ['doorThud'], 'the check catches a typo');
+  assert.deepEqual(unknown(LEVELS), []);
 });
 
 test('skinPlan: a door removed by a prank override becomes an empty frame', () => {

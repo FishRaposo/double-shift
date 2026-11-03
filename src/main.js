@@ -15,7 +15,7 @@ import {
   drawStamp, drawLogo, drawWetTile, drawSkin, px,
 } from './art.js';
 import { SPOOK_LINES, ACT_LINES, CREDITS, timecardComment, stampText } from './copy.js';
-import { levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, endSummary, CARD } from './layout.js';
+import { levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, endSummary, selectClick, CARD } from './layout.js';
 
 const W = 960;
 const H = 540;
@@ -176,10 +176,13 @@ canvas.addEventListener('pointerdown', (e) => {
   } else if (game.screen === 'act') {
     setScreen('play');
   } else if (game.screen === 'select') {
-    const i = LEVELS.findIndex((_, k) => inside(cardRect(LEVELS, k)));
-    if (i < 0) setScreen('title'); // click outside the cards: back
-    else if (isUnlocked(LEVELS, i, save)) startLevel(i);
-    else { game.selected = i; sfx.shiftFail(); } // NOT YET
+    const hit = selectClick(LEVELS, x, y); // src/layout.js: tabs and gaps do nothing; header and hints go back
+    if (hit.kind === 'back') setScreen('title');
+    else if (hit.kind !== 'none') {
+      const i = hit.kind === 'card' ? hit.index : game.selected; // the detail bar clocks into the selection
+      if (isUnlocked(LEVELS, i, save)) startLevel(i);
+      else { game.selected = i; sfx.shiftFail(); } // NOT YET
+    }
   } else if (game.screen === 'card' && game.screenTime >= 0.6) {
     if (game.index + 1 < levels.length) startLevel(game.index + 1);
     else setScreen('end');
@@ -369,14 +372,19 @@ function staticLayer(lvl, def, layer, ov) {
         };
         if (ch === '~') drawWetTile(ctx, tx, ty, layer, open);
         else drawSolidTile(ctx, tx, ty, layer, open);
-        if (!isSolidChar(tileAt(lvl, other, tx, ty, ov))) drawHatch(ctx, tx, ty, layer);
       }
-      if (tileAt(lvl, other, tx, ty, ov) === '^') drawHazardEcho(ctx, tx, ty, PAL[other].echo);
     }
   }
   // object art over solid tiles (src/skins.js): a stolen door shows its frame, a moved pillar its crack.
   // Portraits blink, so they're drawn per frame in drawPlay().
   for (const sp of skinPlan(lvl, layer, ov)) if (sp.draw !== 'portrait') drawSkin(ctx, sp, layer);
+  // the shift cues go over everything solid, skins included: hatch = only in this shift; the other shift's hazards
+  for (let ty = 0; ty < lvl.h; ty++) {
+    for (let tx = 0; tx < lvl.w; tx++) {
+      if (isSolidChar(tileAt(lvl, layer, tx, ty, ov)) && !isSolidChar(tileAt(lvl, other, tx, ty, ov))) drawHatch(ctx, tx, ty, layer);
+      if (tileAt(lvl, other, tx, ty, ov) === '^') drawHazardEcho(ctx, tx, ty, PAL[other].echo);
+    }
+  }
   drawExit(ctx, lvl.exit.tx, lvl.exit.ty, layer);
   if (staticCache.size > 24) staticCache.delete(staticCache.keys().next().value);
   staticCache.set(key, c);
@@ -526,7 +534,14 @@ function drawPlay() {
   g.drawImage(background(layer), 0, 0);
   g.drawImage(staticLayer(lvl, def, layer, s.overrides), 0, 0);
   drawHazards(lvl, layer, t, s.overrides);
-  for (const sp of skinPlan(lvl, layer, s.overrides)) if (sp.draw === 'portrait') drawSkin(g, sp, layer, t);
+  for (const sp of skinPlan(lvl, layer, s.overrides)) {
+    if (sp.draw !== 'portrait') continue;
+    drawSkin(g, sp, layer, t);
+    // keep the "only in this shift" hatch on top of the per-frame portrait, like the static layer does
+    for (let dy = 0; dy < sp.h; dy++) {
+      for (let dx = 0; dx < sp.w; dx++) if (!isSolidChar(tileAt(lvl, 1 - layer, sp.tx + dx, sp.ty + dy, s.overrides))) drawHatch(g, sp.tx + dx, sp.ty + dy, layer);
+    }
+  }
   for (const c of lvl.checkpoints) drawCheckpoint(g, c.tx, c.ty, s.checkpoint.id === c.id, s.checkpoint.id === c.id ? game.fx.ping : 0);
   drawDecor(lvl, def, layer, t);
   drawTells(lvl, s, layer, t);
