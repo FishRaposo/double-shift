@@ -3,10 +3,24 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { LEVELS, CLOCKOUT_CLASSIC } from '../src/levels.js';
 import { DAY, NIGHT, TILE, NO_INPUT, initState, step, tileAt, supervisorFacing, parseLevel, freakBoxes, gravitySign } from '../src/rules.js';
-import { play, tx } from './helpers.mjs';
+import { play, tx, inputsFrom } from './helpers.mjs';
 import { skinPlan } from '../src/skins.js';
 import { memoNear } from '../src/layout.js';
 import { SOLUTIONS, SOLUTIONS_EXTRA, L } from './solutions.mjs';
+
+test('a policy holding jump or shift makes one press until it lets go (play, the audit and the demo GIF)', () => {
+  const held = inputsFrom(() => ({ right: true, jump: true, shift: true }));
+  assert.deepEqual(held(null), { left: false, right: true, jumpHeld: true, jumpPressed: true, shiftPressed: true });
+  assert.deepEqual(held(null), { left: false, right: true, jumpHeld: true, jumpPressed: false, shiftPressed: false });
+  const seen = [];
+  const next = inputsFrom((s, mem, f) => {
+    mem.calls = (mem.calls ?? 0) + 1;
+    seen.push([s, f, mem.calls]);
+    return f === 1 ? { shift: true } : undefined;
+  });
+  assert.deepEqual([next('a'), next('b'), next('c')].map((i) => i.shiftPressed), [false, true, false]);
+  assert.deepEqual(seen, [['a', 0, 1], ['b', 1, 2], ['c', 2, 3]], 'the state, the tick and one memory object per run');
+});
 
 test('every level has a scripted solution', () => {
   assert.deepEqual(Object.keys(SOLUTIONS).sort(), LEVELS.map((l) => l.id).sort());

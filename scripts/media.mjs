@@ -7,11 +7,10 @@
 //   --gray, --cvd   with --review: also grayscale and color-blind (deuteranopia, protanopia, tritanopia) variants
 //   --memo          with --review: also <id>-memo.png, the worker by the level's memo with its panel open
 //   --root DIR      serve DIR instead of the repo (smoke-test the unzipped itch build: no cover, gallery or audio)
-// BROWSER env overrides the browser path.
-import { spawn } from 'node:child_process';
-import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
-import { tmpdir } from 'node:os';
+// BROWSER env overrides the browser path (scripts/cdp.mjs starts the browser and serves the game).
+import { mkdirSync, writeFileSync } from 'node:fs';
 import { join, resolve } from 'node:path';
+import { startBrowser, sleep } from './cdp.mjs';
 
 const root = resolve(import.meta.dirname, '..');
 const argv = process.argv.slice(2);
@@ -26,77 +25,20 @@ const review = option('--review')?.split(',').filter(Boolean) ?? null;
 const serveRoot = option('--root');
 const positional = argv.filter((a, i) => !a.startsWith('--') && !['--review', '--root'].includes(argv[i - 1]));
 const out = resolve(positional[0] || join(root, 'media'));
-const PORT = 8095;
-const DEBUG_PORT = 9333;
-const BROWSERS = [
-  process.env.BROWSER,
-  'C:/Program Files (x86)/Microsoft/Edge/Application/msedge.exe',
-  'C:/Program Files/Microsoft/Edge/Application/msedge.exe',
-  'C:/Program Files/Google/Chrome/Application/chrome.exe',
-  '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
-  '/usr/bin/google-chrome',
-  '/usr/bin/chromium',
-  '/opt/pw-browsers/chromium', // cloud sessions (Playwright's Chromium)
-].filter(Boolean);
-
-const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
-const browserPath = BROWSERS.find((p) => existsSync(p));
-if (!browserPath) { console.error('No Edge/Chrome found; set BROWSER to its path.'); process.exit(1); }
 mkdirSync(out, { recursive: true });
 
-const serveArgs = [join(root, 'scripts/serve.mjs'), '--port', String(PORT), ...(serveRoot ? ['--root', serveRoot] : [])];
-const server = spawn(process.execPath, serveArgs, { stdio: 'ignore' });
-const profile = mkdtempSync(join(tmpdir(), 'ds-media-'));
-const browser = spawn(browserPath, [
-  '--headless=new', `--remote-debugging-port=${DEBUG_PORT}`, `--user-data-dir=${profile}`,
-  '--no-first-run', '--autoplay-policy=no-user-gesture-required',
-  ...(process.getuid?.() === 0 ? ['--no-sandbox'] : []), // Chromium refuses to sandbox as root (containers)
-  'about:blank',
-], { stdio: 'ignore' });
-
-let ws;
-let seq = 0;
-const pending = new Map();
-const errors = [];
-
-async function connect() {
-  for (let i = 0; i < 150; i++) { // up to 30 s: a cold Edge start can be slow
-    try {
-      const targets = await (await fetch(`http://127.0.0.1:${DEBUG_PORT}/json`)).json();
-      const page = targets.find((t) => t.type === 'page');
-      if (page) {
-        ws = new WebSocket(page.webSocketDebuggerUrl);
-        await new Promise((r, j) => { ws.onopen = r; ws.onerror = j; });
-        ws.onmessage = (m) => {
-          const msg = JSON.parse(m.data);
-          if (msg.id && pending.has(msg.id)) { pending.get(msg.id)(msg); pending.delete(msg.id); }
-          if (msg.method === 'Runtime.exceptionThrown') { const d = msg.params.exceptionDetails; errors.push(`${d.exception?.description ?? d.text} (${d.url ?? ''}:${d.lineNumber})`); }
-          if (msg.method === 'Runtime.consoleAPICalled' && msg.params.type === 'error') errors.push(JSON.stringify(msg.params.args.map((a) => a.value)));
-        };
-        return;
-      }
-    } catch { /* browser still starting */ }
-    await sleep(200);
-  }
-  throw new Error('could not reach the browser DevTools endpoint');
+let page;
+try {
+  page = await startBrowser({ port: 8095, debugPort: 9333, serveRoot, profilePrefix: 'ds-media-' });
+} catch (e) {
+  console.error(e.message);
+  process.exit(1);
 }
-
-function send(method, params = {}) {
-  const id = ++seq;
-  ws.send(JSON.stringify({ id, method, params }));
-  return new Promise((r) => pending.set(id, (msg) => r(msg.result)));
-}
+const { send, evaluate, open, errors } = page;
 
 const KEYS = { Space: [' ', 32], KeyK: ['k', 75], KeyL: ['l', 76], KeyO: ['o', 79], KeyJ: ['j', 74], Enter: ['Enter', 13], Escape: ['Escape', 27], ArrowRight: ['ArrowRight', 39], ArrowDown: ['ArrowDown', 40] };
 const key = (type, code) => send('Input.dispatchKeyEvent', { type, code, key: KEYS[code][0], windowsVirtualKeyCode: KEYS[code][1] });
 const press = async (code) => { await key('keyDown', code); await sleep(40); await key('keyUp', code); };
-const evaluate = async (expr) => (await send('Runtime.evaluate', { expression: expr, returnByValue: true, awaitPromise: true })).result.value;
-
-async function open(path, w = 960, h = 540) {
-  await send('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: false });
-  await send('Page.navigate', { url: `http://localhost:${PORT}/${path}` });
-  await sleep(700);
-}
 
 async function shot(name) {
   const { data } = await send('Page.captureScreenshot', { format: 'png' });
@@ -155,11 +97,6 @@ async function reviewShots(ids) {
 
 let failed = false;
 try {
-  await connect();
-  await send('Page.enable');
-  await send('Runtime.enable');
-  await send('Page.bringToFront');
-  await send('Emulation.setFocusEmulationEnabled', { enabled: true }); // keep rAF running like a focused tab
   console.log(`Saving to ${out}`);
   if (review) await reviewShots(review);
   else await fullRun();
@@ -167,11 +104,7 @@ try {
   failed = true;
   console.error(e.message);
 } finally {
-  ws?.close();
-  browser.kill();
-  server.kill();
-  await sleep(500);
-  try { rmSync(profile, { recursive: true, force: true }); } catch { /* browser may still hold files */ }
+  await page.close();
 }
 if (errors.length) { failed = true; console.error('page errors:', errors); }
 if (failed) console.log('FAILED');

@@ -70,12 +70,12 @@ src/copy.js     result-based lines (timecard comments, act cards, credits)
 src/layout.js   level addressing, level select and end-screen layout (no DOM)
 tools/          asset gallery, itch cover
 test/           node --test suites
-scripts/        serve, check, zip for itch, media + headless checks
+scripts/        serve, check, zip for itch, media + headless checks, demo GIFs
 ```
 
 ## Tests
 
-The suite has <!-- n:tests -->342<!-- /n --> tests.
+The suite has <!-- n:tests -->347<!-- /n --> tests.
 
 ```sh
 npm test         # GDD §13.7 shift/collision edge cases, pranks and freaks, wet floor, day/night
@@ -86,7 +86,7 @@ npm run audit    # per-level fairness: timing slack of every required input, inp
 npm run counts   # every count in the docs matches the code (-- --write fixes them)
 ```
 
-`npm run media` drives headless Edge/Chrome (no dependencies): it plays level 1 with real key presses, saves the itch cover and screenshots, captures the asset gallery, checks the audio for clipping and measures the draw cost of a frame.
+`npm run media` drives headless Edge/Chrome (no dependencies): it plays level 1 with real key presses, saves the itch cover and screenshots, captures the asset gallery, checks the audio for clipping and measures the draw cost of a frame. `npm run gif -- <id>` makes a looping demo GIF of a level's scripted run, the same bytes every time.
 
 ## How it was made
 

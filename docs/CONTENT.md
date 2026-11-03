@@ -78,7 +78,7 @@ Specs: [TECH.md](TECH.md) §6 (mechanics), [GDD.md](GDD.md) §12 (UI).
 | SYS-9 | Timecard comments; end screen with totals for every level | Replay hook | P1 | A8 | ✅ |
 | SYS-10 | Freak evidence from the first night shift | Raters seeing the freaks early | P0 | L8 | ✅ built |
 | SYS-11 | Sticky Keys in-joke | Theme | P1 | G14 | ✅ (Nov 3: the freaks' sticky note on the title) |
-| SYS-12 | Demo GIF capture (extend `scripts/media.mjs`) | itch page | P1 | A9 | planned |
+| SYS-12 | Demo GIF capture (`npm run gif`, `scripts/gif.mjs`) | itch page | P1 | A9 | ✅ built Nov 3 |
 | SYS-13 | Rebindable controls | Accessibility | *stretch*, approved Nov 3 | G12 | ✅ (Nov 3: `src/keys.js`, SETTINGS > CONTROLS) |
 | SYS-14 | Gamepad | Reach | *stretch*, approved Nov 3 | G11 | ✅ (Nov 3: `src/pad.js`, fixed standard mapping) |
 | SYS-18 | Speedrun timer (a TIMER setting) | Replay | *stretch*, approved Nov 3 | G13 | ✅ (Nov 3: SPEEDRUN TIMER in SETTINGS) |
@@ -107,7 +107,7 @@ Specs: [ART.md](ART.md). Palette rule: existing colors only, unless a color gets
 | ART-13 | UI screens: title with level select ✅, level select ✅, settings, act cards, timecard with comment, end screen with totals, credits | Shell | P0–P1 | ART §7.1 | ✅ (credits Nov 3; level select laid out for six rows) |
 | ART-14 | Cover image 1260×1000 | itch | P0 | ART §8 | ✅ (`npm run media`) |
 | ART-15 | Screenshots 960×540 | itch | P0 | ART §8 | ✅ (refresh when new levels ship) |
-| ART-16 | Demo GIF ≤ 10 s | itch | P1 | ART §8 | planned |
+| ART-16 | Demo GIF ≤ 10 s | itch | P1 | ART §8 | tool ✅ (`npm run gif -- <id>`); Fish picks the level and uploads |
 | ART-17 | Devlog images (before/after readability, a prank GIF) | Devlogs | P2 | ART §8 | gallery capture ✅; devlog images planned |
 | ART-20 | Identity and readability pass: text on plates and paper strips, hatched rims, one silhouette per freak kind, glowing eyes, freaks and the subtitle on the title, punch-clock checkpoint, exit sign always on screen, barrier-tape cordon, the ending's wave, whole-pixel scaling | Every level, shell | P0 | ART §3, §3.1, §5–§7 | ✅ (Nov 3) |
 | ART-21 | Per-act backdrops: one quiet motif per act behind everything | Every level | P1 | ART §2, §6 | ✅ (Nov 3; acts 5 and the finale show once their levels move there) |

@@ -378,10 +378,10 @@ function handleEvents(events) {
 
 let acc = 0;
 let last = performance.now();
-function frame(now) {
-  const elapsed = Math.min(Math.max((now - last) / 1000, 0), 0.1);
-  last = now;
-  pollPad();
+// One frame of game time: the screens' timers, the fixed-step simulation (one input frame per tick from
+// `next`), effects decaying, the music following the level. frame() runs it on the real clock with the
+// player's input; the demo GIF (scripts/gif.mjs) runs it on a fixed clock with a level's scripted run.
+function advance(elapsed, next = () => input.consume()) {
   game.clock += elapsed;
   game.screenTime += elapsed;
   if (game.screen === 'act' && game.screenTime > 1.6) setScreen('play');
@@ -390,7 +390,7 @@ function frame(now) {
     game.spent[game.index] = (game.spent[game.index] ?? 0) + elapsed;
     let steps = 0;
     while (acc >= DT && steps < 12) {
-      game.state = step(level(), game.state, input.consume());
+      game.state = step(level(), game.state, next(game.state));
       handleEvents(game.state.events);
       acc -= DT;
       steps++;
@@ -420,6 +420,13 @@ function frame(now) {
   if (musicLayer !== game.musicLayer) { game.musicLayer = musicLayer; setMusicShift(musicLayer); }
   const musicAct = inLevel || game.screen === 'act' ? LEVELS[game.index].act : 1; // each act adds a layer; menus play act 1's
   if (musicAct !== game.musicAct) { game.musicAct = musicAct; setMusicAct(musicAct); }
+}
+
+function frame(now) {
+  const elapsed = Math.min(Math.max((now - last) / 1000, 0), 0.1);
+  last = now;
+  pollPad();
+  advance(elapsed);
   render();
   requestAnimationFrame(frame);
 }
@@ -994,3 +1001,4 @@ requestAnimationFrame(frame);
 // expose for smoke tests (render: for timing the draw cost)
 globalThis.__doubleShift = game;
 game.render = render;
+game.advance = advance;

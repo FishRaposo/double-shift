@@ -1,6 +1,6 @@
 # itch.io page kit
 
-Everything needed to create the *Double Shift* page on itch.io, in the order the itch dashboard asks for it. Settings come from [RELEASE.md](../docs/RELEASE.md) §2. **Fish writes the final description words**; the draft below is checked against the current build (<!-- n:levels -->21<!-- /n --> levels, <!-- n:tests -->342<!-- /n --> tests, level select, pixel art and music). The paste-ready description in §4 carries no markers, so check its numbers by hand before pasting (the release refresh does).
+Everything needed to create the *Double Shift* page on itch.io, in the order the itch dashboard asks for it. Settings come from [RELEASE.md](../docs/RELEASE.md) §2. **Fish writes the final description words**; the draft below is checked against the current build (<!-- n:levels -->21<!-- /n --> levels, <!-- n:tests -->347<!-- /n --> tests, level select, pixel art and music). The paste-ready description in §4 carries no markers, so check its numbers by hand before pasting (the release refresh does).
 
 ## 1. Build the files
 
@@ -41,7 +41,7 @@ npm run media    # media/cover.png (1260×1000) + 10 screenshots (960×540) + th
 |---|---|
 | Cover image | `media/cover.png` |
 | Screenshots (in this order) | `03-clock-in-night.png`, `07-night-watch-night.png`, `05-inventory-day.png`, `06-inventory-night.png`, `04-timecard.png`, `08-night-watch-day.png`, `09-level-select.png`, `10-act-card.png`, `01-title.png` |
-| Gameplay video/GIF | *(planned: a ≤ 10 s GIF of a mid-air shift chain and a frozen-lurker pass, ART.md §8)* |
+| Gameplay video/GIF | `media/demo-<id>.gif` from `npm run gif -- <id>` (candidates in ART.md §8: `doors`, `upside`, `watch`) |
 
 ## 4. Description (paste into the editor; Fish edits the words)
 

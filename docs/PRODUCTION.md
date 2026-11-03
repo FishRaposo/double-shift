@@ -21,7 +21,7 @@ Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-03**.
 | Rendering | **Pixel art** (Nov 2): sprites, animated worker and freaks, pixel tiles and props, pixel font, effects; every asset in `/tools/gallery.html` |
 | Audio | Mix bus, 25 SFX (incl. planned-level sounds), **music** (day/night arrangements crossfading on every shift) |
 | Menus | Title, level select + saved bests, settings (volumes, reduced effects), act cards, pause, timecard with comment, end screen with totals |
-| Tests | <!-- n:tests -->342<!-- /n --> passing (`npm test`), including fairness; `npm run audit` clean |
+| Tests | <!-- n:tests -->347<!-- /n --> passing (`npm test`), including fairness; `npm run audit` clean |
 | Repo / CI / itch | Public repo [FishRaposo/double-shift](https://github.com/FishRaposo/double-shift), CI green, playable on [GitHub Pages](https://fishraposo.github.io/double-shift/). **No itch page** |
 
 ## 2. Milestones
@@ -129,7 +129,7 @@ Priority: **P0** = the game doesn't ship without it. **P1** = expected in the ja
 | A6 | ~~Settings menu~~ Done Nov 2 | P1 |
 | A7 | ~~Level select + save, reachable from the title screen so raters can jump to the freak levels~~ Done Nov 2: act starts always open, saved bests | **P0** (was P1; GDD §1.8) |
 | A8 | ~~Timecard comments, end-screen totals~~ Done Nov 2 | P1 |
-| A9 | Cover 1260×1000, screenshots, demo GIF (`npm run media`; GIF planned) | P0 |
+| A9 | Cover 1260×1000, screenshots, demo GIF (`npm run media`, `npm run gif`) | P0 |
 | A10 | ~~Act title cards~~ Done Nov 2 | P1 |
 
 ### Infrastructure and release

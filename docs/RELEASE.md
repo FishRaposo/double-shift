@@ -75,7 +75,7 @@ Rules: no synonyms, no engine/tool tags, no repeating the genre or platform, no 
 ### Media (ART.md §8)
 - [x] Cover 1260×1000: `npm run media` → `media/cover.png` (drawn by `tools/cover.html`)
 - [x] Screenshots: `npm run media` → `media/01…08-*.png`; upload order in itch/page.md §3
-- [ ] Demo GIF *(planned)*
+- [ ] Demo GIF: `npm run gif -- <id>` → `media/demo-<id>.gif` (ART.md §8 has the candidates); upload it first in the screenshot list
 
 ## 3. Getting indexed
 

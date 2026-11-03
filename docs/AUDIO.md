@@ -117,7 +117,7 @@ Same `tone()` format as §2; every sound ≤ 0.25 s.
 
 ## 5. Mixing checklist
 
-**Measured 2026-11-03** (offline render in the gallery's `__audioCheck`, before the master gain, which `npm run media` fails on at ≥ 1): the loudest sound effects are `shiftNight` 0.31, `shiftDay` 0.28, `checkpoint` 0.27, `stamp` 0.22 and `win` 0.22; the music peaks at 0.35–0.5 (day) and 0.38 (night) on act 1's bare theme, and 0.38 (day) and 0.42 (night) with every layer on (the finale); the day peak moves between runs because each hi-hat starts at a random point in the noise buffer (`src/music.js`). Everything is below 0.8, so nothing needed fixing; the compressor and the 0.55 master headroom handle stacking. Listening (headphones and laptop speakers) is Fish's check.
+**Measured 2026-11-03** (offline render in the gallery's `__audioCheck`, before the master gain, which `npm run media` fails on at ≥ 1): the loudest sound effects are `shiftNight` 0.31, `shiftDay` 0.28, `checkpoint` 0.27, `stamp` 0.22 and `win` 0.22; the music peaks at 0.35–0.6 (day) and 0.38 (night) on act 1's bare theme, and 0.38–0.57 (day) and 0.42 (night) with every layer on (the finale). The day peaks are ranges over 11 renders: each hi-hat starts at a random point in the noise buffer (`src/music.js`), so the day peak moves between runs; the night has no hi-hat and doesn't move. Everything is below 0.8, so nothing needed fixing; the compressor and the 0.55 master headroom handle stacking. Listening (headphones and laptop speakers) is Fish's check.
 
 - [ ] Shift 10× per second for 3 s: still pleasant, no clipping.
 - [ ] Spook + death tint + giggle at once: still readable.

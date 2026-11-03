@@ -17,15 +17,17 @@ export function place(s, tx, ty, opts = {}) {
   return s;
 }
 
-// Run a policy (state -> input) until win or frame limit. Collects all events.
-export function play(lvl, policy, maxFrames = 120 * 60) {
-  let s = initState(lvl);
-  const events = [];
+// A policy as an input source: policy(state, mem, tick) says what it wants held ({ left, right, jump, shift });
+// this turns that into one input frame per tick. Jump and shift press on their rising edge, so a held shift is
+// one press: a policy releases shift between two shifts. `mem` is one object for the whole run. Shared by
+// play(), recordInputs() and the demo GIF (scripts/gif.mjs), so all three run exactly the same inputs.
+export function inputsFrom(policy) {
   const mem = {};
+  let f = 0;
   let prevJump = false;
   let prevShift = false;
-  for (let f = 0; f < maxFrames && !s.won; f++) {
-    const want = policy(s, mem, f);
+  return (s) => {
+    const want = policy(s, mem, f++) || {};
     const input = {
       left: !!want.left,
       right: !!want.right,
@@ -35,7 +37,17 @@ export function play(lvl, policy, maxFrames = 120 * 60) {
     };
     prevJump = !!want.jump;
     prevShift = !!want.shift;
-    s = step(lvl, s, input);
+    return input;
+  };
+}
+
+// Run a policy until win or frame limit. Collects all events.
+export function play(lvl, policy, maxFrames = 120 * 60) {
+  let s = initState(lvl);
+  const events = [];
+  const next = inputsFrom(policy);
+  for (let f = 0; f < maxFrames && !s.won; f++) {
+    s = step(lvl, s, next(s));
     events.push(...s.events);
   }
   return { state: s, events };
@@ -49,21 +61,10 @@ export const ty = (s) => s.player.y / TILE;
 // Run a policy and record the input frame it produced on every tick.
 export function recordInputs(lvl, policy, maxFrames = 120 * 40) {
   let s = initState(lvl);
-  const mem = {};
+  const next = inputsFrom(policy);
   const inputs = [];
-  let prevJump = false;
-  let prevShift = false;
   for (let f = 0; f < maxFrames && !s.won; f++) {
-    const want = policy(s, mem, f) || {};
-    const input = {
-      left: !!want.left,
-      right: !!want.right,
-      jumpHeld: !!want.jump,
-      jumpPressed: !!want.jump && !prevJump,
-      shiftPressed: !!want.shift && !prevShift,
-    };
-    prevJump = !!want.jump;
-    prevShift = !!want.shift;
+    const input = next(s);
     inputs.push(input);
     s = step(lvl, s, input);
   }

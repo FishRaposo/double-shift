@@ -273,7 +273,7 @@ Effects must stay readable under rapid shifting: no stacking full-screen flashes
 |---|---|---|
 | Cover image ✅ | **1260×1000** (630×500 ratio) | `tools/cover.html`, drawn with the game's own sprites, tiles and font at 2×: split day/night, the worker mid-jump on the seam (day colours left, night right) inside shift rings, a night-only plank and its echo, a smug lurker and eyes on the night side, a MINE note on the day side, the logo, the tagline |
 | Screenshots ✅ | 960×540 (native) | `npm run media`: title, level 1 day/night, timecard, Inventory day/night, Night Watch night/day, level select, act card |
-| Demo GIF | ≤ 960 wide, ≤ 10 s, first in the screenshot list | A mid-air shift chain, then a frozen-lurker pass |
+| Demo GIF (tool ✅) | 480×270 (`--full` 960×540), the run plus 1.5 s of timecard, ≤ 3 MB; first in the screenshot list | `npm run gif -- <id>`: one level's scripted run, played by the game. Candidates: `doors` (a prank every clock-in), `upside` (the flip), `watch` (frozen freaks). The brief was a mid-air shift chain, then a frozen-lurker pass; Fish picks. |
 | Page theme | Background `#0b1029`, text `#d9f6ff`, links `#5ff2ff` | Matches the night palette; embed background `#0b1029` (same as `index.html`) |
 
-Capture with `npm run media` (headless Edge/Chrome: cover, screenshots, gallery, audio and draw-cost checks); record GIFs from a real play session.
+Capture with `npm run media` (headless Edge/Chrome: cover, screenshots, gallery, audio and draw-cost checks) and `npm run gif -- <id>` (demo GIFs, deterministic).

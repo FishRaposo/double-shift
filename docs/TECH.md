@@ -4,7 +4,7 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-02 (a
 
 **At a glance**
 - **The one rule:** `src/rules.js` decides everything that matters; the screen only draws it (§2).
-- `npm start` to play, `npm test` (<!-- n:tests -->342<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
+- `npm start` to play, `npm test` (<!-- n:tests -->347<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
 - Add a level: grids in `src/levels.js` + a `SOLUTIONS` entry in `test/solutions.mjs` (§6; the full recipe is BUILD.md §2.1).
 - The tier-C mechanics (wet floor, day-walker, supervisor, offset layer) are built — §6.5 documents them.
 
@@ -37,11 +37,14 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-02 (a
 | `tools/gallery.html` | Every asset on both palettes, audio board, offline loudness check (`window.__audioCheck`) | Yes |
 | `tools/cover.html` | The itch cover, drawn with the game's sprites, tiles and font | Yes |
 | `test/*.test.mjs` | `node --test` suites against the real rules | No |
-| `test/helpers.mjs` | `level()`, `stepN()`, `place()`, `play(level, policy)` | No |
+| `test/helpers.mjs` | `level()`, `stepN()`, `place()`, `play(level, policy)`; `inputsFrom(policy)` turns a policy into input frames for `play()`, the audit and the demo GIF | No |
 | `scripts/serve.mjs` | Zero-dependency local server, no caching (`npm start` opens the browser; `npm run serve` doesn't). `play.bat` wraps it for double-click on Windows. | — |
 | `scripts/check.mjs` | Syntax-check modules, validate levels | — |
 | `scripts/counts.mjs` | `npm run counts`: every `<!-- n:KEY -->` count in the docs matches the code (`-- --write` rewrites them) | — |
-| `scripts/media.mjs` | `npm run media`: drives headless Edge/Chrome over the DevTools protocol (no dependencies). Saves the cover, screenshots and gallery to `media/`; fails if level 1 can't be cleared with real keys, the page logs an error, the audio clips, or a frame takes > 8 ms to draw. | — |
+| `scripts/cdp.mjs` | Headless Edge/Chrome over the DevTools protocol (no dependencies): serves the game, starts the browser on a throwaway profile, `evaluate`/`open`, collects page errors. Shared by `media.mjs` and `gif.mjs`. | — |
+| `scripts/media.mjs` | `npm run media`: saves the cover, screenshots and gallery to `media/`; fails if level 1 can't be cleared with real keys, the page logs an error, the audio clips, or a frame takes > 8 ms to draw. | — |
+| `scripts/gif.mjs` | `npm run gif -- <id>`: a level's scripted run (`test/solutions.mjs`) played by the game on a fixed clock (`game.advance`, `game.render`; requestAnimationFrame off) → `media/demo-<id>.gif`, the same bytes every time. Checks the page's run against the tests' and decodes the file back in Chromium. | — |
+| `scripts/gif-encode.mjs` | The GIF89a encoder: `downscale`, `quantize` (one palette: exact up to 256 colors, else the 256 most frequent), `encodeGif` (LZW, looping, each frame stores only what changed) | No |
 | `scripts/zip.mjs` | Builds `double-shift-web.zip` for itch | — |
 
 **The one architectural rule:** the screen only draws what `rules.js` decided. Anything that affects whether the player lives, dies, wins or where they are belongs in `rules.js` and gets a test.
@@ -209,10 +212,11 @@ The four tier-C mechanics from [CONTENT.md](CONTENT.md) §3 — all built, teste
 
 | Command | What it covers |
 |---|---|
-| `npm test` | <!-- n:tests -->342<!-- /n --> tests: GDD §13.7 cases 1–15, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, Upside Down rules (flip, gravity sign, hanging, jump and cut, nudge order, coyote across a flip, hazard band, grid edges, checkpoints, fuzz), every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
+| `npm test` | <!-- n:tests -->347<!-- /n --> tests: GDD §13.7 cases 1–15, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, Upside Down rules (flip, gravity sign, hanging, jump and cut, nudge order, coyote across a flip, hazard band, grid edges, checkpoints, fuzz), every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
 | `npm run check` | Every module parses; every level validates |
 | `npm run audit` | Per level: the slack of every required shift and jump (fails under the act floor), input-lag tolerance 0–150 ms, and a random search for wins below par or without shifting (`scripts/audit-levels.mjs`). |
 | `npm run media` | Real browser (headless Edge/Chrome, no dependencies): plays level 1 with key presses, fails on page errors, a wrong outcome, audio clipping or a slow frame; saves the cover, screenshots and gallery. |
+| `npm run gif -- <id>` | A demo GIF of the level's scripted run; fails if the page's run differs from the tests' (shifts, deaths, time), Chromium decodes a frame differently, or the file stays over 3 MB. |
 
 Test style: build tiny ASCII levels with `level(day, night, extra)` and assert on state. Policies for `play()` read state like a player would (position, layer, `freakClock`), so they survive small tuning changes better than frame-exact scripts.
 
@@ -241,7 +245,7 @@ GitHub Pages serves `main` (root) at <https://fishraposo.github.io/double-shift/
 ## 9. Debug
 
 - `?level=<id>` start at a level by id (`?level=offset`), or `?level=N` by 1-based position (`levelIndex` in `src/layout.js`; an id survives level insertions, a position doesn't); `?autostart` skip the title; `?debug` overlay (hitbox, position, velocity, grounding, coyote, layer, pending shift). Toggle overlay with `` ` ``.
-- `globalThis.__doubleShift` exposes the game object (screen, state, results) for smoke tests and console poking.
+- `globalThis.__doubleShift` exposes the game object (screen, state, results) for smoke tests and console poking, plus `render()` and `advance(seconds, next)`: one frame of game time with inputs from `next(state)` (the demo GIF drives the game with it).
 - `M` mutes.
 
 ## 10. Build for itch
