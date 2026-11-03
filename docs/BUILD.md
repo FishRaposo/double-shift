@@ -171,7 +171,7 @@ Seven milestone PRs (decided 2026-11-03). Each one passes every gate in §1.2 pl
 - **Par:** ≈ 4. Tells at P1–P3 are all visible from the spawn.
 - **Skins:** `pillar` at each position (only the solid one draws), `drawCrack` where it was. Prank `sound: 'pillarScrape'`.
 
-### T5 · Employee of the Month (`portrait`, #13, act 4, tier B) · needs T1 for the look
+### T5 · Employee of the Month (`portrait`, #13, act 4, tier B) · needs T1 for the look *(✅ built Nov 3, par 3; LEVELS.md §4)*
 - **Spec:** LEVELS.md §5 "Employee of the Month".
   - At night a 2×3 portrait (solid) hangs in front of the exit doorway.
   - By day the exit is clear, but the day route ends at an unclimbable ledge (5+).

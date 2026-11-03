@@ -186,3 +186,31 @@ test('Structural Integrity: reaching the crate on entry 3 misses the staircase',
   assert.equal(state.won, false);
   assert.ok(state.nightEntries >= 3);
 });
+
+test('Employee of the Month: the exit can\'t be entered at night while the portrait hangs', () => {
+  const lvl = L.portrait;
+  for (const jumpEvery of [0, 25, 50]) {
+    let s = initState(lvl);
+    s.layer = NIGHT; // the portrait still hangs in front of the doorway (no night entry yet)
+    Object.assign(s.player, { x: 25 * TILE + 6, y: 14 * TILE - 26, vx: 0, vy: 0, grounded: true });
+    for (let f = 0; f < 120 * 8 && !s.won; f++) {
+      s = step(lvl, s, { ...NO_INPUT, right: true, jumpHeld: jumpEvery > 0 && f % jumpEvery < 16, jumpPressed: jumpEvery > 0 && f % jumpEvery === 0 });
+    }
+    assert.equal(s.won, false, `got in at night (jumpEvery=${jumpEvery})`);
+  }
+});
+
+test('Employee of the Month: without the entry-2 step the ledge is out of reach', () => {
+  const lvl = L.portrait;
+  for (const entries of [1, 3]) {
+    let s = initState(lvl);
+    for (let k = 0; k < 2 * entries - 1; k++) s = step(lvl, s, { ...NO_INPUT, shiftPressed: true }); // toggle at the spawn
+    assert.deepEqual([s.layer, s.nightEntries], [NIGHT, entries]);
+    for (const jumpEvery of [20, 40]) {
+      let t = structuredClone(s);
+      for (let f = 0; f < 120 * 10 && !t.won; f++) t = step(lvl, t, { ...NO_INPUT, right: true, jumpHeld: f % jumpEvery < 18, jumpPressed: f % jumpEvery === 0 });
+      assert.equal(t.won, false, `won on entry ${entries} (jumpEvery=${jumpEvery})`);
+      assert.ok(t.player.y > 9 * TILE, `on the ledge on entry ${entries}`);
+    }
+  }
+});

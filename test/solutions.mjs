@@ -143,6 +143,16 @@ export const SOLUTIONS = {
     const jump = p.grounded ? (Math.abs(p.vx) < 1 && x > 15) || (onCrate && x > 17.3) : p.vy < 0;
     return { right: true, shift, jump };
   },
+  // in, out, in: entry 2 hangs the portrait against the ledge. At night, jump at each wall: the portrait, the
+  // ledge; then drop off the far side into the doorway (the portrait isn't in it any more)
+  portrait: (s) => {
+    const p = s.player;
+    const x = tx(s);
+    const plan = [[1.5, 4, NIGHT], [6, 8, DAY], [10, 12, NIGHT]];
+    const due = plan.find(([a, b]) => x >= a && x <= b);
+    const shift = !!due && s.layer !== due[2];
+    return { right: true, shift, jump: p.grounded ? x > 13 && x < 24 && Math.abs(p.vx) < 1 : p.vy < 0 };
+  },
   // under the walkway, clock in and fall up onto it; past the pit, clock out and drop to the floor
   upside: (s) => ({ right: true, shift: (tx(s) > 7 && tx(s) < 16 && want(s, NIGHT)) || (tx(s) > 19 && want(s, DAY)) }),
   offset: (s, m) => {

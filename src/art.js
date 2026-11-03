@@ -693,6 +693,12 @@ export const PROPS = {
     px(g, x + 10 * A, f - 3 * A, 1, 2, '#f7efdc');
     px(g, x + 6 * A, f - 4 * A, 4, 1, '#5a3d10');
   },
+  // where a portrait hangs, seen when it isn't there: a nail and the unfaded patch of wall (3x2 tiles)
+  nail(g, x, y) {
+    px(g, x, y, 3 * TILE / A, 2 * TILE / A, 'rgba(255,255,255,0.05)');
+    px(g, x + TILE + TILE / 2 - A, y - 2 * A, 2, 2, '#8a8f99');
+    px(g, x + TILE + TILE / 2 - A, y - 2 * A, 1, 1, '#d9dde3');
+  },
   plaque(g, x, y) {
     px(g, x - 2 * A, y, 19, 13, '#b8862f');
     px(g, x - A, y + A, 17, 11, '#e2b955');

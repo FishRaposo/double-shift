@@ -67,7 +67,7 @@ In the order of the 21-level game (LEVELS.md §5.0). ✅ = in the build.
 | 10 Structural Integrity (`pillar`) ✅ | They moved a load-bearing pillar. The building is somehow fine. |
 | 11 Night Management (`supervisor`) ✅ | One of them has a clipboard now. It supervises the others. |
 | 12 Stacked (`stacked`) ✅ | They've been busy. |
-| 13 Employee of the Month (`portrait`) | They installed a portrait of themselves. It blocks the exit. |
+| 13 Employee of the Month (`portrait`) ✅ | They installed a portrait of themselves. It blocks the exit. |
 | 14 Broad Daylight (`daywalker`) ✅ | One of them clocked in for the day shift. |
 | 15 Floor 3.5 (`offset`) ✅ | There is no Floor 3 anymore. It's now Floor 3.5. |
 | 16 Night Audit (`audit`) | Management is doing a walkthrough tonight. So are they. |
