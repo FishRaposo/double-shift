@@ -4,7 +4,7 @@
 // empty frame, a moved pillar leaves a crack, and art never covers a half-solid area.
 //
 // Anchors: a door and a pillar stand on (tx, ty), their bottom cell, and rise h cells; a portrait hangs from
-// (tx, ty), its top-left cell, and covers w×h; the door pile's bottom row is ty, w cells wide.
+// (tx, ty), its top-left cell, and covers w×h; the door pile's bottom row is ty, 2 cells wide, at most h high.
 
 import { tileAt, isSolidChar } from './rules.js';
 
@@ -32,7 +32,7 @@ export function skinPlan(level, layer, ov = {}) {
     } else if (sk.kind === 'doorPile') {
       let count = 0;
       const full = (ty) => Array.from({ length: sk.w }, (_, dx) => sk.tx + dx).every((tx) => solid(level, layer, ov, tx, ty));
-      while (sk.ty - count >= 0 && full(sk.ty - count)) count++;
+      while (count < sk.h && sk.ty - count >= 0 && full(sk.ty - count)) count++; // never the platform above it
       if (count > 0) out.push({ draw: 'doorPile', tx: sk.tx, ty: sk.ty, count });
     }
   }

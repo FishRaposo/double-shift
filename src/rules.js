@@ -30,9 +30,17 @@ export const DAY = 0;
 export const NIGHT = 1;
 
 // Skins are object art drawn over ordinary solid tiles (src/skins.js decides which); the rules only validate
-// them. Default sizes in tiles: a door is 1×2, a pillar 1×4, a portrait 3×2, the door pile 2 wide.
+// them. Default sizes in tiles: a door is 1×2, a pillar 1×4, a portrait 3×2; the door pile is 2 wide and at most
+// h (3) doors high.
 export const SKIN_KINDS = Object.freeze(['door', 'pillar', 'portrait', 'doorPile']);
-const SKIN_SIZE = { door: [1, 2], pillar: [1, 4], portrait: [3, 2], doorPile: [2, 1] };
+const SKIN_SIZE = { door: [1, 2], pillar: [1, 4], portrait: [3, 2], doorPile: [2, 3] };
+
+// The cells a skin covers: doors, pillars and the pile stand on their bottom cell (ty); a portrait hangs from its
+// top-left cell.
+function skinCells(sk) {
+  const up = sk.kind !== 'portrait';
+  return { x0: sk.tx, x1: sk.tx + sk.w - 1, y0: up ? sk.ty - sk.h + 1 : sk.ty, y1: up ? sk.ty : sk.ty + sk.h - 1 };
+}
 
 // ---------- level parsing ----------
 
@@ -90,9 +98,14 @@ export function parseLevel(def) {
   const skins = (def.skins ?? []).map((sk) => {
     if (!SKIN_KINDS.includes(sk.kind)) throw new Error(`${def.name}: unknown skin kind "${sk.kind}"`);
     if (sk.kind === 'doorPile' && sk.w !== undefined && sk.w !== 2) throw new Error(`${def.name}: a door pile is 2 tiles wide (two doors lying flat)`);
-    const [w, h] = SKIN_SIZE[sk.kind];
+    if ((sk.kind === 'door' || sk.kind === 'pillar') && sk.w !== undefined && sk.w !== 1) throw new Error(`${def.name}: a ${sk.kind} is 1 tile wide`);
+    if (sk.layer !== undefined && sk.layer !== 'day' && sk.layer !== 'night') throw new Error(`${def.name}: skin layer must be 'day' or 'night' (or left out for both)`);
+    const [dw, dh] = SKIN_SIZE[sk.kind];
     const layer = sk.layer === 'night' ? NIGHT : sk.layer === 'day' ? DAY : null;
-    return { kind: sk.kind, tx: sk.tx, ty: sk.ty, w: sk.w ?? w, h: sk.h ?? h, layer };
+    const out = { kind: sk.kind, tx: sk.tx, ty: sk.ty, w: sk.w ?? dw, h: sk.h ?? dh, layer };
+    const c = skinCells(out);
+    if (!(c.x0 >= 0 && c.x1 < w && c.y0 >= 0 && c.y1 < h)) throw new Error(`${def.name}: skin ${sk.kind} at ${sk.tx},${sk.ty} is outside the grid`);
+    return out;
   });
   const freaks = (def.freaks ?? []).map((f, i) => ({
     id: f.id ?? `freak${i}`,
@@ -447,6 +460,13 @@ export function step(level, prev, input = NO_INPUT, dt = DT) {
     }
     s.freakClock += dt;
   } else s.dayClock += dt;
+  // A peeker popping out on your shift (hidden last tick, out this tick): an event, for the boing.
+  if (level.freaks.some((f) => f.kind === 'peeker')) {
+    const before = freakBoxes(level, prev);
+    freakBoxes(level, s).forEach((b, i) => {
+      if (b.kind === 'peeker' && b.active && !before[i].active && b.shift === s.layer) s.events.push({ type: 'peek', id: b.id });
+    });
+  }
 
   // 3. Horizontal intent. Wet floor `~` swaps the ground accel/decel for the slick pair.
   const wet = onWetFloor(level, s);

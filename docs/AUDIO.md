@@ -85,7 +85,7 @@ Same loop, one added part per act so the game builds without new songs: act 2 ad
 
 | Event | Idea |
 |---|---|
-| Peeker pops out ✅ | Tiny "boing" (sine 300 → 600 Hz, 0.05 s) on a peeker's hidden → out edge while you're on its shift (`main.js`, cosmetic) |
+| Peeker pops out ✅ | Tiny "boing" (sine 300 → 600 Hz, 0.05 s) on the rules' `peek` event: a peeker's hidden → out edge while you're on its shift |
 | Lurker footsteps *(not wired)* | Very quiet ticks while you're on night. Decided against on 2026-11-03: it clutters the mix. |
 | Freaks freeze (shift to day) | Optional "record scratch" micro-sound layered under the shift blip |
 | Prank shimmer | Layered under the giggle when a prank fires: 3–4 quick sine pings, high (~1.5–2.5 kHz), very quiet. The "how did they do that?" half of the joke. |

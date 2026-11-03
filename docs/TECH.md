@@ -4,7 +4,7 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-02 (a
 
 **At a glance**
 - **The one rule:** `src/rules.js` decides everything that matters; the screen only draws it (§2).
-- `npm start` to play, `npm test` (<!-- n:tests -->162<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
+- `npm start` to play, `npm test` (<!-- n:tests -->169<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
 - Add a level: grids in `src/levels.js` + a `SOLUTIONS` entry in `test/levels.test.mjs` (§6).
 - The tier-C mechanics (wet floor, day-walker, supervisor, offset layer) are built — §6.5 documents them.
 
@@ -94,9 +94,10 @@ Shift happens first so a shift and a jump on the same tick see the new world (GD
 | `win` | `shifts`, `par` | Exit reached |
 | `wetStop` | — | A wet-floor slide decelerated to zero |
 | `supervisorTurn` | `id`, `facing` | A supervisor changed facing (once per window) |
+| `peek` | `id` | A peeker popped out (hidden last tick, out this tick) while you're on its shift; the boing |
 
 ### 3.5 Public API
-`TILE` (30), `DT`, `PARAMS`, `DAY`, `NIGHT`, `FREAK` ({w:20,h:22}), `parseLevel(def)`, `initState(level)`, `step(level, state, input)`, `NO_INPUT`, `tileAt(level, layer, tx, ty, overrides)`, `overlapsSolid(...)`, `overlapsHazard(...)`, `freakBoxes(level, state)`, `isSolidChar(ch)`, `supervisorFacing(f, t)`, `watchedClock(side, sup, t)`, `isEmbedded(level, state)`. Death events carry `cause`, `by` (freak kind) and `layer` (the shift you died in).
+`TILE` (30), `DT`, `PARAMS`, `DAY`, `NIGHT`, `FREAK` ({w:20,h:22}), `SKIN_KINDS`, `parseLevel(def)`, `initState(level)`, `step(level, state, input)`, `NO_INPUT`, `tileAt(level, layer, tx, ty, overrides)`, `overlapsSolid(...)`, `overlapsHazard(...)`, `freakBoxes(level, state)`, `isSolidChar(ch)`, `supervisorFacing(f, t)`, `watchedClock(side, sup, t)`, `isEmbedded(level, state)`. Death events carry `cause`, `by` (freak kind) and `layer` (the shift you died in).
 
 Input frame: `{ left, right, jumpHeld, jumpPressed, shiftPressed }`.
 
@@ -125,7 +126,7 @@ Derived metrics for level design are in [LEVELS.md](LEVELS.md) §1. **Any change
 
 See [LEVELS.md](LEVELS.md) §2 for the full format. Summary: `{ id, name, act, note, par, day: [...], night: [...], pranks?, freaks?, skins?, decor?, props?, spawnLayer? }` — or `offset: { dx, dy }` + `nightPatch?` instead of `night` (§6.5). Act names are `ACTS` in `src/levels.js`; the finale is act `FINALE_ACT` (6). Grids must be equal size; the current game uses 32×18 (exactly one screen).
 
-- **Skins** (`skins: [{ kind: 'door'|'pillar'|'portrait'|'doorPile', tx, ty, w?, h?, layer? }]`) are object art over ordinary solid tiles; `parseLevel` validates the kind (`SKIN_KINDS`) and fills default sizes (door 1×2, pillar 1×4, portrait 3×2, pile 2 wide). The pure `skinPlan(level, layer, ov)` in `src/skins.js` reads the tiles under each skin under the current prank overrides: all solid draws the object, all empty draws what's left (a door's empty frame, a pillar's crack), mixed draws nothing. Doors and pillars stand on their bottom cell; a portrait hangs from its top-left cell; the pile counts solid rows up from its bottom row.
+- **Skins** (`skins: [{ kind: 'door'|'pillar'|'portrait'|'doorPile', tx, ty, w?, h?, layer? }]`) are object art over ordinary solid tiles; `parseLevel` validates them like every other field (the kind is one of `SKIN_KINDS`, `layer` is `'day'`, `'night'` or left out for both, the covered cells are inside the grid, doors and pillars are 1 wide and the pile 2) and fills default sizes (door 1×2, pillar 1×4, portrait 3×2, pile 2 wide and at most `h` = 3 doors high). The pure `skinPlan(level, layer, ov)` in `src/skins.js` reads the tiles under each skin under the current prank overrides: all solid draws the object, all empty draws what's left (a door's empty frame, a pillar's crack), mixed draws nothing. Doors and pillars stand on their bottom cell; a portrait hangs from its top-left cell; the pile counts solid rows up from its bottom row, never more than `h` (so a platform above it isn't drawn as doors).
 - **Prank sounds:** a prank may name a `sound` (a `SOUNDS` entry, e.g. `doorThunk`) played with the giggle when it fires.
 
 ## 6. Extending
@@ -204,7 +205,7 @@ The four tier-C mechanics from [CONTENT.md](CONTENT.md) §3 — all built, teste
 
 | Command | What it covers |
 |---|---|
-| `npm test` | <!-- n:tests -->162<!-- /n --> tests: GDD §13.7 cases 1–10, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
+| `npm test` | <!-- n:tests -->169<!-- /n --> tests: GDD §13.7 cases 1–10, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
 | `npm run check` | Every module parses; every level validates |
 | `npm run audit` | Per level: the slack of every required shift and jump (fails under the act floor), input-lag tolerance 0–150 ms, and a random search for wins below par or without shifting (`scripts/audit-levels.mjs`). |
 | `npm run media` | Real browser (headless Edge/Chrome, no dependencies): plays level 1 with key presses, fails on page errors, a wrong outcome, audio clipping or a slow frame; saves the cover, screenshots and gallery. |

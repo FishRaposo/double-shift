@@ -15,7 +15,12 @@ import { join, resolve } from 'node:path';
 const root = resolve(import.meta.dirname, '..');
 const argv = process.argv.slice(2);
 const flag = (name) => argv.includes(name);
-const option = (name) => (argv.includes(name) ? argv[argv.indexOf(name) + 1] : null);
+const option = (name) => {
+  if (!argv.includes(name)) return null;
+  const v = argv[argv.indexOf(name) + 1];
+  if (v === undefined || v.startsWith('--')) { console.error(`${name} needs a value (e.g. ${name === '--review' ? '--review clock,watch' : `${name} <dir>`})`); process.exit(2); }
+  return v;
+};
 const review = option('--review')?.split(',').filter(Boolean) ?? null;
 const serveRoot = option('--root');
 const positional = argv.filter((a, i) => !a.startsWith('--') && !['--review', '--root'].includes(argv[i - 1]));

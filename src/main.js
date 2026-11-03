@@ -63,7 +63,6 @@ function startLevel(i, { card = true } = {}) {
   game.state = initState(levels[i]);
   game.levelTime = 0;
   game.fx = freshFx();
-  game.peekerWas = []; // each peeker's `active` last frame, for the pop-out boing
   input.clear();
   const act = LEVELS[i].act;
   if (card && act !== game.actShown) {
@@ -223,6 +222,7 @@ function handleEvents(events) {
       case 'jump': sfx.jump(); fx.dust.push({ x: cx, y: p.y + PARAMS.playerH, t: 0 }); break;
       case 'land': sfx.land(); fx.land = 0.1; fx.dust.push({ x: cx, y: p.y + PARAMS.playerH, t: 0 }); break;
       case 'wetStop': sfx.wetStop(); break;
+      case 'peek': sfx.peekerBoing(); break; // a peeker popped out on your shift
       case 'supervisorTurn': sfx.supervisorTurn(); break;
       case 'death':
         if (ev.cause === 'spooked') {
@@ -280,12 +280,6 @@ function frame(now) {
       if (game.screen !== 'play') break;
     }
     game.levelTime += elapsed;
-    // a tiny boing when a peeker pops out on your shift (cosmetic: an edge on what the rules decided)
-    freakBoxes(level(), game.state).forEach((b, i) => {
-      if (b.kind !== 'peeker') return;
-      if (b.active && game.peekerWas[i] === false && b.shift === game.state.layer) sfx.peekerBoing();
-      game.peekerWas[i] = b.active;
-    });
   } else {
     acc = 0;
   }
@@ -345,8 +339,17 @@ function makeCanvas() {
   return [c, ctx];
 }
 
+// The shift cues for one cell, over anything solid drawn there (skins included): hatch = only in this shift,
+// and the other shift's hazards.
+function drawShiftCues(ctx, lvl, layer, ov, tx, ty) {
+  const other = 1 - layer;
+  if (isSolidChar(tileAt(lvl, layer, tx, ty, ov)) && !isSolidChar(tileAt(lvl, other, tx, ty, ov))) drawHatch(ctx, tx, ty, layer);
+  if (tileAt(lvl, other, tx, ty, ov) === '^') drawHazardEcho(ctx, tx, ty, PAL[other].echo);
+}
+
 // Everything that doesn't move, drawn once per level × shift × prank state:
-// the other shift's echo, solids, hatching, props and the exit.
+// the other shift's echo, solids, hatching, props and the exit. Returns { canvas, portraits }: portraits
+// blink, so drawPlay() draws them per frame from this list (same cache key, no per-frame tile scans).
 const staticCache = new Map();
 function staticLayer(lvl, def, layer, ov) {
   const key = `${def.id}:${layer}:${JSON.stringify(ov)}`;
@@ -375,20 +378,15 @@ function staticLayer(lvl, def, layer, ov) {
       }
     }
   }
-  // object art over solid tiles (src/skins.js): a stolen door shows its frame, a moved pillar its crack.
-  // Portraits blink, so they're drawn per frame in drawPlay().
-  for (const sp of skinPlan(lvl, layer, ov)) if (sp.draw !== 'portrait') drawSkin(ctx, sp, layer);
-  // the shift cues go over everything solid, skins included: hatch = only in this shift; the other shift's hazards
-  for (let ty = 0; ty < lvl.h; ty++) {
-    for (let tx = 0; tx < lvl.w; tx++) {
-      if (isSolidChar(tileAt(lvl, layer, tx, ty, ov)) && !isSolidChar(tileAt(lvl, other, tx, ty, ov))) drawHatch(ctx, tx, ty, layer);
-      if (tileAt(lvl, other, tx, ty, ov) === '^') drawHazardEcho(ctx, tx, ty, PAL[other].echo);
-    }
-  }
+  // object art over solid tiles (src/skins.js): a stolen door shows its frame, a moved pillar its crack
+  const plan = skinPlan(lvl, layer, ov);
+  for (const sp of plan) if (sp.draw !== 'portrait') drawSkin(ctx, sp, layer);
+  for (let ty = 0; ty < lvl.h; ty++) for (let tx = 0; tx < lvl.w; tx++) drawShiftCues(ctx, lvl, layer, ov, tx, ty);
   drawExit(ctx, lvl.exit.tx, lvl.exit.ty, layer);
   if (staticCache.size > 24) staticCache.delete(staticCache.keys().next().value);
-  staticCache.set(key, c);
-  return c;
+  const out = { canvas: c, portraits: plan.filter((sp) => sp.draw === 'portrait') };
+  staticCache.set(key, out);
+  return out;
 }
 
 const bgCache = {};
@@ -532,15 +530,13 @@ function drawPlay() {
   const t = s.time;
   const reduced = settings.get().reduced;
   g.drawImage(background(layer), 0, 0);
-  g.drawImage(staticLayer(lvl, def, layer, s.overrides), 0, 0);
+  const still = staticLayer(lvl, def, layer, s.overrides);
+  g.drawImage(still.canvas, 0, 0);
   drawHazards(lvl, layer, t, s.overrides);
-  for (const sp of skinPlan(lvl, layer, s.overrides)) {
-    if (sp.draw !== 'portrait') continue;
+  for (const sp of still.portraits) {
     drawSkin(g, sp, layer, t);
-    // keep the "only in this shift" hatch on top of the per-frame portrait, like the static layer does
-    for (let dy = 0; dy < sp.h; dy++) {
-      for (let dx = 0; dx < sp.w; dx++) if (!isSolidChar(tileAt(lvl, 1 - layer, sp.tx + dx, sp.ty + dy, s.overrides))) drawHatch(g, sp.tx + dx, sp.ty + dy, layer);
-    }
+    // the shift cues on top of the per-frame portrait, like the static layer does for everything else
+    for (let dy = 0; dy < sp.h; dy++) for (let dx = 0; dx < sp.w; dx++) drawShiftCues(g, lvl, layer, s.overrides, sp.tx + dx, sp.ty + dy);
   }
   for (const c of lvl.checkpoints) drawCheckpoint(g, c.tx, c.ty, s.checkpoint.id === c.id, s.checkpoint.id === c.id ? game.fx.ping : 0);
   drawDecor(lvl, def, layer, t);
@@ -601,7 +597,7 @@ function drawAct() {
   g.fillStyle = 'rgba(0,0,0,0.55)';
   g.fillRect(0, H / 2 - 90, W, 180);
   drawText(g, finale ? 'FINALE' : `ACT ${act}`, W / 2, H / 2 - 64, { scale: 3, color: '#ffec5a', align: 'center', alpha: k });
-  drawText(g, (finale ? def.name : ACTS[act]).toUpperCase(), W / 2, H / 2 - 24, { scale: 6, color: '#ffffff', halo: '#1b1209', align: 'center', alpha: k });
+  drawText(g, (finale ? def.name : ACTS[act] ?? '').toUpperCase(), W / 2, H / 2 - 24, { scale: 6, color: '#ffffff', halo: '#1b1209', align: 'center', alpha: k });
   drawText(g, ACT_LINES[act] ?? '', W / 2, H / 2 + 40, { scale: 2, color: '#d9f6ff', align: 'center', alpha: k });
 }
 

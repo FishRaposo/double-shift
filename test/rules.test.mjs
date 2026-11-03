@@ -397,6 +397,20 @@ test('a peeker that is ducked in cannot spook you', () => {
   assert.equal(s.deaths, 1);
 });
 
+test('a peeker popping out on your shift emits one peek event per cycle (and none while it is frozen)', () => {
+  // far from the player so it never spooks; out for the first half of each 1 s cycle
+  const lvl = level(OPEN, BLANK, { freaks: [{ kind: 'peeker', tx: 8, ty: 1, period: 1, duty: 0.5 }] });
+  let s = step(lvl, initState(lvl), SHIFT); // onto night: its clock runs
+  const peeks = [];
+  for (let i = 0; i < 120 * 2.5; i++) { s = step(lvl, s); peeks.push(...s.events.filter((e) => e.type === 'peek')); }
+  assert.equal(peeks.length, 2, 'out at t = 1 s and t = 2 s');
+  assert.deepEqual(peeks[0], { type: 'peek', id: 'freak0' });
+  s = step(lvl, s, SHIFT); // to day: frozen
+  let dayPeeks = 0;
+  for (let i = 0; i < 120 * 2; i++) { s = step(lvl, s); dayPeeks += s.events.filter((e) => e.type === 'peek').length; }
+  assert.equal(dayPeeks, 0);
+});
+
 // ---------- wet floor `~` (SYS-1) ----------
 // Exit sits in the sky: these tests run right at floor level and must never win.
 const WIDE = [

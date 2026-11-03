@@ -10,21 +10,23 @@ import { level } from './helpers.mjs';
 import { initState, step, NO_INPUT } from '../src/rules.js';
 
 test('parseLevel: unknown skin kind throws; defaults; prank sound kept', () => {
-  assert.throws(() => level(['S....E'], ['......'], { skins: [{ kind: 'statue', tx: 1, ty: 0 }] }), /unknown skin kind "statue"/);
-  const lvl = level(['S....E'], ['......'], {
+  const grid = ['......', '......', '......', 'S....E'];
+  const dark = ['......', '......', '......', '......'];
+  assert.throws(() => level(grid, dark, { skins: [{ kind: 'statue', tx: 1, ty: 3 }] }), /unknown skin kind "statue"/);
+  const lvl = level(grid, dark, {
     skins: [
-      { kind: 'door', tx: 1, ty: 0 },
-      { kind: 'pillar', tx: 2, ty: 0, layer: 'night' },
+      { kind: 'door', tx: 1, ty: 3 },
+      { kind: 'pillar', tx: 2, ty: 3, layer: 'night' },
       { kind: 'portrait', tx: 3, ty: 0, layer: 'day' },
-      { kind: 'doorPile', tx: 4, ty: 0 },
+      { kind: 'doorPile', tx: 4, ty: 3 },
     ],
     pranks: [{ id: 'a', onNight: 1, set: [] }, { id: 'b', onNight: 2, set: [], sound: 'doorThunk' }],
   });
   assert.deepEqual(lvl.skins, [
-    { kind: 'door', tx: 1, ty: 0, w: 1, h: 2, layer: null },
-    { kind: 'pillar', tx: 2, ty: 0, w: 1, h: 4, layer: NIGHT },
+    { kind: 'door', tx: 1, ty: 3, w: 1, h: 2, layer: null },
+    { kind: 'pillar', tx: 2, ty: 3, w: 1, h: 4, layer: NIGHT },
     { kind: 'portrait', tx: 3, ty: 0, w: 3, h: 2, layer: DAY },
-    { kind: 'doorPile', tx: 4, ty: 0, w: 2, h: 1, layer: null },
+    { kind: 'doorPile', tx: 4, ty: 3, w: 2, h: 3, layer: null },
   ]);
   assert.equal(lvl.pranks[0].sound, null);
   assert.equal(lvl.pranks[1].sound, 'doorThunk');
@@ -32,8 +34,27 @@ test('parseLevel: unknown skin kind throws; defaults; prank sound kept', () => {
 });
 
 test('parseLevel: a door pile is always 2 tiles wide (its art is two doors lying flat)', () => {
-  assert.throws(() => level(['S....E'], ['......'], { skins: [{ kind: 'doorPile', tx: 1, ty: 0, w: 3 }] }), /door pile is 2 tiles wide/);
-  assert.equal(level(['S....E'], ['......'], { skins: [{ kind: 'doorPile', tx: 1, ty: 0, w: 2 }] }).skins[0].w, 2);
+  const grid = ['......', '......', 'S....E'];
+  const dark = ['......', '......', '......'];
+  assert.throws(() => level(grid, dark, { skins: [{ kind: 'doorPile', tx: 1, ty: 2, w: 3 }] }), /door pile is 2 tiles wide/);
+  assert.equal(level(grid, dark, { skins: [{ kind: 'doorPile', tx: 1, ty: 2, w: 2 }] }).skins[0].w, 2);
+});
+
+test('parseLevel: skins are validated like every other level field', () => {
+  const at = (sk) => () => level(['S....E', '......'], ['......', '......'], { skins: [sk] });
+  assert.throws(at({ kind: 'door', tx: 1, ty: 1, layer: 'Night' }), /skin layer must be 'day' or 'night'/);
+  assert.throws(at({ kind: 'door', tx: 9, ty: 1 }), /skin door at 9,1 is outside the grid/);
+  assert.throws(at({ kind: 'door', tx: 1, ty: 1, w: 2 }), /a door is 1 tile wide/);
+  assert.throws(at({ kind: 'pillar', tx: 1, ty: 1, w: 2 }), /a pillar is 1 tile wide/);
+});
+
+test('skinPlan: a door pile counts at most its height (h, default 3), never the platform above it', () => {
+  // a 2-wide platform sits right on top of a pile of two: the pile is 2 doors, not 5 rows of "doors"
+  const day = ['......', '...##.', '...##.', '...##.', 'S..##E', '######'];
+  const lvl = level(day, day, { skins: [{ kind: 'doorPile', tx: 3, ty: 4, h: 2 }] });
+  assert.deepEqual(skinPlan(lvl, DAY, {}), [{ draw: 'doorPile', tx: 3, ty: 4, count: 2 }]);
+  const tall = level(day, day, { skins: [{ kind: 'doorPile', tx: 3, ty: 4 }] });
+  assert.deepEqual(skinPlan(tall, DAY, {}), [{ draw: 'doorPile', tx: 3, ty: 4, count: 3 }], 'default cap 3');
 });
 
 test('every prank sound names a SOUNDS entry (a typo would play nothing, silently)', () => {
@@ -67,7 +88,7 @@ test('skinPlan: doorPile counts solid rows', () => {
   const day = ['......', '......', '...##.', 'S..##E', '######'];
   const lvl = level(day, day, { skins: [{ kind: 'doorPile', tx: 3, ty: 3 }] });
   assert.deepEqual(skinPlan(lvl, DAY, {}), [{ draw: 'doorPile', tx: 3, ty: 3, count: 2 }]);
-  const flat = level(['......', 'S....E', '######'], ['......', '......', '######'], { skins: [{ kind: 'doorPile', tx: 3, ty: 1 }] });
+  const flat = level(['......', '......', '......', 'S....E', '######'], ['......', '......', '......', '......', '######'], { skins: [{ kind: 'doorPile', tx: 3, ty: 3 }] });
   assert.deepEqual(skinPlan(flat, DAY, {}), [], 'an empty pile draws nothing');
 });
 

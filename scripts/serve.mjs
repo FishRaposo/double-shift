@@ -8,6 +8,10 @@ import { execFile } from 'node:child_process';
 
 const args = process.argv.slice(2);
 const rootArg = args.indexOf('--root');
+if (rootArg >= 0 && (args[rootArg + 1] === undefined || args[rootArg + 1].startsWith('--'))) {
+  console.error('--root needs a folder: node scripts/serve.mjs --root <dir>');
+  process.exit(2);
+}
 const root = rootArg >= 0 ? resolve(args[rootArg + 1]) : resolve(import.meta.dirname, '..');
 const portArg = args.indexOf('--port');
 const firstPort = Number(portArg >= 0 ? args[portArg + 1] : process.env.PORT) || 8080;

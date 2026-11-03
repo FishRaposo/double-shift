@@ -25,7 +25,7 @@ test('every glyph is a rectangle of # and . no taller than 9 rows', () => {
 // names, notes and act names.
 function gameStrings() {
   const out = [];
-  for (const f of ['src/main.js', 'src/art.js', 'src/copy.js']) {
+  for (const f of ['src/main.js', 'src/art.js', 'src/copy.js', 'src/layout.js']) {
     let src = '';
     try { src = readFileSync(f, 'utf8'); } catch { continue; }
     src = src.replace(/^\s*\/\/.*$/gm, '');
