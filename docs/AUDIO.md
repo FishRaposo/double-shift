@@ -23,17 +23,17 @@ The original 11, re-voiced 2026-11-02 with filters and a little noise so they si
 
 | Event | Sound | Values |
 |---|---|---|
-| Shift → night | Falling blip | triangle 880 → 330 Hz, 0.07 s, vol 0.35 |
-| Shift → day | Rising blip | triangle 330 → 880 Hz, 0.07 s, vol 0.35 |
-| Shift rejected | Dull thud | square 120 → 90 Hz, 0.06 s, vol 0.2 |
-| Jump | Hop | square 260 → 420 Hz, 0.06 s, vol 0.12 |
-| Land | Soft thump | sine 140 → 70 Hz, 0.05 s, vol 0.2 |
-| Death (hazard/fall) | Slide down | sawtooth 400 → 60 Hz, 0.25 s, vol 0.25 |
-| **Spooked** (freak) | Two-part yelp | square 500 → 1400 Hz 0.12 s, then 1300 → 600 Hz 0.1 s, vol 0.22/0.18 |
-| **Prank fired** | Giggle | 4 triangle blips alternating 900/1080 → 700 Hz, 0.05 s each, 70 ms apart, vol 0.14 |
-| Checkpoint | Two-note chime | triangle 523 Hz 0.07 s, then 784 Hz 0.1 s |
-| Win | Arpeggio | triangle 523, 659, 784, 1047 Hz, 0.12 s each, 80 ms apart |
-| Timecard stamp | Thunk | square 90 → 50 Hz, 0.09 s, vol 0.3 (450 ms after win) |
+| Shift → night | Falling blip | triangle 880 → 330 Hz, 0.07 s, vol 0.32, plus a noise tick |
+| Shift → day | Rising blip | triangle 330 → 880 Hz, 0.07 s, vol 0.32, plus a noise tick |
+| Shift rejected | Dull thud | square 120 → 90 Hz, 0.06 s, vol 0.16 |
+| Jump | Hop | square 260 → 520 Hz, 0.07 s, vol 0.09 |
+| Land | Soft thump | sine 140 → 70 Hz, 0.05 s, vol 0.18, plus low noise |
+| Death (hazard/fall) | Slide down | sawtooth 400 → 60 Hz, 0.25 s, vol 0.18 |
+| **Spooked** (freak) | Two-part yelp | square 500 → 1400 Hz 0.12 s, then 1300 → 600 Hz 0.1 s, vol 0.17/0.14 |
+| **Prank fired** | Giggle | 4 triangle blips alternating 900/1080 → 700 Hz, 0.05 s each, 70 ms apart, vol 0.13 |
+| Checkpoint | Two-note chime | triangle 523 Hz 0.07 s, then 784 Hz 0.1 s, vol 0.22, plus a high sine glint |
+| Win | Arpeggio | triangle 523, 659, 784, 1047 Hz, 0.12 s each, 80 ms apart, vol 0.22 |
+| Timecard stamp | Thunk | square 90 → 50 Hz, 0.09 s, vol 0.24, plus noise (450 ms after win) |
 
 The 14 added since (same `SOUNDS` map, main voice only). The level-mechanic sounds were pre-built before their levels shipped:
 
@@ -100,8 +100,8 @@ Same `tone()` format as §2; every sound ≤ 0.25 s.
 | Event | Level | Sound | Values (starting point) |
 |---|---|---|---|
 | Wet-floor squeak (hard stop on `~`) | `wet` | Rubbery squeak | square 900 → 1300 Hz, 0.08 s, vol 0.06, 6 Hz wobble, 3 kHz low-pass |
-| Door-steal thunk (layered on the prank giggle) | `doors` | Wooden thunk | sine 180 → 90 Hz, 0.1 s, vol 0.25 |
-| Pillar scrape | `pillar` | Stone scrape | sawtooth 70 → 55 Hz, 0.22 s, vol 0.15 (only on a prank, never per tick) |
+| Door-steal thunk (layered on the prank giggle) | `doors` | Wooden thunk | sine 180 → 90 Hz, 0.1 s, vol 0.22, plus low noise |
+| Pillar scrape | `pillar` | Stone scrape | sawtooth 70 → 55 Hz, 0.22 s, vol 0.1, plus band-passed noise (only on a prank, never per tick) |
 | Supervisor clipboard tick | `supervisor` | Pen tick | square 2000 Hz, 0.02 s, vol 0.04, every turn |
 | Supervisor turn whoosh | `supervisor` | Short whoosh | noise, band-pass 600 → 300 Hz, 0.1 s, vol 0.05 |
 | Offset rumble (every shift in `offset`) | `offset` | Low rumble | sine 55 → 45 Hz, 0.25 s, vol 0.2, plus low-passed noise |
@@ -109,6 +109,8 @@ Same `tone()` format as §2; every sound ≤ 0.25 s.
 | Act-card sting | act cards | Two-chord sting | triangle 392 + 494 Hz, then 523 + 659 Hz, 0.12 s each |
 
 ## 5. Mixing checklist
+
+**Measured 2026-11-03** (offline render in the gallery's `__audioCheck`, before the master gain, which `npm run media` fails on at ≥ 1): the loudest sound effects are `shiftNight` 0.31, `shiftDay` 0.28, `checkpoint` 0.27, `stamp` 0.22 and `win` 0.22; the music peaks at 0.35 (day) and 0.38 (night). Everything is below 0.8, so nothing needed fixing; the compressor and the 0.55 master headroom handle stacking. Listening (headphones and laptop speakers) is Fish's check.
 
 - [ ] Shift 10× per second for 3 s: still pleasant, no clipping.
 - [ ] Spook + death tint + giggle at once: still readable.

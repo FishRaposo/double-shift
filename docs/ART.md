@@ -47,21 +47,21 @@ Graphics is a rated jam category. Simple shapes score well when they look *chose
 |---|---|
 | Sky gradient top → bottom | `#f6e7c8` → `#e8c58c` |
 | Window panes / frames | `rgba(255,255,255,0.22)` / `rgba(120,90,50,0.1)` |
-| Solid fill | `#6e5a45` (brick courses texture, `rgba(0,0,0,0.12)`) |
-| Solid edge (top/sides) | `#fbecc9`, 2 px |
+| Solid fill | `#6e5a45`; staggered brick courses in mortar `#5d4b39`, the odd highlight `#7d6852` |
+| Solid edge (top/sides) | `#fbecc9`, 1 art px (2 px), with a `#c9ad84` shade under the top edge; `#4a3b2c` shadow on open bottoms |
 | Echo of night geometry | dashed `rgba(52,96,230,1)`, 2.5 px, dash 8/5 |
-| HUD text / soft / halo | `#3b2d1f` / `rgba(59,45,31,0.85)` / `rgba(246,231,200,0.85)` |
+| HUD text / soft / halo | `#3b2d1f` / `rgba(59,45,31,0.85)` / `rgba(246,231,200,0.9)` |
 | Sun icon | `#f2a516` |
 
 ### Night shift
 | Role | Value |
 |---|---|
-| Sky gradient top → bottom | `#0b1029` → `#1d2a56`, stars `rgba(255,255,255,0.35)` |
+| Sky gradient top → bottom | `#0b1029` → `#1d2a56` in 8 flat bands, stars `rgba(255,255,255,0.25–0.4)` twinkling |
 | Lit windows / frames | `rgba(255,214,110,0.12)` / `rgba(120,150,255,0.05)` (some windows dark) |
-| Solid fill | `#2e4173` (panel seams texture, `rgba(95,242,255,0.08)`) |
-| Solid edge | `#5ff2ff`, 2 px |
+| Solid fill | `#2e4173`; riveted panels, seams `#24345e`, rivets `rgba(95,242,255,0.3)` |
+| Solid edge | `#5ff2ff`, 1 art px (2 px), with a `#3aa8bd` shade under the top edge; `#1a2647` shadow on open bottoms |
 | Echo of day geometry | dashed `rgba(255,170,80,0.95)`, 2.5 px, dash 8/5 |
-| HUD text / soft / halo | `#d9f6ff` / `rgba(217,246,255,0.85)` / `rgba(11,16,41,0.85)` |
+| HUD text / soft / halo | `#d9f6ff` / `rgba(217,246,255,0.85)` / `rgba(11,16,41,0.9)` |
 | Moon icon | `#d9f6ff` crescent |
 
 *Note:* each echo uses the **other** shift's echo color (day view shows night geometry in blue, night view shows day geometry in orange), so the echo's color says which shift it belongs to.
@@ -69,13 +69,13 @@ Graphics is a rated jam category. Simple shapes score well when they look *chose
 ### Shared colors
 | Element | Value |
 |---|---|
-| Rebar (day hazard) | `#c4572a` |
-| Laser (night hazard) | `rgba(255,59,92,α)` pulsing, emitters `#ff9db0` |
-| Exit door day / night | `#3d7a4a` / `#1f6b47`, 2 px frame and knob `#9dffb8`; lit sign box `#2bdc6a` above the door with `EXIT` in `#06210f` (11 px bold) |
-| Checkpoint clock off / on | `#8a8a8a` / `#ffd23f` |
-| Freak body | `#05060f`, rim `rgba(95,242,255,0.6)` 1.5 px |
-| Freak eyes | `rgba(255,236,90,α)` |
-| Sticky note | `#ffe96b` 42×30, text `#5a3d10` 13 px bold |
+| Rebar (day hazard) | spikes `#c4572a` / `#e07a45` in alternating rows on a `#7a3418` base |
+| Laser (night hazard) | beam `#ff3b5c` (dimmer `#c2283f` as it flickers) with a `rgba(255,59,92,0.14–0.28)` glow, emitters `#ff9db0` with white tips |
+| Exit door day / night | `#3d7a4a` / `#1f6b47`, 1 art px frame and knob `#9dffb8`; lit sign box `#2bdc6a` above the door with `EXIT` in `#06210f` (pixel font, scale 1) |
+| Checkpoint clock off / on | `#9a9a9a` / `#ffd23f`, on a `#6b5a48` post |
+| Freak body | `#05060f` with a `#5ff2ff` rim drawn into the sprite (cream `#fbecc9` for the day-walker) |
+| Freak eyes | `#ffec5a` |
+| Sticky note | `#ffe96b` sized to its text, text `#5a3d10` in the pixel font, a strip of tape on top |
 | Timecard paper / ink / stamp | `#f7efdc` / `#3b2d1f` / `#c0392b` (on/under par), `#7f6a50` (overtime) |
 | Debug | `#ff00ff` hitbox, `#0f0` text |
 

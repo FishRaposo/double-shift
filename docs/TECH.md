@@ -5,7 +5,7 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-02 (a
 **At a glance**
 - **The one rule:** `src/rules.js` decides everything that matters; the screen only draws it (§2).
 - `npm start` to play, `npm test` (<!-- n:tests -->171<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
-- Add a level: grids in `src/levels.js` + a `SOLUTIONS` entry in `test/levels.test.mjs` (§6).
+- Add a level: grids in `src/levels.js` + a `SOLUTIONS` entry in `test/solutions.mjs` (§6; the full recipe is BUILD.md §2.1).
 - The tier-C mechanics (wet floor, day-walker, supervisor, offset layer) are built — §6.5 documents them.
 
 ## 1. Stack and constraints
@@ -133,8 +133,8 @@ See [LEVELS.md](LEVELS.md) §2 for the full format. Summary: `{ id, name, act, n
 
 ### 6.1 Add a level
 1. Write the grids and metadata in `src/levels.js` (or generate with a script; widths must match).
-2. Add a scripted solution policy to `SOLUTIONS` in `test/levels.test.mjs`. The test asserts it wins at ≤ par with zero deaths, and that running/jumping without shifting can't win.
-3. `npm test`, `npm run check`, play it.
+2. Add a scripted solution policy to `SOLUTIONS` in `test/solutions.mjs`. `test/levels.test.mjs` asserts it wins at ≤ par with zero deaths and that running/jumping without shifting can't win; `test/fairness.test.mjs` checks the timing slack of every required input, respawns outside patrols and the exit clear of freaks.
+3. `npm test`, `npm run check`, `npm run audit -- <id>`, `npm run media -- --review <id>`, play it. BUILD.md §2.1 has the full recipe.
 
 ### 6.2 Add a prank
 Add to the level's `pranks`: `{ id, onNight: N, tell: { tx, ty }, set: [{ layer: 'day'|'night', x0, x1, y0, y1, ch }] }`. The engine handles validation, tells, the giggle, and checkpoint restore.

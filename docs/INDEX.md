@@ -23,7 +23,7 @@ Everything needed to finish, ship and maintain *Double Shift* for GitHub Game Of
 **Rules for these docs**
 
 - The GDD decides *what*; the other docs decide *how*. If they disagree, the GDD wins and the other doc gets fixed.
-- Every number in a doc (tuning values, sizes, test counts, pars) must match the code on the day it's written. When code changes, update the doc in the same commit.
+- Every number in a doc (tuning values, sizes, test counts, pars) must match the code on the day it's written. When code changes, update the doc in the same commit. Test, level and source-line counts are wrapped in markers that `npm run counts -- --write` keeps in sync (CI checks them).
 - Mark anything not yet built as *(planned)* or *(stretch)*. Never describe a planned feature as existing, especially on the itch page.
 
 Deadline: **December 1, 2026, 13:37 PST = 18:37 in São Paulo.** Internal target: submitted by **November 30**.

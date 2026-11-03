@@ -1,5 +1,5 @@
 // Fairness: every input a level requires has real timing slack, and no respawn point sits in a patrol.
-// Floors (Fish, 2026-11-02): ≥ 200 ms in acts 1–2, ≥ 100 ms in acts 3–4 (docs/LEVELS.md §1).
+// Floors (Fish, 2026-11-02): ≥ 200 ms in acts 1–2, ≥ 100 ms in acts 3–6, the finale included (docs/LEVELS.md §1).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { LEVELS } from '../src/levels.js';
