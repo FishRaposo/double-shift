@@ -4,6 +4,7 @@
 import { step, initState, parseLevel, tileAt, isSolidChar, freakBoxes, gravitySign, TILE, DT, DAY, NIGHT, PARAMS, FREAK } from './rules.js';
 import { LEVELS, ACTS, FINALE_ACT } from './levels.js';
 import { createInput } from './input.js';
+import { createPad } from './pad.js';
 import { ACTIONS, DEFAULT_BINDS, actionOf, rebind, keysText, keysShort } from './keys.js';
 import { sfx, playSound, unlockAudio, toggleMute, setVolumes, setMusicShift, setMusicAct, setMenu } from './audio.js';
 import { skinPlan, checkpointHangs, exitPose } from './skins.js';
@@ -143,9 +144,11 @@ function openSelect() {
 
 // ---------- input ----------
 
-addEventListener('keydown', (e) => {
+// One handler for the keyboard and the gamepad (padDown below turns pad presses into these): e is a KeyboardEvent
+// or { code, repeat? }.
+function handleKey(e) {
   unlockAudio();
-  if (game.capturing || actionOf(settings.get().binds, e.code) || e.code === 'Enter' || e.code === 'Escape') e.preventDefault();
+  if (game.capturing || actionOf(settings.get().binds, e.code) || e.code === 'Enter' || e.code === 'Escape') e.preventDefault?.();
   if (e.repeat) { input.keyDown(e); return; }
   if (game.screen === 'controls' && game.capturing) { captureKey(e.code); return; } // before mute (M) and debug (the backquote) take theirs
   if (e.code === 'KeyM') { toggleMute(); return; }
@@ -206,8 +209,36 @@ addEventListener('keydown', (e) => {
   if (e.code === 'Escape') { setScreen('paused'); input.clear(); return; }
   if (e.code === 'KeyR') { startLevel(game.index, { card: false }); return; }
   input.keyDown(e);
-});
+}
+addEventListener('keydown', handleKey);
 addEventListener('keyup', (e) => { input.keyUp(e); });
+
+// ---------- gamepad (src/pad.js: a fixed mapping on the standard layout) ----------
+// In a level the pad's own codes reach input.js (A jumps; B, X or RB shift; the d-pad or stick moves), with Start
+// pausing and Back restarting. Everywhere else a press stands in for a menu key: A Space, B Esc, Start Space on
+// the title and Esc elsewhere, Back R, the d-pad or stick the arrows. Waiting for a key on CONTROLS, only B or
+// Start answers (cancel): pad buttons aren't bindable.
+const pad = createPad();
+const PAD_MENU = { PadA: 'Space', PadB: 'Escape', PadSelect: 'KeyR', PadUp: 'ArrowUp', PadDown: 'ArrowDown', PadLeft: 'ArrowLeft', PadRight: 'ArrowRight' };
+
+function padDown(code) {
+  if (game.capturing) { if (code === 'PadB' || code === 'PadStart') handleKey({ code: 'Escape' }); return; }
+  if (game.screen === 'play' || game.screen === 'act') {
+    if (code === 'PadStart') handleKey({ code: 'Escape' });
+    else if (code === 'PadSelect') handleKey({ code: 'KeyR' });
+    else handleKey({ code });
+    return;
+  }
+  const key = code === 'PadStart' ? (game.screen === 'title' ? 'Space' : 'Escape') : PAD_MENU[code];
+  if (key) handleKey({ code: key });
+}
+
+function pollPad() {
+  for (const ev of pad.poll(navigator.getGamepads?.() ?? [])) {
+    if (ev.type === 'down') padDown(ev.code);
+    else input.keyUp({ code: ev.code });
+  }
+}
 addEventListener('blur', () => input.clear());
 // Size the canvas to a whole number of device pixels per canvas pixel unless that wastes > 15% of the window
 // (src/layout.js canvasScale); the CSS in index.html is the fallback before this runs.
@@ -344,6 +375,7 @@ let last = performance.now();
 function frame(now) {
   const elapsed = Math.min(Math.max((now - last) / 1000, 0), 0.1);
   last = now;
+  pollPad();
   game.clock += elapsed;
   game.screenTime += elapsed;
   if (game.screen === 'act' && game.screenTime > 1.6) setScreen('play');
@@ -713,6 +745,7 @@ function drawTitle() {
   const b = settings.get().binds; // the current bindings (SETTINGS > CONTROLS)
   drawText(g, `Move  ${keysShort(b.left)}  ${keysShort(b.right)}      Jump  ${keysShort(b.jump)}`, W / 2, 310, { scale: 2, color: '#d9f6ff', align: 'center' });
   drawText(g, `Change shift  ${keysText(b.shift)}      Restart  R`, W / 2, 334, { scale: 2, color: '#d9f6ff', align: 'center' });
+  drawText(g, 'Gamepad: stick or d-pad move · A jump · B, X or RB shift · Start pause · Back restart', W / 2, 354, { scale: 1, color: '#9fd8e6', align: 'center' });
   const blink = Math.floor(game.clock * 2) % 2 === 0;
   drawText(g, 'Click or press SPACE to clock in', W / 2, 380, { scale: 2, color: blink ? '#ffec5a' : '#ffffff', align: 'center' });
   for (const [b, label] of [[TITLE_SELECT, 'LEVEL SELECT (L)'], [TITLE_SETTINGS, 'SETTINGS (O)']]) {

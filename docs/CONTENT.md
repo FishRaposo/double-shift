@@ -80,7 +80,7 @@ Specs: [TECH.md](TECH.md) §6 (mechanics), [GDD.md](GDD.md) §12 (UI).
 | SYS-11 | Sticky Keys in-joke | Theme | P1 | G14 | ✅ (Nov 3: the freaks' sticky note on the title) |
 | SYS-12 | Demo GIF capture (extend `scripts/media.mjs`) | itch page | P1 | A9 | planned |
 | SYS-13 | Rebindable controls | Accessibility | *stretch*, approved Nov 3 | G12 | ✅ (Nov 3: `src/keys.js`, SETTINGS > CONTROLS) |
-| SYS-14 | Gamepad | Reach | *stretch*, approved Nov 3 | G11 | planned (BUILD.md T24) |
+| SYS-14 | Gamepad | Reach | *stretch*, approved Nov 3 | G11 | ✅ (Nov 3: `src/pad.js`, fixed standard mapping) |
 | SYS-18 | Speedrun timer (a TIMER setting) | Replay | *stretch*, approved Nov 3 | G13 | planned (BUILD.md T24) |
 | SYS-15 | Scatterer freak, shared-state objects | — | *post-jam* | G7, G10 | — |
 

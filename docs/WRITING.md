@@ -28,6 +28,7 @@ Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game l
 | Tutorial ✅ | Press Shift or K to change shifts (the keys come from the player's bindings) / Dashed outlines show the other shift |
 | Pause ✅ | ON BREAK · Esc: resume · R: restart · L: levels · O: settings |
 | Title buttons ✅ | LEVEL SELECT (L) · SETTINGS (O) |
+| Title gamepad line ✅ | Gamepad: stick or d-pad move · A jump · B, X or RB shift · Start pause · Back restart |
 | Settings ✅ | SETTINGS · MASTER · MUSIC · SOUND · REDUCED EFFECTS ON/OFF · CONTROLS Enter > · Up/Down: choose · Left/Right: change · Esc: back |
 | Controls ✅ | CONTROLS · LEFT · RIGHT · JUMP · SHIFT, each with its keys ("Shift or K") · RESET TO DEFAULTS · PRESS A KEY · Press the new key · Esc: cancel · Up/Down: choose · Enter: change · Esc: back · Back to the defaults. · Not that one: use a letter, a digit, an arrow, Space or Shift (R, L, O and M are the menus'). |
 | Act cards ✅ | ACT n · NAME · the line from §2.1 |

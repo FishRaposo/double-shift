@@ -21,7 +21,7 @@ Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-03**.
 | Rendering | **Pixel art** (Nov 2): sprites, animated worker and freaks, pixel tiles and props, pixel font, effects; every asset in `/tools/gallery.html` |
 | Audio | Mix bus, 25 SFX (incl. planned-level sounds), **music** (day/night arrangements crossfading on every shift) |
 | Menus | Title, level select + saved bests, settings (volumes, reduced effects), act cards, pause, timecard with comment, end screen with totals |
-| Tests | <!-- n:tests -->330<!-- /n --> passing (`npm test`), including fairness; `npm run audit` clean |
+| Tests | <!-- n:tests -->335<!-- /n --> passing (`npm test`), including fairness; `npm run audit` clean |
 | Repo / CI / itch | Public repo [FishRaposo/double-shift](https://github.com/FishRaposo/double-shift), CI green, playable on [GitHub Pages](https://fishraposo.github.io/double-shift/). **No itch page** |
 
 ## 2. Milestones
@@ -92,7 +92,7 @@ Priority: **P0** = the game doesn't ship without it. **P1** = expected in the ja
 | G8 | ~~Day-walker freak + day-only clock~~ Done | Tier C, cut Nov 12 | TECH.md §6.5; level `daywalker` |
 | G9 | ~~Offset layer~~ Done | Tier C, cut Nov 17 | TECH.md §6.5; level `offset` |
 | G10 | Shared-state objects (levers/doors) | Post | GDD §8.2 |
-| G11 | Gamepad support | P2, planned (Fish approved the stretch features Nov 3) | `src/pad.js` turns Gamepad API polling into key events (BUILD.md T24) |
+| G11 | ~~Gamepad support~~ done Nov 3 | P2 (Fish approved the stretch features Nov 3) | `src/pad.js` turns Gamepad API polling into key events (BUILD.md T24) |
 | G12 | ~~Rebindable controls~~ done Nov 3 | P2 | `src/keys.js`, a CONTROLS screen (BUILD.md T24); GDD §12.5 |
 | G13 | Speedrun timer display | P2, planned | A TIMER setting; `state.time` already tracked (BUILD.md T24) |
 | G14 | ~~Sticky Keys in-joke (memo from the freaks on title/pause, practical advice kept)~~ done Nov 3, on the title | P1 | GDD §1.7; the jam page jokes about it too |

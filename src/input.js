@@ -5,6 +5,10 @@
 
 import { DEFAULT_BINDS, actionOf } from './keys.js';
 
+// A gamepad's fixed codes (src/pad.js) drive the same actions, whatever the keyboard bindings are.
+const PAD_BINDS = Object.freeze({ left: ['PadLeft'], right: ['PadRight'], jump: ['PadA'], shift: ['PadB', 'PadX', 'PadRB'] });
+const actionFor = (binds, code) => actionOf(binds, code) ?? actionOf(PAD_BINDS, code);
+
 export function createInput(getBinds = () => DEFAULT_BINDS) {
   const held = new Set();
   let jumpPresses = 0;
@@ -12,7 +16,7 @@ export function createInput(getBinds = () => DEFAULT_BINDS) {
 
   return {
     keyDown(e) {
-      const a = actionOf(getBinds(), e.code);
+      const a = actionFor(getBinds(), e.code);
       if (!a) return false;
       // OS auto-repeat: never a new press, but it re-asserts the hold. So a key held through a screen
       // change (act card, resume, restart all clear input) starts working again ~30 ms later.
@@ -24,7 +28,7 @@ export function createInput(getBinds = () => DEFAULT_BINDS) {
     },
     keyUp(e) {
       held.delete(e.code);
-      return actionOf(getBinds(), e.code) !== null;
+      return actionFor(getBinds(), e.code) !== null;
     },
     clear() {
       held.clear();
@@ -32,7 +36,7 @@ export function createInput(getBinds = () => DEFAULT_BINDS) {
       shiftPresses = 0;
     },
     isHeld(action) {
-      return getBinds()[action].some((c) => held.has(c));
+      return getBinds()[action].some((c) => held.has(c)) || PAD_BINDS[action].some((c) => held.has(c));
     },
     // Called once per physics tick. Consumes at most one queued press of each kind.
     consume() {

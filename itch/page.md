@@ -1,6 +1,6 @@
 # itch.io page kit
 
-Everything needed to create the *Double Shift* page on itch.io, in the order the itch dashboard asks for it. Settings come from [RELEASE.md](../docs/RELEASE.md) §2. **Fish writes the final description words**; the draft below is checked against the current build (<!-- n:levels -->21<!-- /n --> levels, <!-- n:tests -->330<!-- /n --> tests, level select, pixel art and music). The paste-ready description in §4 carries no markers, so check its numbers by hand before pasting (the release refresh does).
+Everything needed to create the *Double Shift* page on itch.io, in the order the itch dashboard asks for it. Settings come from [RELEASE.md](../docs/RELEASE.md) §2. **Fish writes the final description words**; the draft below is checked against the current build (<!-- n:levels -->21<!-- /n --> levels, <!-- n:tests -->335<!-- /n --> tests, level select, pixel art and music). The paste-ready description in §4 carries no markers, so check its numbers by hand before pasting (the release refresh does).
 
 ## 1. Build the files
 
@@ -23,7 +23,7 @@ npm run media    # media/cover.png (1260×1000) + 10 screenshots (960×540) + th
 | Release status | Released *(or In development while still building)* |
 | Pricing | **$0 or donate**, suggested donation small (jam host recommends free) |
 | Uploads | `double-shift-web.zip` → tick **This file will be played in the browser** |
-| Embed options | Viewport **960 × 540**; **Fullscreen button** on; **Mobile friendly** off (keyboard only); **Automatically start on page load** off (there's a title screen; the first click starts the game); Enable scrollbars off |
+| Embed options | Viewport **960 × 540**; **Fullscreen button** on; **Mobile friendly** off (keyboard or gamepad, no touch controls); **Automatically start on page load** off (there's a title screen; the first click starts the game); Enable scrollbars off |
 | Details: Genre | Platformer |
 | Tags | `puzzle-platformer`, `2D`, `Short`, `Singleplayer`, `Funny`, `Monsters`, `Minimalist`, `game-off-2026` *(check each tag page first, RELEASE.md §2)* |
 | AI generation disclosure | **Yes**: Code, Text & Dialog. Graphics and Sound **no** (drawn and synthesized by code). |
@@ -31,7 +31,7 @@ npm run media    # media/cover.png (1260×1000) + 10 screenshots (960×540) + th
 | Community | Comments |
 | Visibility | **Draft** first. Play it on the page once, then Public at submission time (the publish date is fixed at that click). |
 
-**Metadata tab:** Inputs: Keyboard. Languages: English. Accessibility: none ticked yet (nothing from itch's list exists in the build).
+**Metadata tab:** Inputs: Keyboard, Gamepad. Languages: English. Accessibility: none ticked yet (nothing from itch's list exists in the build).
 
 **Theme (Edit theme on the page):** background `#0b1029`, text `#d9f6ff`, links `#5ff2ff`, embed background `#0b1029`.
 
@@ -53,17 +53,17 @@ npm run media    # media/cover.png (1260×1000) + 10 screenshots (960×540) + th
 >
 > Finish each level clocking in as few times as possible. Your timecard is watching.
 >
-> **Controls** (keyboard)
+> **Controls** (keyboard; gamepad in brackets)
 >
 > | Action | Keys |
 > |---|---|
-> | Move | A / D or ← / → |
-> | Jump | Space, W or ↑ (hold for higher) |
-> | Change shift | Shift or K |
-> | Restart level | R |
+> | Move | A / D or ← / → [stick or d-pad] |
+> | Jump | Space, W or ↑ (hold for higher) [A] |
+> | Change shift | Shift or K [B, X or RB] |
+> | Restart level | R [Back] |
 > | Level select | L, or click LEVEL SELECT on the title |
 > | Settings | O (volumes, reduced effects, controls) |
-> | Pause | Esc |
+> | Pause | Esc [Start] |
 >
 > Move, jump and change shift can be rebound in SETTINGS > CONTROLS.
 > | Mute | M |

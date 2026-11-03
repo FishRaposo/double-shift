@@ -284,6 +284,16 @@ async function fullRun() {
   const reset = await evaluate("JSON.parse(localStorage.getItem('double-shift.settings.v1')).binds.jump");
   flow('RESET TO DEFAULTS puts Space, W and Up back on JUMP', JSON.stringify(reset) === '["Space","KeyW","ArrowUp"]', reset);
 
+  // gamepad: a stubbed standard pad (headless Chromium has none): A clocks in from the title, B shifts in the level
+  await open('');
+  await evaluate("(() => { window.__pad = { id: 'stub', mapping: 'standard', connected: true, axes: [0, 0, 0, 0], buttons: Array.from({ length: 17 }, () => ({ pressed: false, value: 0 })) }; navigator.getGamepads = () => [window.__pad]; })()");
+  const tap = async (i) => { await evaluate(`window.__pad.buttons[${i}].pressed = true`); await sleep(150); await evaluate(`window.__pad.buttons[${i}].pressed = false`); await sleep(150); };
+  await tap(0);
+  await sleep(1800); // the act card
+  await tap(1);
+  const padState = await evaluate('({ screen: __doubleShift.screen, layer: __doubleShift.state?.layer })');
+  flow('gamepad: A clocks in from the title, B shifts', padState.screen === 'play' && padState.layer === 1, padState);
+
   // asset gallery + offline audio loudness check (peaks before the master gain; must not clip).
   // The tools aren't in the itch build, so --root skips them.
   if (serveRoot) return;

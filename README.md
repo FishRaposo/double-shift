@@ -33,18 +33,18 @@ URL options: `?level=offset` start at a level by id (or by position, `?level=3`)
 
 ## Controls
 
-| Action | Keys |
-|---|---|
-| Move | A / D, ← / → |
-| Jump | Space, W, ↑ (hold for higher) |
-| Change shift | Shift (either), K |
-| Restart level | R |
-| Level select | L (title or pause), or click LEVEL SELECT |
-| Settings (volumes, reduced effects) | O (title or pause), or click SETTINGS |
-| Pause | Esc |
-| Mute | M |
+| Action | Keys | Gamepad |
+|---|---|---|
+| Move | A / D, ← / → | Left stick or d-pad |
+| Jump | Space, W, ↑ (hold for higher) | A |
+| Change shift | Shift (either), K | B, X or RB |
+| Restart level | R | Back |
+| Level select | L (title or pause), or click LEVEL SELECT | |
+| Settings (volumes, reduced effects, controls) | O (title or pause), or click SETTINGS | |
+| Pause | Esc | Start |
+| Mute | M | |
 
-On Windows, hammering Shift can open the Sticky Keys prompt. Use K, or turn off the Sticky Keys shortcut.
+Move, jump and change shift can be rebound in SETTINGS > CONTROLS (the menu keys can't). The gamepad mapping is fixed; in menus A confirms, B goes back and the d-pad moves the selection. On Windows, hammering Shift can open the Sticky Keys prompt. Use K, or turn off the Sticky Keys shortcut. Browsers differ on whether a gamepad press counts as the click that unlocks sound: if the game is silent, press a key or click once.
 
 ## How it's built
 
@@ -75,7 +75,7 @@ scripts/        serve, check, zip for itch, media + headless checks
 
 ## Tests
 
-The suite has <!-- n:tests -->330<!-- /n --> tests.
+The suite has <!-- n:tests -->335<!-- /n --> tests.
 
 ```sh
 npm test         # GDD §13.7 shift/collision edge cases, pranks and freaks, wet floor, day/night

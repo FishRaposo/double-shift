@@ -50,7 +50,7 @@ Then:
 | Kind of project | HTML; "This file will be played in the browser" |
 | Upload | `double-shift-web.zip` from `npm run zip` (index.html + src/ at the root) |
 | Viewport | 960 × 540; Fullscreen button on; Autostart off (there's a title screen); scrollbars off |
-| Mobile friendly | **Off** (keyboard only) |
+| Mobile friendly | **Off** (keyboard or gamepad, no touch controls) |
 | Release status | Released |
 | Pricing | **$0 or donate**, small suggested donation |
 | Platforms | HTML5 only |
@@ -97,14 +97,14 @@ Publishing ≠ indexing. After going Public, check in ~1 hour by searching the *
 
 *Hook rule:* lead with the pranks and the freezing freaks, not "switch between two worlds". Switching between two overlapping worlds is one of the example ideas on the jam page itself, so many entries will have it (GDD §1.8). Every example in the hook must exist in the shipped levels (the plank is the *Inventory* prank).
 >
-> | | Keyboard |
-> |---|---|
-> | Move | A/D or ←/→ |
-> | Jump | Space, W or ↑ (hold for higher) |
-> | Change shift | Shift or K |
-> | Restart | R |
-> | Pause | Esc |
-> | Mute | M |
+> | | Keyboard | Gamepad |
+> |---|---|---|
+> | Move | A/D or ←/→ | Stick or d-pad |
+> | Jump | Space, W or ↑ (hold for higher) | A |
+> | Change shift | Shift or K | B, X or RB |
+> | Restart | R | Back |
+> | Pause | Esc | Start |
+> | Mute | M | |
 >
 > *On Windows, hammering Shift can open Sticky Keys. Use K, or turn off the Sticky Keys shortcut.*
 >
@@ -141,5 +141,5 @@ Publishing ≠ indexing. After going Public, check in ~1 hour by searching the *
   - Post once in the jam community with the GIF.
   - Share the itch link on X and LinkedIn with #GitHubGameOff (Fish writes the posts).
   - Never trade ratings or ask for high scores; just ask people to play.
-- Post-jam: devlog #2 with results and what's next; task pack (PRODUCTION.md R7); decide whether *Double Shift* grows (acts 3 stretch items, gamepad, rebinding).
+- Post-jam: devlog #2 with results and what's next; task pack (PRODUCTION.md R7); decide whether *Double Shift* grows.
 - Sync every public surface (README, site, profile) per the gamedev checklist, with identical counts and claims.
