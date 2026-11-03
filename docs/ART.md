@@ -232,6 +232,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | `offset` | Floor signs 3 / 3.5 |
 | `daywalker` | A DAY SHIFT sign, a mug, footprints in the day-walker's tunnel |
 | `portrait` | EMPLOYEE OF THE MONTH plaque, the nail |
+| `upside` ✅ | A MIND YOUR HEAD sign and a notice board (day); a coffee mug stuck upside down under the walkway (night, `flip`) |
 | `clockout` | The time clock on the ledge, a coat rack, a vent, a LAST SHIFT sign, eyes everywhere in the dark |
 
 ## 7. UI and effects

@@ -44,8 +44,8 @@ Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game l
 | Act 2 card | ACT 2 · OVERTIME · "Something keeps moving things." |
 | Act 3 card | ACT 3 · GRAVEYARD SHIFT · "They've gotten organized." |
 | Act 4 card | ACT 4 · LIGHTS OUT · "The building doesn't add up anymore." |
-| Act 5 card *(planned)* | ACT 5 · UPSIDE DOWN · "The night shift turned the building over." |
-| Finale card *(planned)* | FINALE · CLOCK OUT · "One more shift." |
+| Act 5 card ✅ | ACT 5 · UPSIDE DOWN · "The night shift turned the building over." |
+| Finale card ✅ | FINALE · CLOCK OUT · "One more shift." |
 | Sticky Keys joke (G14) | A freak memo: "WE PRES SHIFT 5 TIMES. FOR FUN." + the practical line kept below it |
 | End (full game) ✅ | SHIFT COMPLETE · one row per act · totals · credits · SPACE: clock in again |
 
@@ -71,7 +71,7 @@ In the order of the 21-level game (LEVELS.md §5.0). ✅ = in the build.
 | 14 Broad Daylight (`daywalker`) ✅ | One of them clocked in for the day shift. |
 | 15 Floor 3.5 (`offset`) ✅ | There is no Floor 3 anymore. It's now Floor 3.5. |
 | 16 Night Audit (`audit`) | Management is doing a walkthrough tonight. So are they. |
-| 17 Mind Your Head (`upside`) | They flipped the night shift. Mind your head. |
+| 17 Mind Your Head (`upside`) ✅ | They flipped the night shift. Mind your head. |
 | 18 Falling Up (`fallup`) | The floor is up there now. |
 | 19 Ceiling Walker (`ceiling`) | Something is walking on the ceiling. It's fine. |
 | 20 Head Over Heels (`heels`) | Up is a matter of opinion now. |

@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { LEVELS } from '../src/levels.js';
-import { DAY, NIGHT } from '../src/rules.js';
+import { DAY, NIGHT, TILE, NO_INPUT, initState, step } from '../src/rules.js';
 import { play, tx } from './helpers.mjs';
 import { SOLUTIONS, L } from './solutions.mjs';
 
@@ -103,4 +103,25 @@ test('Clock Out: without the fourth clock-in the step stays gone and the time cl
     return s.nightEntries >= 3 && tx(s) > 25 ? { right: true, jump: s.player.grounded || s.player.vy < 0 } : want;
   }, 120 * 12);
   assert.equal(state.won, false);
+});
+
+test('Mind Your Head: the first clock-in lands you on the walkway', () => {
+  const lvl = L.upside;
+  let s = initState(lvl);
+  let f = 0;
+  for (; f < 120 * 10 && s.shifts === 0; f++) s = step(lvl, s, { ...NO_INPUT, right: true, shiftPressed: tx(s) > 7 });
+  assert.equal(s.layer, NIGHT);
+  for (let i = 0; i < 120 && !s.player.grounded; i++) s = step(lvl, s, { ...NO_INPUT, right: true });
+  assert.equal(s.player.grounded, true, 'hanging');
+  assert.equal(s.player.y, 12 * TILE, 'under the walkway (night row 11, the day walkway at row 6 turned over)');
+  assert.equal(s.deaths, 0);
+});
+
+test('Mind Your Head: staying on night after the walkway never reaches the exit', () => {
+  const lvl = L.upside;
+  for (const jumpEvery of [0, 30, 55]) {
+    const { state } = play(lvl, (s, m, f) => ({ right: true, shift: s.shifts === 0 && tx(s) > 7, jump: jumpEvery && f % jumpEvery < 14 }), 120 * 15);
+    assert.equal(state.won, false, `won at night with jumpEvery=${jumpEvery}`);
+    assert.equal(state.shifts, 1);
+  }
 });

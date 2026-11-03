@@ -232,7 +232,7 @@ async function fullRun() {
   await shot('12-end.png');
 
   // levels by id, so inserting a level never shifts a capture
-  for (const [id, night, name] of [['inventory', false, '05-inventory-day.png'], ['inventory', true, '06-inventory-night.png'], ['watch', true, '07-night-watch-night.png'], ['watch', false, '08-night-watch-day.png'], ['stacked', true, '13-stacked-night.png'], ['clockout', false, '14-clock-out-day.png'], ['clockout', true, '15-clock-out-night.png']]) {
+  for (const [id, night, name] of [['inventory', false, '05-inventory-day.png'], ['inventory', true, '06-inventory-night.png'], ['watch', true, '07-night-watch-night.png'], ['watch', false, '08-night-watch-day.png'], ['stacked', true, '13-stacked-night.png'], ['clockout', false, '14-clock-out-day.png'], ['clockout', true, '15-clock-out-night.png'], ['upside', true, '17-mind-your-head-night.png']]) {
     await open(`?level=${id}&autostart`);
     if (night) { await press('KeyK'); await sleep(400); }
     await shot(name);

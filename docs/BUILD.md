@@ -245,7 +245,7 @@ Seven milestone PRs (decided 2026-11-03). Each one passes every gate in §1.2 pl
 - **Gallery:** add a flipped worker, a hanging freak and a flipped laser.
 - **Done when:** all the tests pass and a throwaway test level (not shipped) plays correctly in the browser. Then do T8.
 
-### T8 · Mind Your Head (`upside`, #17, act 5) · needs T7 · prove by Nov 18
+### T8 · Mind Your Head (`upside`, #17, act 5) · needs T7 · prove by Nov 18 *(✅ built Nov 3, par 2; LEVELS.md §4)*
 - **Spec:** LEVELS.md §5.2 "Mind Your Head" and its design rules. At night the building is upside down: you fall up and walk along what was the ceiling.
   - First beat: the floor route is blocked by day while the ceiling route is clear; clock in, fall up, cross, clock out, drop past the obstacle.
   - Second beat: the reverse.
@@ -275,7 +275,7 @@ Seven milestone PRs (decided 2026-11-03). Each one passes every gate in §1.2 pl
 - **Order:** last in `LEVELS`. Give it `act: 6` with `ACTS[6] = 'Finale'` (see T13) so level select shows it on its own row.
 - **Saves:** the rework keeps the id `clockout` and gets `rev: 2`, so bests saved on the classic version are ignored (T22).
 
-### T13 · Act 5 and finale cards *(small; after T8)*
+### T13 · Act 5 and finale cards *(small; after T8; ✅ built Nov 3)*
 - `src/levels.js`: `ACTS[5] = 'Upside Down'` and `ACTS[6] = 'Finale'`.
 - `src/copy.js`: `ACT_LINES[5] = 'The night shift turned the building over.'` and `ACT_LINES[6] = 'One more shift.'`.
 - `src/main.js` `drawAct()`: for `FINALE_ACT` (6), the small line reads FINALE and the big line is the level's name (CLOCK OUT), then "One more shift.".

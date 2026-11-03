@@ -14,7 +14,7 @@
 // props:  cosmetic scenery from PROPS in src/art.js: { kind, tx, ty, layer?: 'day'|'night', w?, text?, style? }.
 // act:    which act the level belongs to (the first level of each act is always open in level select).
 
-export const ACTS = { 1: 'Renovation', 2: 'Overtime', 3: 'Graveyard Shift', 4: 'Lights Out' };
+export const ACTS = { 1: 'Renovation', 2: 'Overtime', 3: 'Graveyard Shift', 4: 'Lights Out', 5: 'Upside Down', 6: 'Finale' };
 
 // The finale is its own act: level select gives it a row labelled FINALE, and its act card reads
 // FINALE · <level name> instead of ACT 6.
@@ -656,9 +656,47 @@ export const LEVELS = [
     ],
   },
   {
+    id: 'upside',
+    name: 'Mind Your Head',
+    act: 5,
+    note: 'They flipped the night shift. Mind your head.',
+    par: 2,
+    // The night is this map turned over, gravity included (upsideDown). By day the pit (cols 10-17) is too
+    // wide to jump and the walkway (row 6) too high to reach. Clock in under the walkway and you fall up
+    // onto it: at night it's row 11, three rows above your head. Cross the pit hanging from it. A wall
+    // stands on the walkway (night rows 12-15, deeper than a jump), so clock out past the pit and drop to the
+    // floor. The checkpoint hangs from the walkway at night and sits on a shelf by day.
+    upsideDown: true,
+    props: [
+      { kind: 'sign', tx: 4, ty: 12, text: 'MIND YOUR HEAD', style: 'note', layer: 'day' },
+      { kind: 'noticeBoard', tx: 26, ty: 12, layer: 'day' },
+      { kind: 'mug', tx: 13, ty: 12, layer: 'night', flip: true }, // someone's coffee, upside down under the walkway
+    ],
+    day: [
+      '................................',
+      '................................',
+      '........................#.......',
+      '........................#...####',
+      '........................#.......',
+      '........................#.......',
+      '......####################......',
+      '................................',
+      '................................',
+      '................................',
+      '................................',
+      '................................',
+      '....................C...........',
+      '....................#...........',
+      '................................',
+      '..S...........................E.',
+      '##########........##############',
+      '##########........##############',
+    ],
+  },
+  {
     id: 'clockout',
     name: 'Clock Out',
-    act: 4,
+    act: FINALE_ACT,
     note: "Almost done. Don't look at the vents.",
     par: 7,
     props: [

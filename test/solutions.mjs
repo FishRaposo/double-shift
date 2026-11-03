@@ -111,6 +111,8 @@ export const SOLUTIONS = {
     }
     return { right, shift: want(s, target) };
   },
+  // under the walkway, clock in and fall up onto it; past the pit, clock out and drop to the floor
+  upside: (s) => ({ right: true, shift: (tx(s) > 7 && tx(s) < 16 && want(s, NIGHT)) || (tx(s) > 19 && want(s, DAY)) }),
   offset: (s, m) => {
     // four hops up the tower: walk into place, jump, shift at the apex onto the floor's copy
     const hops = [[7.5, NIGHT], [9.5, DAY], [11, NIGHT], [12, DAY]];

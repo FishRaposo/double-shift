@@ -5,7 +5,7 @@ Companion to [GDD.md](GDD.md) §6 and §8. Tile = 30 px. Levels are 32×18 tiles
 **At a glance**
 - Jumpable rise: **≤ 3 tiles**. Gaps: **≤ 4** comfortable, **≥ 7** impossible (use 8 for "must shift") (§1).
 - A level is two ASCII grids (day, night) plus optional pranks, freaks and decor (§2).
-- **The game is 21 levels: five acts of four plus the finale (§5.0).** <!-- n:levels -->12<!-- /n --> built (§4); 5 tier-B levels specced (§5); act 5 Upside Down (§5.2) and the finale rework (§5.3) planned. Tier A (a complete game) is built.
+- **The game is 21 levels: five acts of four plus the finale (§5.0).** <!-- n:levels -->13<!-- /n --> built (§4); 5 tier-B levels specced (§5); act 5 Upside Down (§5.2) and the finale rework (§5.3) planned. Tier A (a complete game) is built.
 - Leave **≥ 200 ms** of slack per required input in acts 1–2, **≥ 100 ms** in acts 3–5 (tested).
 - Nothing ships without a scripted par solution in the tests and the §6 checklist.
 
@@ -155,7 +155,16 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 - **Margin:** the full jump peaks at ≈ 93.5 px against the 90 px needed (plus the 4 px nudge): each apex shift has ≈ 250 ms. Any lower `jumpVelocity` breaks this level first — re-run `npm run audit` after tuning. `dy: -2` is the fallback.
 - **Props:** floor signs read 3 and 3.5.
 
-### 12. Clock Out: par 7 (the finale; #21 in the full game, rework planned in §5.3)
+### 12. Mind Your Head: par 2 (act 5, built Nov 3)
+- **Lesson:** at night the building is upside down: you fall up, and walk along what was the ceiling (`upsideDown: true`; the night is generated, §5.2).
+- **Day:** a floor with an 8-tile pit (cols 10–17, too far to jump); a walkway high above it (row 6, cols 6–25) with a wall standing on it at col 24 (rows 2–5); a beam over the exit (row 3, cols 28–31); a shelf at (20, 13) under the checkpoint. **Night** is that map turned over: the walkway is at row 11, three rows above the worker's head on the floor, the wall hangs under it (rows 12–15), and the exit hangs from the beam's copy.
+- **Solution:** clock in under the walkway (cols 6–9) and fall up onto it; walk across the pit hanging from it; past the pit, clock out and drop to the floor; exit. The wall is deeper than a night jump (96 px against 120 px), so staying on night never gets past it.
+- **Teach safely:** the first clock-in is on open floor with a clear mirror; flipping too early lands you on the night ceiling (the floor's copy), where the pit is a hole: clock out and try again.
+- **Checkpoint** at (20, 12): it hangs from the walkway at night and sits on the shelf by day, so it saves on either shift.
+- **Margin:** both clock-ins have ≈ 990 ms; input lag up to 150 ms still wins (`npm run audit`).
+- **Props:** a MIND YOUR HEAD sign (day), a notice board (day), and a coffee mug stuck upside down under the walkway (night, `flip`).
+
+### 13. Clock Out: par 7 (the finale; #21 in the full game, rework planned in §5.3)
 - **Lesson:** everything you know, in one run.
 - **Room 1 (cols 0–14):** a pit with a 3-wide night stone (cols 5–7, row 13) and a higher day stone (cols 10–12, row 12): jump off each as you land, shifting mid-air to the one ahead.
 - **Room 2 (cols 15–24):** `watch`'s tunnel under a building: day crates at cols 17 and 24 force night in and out; the lurker inside (col 20) forces a day freeze. Checkpoint at col 15.
@@ -184,7 +193,7 @@ Five acts of four, then the finale. Each act introduces one idea, practises it, 
 | 14 | 4 | Broad Daylight (`daywalker`) | **Day-walker**: each shift freezes the other's freaks | ✅ |
 | 15 | 4 | Floor 3.5 (`offset`) | **Offset layer**: night is the building moved; apex shifts | ✅ |
 | 16 | 4 | Night Audit (`audit`) | Acts 1–4 exam on one screen; no new rules | spec (§5) |
-| 17 | **5 · Upside Down** (the building turns over) | Mind Your Head (`upside`) | **Upside Down**: at night the map is flipped and gravity points up | spec (§5.2) |
+| 17 | **5 · Upside Down** (the building turns over) | Mind Your Head (`upside`) | **Upside Down**: at night the map is flipped and gravity points up | ✅ |
 | 18 | 5 | Falling Up (`fallup`) | Mid-fall flips; climb a shaft by flipping | spec (§5.2) |
 | 19 | 5 | Ceiling Walker (`ceiling`) | A freak on the ceiling; a prank on the flipped map | spec (§5.2) |
 | 20 | 5 | Head Over Heels (`heels`) | Act 5's combination: every shift freezes one freak and flips gravity | spec (§5.2) |
@@ -294,7 +303,7 @@ The levels still to build in acts 2–4, in the §5.0 order (manifest: [CONTENT.
 | 19 | 5 | Ceiling Walker | `ceiling` | A freak on the ceiling, and a prank on a flipped map | C |
 | 20 | 5 | Head Over Heels | `heels` | Act 5's combination: every shift freezes one freak and flips gravity | C |
 
-### Mind Your Head (`upside`, #17): target par 2–3 (act 5, tier C)
+### Mind Your Head (`upside`, #17): target par 2–3 (act 5, tier C) ✅ built Nov 3 at par 2 (§4)
 - **Lesson:** at night the building is upside down: you fall up, and walk along what was the ceiling.
 - **Fiction:** "They flipped the night shift. Mind your head."
 - **Concept:** by day the floor route is blocked (a pit too wide to jump, or a wall); the ceiling route above it is continuous. Clock in, fall up onto the flipped ceiling, walk across, clock out and drop down past the obstacle. A second beat reverses it: the ceiling route is blocked where the floor isn't.
@@ -321,7 +330,7 @@ The levels still to build in acts 2–4, in the §5.0 order (manifest: [CONTENT.
 
 ## 5.3 The finale: Clock Out reworked *(planned, tier C; today's version is the fallback)*
 
-The built Clock Out (§4, #12 in today's build) is a complete finale and ships as-is if act 5 slips. The rework makes it pay off every act:
+The built Clock Out (§4, #13 in today's build) is a complete finale and ships as-is if act 5 slips. The rework makes it pay off every act:
 - **One screen, `upsideDown: true`, four rooms**, each recalling an act:
   1. mid-air shifts across stones (act 1);
   2. a frozen-lurker tunnel and a telegraphed prank (act 2);

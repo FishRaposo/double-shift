@@ -8,6 +8,8 @@ export const ACT_LINES = {
   2: 'Something keeps moving things.',
   3: "They've gotten organized.",
   4: "The building doesn't add up anymore.",
+  5: 'The night shift turned the building over.',
+  6: 'One more shift.',
 };
 
 // One line under the timecard stamp (WRITING.md §7). r: { shifts, par, deaths }.
