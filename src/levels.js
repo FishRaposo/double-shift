@@ -23,18 +23,19 @@ export const ACTS = { 1: 'Renovation', 2: 'Overtime', 3: 'Graveyard Shift', 4: '
 // FINALE · <level name> instead of ACT 6.
 export const FINALE_ACT = 6;
 
-// One object moved by every night entry around a loop of places (the pillar, the portrait): entry 1 takes it from
-// `start` to loop[0], each later entry to the next place, for `entries` entries in all. A clock-in too many costs
-// a lap instead of locking the level (there's no death to reset it). The first lap's places get tells.
-function relocations(id, { start, loop, rect, entries, sound }) {
+// One object moved by every night entry around a loop of places (the pillar, the portrait, a plank): entry `first`
+// (default 1) takes it from `start` to loop[0], each later entry to the next place, for `entries` moves in all. A
+// clock-in too many costs a lap instead of locking the level (there's no death to reset it). The first `tells`
+// moves (default: the first lap) get a tell at their destination.
+function relocations(id, { start, loop, rect, entries, sound, first = 1, tells = loop.length }) {
   return Array.from({ length: entries }, (_, i) => {
     const from = i === 0 ? start : loop[(i - 1) % loop.length];
     const to = loop[i % loop.length];
     const r = rect(to);
     return {
       id: `${id}${i + 1}`,
-      onNight: i + 1,
-      ...(i < loop.length ? { tell: { tx: Math.floor((r.x0 + (r.x1 ?? r.x0)) / 2), ty: r.y0 } } : {}),
+      onNight: first + i,
+      ...(i < tells ? { tell: { tx: Math.floor((r.x0 + (r.x1 ?? r.x0)) / 2), ty: r.y0 } } : {}),
       ...(sound ? { sound } : {}),
       set: [{ layer: 'night', ...rect(from), ch: '.' }, { layer: 'night', ...r, ch: '#' }],
     };
@@ -1081,6 +1082,53 @@ export const LEVELS = [
       '##################..........####',
       '##################..........####',
       '##################..........####',
+    ],
+  },
+  {
+    id: 'ceiling',
+    name: 'Ceiling Walker',
+    act: 5,
+    note: "Something is walking on the ceiling. It's fine.",
+    par: 4,
+    // Two 8-tile pits stop the day. By night you hang under the walkway's copy (row 11, one step above the
+    // floor), where their plank bridges one of the walkway's two gaps, also 8 tiles: over pit A on the first
+    // clock-in, moved over pit B on the second, back on the third, and so on. Clock in to cross pit A; a lurker
+    // hangs in a 1-tile tunnel on the night route (solid down to the grid's edge, so no jumping past it): clock
+    // out, walk under its outline, clock in past it (entry 2: the plank's over pit B now), cross, and clock out
+    // over the exit, which is bricked up by night.
+    upsideDown: true,
+    nightPatch: [
+      { x0: 5, x1: 12, y0: 11, ch: '#' }, // the plank, over pit A until they move it
+      { x0: 30, x1: 31, y0: 13, y1: 17, ch: '#' },
+    ],
+    pranks: relocations('plank', { start: 5, loop: [22, 5], rect: (x0) => ({ x0, x1: x0 + 7, y0: 11 }), entries: 8, first: 2, tells: 1 }),
+    freaks: [{ kind: 'lurker', tx: 16, ty: 12, range: 1, speed: 40 }],
+    props: [
+      { kind: 'sign', tx: 2, ty: 10, text: "IT'S FINE", style: 'note', layer: 'day' },
+      { kind: 'noticeBoard', tx: 21, ty: 10, layer: 'day' },
+      { kind: 'footprints', tx: 8, ty: 12, layer: 'night', flip: true },
+      { kind: 'footprints', tx: 10, ty: 12, layer: 'night', flip: true },
+    ],
+    decor: [{ kind: 'eyes', tx: 9, ty: 6 }],
+    day: [
+      '...............####.............',
+      '...............####.............',
+      '...............####.............',
+      '...............####.............',
+      '...............####.............',
+      '................................',
+      '#####........#########........##',
+      '................................',
+      '................................',
+      '................................',
+      '................................',
+      '................................',
+      '................................',
+      '.S.................C...........E',
+      '#####........#########........##',
+      '#####........#########........##',
+      '#####........#########........##',
+      '#####........#########........##',
     ],
   },
   {

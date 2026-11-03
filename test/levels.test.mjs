@@ -325,3 +325,34 @@ test('Falling Up: skipping the brake flip falls into the pit', () => {
   const { events } = play(lvl, policy, 120 * 15);
   assert.ok(events.some((e) => e.type === 'death' && e.cause === 'fall'));
 });
+
+test('Ceiling Walker: staying on night under the lurker spooks', () => {
+  const lvl = L.ceiling;
+  // the solution's first clock-in, then never out: the lurker's tunnel is one tile high and solid to the grid's
+  // edge below, so no rhythm of jumps gets past it (period 0: no jumping)
+  for (const period of [0, 18, 24, 30, 36, 48, 60, 90]) {
+    const jump = (s, f) => s.layer === NIGHT && period > 0 && f % period < period / 2;
+    const policy = (s, m, f) => ({ right: true, shift: s.shifts === 0 && SOLUTIONS.ceiling(s, m, f).shift, jump: jump(s, f) });
+    const { events } = play(lvl, policy, 120 * 8);
+    assert.equal(events.filter((e) => e.type === 'shift').length, 1);
+    const death = events.find((e) => e.type === 'death');
+    assert.ok(death && death.cause === 'spooked' && death.by === 'lurker', `jump period ${period}: died of ${death?.cause}`);
+  }
+});
+
+test("Ceiling Walker: the plank isn't there on the wrong night entry", () => {
+  const lvl = L.ceiling;
+  // the solution as far as the lurker's far side, then one clock-in too many: in (entry 2: the plank goes over
+  // the second pit), out, in (entry 3: back over the first one). The walkway's copy over pit B is open sky.
+  const policy = (s, m, f) => {
+    if (s.shifts < 2 || tx(s) < 19.1) return SOLUTIONS.ceiling(s, m, f);
+    if (s.nightEntries < 3) return { shift: f % 2 === 0 };
+    return { right: true };
+  };
+  const { events: all } = play(lvl, policy, 120 * 10);
+  const events = all.slice(0, all.findIndex((e) => e.type === 'death') + 1); // up to the first death
+  assert.deepEqual(events.filter((e) => e.type === 'prank').map((e) => e.id), ['plank1', 'plank2']);
+  const death = events.at(-1);
+  assert.ok(death && death.cause === 'fall' && death.layer === NIGHT, `died of ${death?.cause}`);
+  assert.ok(death.x > 21 * TILE && death.x < 30 * TILE, `fell up through the second pit's copy (x ${death.x})`);
+});

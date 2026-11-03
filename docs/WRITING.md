@@ -73,7 +73,7 @@ In the order of the 21-level game (LEVELS.md §5.0). ✅ = in the build.
 | 16 Night Audit (`audit`) ✅ | Management is doing a walkthrough tonight. So are they. |
 | 17 Mind Your Head (`upside`) ✅ | They flipped the night shift. Mind your head. |
 | 18 Falling Up (`fallup`) ✅ | The floor is up there now. |
-| 19 Ceiling Walker (`ceiling`) | Something is walking on the ceiling. It's fine. |
+| 19 Ceiling Walker (`ceiling`) ✅ | Something is walking on the ceiling. It's fine. |
 | 20 Head Over Heels (`heels`) | Up is a matter of opinion now. |
 | 21 Clock Out (`clockout`) ✅ | Almost done. Don't look at the vents. |
 
@@ -94,6 +94,24 @@ SPOOKED! · AAAGH! · NOPE! · EEP! · NOT PAID ENOUGH
 | More tells | MINE NOW · DO NOT TUCH · FINDERS KEEPERS · (a drawing of eyes) |
 | Hex-flavored tells *(candidates)* | MINE BY ANSHENT LAW · HEXED. NO TUCH · THE PLANK IS OURS NOW · WE SEE YOU (WE R SHINY) |
 | The freaks' proud sign over the staircase (`stairs`) *(draft)* | OUR STARES! |
+
+### 5.1 Signs in the levels ✅ *(in the build; drafts for Fish)*
+
+| Level | Sign |
+|---|---|
+| `clock` | RENOVATION |
+| `scaff` | DELIVERIES |
+| `closing` | LASERS |
+| `stairs` | OUR STARES! (the freaks') |
+| `pillar` | LOAD BEARING |
+| `supervisor` | STAFF ONLY |
+| `daywalker` | DAY SHIFT |
+| `offset` | 3 · 3.5 (floor numbers) |
+| `audit` | INSPECTION |
+| `upside` | MIND YOUR HEAD |
+| `fallup` | THIS WAY UP |
+| `ceiling` | IT'S FINE |
+| `clockout` | LAST SHIFT |
 
 ## 6. Notice board memos *(planned, A3)*
 

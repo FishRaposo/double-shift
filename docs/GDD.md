@@ -28,7 +28,7 @@
 | Score | Timecard: clock-ins vs. par (fewest shifts the designer found, proven by tests) | §15.3 |
 | Tone | Mock horror: petty monsters, deadpan worker, no gore, no jump scares | §10.5 |
 | Look and sound | Crisp pixel art on a 2-px grid, a hand-made pixel font, a spooky-goofy theme whose day/night arrangements crossfade on every shift; all made in code (built 2026-11-02) | §10, §11, ART.md, AUDIO.md |
-| Levels | **21: five acts of four plus the finale.** <!-- n:levels -->19<!-- /n --> built (tier A, the 12 built on Nov 2, is a complete game); tier B = 17, tier C = 21 with act 5 Upside Down (night flipped, gravity up) and the finale rework. Four new mechanics shipped; Upside Down is the fifth | §8.2, [CONTENT.md](CONTENT.md) |
+| Levels | **21: five acts of four plus the finale.** <!-- n:levels -->20<!-- /n --> built (tier A, the 12 built on Nov 2, is a complete game); tier B = 17, tier C = 21 with act 5 Upside Down (night flipped, gravity up) and the finale rework. Four new mechanics shipped; Upside Down is the fifth | §8.2, [CONTENT.md](CONTENT.md) |
 | Jam | Game Off 2026, theme SHIFT, due Dec 1 13:37 PST. Lead with the pranks and freezing freaks: two overlapping worlds alone is one of the jam page's example ideas. | §1.8 |
 
 **Living sections** (kept current): §0, §1, §3, §4, §8.2, §10.5, §15.3, §18, §21. **Historical sections** (the original pre-v0.2 plan, kept for the record): §13.1–13.8, §16, §22. Their banners say what replaced them.
@@ -186,7 +186,7 @@ Game Off is rated by other participants in six categories (RELEASE.md §0). What
 
 | Category | What earns it here | Gap today |
 |---|---|---|
-| Overall | A complete, polished run with a satisfying final timecard | Tier B is built (17 levels plus act 5's first, Nov 3); act 5's other three levels and the finale rework remain (§8.2); the finale and its ending are built |
+| Overall | A complete, polished run with a satisfying final timecard | Tier B is built (17 levels) and three of act 5's four (Nov 3); `heels` and the finale rework remain (§8.2); the finale and its ending are built |
 | Gameplay | Tight movement (§5), mid-air shifting, par as a second puzzle per level | Tuning pass (G1), playtests |
 | Graphics | A deliberate code-drawn style: two palettes of one building, echoes, readable freaks (ART.md §1.1) | — |
 | Audio | Theme in two arrangements crossfaded on shift (§11.3); yelp, giggle, stamp | — |
@@ -867,7 +867,7 @@ A linear progression is sufficient.
 |---|---|---|---|---|
 | 17. Mind Your Head ✅ | Night flipped, gravity up | At night you fall up; the ceiling is the floor | They flipped the night shift | C |
 | 18. Falling Up ✅ | Mid-fall flips | Shift mid-fall to reverse it; climb a shaft by flipping | The floor is up there now | C |
-| 19. Ceiling Walker | Flip + freak + prank | Freeze a ceiling lurker; read a prank on the flipped map | Something walks on the ceiling | C |
+| 19. Ceiling Walker ✅ | Flip + freak + prank | Freeze a ceiling lurker; read a prank on the flipped map | Something walks on the ceiling | C |
 | 20. Head Over Heels | Act 5 combination | Every shift freezes one freak and flips gravity | Up is a matter of opinion now | C |
 
 **Finale**

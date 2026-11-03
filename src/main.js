@@ -5,7 +5,7 @@ import { step, initState, parseLevel, tileAt, isSolidChar, freakBoxes, gravitySi
 import { LEVELS, ACTS, FINALE_ACT } from './levels.js';
 import { createInput, GAME_KEYS } from './input.js';
 import { sfx, playSound, unlockAudio, toggleMute, setVolumes, setMusicShift, setMenu } from './audio.js';
-import { skinPlan } from './skins.js';
+import { skinPlan, checkpointHangs } from './skins.js';
 import { createSave, createSettings, isUnlocked } from './save.js';
 import { drawText, measureText, wrapText } from './font.js';
 import { drawSprite, drawEyes, eyesOpen, workerFrame, spriteRect, ART, SPRITES, C } from './sprites.js';
@@ -598,8 +598,10 @@ function drawPlay() {
     // the shift cues on top of the per-frame portrait, like the static layer does for everything else
     for (let dy = 0; dy < sp.h; dy++) for (let dx = 0; dx < sp.w; dx++) drawShiftCues(g, lvl, layer, s.overrides, sp.tx + dx, sp.ty + dy);
   }
-  const hang = gravitySign(lvl, layer) < 0;
-  for (const c of lvl.checkpoints) drawCheckpoint(g, c.tx, c.ty, s.checkpoint.id === c.id, s.checkpoint.id === c.id ? game.fx.ping : 0, { hang });
+  for (const c of lvl.checkpoints) {
+    const hang = checkpointHangs(lvl, layer, c, s.overrides);
+    drawCheckpoint(g, c.tx, c.ty, s.checkpoint.id === c.id, s.checkpoint.id === c.id ? game.fx.ping : 0, { hang });
+  }
   drawDecor(lvl, def, layer, t);
   drawTells(lvl, s, layer, t);
   freakBoxes(lvl, s).forEach((b, i) => {

@@ -2,8 +2,9 @@
 // overriding tiles); skinPlan decides which object art covers them, so the screen follows the rules.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DAY, NIGHT, SKIN_KINDS } from '../src/rules.js';
-import { skinPlan } from '../src/skins.js';
+import { DAY, NIGHT, SKIN_KINDS, parseLevel } from '../src/rules.js';
+import { skinPlan, checkpointHangs } from '../src/skins.js';
+import { L } from './solutions.mjs';
 import { LEVELS } from '../src/levels.js';
 import { SOUNDS } from '../src/audio.js';
 import { level } from './helpers.mjs';
@@ -128,4 +129,20 @@ test('skinPlan: a portrait covers a w×h rect from its top-left cell', () => {
 test('art: every skin kind used in LEVELS is known', () => {
   for (const def of LEVELS) for (const sk of def.skins ?? []) assert.ok(SKIN_KINDS.includes(sk.kind), `${def.id}: ${sk.kind}`);
   assert.deepEqual([...SKIN_KINDS].sort(), ['door', 'doorPile', 'pillar', 'portrait']);
+});
+
+test('checkpoint art: drawn the way the shift it saves in holds it (no hanging from nothing)', () => {
+  // Ceiling Walker's checkpoint only stands on the day floor: on the flipped night it stays upright on that
+  // floor's echo instead of hanging under an empty cell
+  const c = L.ceiling.checkpoints[0];
+  assert.equal(checkpointHangs(L.ceiling, DAY, c), false);
+  assert.equal(checkpointHangs(L.ceiling, NIGHT, c), false);
+  // Mind Your Head's has ground in both shifts: it hangs at night
+  const u = L.upside.checkpoints[0];
+  assert.equal(checkpointHangs(L.upside, DAY, u), false);
+  assert.equal(checkpointHangs(L.upside, NIGHT, u), true);
+  // and one only the flipped night holds hangs by day too
+  const tiny = parseLevel({ name: 'tiny', par: 0, upsideDown: true, day: ['....', '..C.', 'S..E', '####'] });
+  assert.equal(checkpointHangs(tiny, DAY, tiny.checkpoints[0]), true);
+  assert.equal(checkpointHangs(tiny, NIGHT, tiny.checkpoints[0]), true);
 });

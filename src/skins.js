@@ -6,7 +6,7 @@
 // Anchors: a door and a pillar stand on (tx, ty), their bottom cell, and rise h cells; a portrait hangs from
 // (tx, ty), its top-left cell, and covers w×h; the door pile's bottom row is ty, 2 cells wide, at most h high.
 
-import { tileAt, isSolidChar } from './rules.js';
+import { tileAt, isSolidChar, standableSpot, gravitySign } from './rules.js';
 
 const solid = (level, layer, ov, tx, ty) => isSolidChar(tileAt(level, layer, tx, ty, ov));
 
@@ -47,4 +47,13 @@ export function skinPlan(level, layer, ov = {}) {
     }
   }
   return out;
+}
+
+// A checkpoint is drawn the way the shift it saves in holds it: hanging only where a flipped night holds it (a
+// solid above its cell). One that only the other shift can stand on keeps that shift's pose, standing on the
+// day floor's echo rather than hanging under an empty cell, so it never promises a save it won't make.
+export function checkpointHangs(level, layer, c, ov = {}) {
+  const other = 1 - layer;
+  const anchor = !standableSpot(level, layer, c.tx, c.ty, ov) && standableSpot(level, other, c.tx, c.ty, ov) ? other : layer;
+  return gravitySign(level, anchor) < 0;
 }
