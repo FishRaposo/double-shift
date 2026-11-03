@@ -23,6 +23,24 @@ export const ACTS = { 1: 'Renovation', 2: 'Overtime', 3: 'Graveyard Shift', 4: '
 // FINALE · <level name> instead of ACT 6.
 export const FINALE_ACT = 6;
 
+// One object moved by every night entry around a loop of places (the pillar, the portrait): entry 1 takes it from
+// `start` to loop[0], each later entry to the next place, for `entries` entries in all. A clock-in too many costs
+// a lap instead of locking the level (there's no death to reset it). The first lap's places get tells.
+function relocations(id, { start, loop, rect, entries, sound }) {
+  return Array.from({ length: entries }, (_, i) => {
+    const from = i === 0 ? start : loop[(i - 1) % loop.length];
+    const to = loop[i % loop.length];
+    const r = rect(to);
+    return {
+      id: `${id}${i + 1}`,
+      onNight: i + 1,
+      ...(i < loop.length ? { tell: { tx: Math.floor((r.x0 + (r.x1 ?? r.x0)) / 2), ty: r.y0 } } : {}),
+      ...(sound ? { sound } : {}),
+      set: [{ layer: 'night', ...rect(from), ch: '.' }, { layer: 'night', ...r, ch: '#' }],
+    };
+  });
+}
+
 export const LEVELS = [
   {
     id: 'clock',
@@ -416,7 +434,9 @@ export const LEVELS = [
     // steals door n from the night and lays it on the pile at the ledge's foot: three doors make two 3-tile
     // rises. So you want the freaks to act: three entries, five clock-ins, one per room, and the rooms say where.
     // Room 2 has lasers by night (cols 8-9) and rebar by day (13-14): clock out before the lasers, back in
-    // before the rebar. Room 3's lurker works nights: clock out as you enter it, back in past it.
+    // before the rebar. Room 3's lurker works nights: clock out as you enter it, back in past it. Low beams
+    // (their tops out of reach) hang over the hazards and the lurker, so nothing is jumped: spend the clock-ins
+    // at the spawn and you meet the lasers at night.
     pranks: [
       { id: 'door1', onNight: 1, tell: { tx: 4, ty: 10 }, sound: 'doorThunk', set: [{ layer: 'night', x0: 4, y0: 10, y1: 13, ch: '.' }, { layer: 'night', x0: 26, x1: 27, y0: 13, ch: '#' }] },
       { id: 'door2', onNight: 2, tell: { tx: 15, ty: 10 }, sound: 'doorThunk', set: [{ layer: 'night', x0: 15, y0: 10, y1: 13, ch: '.' }, { layer: 'night', x0: 26, x1: 27, y0: 12, ch: '#' }] },
@@ -430,7 +450,7 @@ export const LEVELS = [
     props: [
       { kind: 'noticeBoard', tx: 1, ty: 10, layer: 'day' },
       { kind: 'lostFoundBox', tx: 25, ty: 13 },
-      { kind: 'vent', tx: 10, ty: 9, layer: 'night' },
+      { kind: 'vent', tx: 11, ty: 8, layer: 'night' },
     ],
     day: [
       '................................',
@@ -442,10 +462,10 @@ export const LEVELS = [
       '................................',
       '..............................E.',
       '............................####',
-      '............................####',
-      '....#..........#........#...####',
-      '....#..........#........#...####',
-      '....#..........#........#...####',
+      '........##...##....####.....####',
+      '....#...##...###...####.#...####',
+      '....#...##...###...####.#...####',
+      '....#...##...###...####.#...####',
       '.S..#........^^#C.......#...####',
       '################################',
       '################################',
@@ -462,10 +482,10 @@ export const LEVELS = [
       '................................',
       '................................',
       '............................####',
-      '............................####',
-      '....#..........#........#...####',
-      '....#..........#........#...####',
-      '....#..........#........#...####',
+      '........##...##....####.....####',
+      '....#...##...###...####.#...####',
+      '....#...##...###...####.#...####',
+      '....#...##...###...####.#...####',
       '....#...^^.....#........#...####',
       '################################',
       '################################',
@@ -543,11 +563,8 @@ export const LEVELS = [
     // and the mezzanine top) and P3 (col 13, out of the way). Clock in to pass P0, out to pass P1, climb the
     // day crate, and clock back in mid-jump off it: that's entry 2, and the pillar lands under you. One clock-in
     // too many and it's on P3 when you jump.
-    pranks: [
-      { id: 'pillar1', onNight: 1, tell: { tx: 11, ty: 10 }, sound: 'pillarScrape', set: [{ layer: 'night', x0: 6, y0: 10, y1: 13, ch: '.' }, { layer: 'night', x0: 11, y0: 10, y1: 13, ch: '#' }] },
-      { id: 'pillar2', onNight: 2, tell: { tx: 20, ty: 10 }, sound: 'pillarScrape', set: [{ layer: 'night', x0: 11, y0: 10, y1: 13, ch: '.' }, { layer: 'night', x0: 20, y0: 10, y1: 13, ch: '#' }] },
-      { id: 'pillar3', onNight: 3, tell: { tx: 13, ty: 10 }, sound: 'pillarScrape', set: [{ layer: 'night', x0: 20, y0: 10, y1: 13, ch: '.' }, { layer: 'night', x0: 13, y0: 10, y1: 13, ch: '#' }] },
-    ],
+    // P0 → P1 → P2 → P3, then around P1, P2, P3 again (three laps)
+    pranks: relocations('pillar', { start: 6, loop: [11, 20, 13], rect: (col) => ({ x0: col, y0: 10, y1: 13 }), entries: 9, sound: 'pillarScrape' }),
     skins: [
       { kind: 'pillar', tx: 6, ty: 13 },
       { kind: 'pillar', tx: 11, ty: 13, layer: 'night' },
@@ -759,11 +776,8 @@ export const LEVELS = [
     // doorway; by day the doorway is clear but you can't get over the ledge. Each night entry rehangs it: high on
     // the wall (P1), then low against the ledge (P2), where its top is the step you were missing (floor → 2 →
     // the ledge, 3 more), then back in the doorway (P3). On entry 2 the doorway is clear too: climb, drop, out.
-    pranks: [
-      { id: 'portrait1', onNight: 1, tell: { tx: 4, ty: 4 }, set: [{ layer: 'night', x0: 26, x1: 28, y0: 12, y1: 13, ch: '.' }, { layer: 'night', x0: 3, x1: 5, y0: 4, y1: 5, ch: '#' }] },
-      { id: 'portrait2', onNight: 2, tell: { tx: 17, ty: 12 }, set: [{ layer: 'night', x0: 3, x1: 5, y0: 4, y1: 5, ch: '.' }, { layer: 'night', x0: 16, x1: 18, y0: 12, y1: 13, ch: '#' }] },
-      { id: 'portrait3', onNight: 3, tell: { tx: 27, ty: 12 }, set: [{ layer: 'night', x0: 16, x1: 18, y0: 12, y1: 13, ch: '.' }, { layer: 'night', x0: 26, x1: 28, y0: 12, y1: 13, ch: '#' }] },
-    ],
+    // P0 (the doorway) → P1 (high) → P2 (the step) → P0, and around again (three laps)
+    pranks: relocations('portrait', { start: [26, 12], loop: [[3, 4], [16, 12], [26, 12]], rect: ([x, y]) => ({ x0: x, x1: x + 2, y0: y, y1: y + 1 }), entries: 9 }),
     skins: [
       { kind: 'portrait', tx: 26, ty: 12, layer: 'night' },
       { kind: 'portrait', tx: 3, ty: 4, layer: 'night' },
@@ -923,7 +937,7 @@ export const LEVELS = [
     name: 'Night Audit',
     act: 4,
     note: 'Management is doing a walkthrough tonight. So are they.',
-    par: 6,
+    par: 5,
     // Acts 1-4 on one screen, no new rules, a checkpoint after each beat. Every beat is a 1-tile tunnel under
     // a 4-thick roof (its top 5 up, out of reach), so no beat can be jumped or walked over.
     // 1 (act 3, wax): a day wall sends you in at night; under a low roof, rebar by day keeps you on the night's
@@ -931,9 +945,10 @@ export const LEVELS = [
     // 2 (act 3, the supervisor): the block is solid by day; at night a tunnel runs through it with a lurker on
     //   each side of the supervisor (who manages every night freak here). Cross each on its slack side.
     // 3 (act 4): the day-walker is frozen while you're on night. Past it, out and back in: that's entry 3,
-    //   when they lay the plank over the last pit (a low roof, so no jumping it). Then out again: the lurker
-    //   under the roof works nights. Their tell shows from the spawn.
-    pranks: [{ id: 'plank', onNight: 3, tell: { tx: 25, ty: 13 }, set: [{ layer: 'night', x0: 25, x1: 26, y0: 14, ch: '#' }] }],
+    //   when they lay the plank over the last pit (a low roof, so no jumping it). Then the lurker under the roof:
+    //   it works nights, but it answers to the clipboard too, so clock out or wait until it slacks. Their tell
+    //   shows from the spawn, just before the roof.
+    pranks: [{ id: 'plank', onNight: 3, tell: { tx: 23, ty: 13 }, set: [{ layer: 'night', x0: 25, x1: 26, y0: 14, ch: '#' }] }],
     freaks: [
       { kind: 'supervisor', tx: 15, ty: 8, period: 1.6, startFacing: 'right' },
       { kind: 'lurker', tx: 13, ty: 13, range: 1, speed: 40 },

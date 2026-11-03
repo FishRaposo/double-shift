@@ -20,9 +20,7 @@ function column(level, layer, ov, tx, ty0, ty1) {
 // the level built it there, or a prank has written those tiles (a prank put it there, or took it away). A slot
 // it hasn't reached yet stays bare.
 function stoodThere(level, layer, ov, tx, ty0, ty1) {
-  for (let ty = ty0; ty <= ty1; ty++) {
-    if (isSolidChar(tileAt(level, layer, tx, ty)) || `${layer},${tx},${ty}` in ov) return true;
-  }
+  for (let ty = ty0; ty <= ty1; ty++) if (solid(level, layer, {}, tx, ty) || `${layer},${tx},${ty}` in ov) return true;
   return false;
 }
 

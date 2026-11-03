@@ -139,7 +139,7 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 - **Lesson:** sometimes you *want* the freaks to act: clock-ins are a resource you spend on purpose.
 - **Both shifts:** three doors, 4 tiles tall (cols 4, 15 and 24, skinned as doors), cut the floor into rooms; the exit ledge (cols 28–31) is 6 up.
 - **Pranks:** night entry *n* steals door D*n* from the night (its frame stays) and lays it on the freaks' pile at the ledge's foot (cols 26–27, night only, a `doorPile` skin). Three doors make two 3-tile rises; with two the ledge is still out of reach (a test pins it). Every prank thunks (`doorThunk`); all three tells show from the spawn.
-- **Where to clock:** one entry per room. Room 1: anywhere. Room 2 has lasers by night (cols 8–9) and rebar by day (13–14): clock out before the lasers, back in before the rebar. Room 3's lurker (col 20, range 1) works nights: clock out as you come in, back in past it. A checkpoint at the door of room 3 saves at night with two doors gone.
+- **Where to clock:** one entry per room. Room 1: anywhere. Room 2 has lasers by night (cols 8–9) and rebar by day (13–14): clock out before the lasers, back in before the rebar. Room 3's lurker (col 20, range 1) works nights: clock out as you come in, back in past it. Low beams (rows 9–12, their tops out of reach) hang over the hazards and the lurker, so nothing can be jumped: spending all five clock-ins at the spawn meets the lasers at night (a test pins it; the PR 4 review found that route winning before the beams). A checkpoint at the door of room 3 saves at night with two doors gone.
 - **Solution:** the five clock-ins above, then climb the pile at night: jump against its side, then against the ledge.
 - **Par:** 5 is the minimum: three night entries take five clock-ins from day, and nothing else reaches the ledge (the audit's random search finds no win below it). It inverts "fewest clock-ins" as planned.
 - **Margin:** clock-ins 275–525 ms, jumps 375–450 ms, input lag up to 150 ms still wins.
@@ -156,7 +156,7 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 - **Both shifts:** the pillar (4 tall, skinned) at P0 (col 6), and the mezzanine (cols 21–31, top 7 up) with the exit. **Day only:** a crate stack, 3 tall (cols 17–18).
 - **Pranks (night only, `pillarScrape`):** entry 1 moves the night pillar to P1 (col 11, a wall on the night floor), entry 2 to P2 (col 20, against the mezzanine: crate 3 → pillar top 4 → mezzanine 7), entry 3 to P3 (col 13, out of the way). The day pillar stays at P0. A crack marks only the places it stood (`skinPlan` now leaves a slot bare until the pillar has been there). All three tells show from the spawn.
 - **Solution:** clock in to pass P0, out to pass P1, climb the crate by day, jump off its far end and clock in mid-air: that's entry 2, and the pillar lands under you. From its top, jump against the mezzanine.
-- **Par:** 3, the minimum (the spec said about 4; nothing shorter wins and nothing longer was needed). One entry too many and the pillar is on P3 when you jump (a test pins it); R restarts.
+- **Par:** 3, the minimum (the spec said about 4; nothing shorter wins and nothing longer was needed). One entry too many and the pillar is on P3 when you jump (a test pins it). It keeps going round (P1, P2, P3, for three laps), so an extra clock-in costs a lap, never a stuck run: there's nothing here to die on, so no checkpoint restore would rescue it.
 - **Margin:** clock-ins 567–600 ms, jumps 183–333 ms, input lag up to 150 ms still wins.
 - **Props:** a notice board and a LOAD BEARING sign on the day pillar, a pallet by the crates (day).
 
@@ -175,7 +175,7 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 ### 13. Employee of the Month: par 3 (act 4, built Nov 3)
 - **Lesson:** the obstacle and the tool are the same object, moved by each clock-in.
 - **Both shifts:** a ledge 5 up (cols 19–24) blocks the floor; past it, the exit sits in a doorway under a lintel (row 11, cols 28–31), open only from the left at floor level.
-- **Night:** their portrait (3×2, solid, a `portrait` skin: just eyes) hangs in the doorway (cols 26–28), sealing it. Each entry rehangs it: high on the wall (P1), low against the ledge (P2, entry 2), back in the doorway (P3 = P0). A nail and an unfaded patch mark each spot (new `PROPS.nail`), seen when it isn't there.
+- **Night:** their portrait (3×2, solid, a `portrait` skin: just eyes) hangs in the doorway (cols 26–28), sealing it. Each entry rehangs it: high on the wall (P1), low against the ledge (P2, entry 2), back in the doorway (P3 = P0), and round again for three laps, so a clock-in too many costs a lap instead of a stuck run. A nail and an unfaded patch mark each spot (new `PROPS.nail`), seen when it isn't there.
 - **Solution:** in, out, in at the start (entry 2), then at night jump onto the portrait (2 up) and onto the ledge (3 more), drop off the far side: on entry 2 the doorway is clear too, so walk in.
 - **Par:** 3. The spec's route also clocked out on the ledge to drop by day; that works (4) but isn't needed, because the portrait that sealed the doorway is the step by then. Tests pin both halves: the exit can't be entered at night while the portrait hangs, and on entries 1 and 3 the ledge is out of reach.
 - **Margin:** clock-ins 583–950 ms, jumps 233–708 ms, input lag up to 150 ms still wins.
@@ -195,14 +195,14 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 - **Margin:** the full jump peaks at ≈ 93.5 px against the 90 px needed (plus the 4 px nudge): each apex shift has ≈ 250 ms. Any lower `jumpVelocity` breaks this level first — re-run `npm run audit` after tuning. `dy: -2` is the fallback.
 - **Props:** floor signs read 3 and 3.5.
 
-### 16. Night Audit: par 6 (act 4, built Nov 3)
+### 16. Night Audit: par 5 (act 4, built Nov 3)
 - **Lesson:** acts 1–4 on one screen, no new rules: the exam before the building turns over.
 - **Every beat is a 1-tile tunnel under a 4-thick roof** (its top 5 up): nothing can be jumped or walked over. (The first build had 1-row roofs, 2 up; the audit's random search walked across their tops and won in 2.) A checkpoint after each beat.
 - **Beat 1 (wax):** a day wall (col 3) sends you in at night; under the roof, rebar by day (cols 4–5) keeps you on the night's wax, which won't let you stop before the laser (col 9): clock out on the dry stretch (cols 6–8).
 - **Beat 2 (the supervisor):** the block (cols 12–18) is solid by day; at night a tunnel runs through it with a lurker each side of the supervisor on its roof. Wait at each mouth until that side slacks, then go through. The supervisor manages every night freak in the level, the far lurker included.
-- **Beat 3 (act 4):** the day-walker (col 21) is frozen while you're on night. Past its reach, stop, clock out and back in: that's entry 3, when they lay the plank over the last pit (cols 25–26, under the roof, telegraphed from the spawn). Across it, clock out again: the lurker at col 29 works nights.
-- **Par:** 6 (in the 6–8 target). Lessons pinned, one test each: night through the wax slides into the laser even if you let go; crossing a watched tunnel spooks; day past the day-walker spooks; night past the far lurker spooks; the last pit on entry 2 is a fall.
-- **Margin:** clock-ins 158–775 ms; input lag up to 100 ms still wins (the policy waits at each tunnel mouth for the clipboard with 0.75 s to spare, and stops early before the pit).
+- **Beat 3 (act 4):** the day-walker (col 21) is frozen while you're on night. Past its reach, stop, clock out and back in: that's entry 3, when they lay the plank over the last pit (cols 25–26, under the roof; the tell sits just before the roof, in view from the spawn). Across it, the lurker at col 29 works nights, but it answers to the clipboard too: clock out, or wait until the supervisor looks left.
+- **Par:** 5 (below the 6–8 target): waiting out the clipboard past the far lurker saves the last clock-out (the PR 4 review found it; it's a fair act-3 answer, so par follows it). Lessons pinned, one test each: night through the wax slides into the laser even if you let go; crossing a watched tunnel spooks; day past the day-walker spooks; night past the far lurker spooks while it works; the last pit on entry 2 is a fall, and on entry 3 the plank is there (the real route, played).
+- **Margin:** clock-ins 158–458 ms; input lag up to 100 ms still wins (the policy waits at each tunnel mouth and at the far lurker for the clipboard with 0.75 s to spare, and stops early before the pit).
 - **Props:** an INSPECTION sign and a notice board (day), a mop bucket and a WET FLOOR sign by the wax (night).
 
 ### 17. Mind Your Head: par 2 (act 5, built Nov 3)
@@ -310,7 +310,7 @@ The levels still to build in acts 2–4, in the §5.0 order (manifest: [CONTENT.
 - **Solution:** use the portrait as a step at night (entry 2) to get onto the ledge, walk above the exit, shift to day and drop to the exit.
 - **Props:** the portrait is just eyes (WRITING.md §6 memo), a nail where it used to hang.
 
-### Night Audit (`audit`, #16): target par 6–8 (act 4, tier B) ✅ built Nov 3 at par 6 (§4)
+### Night Audit (`audit`, #16): target par 6–8 (act 4, tier B) ✅ built Nov 3 at par 5 (§4)
 - **Lesson:** everything from acts 1–4 on one screen, no new rules. It's the "you've learned it all" exam before the building turns over.
 - **Fiction:** "Management is doing a walkthrough tonight. So are they."
 - **Beats** (left to right, a checkpoint between each):

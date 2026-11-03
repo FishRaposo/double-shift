@@ -186,7 +186,7 @@ Game Off is rated by other participants in six categories (RELEASE.md §0). What
 
 | Category | What earns it here | Gap today |
 |---|---|---|
-| Overall | A complete, polished run with a satisfying final timecard | 4 tier-B levels remain: `stairs`, `doors`, `pillar`, `portrait` (§8.2); the finale and its ending are built |
+| Overall | A complete, polished run with a satisfying final timecard | Tier B is built (17 levels plus act 5's first, Nov 3); act 5's other three levels and the finale rework remain (§8.2); the finale and its ending are built |
 | Gameplay | Tight movement (§5), mid-air shifting, par as a second puzzle per level | Tuning pass (G1), playtests |
 | Graphics | A deliberate code-drawn style: two palettes of one building, echoes, readable freaks (ART.md §1.1) | — |
 | Audio | Theme in two arrangements crossfaded on shift (§11.3); yelp, giggle, stamp | — |

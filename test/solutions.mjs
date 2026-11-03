@@ -154,12 +154,12 @@ export const SOLUTIONS = {
     return { right: true, shift, jump: p.grounded ? x > 13 && x < 24 && Math.abs(p.vx) < 1 : p.vy < 0 };
   },
   // in past the day wall, out on the dry stretch, in at the block; through the tunnels watching the clipboard;
-  // past the frozen day-walker, out for the lurker, in for the plank
+  // past the frozen day-walker, out and in for the plank; past the far lurker on the clipboard's slack side
   audit: (s, m) => {
     const p = s.player;
     const x = tx(s);
     // each press in the middle of its window, so a press moved early or late still lands inside it
-    const plan = [[1.2, 2.4, NIGHT], [6.6, 7.6, DAY], [10.6, 11.4, NIGHT], [27.1, 27.8, DAY]];
+    const plan = [[1.2, 2.4, NIGHT], [6.6, 7.6, DAY], [10.6, 11.4, NIGHT]];
     const due = plan.find(([a, b]) => x >= a && x <= b);
     let shift = !!due && s.layer !== due[2];
     let right = true;
@@ -169,6 +169,11 @@ export const SOLUTIONS = {
       const sup = freakBoxes(L.audit, s).find((b) => b.kind === 'supervisor');
       if (x < 11.5 && !m.goA) right = m.goA = sup.facing === 1 && sup.turnIn > 0.75;
       else if (x >= 14.95 && !m.goB) right = m.goB = sup.facing === -1 && sup.turnIn > 0.75;
+    }
+    // across the plank, the far lurker answers to the clipboard too: wait until it slacks, then walk past
+    if (s.layer === NIGHT && x > 27 && x < 28.5 && !m.goC) {
+      const sup = freakBoxes(L.audit, s).find((b) => b.kind === 'supervisor');
+      right = m.goC = sup.facing === -1 && sup.turnIn > 0.75;
     }
     // past the day-walker (its reach ends at x 22.83), stop before the pit (24.4): out and back in (entry 3:
     // the plank), then on. The stop starts early enough to absorb a slow reaction.

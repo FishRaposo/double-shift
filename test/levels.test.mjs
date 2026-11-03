@@ -259,11 +259,52 @@ test('Night Audit: night past the lurker spooks', () => {
   assert.ok(events.some((e) => e.type === 'death' && e.cause === 'spooked' && e.by === 'lurker'));
 });
 
-test('Night Audit: the last pit on the wrong night entry is a fall', () => {
+test('Night Audit: the last pit on the wrong night entry is a fall; on entry 3 the plank is there', () => {
   const lvl = L.audit;
-  const sup = lvl.freaks.find((f) => f.kind === 'supervisor');
-  let t = 0;
-  while (supervisorFacing(sup, t) !== -1) t += 0.05; // the far lurker slacks: only the pit is in the way
-  const { events } = run(lvl, auditAt(23.3, NIGHT, { freakClock: t + 0.05, nightEntries: 2 }), () => ({ ...NO_INPUT, right: true }), 120 * 3);
-  assert.ok(events.some((e) => e.type === 'death' && e.cause === 'fall'), 'no plank before entry 3');
+  // the real route up to the stop before the pit (two entries so far), then straight on at night
+  const route = (toggle) => (s, m, f) => {
+    if (!toggle && tx(s) > 22.9) return { right: true };
+    return SOLUTIONS.audit(s, m, f);
+  };
+  const short = play(lvl, route(false), 120 * 20);
+  assert.ok(short.events.some((e) => e.type === 'death' && e.cause === 'fall'), 'no plank on entry 2: into the pit');
+  const full = play(lvl, route(true), 120 * 20);
+  assert.ok(full.events.some((e) => e.type === 'prank' && e.id === 'plank'));
+  assert.equal(full.state.won, true);
+  assert.equal(full.events.filter((e) => e.type === 'death').length, 0);
+});
+
+test('Lost & Found: spending every clock-in at the spawn does not win (the hazards and the lurker cannot be jumped)', () => {
+  const lvl = L.doors;
+  // all doors gone at night, then run right at night jumping the lasers and the lurker and climbing the pile
+  for (const a of [5.8, 6.2, 6.6, 7.0]) {
+    for (const b of [16.6, 17.2, 17.8, 18.4]) {
+      const policy = (s) => {
+        if (s.shifts < 5) return { shift: s.time % 0.05 < 0.025 };
+        const x = tx(s);
+        const p = s.player;
+        const hop = (x > a && x < a + 0.5) || (x > b && x < b + 0.5) || (x > 24.8 && Math.abs(p.vx) < 1);
+        return { right: true, jump: p.grounded ? hop : p.vy < 0 };
+      };
+      const { state, events } = play(lvl, policy, 120 * 15);
+      const clean = state.won && !events.some((e) => e.type === 'death');
+      assert.equal(clean, false, `won from the spawn jumping at x ${a} and ${b}`);
+    }
+  }
+});
+
+test('Structural Integrity: one clock-in too many is not a softlock: the pillar comes back around to P2', () => {
+  const lvl = L.pillar;
+  let s = initState(lvl);
+  for (let k = 0; k < 9; k++) s = step(lvl, s, { ...NO_INPUT, shiftPressed: true }); // entries 1-5 at the spawn
+  assert.deepEqual([s.layer, s.nightEntries], [NIGHT, 5]);
+  assert.ok([10, 11, 12, 13].every((ty) => tileAt(lvl, NIGHT, 20, ty, s.overrides) === '#'), 'at P2 again on entry 5');
+});
+
+test('Employee of the Month: one clock-in too many is not a softlock: the portrait comes back around to the step', () => {
+  const lvl = L.portrait;
+  let s = initState(lvl);
+  for (let k = 0; k < 9; k++) s = step(lvl, s, { ...NO_INPUT, shiftPressed: true }); // entries 1-5 at the spawn
+  assert.deepEqual([s.layer, s.nightEntries], [NIGHT, 5]);
+  assert.ok([16, 17, 18].every((tx) => tileAt(lvl, NIGHT, tx, 12, s.overrides) === '#'), 'by the ledge again on entry 5');
 });
