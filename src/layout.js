@@ -14,12 +14,14 @@ export function levelIndex(defs, param) {
   return Math.min(Math.max(n - 1, 0), defs.length - 1);
 }
 
-// The canvas's on-screen size, as a multiple of 960×540. Pixel art at a fractional scale gets uneven pixels
-// (some art pixels 2 screen px wide, some 3), so once the window allows 2× or more it snaps to the largest
-// whole multiple; below that, whole steps would waste too much of the screen, so it fits the window.
-export function canvasScale(winW, winH) {
+// The canvas's on-screen size in CSS px, as a multiple of 960×540. Pixel art at a fractional scale gets uneven
+// pixels (some 2 device px wide, some 3), so it snaps to a whole number of *device* pixels per canvas pixel
+// (CSS px × devicePixelRatio, so 125% and Retina screens count right), unless that would waste more than 15%
+// of the window: then it fits the window, and the unevenness is the smaller cost.
+export function canvasScale(winW, winH, dpr = 1) {
   const fit = Math.min(winW / 960, winH / 540);
-  return fit >= 2 ? Math.floor(fit) : fit;
+  const whole = Math.floor(fit * dpr + 1e-9);
+  return whole >= 1 && whole / (fit * dpr) >= 0.85 ? whole / dpr : fit;
 }
 
 // ---------- level select ----------

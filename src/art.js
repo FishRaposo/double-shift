@@ -17,6 +17,7 @@ export const PAL = {
     solid: '#6e5a45', mortar: '#5d4b39', brickHi: '#7d6852', lip: '#fbecc9', lipShade: '#c9ad84', shadow: '#4a3b2c',
     echo: 'rgba(255,170,80,0.95)', hatch: 'rgba(255,232,170,0.6)',
     hud: '#3b2d1f', hudSoft: 'rgba(59,45,31,0.85)', halo: 'rgba(246,231,200,0.9)',
+    overPar: '#a82317', // CLOCK-INS turns this red once over par (≥ 4.5:1 on the HUD plate)
   },
   [NIGHT]: {
     skyTop: '#0b1029', skyBot: '#1d2a56', window: 'rgba(255,214,110,0.12)', frame: 'rgba(120,150,255,0.05)',
@@ -24,6 +25,7 @@ export const PAL = {
     solid: '#2e4173', mortar: '#24345e', brickHi: '#3a5088', lip: '#5ff2ff', lipShade: '#3aa8bd', shadow: '#1a2647',
     echo: 'rgba(52,96,230,1)', hatch: 'rgba(95,242,255,0.35)',
     hud: '#d9f6ff', hudSoft: 'rgba(217,246,255,0.85)', halo: 'rgba(11,16,41,0.9)',
+    overPar: '#ff7a6b',
   },
 };
 

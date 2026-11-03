@@ -35,11 +35,13 @@ export const NIGHT = 1;
 export const SKIN_KINDS = Object.freeze(['door', 'pillar', 'portrait', 'doorPile']);
 const SKIN_SIZE = { door: [1, 2], pillar: [1, 4], portrait: [3, 2], doorPile: [2, 3] };
 
-// The cells a skin covers: doors, pillars and the pile stand on their bottom cell (ty); a portrait hangs from its
-// top-left cell.
+// The cells a skin must have inside the grid: doors and pillars stand on their bottom cell (ty) and a portrait
+// hangs from its top-left cell. A pile's h is only a cap (skinPlan stops counting at the top of the grid), so
+// only its bottom row has to fit.
 function skinCells(sk) {
-  const up = sk.kind !== 'portrait';
-  return { x0: sk.tx, x1: sk.tx + sk.w - 1, y0: up ? sk.ty - sk.h + 1 : sk.ty, y1: up ? sk.ty : sk.ty + sk.h - 1 };
+  if (sk.kind === 'portrait') return { x0: sk.tx, x1: sk.tx + sk.w - 1, y0: sk.ty, y1: sk.ty + sk.h - 1 };
+  const h = sk.kind === 'doorPile' ? 1 : sk.h;
+  return { x0: sk.tx, x1: sk.tx + sk.w - 1, y0: sk.ty - h + 1, y1: sk.ty };
 }
 
 // ---------- level parsing ----------
@@ -452,22 +454,22 @@ export function step(level, prev, input = NO_INPUT, dt = DT) {
     }
   }
 
-  // 2. Each shift's clock moves only while you're in it.
+  // 2. Each shift's clock moves only while you're in it. A peeker popping out (hidden before the tick, out
+  // after it) is an event, for the boing; its clock runs only at night, so that's the only time it can pop.
   if (s.layer === NIGHT) {
     for (const f of level.freaks) {
       if (f.kind === 'supervisor' && supervisorFacing(f, s.freakClock) !== supervisorFacing(f, s.freakClock + dt)) {
         s.events.push({ type: 'supervisorTurn', id: f.id, facing: supervisorFacing(f, s.freakClock + dt) });
       }
     }
+    const before = level.freaks.some((f) => f.kind === 'peeker') ? freakBoxes(level, s) : null;
     s.freakClock += dt;
+    if (before) {
+      freakBoxes(level, s).forEach((b, i) => {
+        if (b.kind === 'peeker' && b.active && !before[i].active) s.events.push({ type: 'peek', id: b.id });
+      });
+    }
   } else s.dayClock += dt;
-  // A peeker popping out on your shift (hidden last tick, out this tick): an event, for the boing.
-  if (level.freaks.some((f) => f.kind === 'peeker')) {
-    const before = freakBoxes(level, prev);
-    freakBoxes(level, s).forEach((b, i) => {
-      if (b.kind === 'peeker' && b.active && !before[i].active && b.shift === s.layer) s.events.push({ type: 'peek', id: b.id });
-    });
-  }
 
   // 3. Horizontal intent. Wet floor `~` swaps the ground accel/decel for the slick pair.
   const wet = onWetFloor(level, s);

@@ -107,13 +107,24 @@ test('layout: endSummary sums per act and marks unplayed acts', () => {
   assert.equal(s.par, 7);
 });
 
-test('canvasScale: whole pixels once the window allows 2× or more, otherwise fit the window', () => {
+test('canvasScale: whole device pixels per canvas pixel unless that wastes > 15% of the window', () => {
+  const close = (a, b, what) => assert.ok(Math.abs(a - b) < 1e-9, `${what}: ${a} ≠ ${b}`);
   assert.equal(canvasScale(960, 540), 1, 'the itch embed');
+  assert.equal(canvasScale(960, 540, 2), 1, 'the itch embed on a Retina screen: 2 device px each');
   assert.equal(canvasScale(1920, 1080), 2);
-  assert.equal(canvasScale(2560, 1440), 2, '2.67× would make uneven pixels: 2× with a border');
   assert.equal(canvasScale(3840, 2160), 4);
-  assert.ok(Math.abs(canvasScale(1366, 768) - 768 / 540) < 1e-9, 'below 2×, fit (1×, the only whole step, would waste the screen)');
-  assert.ok(Math.abs(canvasScale(800, 600) - 800 / 960) < 1e-9, 'a small window shrinks to fit');
+  close(canvasScale(1000, 562), 1, '1.04×: 1× wastes 4%');
+  close(canvasScale(2560, 1440), 1440 / 540, '2.67×: 2× would waste 25%, so fit');
+  close(canvasScale(1366, 768), 768 / 540, '1.42×: 1× would waste 30%, so fit');
+  close(canvasScale(800, 600), 800 / 960, 'a small window shrinks to fit');
+  // fractional device pixel ratios: the whole step is counted in device pixels, not CSS pixels
+  close(canvasScale(3072, 1728, 1.25), 4 / 1.25, '4K at 125%: 4 device px per canvas px');
+  close(canvasScale(1440, 900, 2), 1.5, 'a 1440×900 Retina window: 3 device px');
+  close(canvasScale(1280, 720, 1.5), 2 / 1.5, '1080p at 150%: 2 device px');
+  for (const [w, h, dpr] of [[1920, 1080, 1], [3072, 1728, 1.25], [1440, 900, 2], [1280, 720, 1.5], [1512, 982, 2]]) {
+    const dev = canvasScale(w, h, dpr) * dpr;
+    assert.ok(Math.abs(dev - Math.round(dev)) < 1e-9, `${w}×${h} @${dpr}: ${dev} device px per canvas px`);
+  }
 });
 
 test('wrapText keeps every line within maxPx', () => {

@@ -66,6 +66,16 @@ test('readability: HUD text on its plate (≥ 7:1), over sky or any solid', () =
   }
 });
 
+test('readability: secondary HUD text and the over-par red on the plate (≥ 4.5:1), over sky or any solid', () => {
+  for (const L of [DAY, NIGHT]) {
+    for (const under of [...SKIES[L], solid(PAL[L].solid), solid(PAL[L].lip)]) {
+      const plate = over(PLATE[L], under);
+      atLeast(contrast(over(PAL[L].hudSoft, plate), plate), 4.5, `${NAME[L]} hudSoft`);
+      atLeast(contrast(solid(PAL[L].overPar), plate), 4.5, `${NAME[L]} over par`);
+    }
+  }
+});
+
 test('readability: paper text (≥ 7:1) and sticky notes (≥ 4.5:1)', () => {
   atLeast(contrast(solid(NOTE_STRIP.ink), solid(NOTE_STRIP.paper)), 7, 'note strip');
   atLeast(contrast(solid(C.paperInk), solid(C.paper)), 7, 'timecard paper');
@@ -104,14 +114,20 @@ const BW = 960;
 const BH = 540;
 const lin = Array.from({ length: 256 }, (_, c) => { c /= 255; return c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4; });
 const lum = (r, g, b) => 0.2126 * lin[Math.round(r)] + 0.7152 * lin[Math.round(g)] + 0.0722 * lin[Math.round(b)];
+const rasters = new Map(); // both backdrop tests read the same rasters: draw each once
 function rasterBackdrop(layer, act) {
+  const key = `${act},${layer}`;
+  if (!rasters.has(key)) rasters.set(key, drawRaster(layer, act));
+  return rasters.get(key);
+}
+function drawRaster(layer, act) {
   const px = new Float32Array(BW * BH * 3);
   const rowSky = new Array(BH);
   for (const band of skyBands(layer, BH)) {
     const [r, g, b] = parse(band.color);
     for (let y = band.y0; y < band.y1; y++) {
       rowSky[y] = [r, g, b];
-      for (let x = 0; x < BW; x++) px.set([r, g, b], (y * BW + x) * 3);
+      for (let i = y * BW * 3; i < (y + 1) * BW * 3; i += 3) { px[i] = r; px[i + 1] = g; px[i + 2] = b; }
     }
   }
   const ctx = {

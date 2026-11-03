@@ -151,3 +151,12 @@ test('worker frame follows the player state', () => {
     assert.ok(f in SPRITES.worker.frames, `worker has frame ${f}`);
   }
 });
+
+test('freaks: the day-walker, out on the same shift as the worker, wears none of the worker colors', () => {
+  const colors = (sprite, palette) => new Set(Object.values(sprite.frames).flatMap((rows) =>
+    [...rows.join('')].filter((ch) => ch in palette).map((ch) => palette[ch].toLowerCase())));
+  const worker = colors(SPRITES.worker, SPRITES.worker.palette);
+  const walker = colors(SPRITES.daywalker, SPRITES.daywalker.palette);
+  const shared = [...walker].filter((c) => worker.has(c));
+  assert.deepEqual(shared, [], `the day-walker shares ${shared.join(', ')} with the worker`);
+});

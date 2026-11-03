@@ -46,6 +46,9 @@ test('parseLevel: skins are validated like every other level field', () => {
   assert.throws(at({ kind: 'door', tx: 9, ty: 1 }), /skin door at 9,1 is outside the grid/);
   assert.throws(at({ kind: 'door', tx: 1, ty: 1, w: 2 }), /a door is 1 tile wide/);
   assert.throws(at({ kind: 'pillar', tx: 1, ty: 1, w: 2 }), /a pillar is 1 tile wide/);
+  // a pile's h is a cap, not its size: one door lying on row 1 is a valid pile, its cap just runs off the top
+  assert.equal(at({ kind: 'doorPile', tx: 1, ty: 1 })().skins[0].kind, 'doorPile');
+  assert.throws(at({ kind: 'doorPile', tx: 5, ty: 1 }), /skin doorPile at 5,1 is outside the grid/, 'two wide from the last column');
 });
 
 test('skinPlan: a door pile counts at most its height (h, default 3), never the platform above it', () => {

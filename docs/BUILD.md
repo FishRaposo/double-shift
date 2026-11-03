@@ -329,9 +329,9 @@ Seven milestone PRs (decided 2026-11-03). Each one passes every gate in §1.2 pl
   - the EXIT sign moves beside the door when it would leave the screen;
   - barrier tape sags between two stanchions and never spans a gap at floor height;
   - the checkpoint becomes a punch-clock box on a post;
-  - each freak kind gets its own silhouette inside today's frames (lurker low and wide, peeker tall with gripping hands, squatter on its hoard, supervisor with clipboard and visor, day-walker in a hard hat and shades), hitboxes unchanged; `test/art.test.mjs` checks that every pair differs by ≥ 12 art px and every silhouette fills ≥ 75 % of its hitbox;
+  - each freak kind gets its own silhouette inside today's frames (lurker low and wide, peeker tall with gripping hands, squatter on its hoard, supervisor with clipboard and visor, day-walker in an orange hard hat and shades, never the worker's yellow), hitboxes unchanged; `test/art.test.mjs` checks that every pair differs by ≥ 12 art px and every silhouette fills ≥ 75 % of its hitbox;
   - the ending's freak peeks and waves a real hand;
-  - a scaling check at 1366×768 and 1920×1080: a fractional scale stretches some art pixels to 3 screen px and others to 2, so from 2× up the canvas snaps to a whole multiple (`canvasScale` in `src/layout.js`); below 2× it still fits the window.
+  - a scaling check at 1366×768 and 1920×1080: a fractional scale stretches some pixels to 3 device px and others to 2, so the canvas snaps to a whole number of device pixels per canvas pixel (counting `devicePixelRatio`) unless that wastes more than 15 % of the window (`canvasScale` in `src/layout.js`).
 - **Per-act backdrops** (✅ built Nov 3; ART.md §2, §6): `drawBackground(..., act)` draws one quiet motif per act: act 1 scaffolding and tarps; act 2 office windows with blinds and a wall clock; act 3 warehouse shelving and pipes; act 4 fluorescent strips by day, emergency lights and EXIT glow by night; act 5 hanging lamps, inverted at night; the finale a dawn tint by day and a low moon by night.
 - **Review:** `npm run media -- --review <ids> --gray --cvd` for every level, checked against the identity checklist in LEVELS.md §6. Before/after pairs go in the PR.
 

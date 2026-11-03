@@ -11,6 +11,7 @@ export const C = {
   overallsDay: '#2f6fdc', overallsDayShade: '#2558b8', overallsNight: '#3f86ff', overallsNightShade: '#2f6fdc',
   vestDay: '#ffe680', vestNight: '#c6ff4d', nightInk: '#d9f6ff',
   freak: '#05060f', rim: '#5ff2ff', freakEye: '#ffec5a', visor: '#2bdc6a', shades: '#3a4048',
+  hatOrange: '#ff8a1c', // the day-walker's hard hat: orange, never the worker's yellow
   plank: '#8a6a45', note: '#ffe96b',
 };
 
@@ -166,7 +167,9 @@ const HAND = [
   '.RDDDR..',
 ];
 const FREAK_NIGHT = { D: C.freak, R: C.rim, P: C.plank, Y: C.hat, C: C.paper, I: C.paperInk, G: C.visor };
-const FREAK_DAY = { ...FREAK_NIGHT, R: C.cream }; // the day-walker reads against the warm sky
+// the day-walker reads against the warm sky (a cream rim), in an orange hard hat: it is out on the worker's shift,
+// so it wears none of the worker's colors (test/art.test.mjs)
+const FREAK_DAY = { ...FREAK_NIGHT, R: C.cream, Y: C.hatOrange };
 
 // eyes: [x, y] of the left eye in art px within the sprite; `gap` art px between the eyes
 export const SPRITES = {

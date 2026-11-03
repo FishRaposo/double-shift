@@ -116,7 +116,7 @@ function draw(t) {
   label('frozen by day (night echo blue)', 950, y + 112);
   y += 130;
 
-  section(y, 100, 'DAY-WALKER · day (hard hat and shades), and frozen by night', DAY);
+  section(y, 100, 'DAY-WALKER · day (orange hard hat and shades), and frozen by night', DAY);
   const dw = (x, active) => ({ kind: 'daywalker', shift: DAY, x, y: y + 40, w: 20, h: 22, active, facing: 0 });
   art.drawFreak(g, dw(40, true), 0, t, { layer: DAY, freakShift: DAY });
   art.drawFreak(g, dw(160, true), 0, t, { layer: NIGHT, freakShift: DAY });

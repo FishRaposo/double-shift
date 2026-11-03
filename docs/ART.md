@@ -22,7 +22,7 @@ Companion to [GDD.md](GDD.md) §4.7, §7, §10. Everything is drawn in code on a
 
 ## 1. Pillars
 
-**Identity (decided 2026-11-03):** *A workplace comedy in two lights: warm paper-and-brick days, cool cyan-panel nights. Everything official is paper (timecards, notes, stamps). The freaks are glowing eyes and lumpy silhouettes in the dark, more present every act.* Every art change serves that sentence and the reading order in §3.1. The identity and readability pass that applies it is BUILD.md T20–T21 *(planned)*.
+**Identity (decided 2026-11-03):** *A workplace comedy in two lights: warm paper-and-brick days, cool cyan-panel nights. Everything official is paper (timecards, notes, stamps). The freaks are glowing eyes and lumpy silhouettes in the dark, more present every act.* Every art change serves that sentence and the reading order in §3.1. The identity and readability pass that applies it is BUILD.md T20–T21 (✅ built Nov 3; CONTENT.md ART-20, ART-21).
 
 1. **Readability beats beauty.** The player must always know: what's solid now, what's solid on the other shift, what kills, where the freaks are, which shift they're in.
 2. **Day and night are the same building.** Same architecture, different light. Never make night dark enough to hide geometry.
@@ -56,7 +56,7 @@ Graphics is a rated jam category. Simple shapes score well when they look *chose
 ### Night shift
 | Role | Value |
 |---|---|
-| Sky gradient top → bottom | `#0b1029` → `#1d2a56` in 8 flat bands, stars `rgba(255,255,255,0.25–0.4)` twinkling |
+| Sky gradient top → bottom | `#0b1029` → `#1d2a56` in 8 flat bands; 70 stars, each a fixed `rgba(255,255,255,0.10–0.40)` (the background is drawn once per act, so they don't twinkle in game; the cover draws them at another moment) |
 | Lit windows / dark windows / frames | `rgba(255,214,110,0.12)` (two of the six) / `rgba(120,150,255,0.05)` / `rgba(120,150,255,0.05)` |
 | Solid fill | `#2e4173`; riveted panels, seams `#24345e`, rivets `rgba(95,242,255,0.3)` |
 | Solid edge | `#5ff2ff`, 1 art px (2 px), with a `#3aa8bd` shade under the top edge; `#1a2647` shadow on open bottoms |
@@ -73,7 +73,7 @@ Graphics is a rated jam category. Simple shapes score well when they look *chose
 | Laser (night hazard) | beam `#ff3b5c` (dimmer `#e8324f` as it flickers) with a `rgba(255,59,92,0.14–0.28)` glow, emitters `#ff9db0` with white tips |
 | Exit door day / night | `#3d7a4a` / `#1f6b47`, 1 art px frame and knob `#9dffb8`; lit sign box `#2bdc6a` above the door with `EXIT` in `#06210f` (pixel font, scale 1) |
 | Checkpoint (punch clock) | box `#3a4048` with a `#9aa3ad` front, card slot `#1b1209`; clock face `#d6dbe0` off / `#ffd23f` on, rim and hands `#2a2018`; once taken, a timecard `#f7efdc` with a `#c0392b` stripe in the top; post `#6b5a48`, foot `#4a3b2c` |
-| Freak body | `#05060f` with a `#5ff2ff` rim drawn into the sprite (cream `#fbecc9` for the day-walker); the supervisor's visor `#2bdc6a`; the day-walker's hard hat `#ffcc33` and shades `#3a4048` with white glints |
+| Freak body | `#05060f` with a `#5ff2ff` rim drawn into the sprite (cream `#fbecc9` for the day-walker); the supervisor's visor `#2bdc6a`; the day-walker's hard hat `#ff8a1c` (orange: it's out on the worker's shift, so it wears none of the worker's colors, tested) and shades `#3a4048` with white glints |
 | Freak eyes | `#ffec5a`; decor and tell eyes add a glow `rgba(255,236,90,0.25)` |
 | Sticky note | `#ffe96b` sized to its text, text `#5a3d10` in the pixel font, a strip of tape on top |
 | Timecard paper / ink / stamp | `#f7efdc` / `#3b2d1f` / `#c0392b` (on/under par), `#7f6a50` (overtime) |
@@ -107,7 +107,7 @@ Behind everything, one motif per act (§6). Every color stays ≤ 1.35:1 against
 | Wet floor `~` | Solid fill + sheen lines; a WET FLOOR sign nearby | **Wavy top edge** instead of a straight one |
 | Supervisor facing | Head and clipboard turned to the watched side; eyes only on that side | Shape (head offset, clipboard side) |
 | Watched vs. slacking freak | Watched: normal. Slacking: eyes closed to lines, silhouette still | Closed eyes, no jitter |
-| Day-walker | Day: dark silhouette with a cream rim, a yellow hard hat and shades. Night: dashed outline in the day echo orange | Silhouette (hard hat) / dashed |
+| Day-walker | Day: dark silhouette with a cream rim, an orange hard hat and shades. Night: dashed outline in the day echo orange | Silhouette (hard hat) / dashed |
 | Moved object *(planned: doors, pillar, portrait)* | Ordinary solids; its future spots carry the usual prank tells | Tell shapes (eyes / notes) |
 | Offset layer | No new marks: the echo of the other shift shows the floors half a storey off. Floor signs read 3 and 3.5 | Echo dashes + sign text |
 
@@ -125,9 +125,9 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | The other shift is visible without looking for it | Echoes at full strength, 2.5 px, long dashes; frozen freaks use the same blue |
 | "Only in this shift" shows on both palettes | Hatch `rgba(255,232,170,0.6)` by day, `rgba(95,242,255,0.35)` by night, on the rim of the region only (Nov 3), so big one-shift walls read as solids with a hatched edge, not fields of stripes |
 | HUD text never disappears into a wall | Every HUD line sits on a plate (`PLATE`: the shift's sky at 85 %) instead of a halo (Nov 3: halos smeared over brick); the level note sits on a paper strip (`NOTE_STRIP`) |
-| Score state at a glance | `CLOCK-INS n · PAR p` turns red (`#e0473c`) once over par |
+| Score state at a glance | `CLOCK-INS n · PAR p` turns red once over par (`overPar`: `#a82317` by day, `#ff7a6b` by night, Nov 3; the old `#e0473c` fell to 2.7:1 on the day plate over brick). The numbers carry it too |
 | Prank warnings are noticeable | Night tell and decor eyes at 4×8 px each with a soft glow `rgba(255,236,90,0.25)`, blinking (`drawGlowEyes`, Nov 3: 2×); day MINE note 42×30 |
-| Pixels stay square | The canvas snaps to a whole multiple of 960×540 once the window allows 2× or more (`canvasScale` in `src/layout.js`); below that it fits the window |
+| Pixels stay square | The canvas snaps to a whole number of device pixels per canvas pixel (CSS px × `devicePixelRatio`, so 125 % and Retina screens count right), unless that wastes more than 15 % of the window; then it fits the window (`canvasScale` in `src/layout.js`, tested) |
 
 **These rules are tests** (`test/palette.test.mjs`, 2026-11-03): WCAG contrast between the colors that actually meet on screen, rgba composited over what it's drawn on, checked against both sky bands of each shift (by day also the finale's dawn-tinted low sky).
 
@@ -137,6 +137,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | Solid vs sky, by fill or edge (day: the brick fill; night: the cyan edge) | ≥ 3:1 | day 4.0–5.4, night 10.3–14.0 |
 | Night solid fill vs night sky | ≥ 1.3:1 (lighter than the sky) | 1.4–1.9 |
 | HUD text vs its plate (`PLATE`, the sky at 85 %), over sky or any solid | ≥ 7:1 | passes |
+| Secondary HUD text (`hudSoft`) and the over-par red on the plate | ≥ 4.5:1 | hudSoft day 6.1–7.2, night 8.9–12.1; over par day 4.8–5.9, night 5.2–7.4 |
 | Note strip ink vs paper; sticky note ink vs note | ≥ 7:1; ≥ 4.5:1 | 11.6; 8.1 |
 | The other shift's echo vs this sky | ≥ 3:1 | 3.2–9.0 |
 | Hazards vs sky, in every color they flicker through (`HAZARD`) | ≥ 3:1 | passes since the identity pass (rebar spikes `#b04a20` / `#8f3a18`, dim laser `#e8324f`); before it, the rebar was 1.8–3.6 and the dim laser 2.4 |
@@ -157,7 +158,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 - **Nature undefined** (GDD §4.8). Draw attitude (nosy, grabby, smug), never a recognizable animal or creature type.
 - **Attitude reference: Sableye (Pokémon)**: gleeful, lurking in the dark, delighted with its own tricks. Take the *energy* only. Never take its look: no gem eyes, no chest gem, no purple goblin body, no toothy grin. Our freaks stay black lumps with plain square eyes, and expression comes from timing (blinks, narrowing, jitter, peeking).
 - **Never fully shown.** No faces beyond eyes, no full-light view, no close-up.
-- ✅ Sprites (12×13 art px, body `#05060f`, rim `#5ff2ff`), one silhouette per kind so a frozen outline still says which kind it is (`test/art.test.mjs`: every pair ≥ 12 art px apart; every silhouette fills ≥ 75 % of its hitbox, so a touch looks like a touch): **lurker** (pointed ears, wide body, 2-frame walk), **peeker** (narrow, fingers gripping above its head), **squatter** (wide and smug, low on its hoard: a plank end and a hard hat), **supervisor** (a green visor `#2bdc6a` and its clipboard), **day-walker** (a yellow hard hat, since it clocked in for the day shift, and shades `#3a4048` with white glints instead of eyes). Jitter ±1 art px while active.
+- ✅ Sprites (12×13 art px, body `#05060f`, rim `#5ff2ff`), one silhouette per kind so a frozen outline still says which kind it is (`test/art.test.mjs`: every pair ≥ 12 art px apart; every silhouette fills ≥ 75 % of its hitbox, so a touch looks like a touch): **lurker** (pointed ears, wide body, 2-frame walk), **peeker** (narrow, fingers gripping above its head), **squatter** (wide and smug, low on its hoard: a plank end and a hard hat), **supervisor** (a green visor `#2bdc6a` and its clipboard), **day-walker** (a hard hat, since it clocked in for the day shift, in orange `#ff8a1c`, never the worker's yellow; shades `#3a4048` with white glints instead of eyes). Jitter ±1 art px while active.
 - ✅ Eyes: two 1×2 art-px eyes in `#ffec5a`, blink (shut ~0.12 s every ~3.1 s, offset per freak); lurker eyes glance; eyes **squint** smugly for 0.8 s after a prank.
 - ✅ Peeker hidden: a dark slot with eyes.
 - ✅ By day: dotted outline of the silhouette in the night echo blue, eyes at 60%. On every shift to day the outlines **flash** white once (freeze cue, 0.15 s).
@@ -170,7 +171,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 |---|---|---|---|
 | **Supervisor** (`supervisor`) | The usual lump, a bit taller, holding a clipboard (a paper rectangle with three ink lines). Sits on a perch. | The head bump and clipboard sit on the watched side; eyes are drawn only on that side; it snaps (no tween) when it turns, with 0.3 s of anticipation (the eyes slide across first). | Body `#05060f`, rim `rgba(95,242,255,0.6)`; clipboard paper `#f7efdc`, ink `#3b2d1f`; eyes freak yellow |
 | **Slacking freaks** (unwatched) | Same silhouette, no jitter | Eyes closed to 1 px lines; a tiny "z" in `hudSoft` above (optional) | Existing |
-| **Day-walker** (`daywalker`) | A lump in a yellow hard hat and shades (Nov 3: its own silhouette), readable in daylight: dark body against the warm sky, with a cream rim instead of cyan | By night: dashed outline in the **day echo orange** (it belongs to the day shift), dim shades | Body `#05060f`, rim `#fbecc9`, hat `#ffcc33`, shades `#3a4048`; night outline `rgba(255,170,80,0.95)` |
+| **Day-walker** (`daywalker`) | A lump in an orange hard hat and shades (Nov 3: its own silhouette), readable in daylight: dark body against the warm sky, with a cream rim instead of cyan | By night: dashed outline in the **day echo orange** (it belongs to the day shift), dim shades | Body `#05060f`, rim `#fbecc9`, hat `#ff8a1c`, shades `#3a4048`; night outline `rgba(255,170,80,0.95)` |
 
 ## 6. Environment
 

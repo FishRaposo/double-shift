@@ -156,10 +156,10 @@ addEventListener('keydown', (e) => {
 });
 addEventListener('keyup', (e) => { input.keyUp(e); });
 addEventListener('blur', () => input.clear());
-// Size the canvas in whole pixels where the window allows 2× or more (src/layout.js canvasScale); the CSS in
-// index.html is the fallback before this runs.
+// Size the canvas to a whole number of device pixels per canvas pixel unless that wastes > 15% of the window
+// (src/layout.js canvasScale); the CSS in index.html is the fallback before this runs.
 function fitCanvas() {
-  const k = canvasScale(innerWidth, innerHeight);
+  const k = canvasScale(innerWidth, innerHeight, devicePixelRatio || 1);
   canvas.style.width = `${Math.round(W * k)}px`;
   canvas.style.height = `${Math.round(H * k)}px`;
 }
@@ -510,11 +510,11 @@ function hud(text, x, y, layer, { align = 'left', scale = 2, color } = {}) {
 
 // The level note: a paper strip, like everything official in the building.
 function drawNoteStrip(text) {
-  const w = measureText(text, 2);
-  const left = Math.round(W / 2 - w / 2 - 10);
+  const cols = Math.ceil((measureText(text, 2) + 20) / A); // whole art px, so the rim stays on the 2-px grid
+  const left = Math.round((W - cols * A) / 2 / A) * A;
   const top = H - 36;
-  px(g, left, top, (w + 20) / A, 14, NOTE_STRIP.border);
-  px(g, left + A, top + A, (w + 20) / A - 2, 12, NOTE_STRIP.paper);
+  px(g, left, top, cols, 14, NOTE_STRIP.border);
+  px(g, left + A, top + A, cols - 2, 12, NOTE_STRIP.paper);
   drawText(g, text, W / 2, top + 7, { scale: 2, color: NOTE_STRIP.ink, align: 'center' });
 }
 
@@ -538,7 +538,7 @@ function drawHud(lvl, s, layer) {
     for (const [cx, cy, w] of [[2, 0, 3], [1, 1, 2], [0, 2, 2], [0, 3, 2], [0, 4, 2], [1, 5, 2], [2, 6, 3]]) px(g, ix + cx * A, 9 + cy * A, w, 1, '#d9f6ff');
   }
   const over = s.shifts > lvl.par;
-  hud(`CLOCK-INS ${s.shifts}  ·  PAR ${lvl.par}`, W - 14, 36, layer, { align: 'right', color: over ? '#e0473c' : pal.hud });
+  hud(`CLOCK-INS ${s.shifts}  ·  PAR ${lvl.par}`, W - 14, 36, layer, { align: 'right', color: over ? pal.overPar : pal.hud });
   const note = LEVELS[game.index].note;
   if (game.levelTime < 5 && note) drawNoteStrip(note);
   if (game.index === 0 && s.shifts === 0) {
