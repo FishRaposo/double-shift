@@ -20,7 +20,7 @@
 - Gravity has a sign per shift (`gravitySign`): -1 only on the night of an `upsideDown` level, whose night is the day grid turned over. Every vertical rule (jump, cut, gravity, grounding, nudge order, hazard band, grid edges, fall-out, spawn/checkpoint spots via `standableSpot`) reads it; never hard-code "down" in new rules (TECH.md §6.5).
 - Pranks fire on the Nth successful night entry and write `state.overrides`; collision/rendering must respect those overrides. Death restores checkpoint geometry and night-entry count to prevent softlocks.
 - Freak positions/activity derive from a clock that only runs on the freak's own shift (`state.freakClock` by night, `state.dayClock` for the day-walker; a supervisor's workers use `watchedClock`). Add gameplay geometry in `freakBoxes()` in `src/rules.js` and matching visuals in `drawFreak()` in `src/art.js`; the other shift freezes them and makes them harmless.
-- `src/input.js` is DOM-free: it queues short presses between ticks, ignores OS repeats, and consumes at most one shift press per tick. Preserve that distinction from held input.
+- `src/input.js` is DOM-free: it queues short presses between ticks, ignores OS repeats, and consumes at most one shift press per tick. Preserve that distinction from held input. Bindings come from `src/keys.js` (`rebind` never leaves an action unbound, never puts a key on two actions, never takes a reserved menu key).
 - Level definitions in `src/levels.js` have equal-size day/night ASCII grids. `S`/`E`/`C` are shared markers (can appear in either grid); solids/hazards are layer-specific. Save progress uses definition IDs, so renaming an ID disconnects existing records.
 
 ## Test and documentation coupling

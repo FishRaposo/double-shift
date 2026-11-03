@@ -1,6 +1,6 @@
 # itch.io page kit
 
-Everything needed to create the *Double Shift* page on itch.io, in the order the itch dashboard asks for it. Settings come from [RELEASE.md](../docs/RELEASE.md) §2. **Fish writes the final description words**; the draft below is checked against the current build (<!-- n:levels -->21<!-- /n --> levels, <!-- n:tests -->321<!-- /n --> tests, level select, pixel art and music). The paste-ready description in §4 carries no markers, so check its numbers by hand before pasting (the release refresh does).
+Everything needed to create the *Double Shift* page on itch.io, in the order the itch dashboard asks for it. Settings come from [RELEASE.md](../docs/RELEASE.md) §2. **Fish writes the final description words**; the draft below is checked against the current build (<!-- n:levels -->21<!-- /n --> levels, <!-- n:tests -->330<!-- /n --> tests, level select, pixel art and music). The paste-ready description in §4 carries no markers, so check its numbers by hand before pasting (the release refresh does).
 
 ## 1. Build the files
 
@@ -62,8 +62,10 @@ npm run media    # media/cover.png (1260×1000) + 10 screenshots (960×540) + th
 > | Change shift | Shift or K |
 > | Restart level | R |
 > | Level select | L, or click LEVEL SELECT on the title |
-> | Settings | O (volumes, reduced effects) |
+> | Settings | O (volumes, reduced effects, controls) |
 > | Pause | Esc |
+>
+> Move, jump and change shift can be rebound in SETTINGS > CONTROLS.
 > | Mute | M |
 >
 > *On Windows, hammering Shift can open Sticky Keys. Use K, or turn off the Sticky Keys shortcut.*

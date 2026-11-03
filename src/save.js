@@ -2,6 +2,8 @@
 // and every read and write tolerates a missing or throwing storage (private windows, blocked site data),
 // falling back to memory for the session.
 
+import { DEFAULT_BINDS, cleanBinds } from './keys.js';
+
 const KEY = 'double-shift.progress.v1';
 
 // Fewer clock-ins wins; on a tie, the faster time.
@@ -60,7 +62,7 @@ export function isUnlocked(defs, i, save) {
 // Volumes (0–1) and reduced effects, under their own key, with the same blocked/corrupt-storage fallback.
 
 const SETTINGS_KEY = 'double-shift.settings.v1';
-export const DEFAULT_SETTINGS = Object.freeze({ master: 0.8, music: 0.6, sfx: 0.8, reduced: false });
+export const DEFAULT_SETTINGS = Object.freeze({ master: 0.8, music: 0.6, sfx: 0.8, reduced: false, binds: DEFAULT_BINDS });
 
 const clamp01 = (v, d) => (Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : d);
 
@@ -70,6 +72,7 @@ function cleanSettings(s) {
     music: clamp01(s?.music, DEFAULT_SETTINGS.music),
     sfx: clamp01(s?.sfx, DEFAULT_SETTINGS.sfx),
     reduced: typeof s?.reduced === 'boolean' ? s.reduced : DEFAULT_SETTINGS.reduced,
+    binds: cleanBinds(s?.binds), // the key bindings (src/keys.js), repaired if corrupt
   };
 }
 

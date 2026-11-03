@@ -1183,7 +1183,7 @@ Priority settings:
 - Music volume.
 - Effects volume.
 - Reduced screen effects.
-- Control rebinding, if feasible.
+- Control rebinding *(built Nov 3: SETTINGS > CONTROLS; the four actions, never the menu keys)*.
 
 ## 12.6 Accessibility
 

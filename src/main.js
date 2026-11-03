@@ -3,7 +3,8 @@
 
 import { step, initState, parseLevel, tileAt, isSolidChar, freakBoxes, gravitySign, TILE, DT, DAY, NIGHT, PARAMS, FREAK } from './rules.js';
 import { LEVELS, ACTS, FINALE_ACT } from './levels.js';
-import { createInput, GAME_KEYS } from './input.js';
+import { createInput } from './input.js';
+import { ACTIONS, DEFAULT_BINDS, actionOf, rebind, keysText, keysShort } from './keys.js';
 import { sfx, playSound, unlockAudio, toggleMute, setVolumes, setMusicShift, setMusicAct, setMenu } from './audio.js';
 import { skinPlan, checkpointHangs, exitPose } from './skins.js';
 import { createSave, createSettings, isUnlocked } from './save.js';
@@ -23,7 +24,7 @@ const A = ART;
 const canvas = document.getElementById('game');
 const g = canvas.getContext('2d');
 g.imageSmoothingEnabled = false;
-const input = createInput();
+const input = createInput(() => settings.get().binds); // the player's key bindings (src/keys.js)
 const NIGHT_PAL = SPRITES.worker.nightPalette;
 const levels = LEVELS.map(parseLevel);
 const storage = (() => { try { return localStorage; } catch { return null; } })();
@@ -79,15 +80,59 @@ function openSettings() {
   input.clear();
 }
 
-// Settings rows: three volumes, then reduced effects.
-const SETTING_ROWS = [['master', 'MASTER'], ['music', 'MUSIC'], ['sfx', 'SOUND'], ['reduced', 'REDUCED EFFECTS']];
+// Settings rows: three volumes, reduced effects, then the controls screen.
+const SETTING_ROWS = [['master', 'MASTER'], ['music', 'MUSIC'], ['sfx', 'SOUND'], ['reduced', 'REDUCED EFFECTS'], ['controls', 'CONTROLS']];
 
 function adjustSetting(row, dir) {
   const [key] = SETTING_ROWS[row];
+  if (key === 'controls') { openControls(); return; }
   const cur = settings.get();
   const next = key === 'reduced' ? settings.set({ reduced: !cur.reduced }) : settings.set({ [key]: Math.round((cur[key] + dir * 0.1) * 10) / 10 });
   setVolumes(next);
   sfx.uiMove();
+}
+
+// ---------- controls: rebinding the four actions (src/keys.js) ----------
+const CONTROL_ROWS = [...ACTIONS, 'reset'];
+const CONTROL_LABELS = { left: 'LEFT', right: 'RIGHT', jump: 'JUMP', shift: 'SHIFT', reset: 'RESET TO DEFAULTS' };
+const controlRect = (row) => ({ x: W / 2 - 260, y: 140 + row * 58, w: 520, h: 46 });
+
+function openControls() {
+  game.controlsRow = 0;
+  game.capturing = null;
+  game.controlsNote = '';
+  setScreen('controls');
+  input.clear();
+  sfx.uiMove();
+}
+
+function chooseControl(row) {
+  game.controlsRow = row;
+  const key = CONTROL_ROWS[row];
+  if (key === 'reset') {
+    settings.set({ binds: DEFAULT_BINDS });
+    game.controlsNote = 'Back to the defaults.';
+    sfx.uiSelect?.();
+  } else {
+    game.capturing = key; // the next key pressed becomes this action's key
+    game.controlsNote = '';
+    sfx.uiMove();
+  }
+}
+
+function captureKey(code) {
+  const action = game.capturing;
+  game.capturing = null;
+  if (code === 'Escape') return;
+  const r = rebind(settings.get().binds, action, code);
+  if (r.ok) {
+    settings.set({ binds: r.binds });
+    game.controlsNote = '';
+    sfx.uiSelect?.();
+  } else {
+    game.controlsNote = "Not that one: use a letter, a digit, an arrow, Space or Shift (R, L, O and M are the menus').";
+    sfx.shiftFail();
+  }
 }
 
 function openSelect() {
@@ -100,8 +145,9 @@ function openSelect() {
 
 addEventListener('keydown', (e) => {
   unlockAudio();
-  if (GAME_KEYS.has(e.code) || e.code === 'Enter' || e.code === 'Escape') e.preventDefault();
+  if (game.capturing || actionOf(settings.get().binds, e.code) || e.code === 'Enter' || e.code === 'Escape') e.preventDefault();
   if (e.repeat) { input.keyDown(e); return; }
+  if (game.screen === 'controls' && game.capturing) { captureKey(e.code); return; } // before mute (M) and debug (the backquote) take theirs
   if (e.code === 'KeyM') { toggleMute(); return; }
   if (e.code === 'Backquote') { game.debug = !game.debug; return; }
   if (game.screen === 'title') {
@@ -115,8 +161,15 @@ addEventListener('keydown', (e) => {
     else if (e.code === 'ArrowDown' || e.code === 'KeyS') { game.settingsRow = (game.settingsRow + 1) % SETTING_ROWS.length; sfx.uiMove(); }
     else if (e.code === 'ArrowLeft' || e.code === 'KeyA') adjustSetting(game.settingsRow, -1);
     else if (e.code === 'ArrowRight' || e.code === 'KeyD') adjustSetting(game.settingsRow, 1);
-    else if ((e.code === 'Space' || e.code === 'Enter') && SETTING_ROWS[game.settingsRow][0] === 'reduced') adjustSetting(game.settingsRow, 0);
+    else if ((e.code === 'Space' || e.code === 'Enter') && ['reduced', 'controls'].includes(SETTING_ROWS[game.settingsRow][0])) adjustSetting(game.settingsRow, 0);
     else if (e.code === 'Escape' || e.code === 'KeyO') setScreen(game.settingsFrom);
+    return;
+  }
+  if (game.screen === 'controls') {
+    if (e.code === 'ArrowUp' || e.code === 'KeyW') { game.controlsRow = (game.controlsRow + CONTROL_ROWS.length - 1) % CONTROL_ROWS.length; sfx.uiMove(); }
+    else if (e.code === 'ArrowDown' || e.code === 'KeyS') { game.controlsRow = (game.controlsRow + 1) % CONTROL_ROWS.length; sfx.uiMove(); }
+    else if (e.code === 'Enter' || e.code === 'Space') chooseControl(game.controlsRow);
+    else if (e.code === 'Escape') setScreen('settings');
     return;
   }
   if (game.screen === 'act') { setScreen('play'); input.keyDown(e); return; }
@@ -182,6 +235,11 @@ canvas.addEventListener('pointerdown', (e) => {
     const row = SETTING_ROWS.findIndex((_, k) => inside(settingRect(k)));
     if (row >= 0) { const r = settingRect(row); adjustSetting(row, x < r.x + r.w / 2 ? -1 : 1); }
     else setScreen(game.settingsFrom); // click outside the rows: back
+  } else if (game.screen === 'controls') {
+    const row = CONTROL_ROWS.findIndex((_, k) => inside(controlRect(k)));
+    if (game.capturing) game.capturing = null; // a click cancels waiting for a key
+    else if (row >= 0) chooseControl(row);
+    else setScreen('settings');
   } else if (game.screen === 'act') {
     setScreen('play');
   } else if (game.screen === 'select') {
@@ -317,7 +375,7 @@ function frame(now) {
     fx[k] = fx[k].filter((q) => (q.t += elapsed) < life);
   }
   if (fx.spook && (fx.spook.t += elapsed) > 0.35) fx.spook = null;
-  const inLevel = game.screen === 'play' || game.screen === 'paused' || game.screen === 'card' || (game.screen === 'settings' && game.settingsFrom === 'paused');
+  const inLevel = game.screen === 'play' || game.screen === 'paused' || game.screen === 'card' || (['settings', 'controls'].includes(game.screen) && game.settingsFrom === 'paused');
   setMenu(!(game.screen === 'play'));
   const musicLayer = inLevel && game.state ? game.state.layer : DAY;
   if (musicLayer !== game.musicLayer) { game.musicLayer = musicLayer; setMusicShift(musicLayer); }
@@ -566,7 +624,7 @@ function drawHud(lvl, s, layer) {
   const note = LEVELS[game.index].note;
   if (game.levelTime < 5 && note) drawNoteStrip(note);
   if (game.index === 0 && s.shifts === 0) {
-    hud('Press SHIFT (or K) to change shifts', W / 2, 140, layer, { align: 'center', scale: 3 });
+    hud(`Press ${keysText(settings.get().binds.shift)} to change shifts`, W / 2, 140, layer, { align: 'center', scale: 3 });
     hud('Dashed outlines show the other shift', W / 2, 172, layer, { align: 'center', color: pal.hudSoft });
   }
 }
@@ -652,8 +710,9 @@ function drawTitle() {
   drawEyes(g, 'lurker', 900, 16 * TILE - FREAK.h, { state: eyesOpen(game.clock, 4) ? 'open' : 'shut', look: -1 });
   drawPanel(g, W / 2 - 270, 250, 540, 176, false);
   drawText(g, 'One building. Two shifts. One worker.', W / 2, 270, { scale: 2, color: '#ffffff', align: 'center' });
-  drawText(g, 'Move  A/D or ←/→      Jump  Space/W/↑', W / 2, 310, { scale: 2, color: '#d9f6ff', align: 'center' });
-  drawText(g, 'Change shift  Shift or K      Restart  R', W / 2, 334, { scale: 2, color: '#d9f6ff', align: 'center' });
+  const b = settings.get().binds; // the current bindings (SETTINGS > CONTROLS)
+  drawText(g, `Move  ${keysShort(b.left)}  ${keysShort(b.right)}      Jump  ${keysShort(b.jump)}`, W / 2, 310, { scale: 2, color: '#d9f6ff', align: 'center' });
+  drawText(g, `Change shift  ${keysText(b.shift)}      Restart  R`, W / 2, 334, { scale: 2, color: '#d9f6ff', align: 'center' });
   const blink = Math.floor(game.clock * 2) % 2 === 0;
   drawText(g, 'Click or press SPACE to clock in', W / 2, 380, { scale: 2, color: blink ? '#ffec5a' : '#ffffff', align: 'center' });
   for (const [b, label] of [[TITLE_SELECT, 'LEVEL SELECT (L)'], [TITLE_SETTINGS, 'SETTINGS (O)']]) {
@@ -828,6 +887,8 @@ function drawSettings() {
     drawText(g, label, r.x + 36, r.y + 16, { scale: 2, color: sel ? '#ffffff' : pal.hudSoft });
     if (key === 'reduced') {
       drawText(g, s.reduced ? 'ON' : 'OFF', r.x + r.w - 24, r.y + 16, { scale: 2, color: s.reduced ? '#9dffb8' : pal.hudSoft, align: 'right' });
+    } else if (key === 'controls') {
+      drawText(g, 'Enter >', r.x + r.w - 24, r.y + 16, { scale: 2, color: pal.hudSoft, align: 'right' });
     } else {
       const v = Math.round(s[key] * 10);
       for (let i = 0; i < 10; i++) px(g, r.x + 250 + i * 18, r.y + 14, 7, 9, i < v ? (sel ? '#5ff2ff' : '#3aa8bd') : 'rgba(95,242,255,0.15)');
@@ -838,14 +899,36 @@ function drawSettings() {
   drawText(g, 'Reduced effects turns off screen flashes, rings and sparkles.', W / 2, H - 70, { scale: 1, color: pal.hudSoft, align: 'center' });
 }
 
+function drawControls() {
+  const pal = PAL[NIGHT];
+  g.drawImage(background(NIGHT), 0, 0); // as SETTINGS does
+  drawText(g, 'CONTROLS', W / 2, 60, { scale: 4, color: pal.hud, halo: pal.halo, align: 'center' });
+  const binds = settings.get().binds;
+  CONTROL_ROWS.forEach((key, row) => {
+    const r = controlRect(row);
+    const sel = row === game.controlsRow;
+    drawPanel(g, r.x, r.y, r.w, r.h, false);
+    if (sel) drawText(g, '>', r.x + 14, r.y + 16, { scale: 2, color: '#ffec5a' });
+    drawText(g, CONTROL_LABELS[key], r.x + 36, r.y + 16, { scale: 2, color: sel ? '#ffffff' : pal.hudSoft });
+    if (key === 'reset') return;
+    const waiting = game.capturing === key;
+    const text = waiting ? (Math.floor(game.clock * 2) % 2 ? '' : 'PRESS A KEY') : keysText(binds[key]);
+    drawText(g, text, r.x + r.w - 24, r.y + 16, { scale: 2, color: waiting ? '#ffec5a' : pal.hudSoft, align: 'right' });
+  });
+  if (game.controlsNote) drawText(g, game.controlsNote, W / 2, H - 70, { scale: 1, color: pal.hudSoft, align: 'center' });
+  const hint = game.capturing ? 'Press the new key · Esc: cancel' : 'Up/Down: choose · Enter: change · Esc: back';
+  drawText(g, hint, W / 2, H - 40, { scale: 2, color: pal.hudSoft, halo: pal.halo, align: 'center' });
+}
+
 function render() {
   g.imageSmoothingEnabled = false;
   g.clearRect(0, 0, W, H);
   if (game.screen === 'title') { drawTitle(); return; }
   if (game.screen === 'select') { drawSelect(); return; }
-  if (game.screen === 'settings') {
+  if (game.screen === 'settings' || game.screen === 'controls') {
     if (game.settingsFrom === 'paused') { drawPlay(); g.fillStyle = 'rgba(0,0,0,0.5)'; g.fillRect(0, 0, W, H); }
-    drawSettings();
+    if (game.screen === 'settings') drawSettings();
+    else drawControls();
     return;
   }
   if (game.screen === 'end') { drawEnd(); return; }

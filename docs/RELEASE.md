@@ -56,7 +56,7 @@ Then:
 | Platforms | HTML5 only |
 | Genre | Platformer (puzzle elements described in tags/description, not repeated as genre) |
 | Languages | English only |
-| Accessibility | Tick only what exists. The build has a **reduced effects** setting (no screen flashes, rings or sparkles) and adjustable music/sound volume; tick itch's matching options if offered (e.g. reduced motion / flashing). No rebinding, no colour-blind mode yet. |
+| Accessibility | Tick only what exists. The build has a **reduced effects** setting (no screen flashes, rings or sparkles) and adjustable music/sound volume; tick itch's matching options if offered (e.g. reduced motion / flashing). The four actions can be **rebound** (SETTINGS > CONTROLS). No colour-blind mode yet. |
 | Community | Comments |
 | Theme | Background `#0b1029`, text `#d9f6ff`, links `#5ff2ff`; embed background `#0b1029` (ART.md §8) |
 | Visibility | Draft → play it on the page once → **Public** (the publish date is fixed at that click) |

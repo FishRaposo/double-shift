@@ -4,7 +4,7 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-02 (a
 
 **At a glance**
 - **The one rule:** `src/rules.js` decides everything that matters; the screen only draws it (§2).
-- `npm start` to play, `npm test` (<!-- n:tests -->321<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
+- `npm start` to play, `npm test` (<!-- n:tests -->330<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
 - Add a level: grids in `src/levels.js` + a `SOLUTIONS` entry in `test/solutions.mjs` (§6; the full recipe is BUILD.md §2.1).
 - The tier-C mechanics (wet floor, day-walker, supervisor, offset layer) are built — §6.5 documents them.
 
@@ -22,7 +22,8 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-02 (a
 | `index.html` | Canvas + module entry | — |
 | `src/rules.js` | **All gameplay rules.** Pure: `step(level, state, input)` → next state | No |
 | `src/levels.js` | Level data (ASCII grids + pranks/freaks/decor) | No |
-| `src/input.js` | Key events → one input frame per physics tick | No (takes event-like objects) |
+| `src/input.js` | Key events → one input frame per physics tick, through the player's bindings (`createInput(getBinds)`) | No (takes event-like objects) |
+| `src/keys.js` | Key bindings: `DEFAULT_BINDS`, the menus' `RESERVED` keys, `rebind` (the action takes the key; an action left with none takes its free defaults back, else a swap), `cleanBinds` (repairs saved bindings), `keyLabel`/`keysText`/`keysShort` for the title, tutorial and CONTROLS screen | No |
 | `src/main.js` | Fixed-step loop, screens, event → sfx/fx, draw order; caches the static layer (echo, solids, hatched rims, skins, props, exit) per level × shift × prank state and the background per act × shift (the last 6); sizes the canvas on resize (`fitCanvas`, whole-pixel scale from `canvasScale`) | Yes |
 | `src/sprites.js` | Pixel sprites as string grids (worker frames, freaks), palettes, `workerFrame(p, t, fx, sign)` (pure), `spriteRect` (pure: where a frame lands, upright or `vflip`ped around its hitbox `box`), `drawSprite`/`drawEyes` | Data no; drawing yes |
 | `src/art.js` | Procedural pixel drawing: tiles, hatch, echoes, hazards, exit, checkpoint, signs, freaks, `PROPS`, planned-level objects, effects, panels, stamps, logo. Also the pure pieces the art tests check: the identity colors (`PAL`, `PLATE`, `NOTE_STRIP`, `HAZARD`, `BACKDROP`), `skyBands`, `exitRects` and `checkpointRect` (always on screen), and `shouldHatch` (only a one-shift region's rim; none when the night is generated). `drawBackground(g, layer, W, H, t, act)` draws the sky and `drawBackdrop`, one motif per act with rects only (the palette test rasterizes it) | Yes (canvas) |
@@ -207,7 +208,7 @@ The four tier-C mechanics from [CONTENT.md](CONTENT.md) §3 — all built, teste
 
 | Command | What it covers |
 |---|---|
-| `npm test` | <!-- n:tests -->321<!-- /n --> tests: GDD §13.7 cases 1–15, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, Upside Down rules (flip, gravity sign, hanging, jump and cut, nudge order, coyote across a flip, hazard band, grid edges, checkpoints, fuzz), every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
+| `npm test` | <!-- n:tests -->330<!-- /n --> tests: GDD §13.7 cases 1–15, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, Upside Down rules (flip, gravity sign, hanging, jump and cut, nudge order, coyote across a flip, hazard band, grid edges, checkpoints, fuzz), every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
 | `npm run check` | Every module parses; every level validates |
 | `npm run audit` | Per level: the slack of every required shift and jump (fails under the act floor), input-lag tolerance 0–150 ms, and a random search for wins below par or without shifting (`scripts/audit-levels.mjs`). |
 | `npm run media` | Real browser (headless Edge/Chrome, no dependencies): plays level 1 with key presses, fails on page errors, a wrong outcome, audio clipping or a slow frame; saves the cover, screenshots and gallery. |

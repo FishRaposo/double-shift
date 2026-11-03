@@ -87,7 +87,7 @@ function send(method, params = {}) {
   return new Promise((r) => pending.set(id, (msg) => r(msg.result)));
 }
 
-const KEYS = { Space: [' ', 32], KeyK: ['k', 75], KeyL: ['l', 76], KeyO: ['o', 79], Escape: ['Escape', 27], ArrowRight: ['ArrowRight', 39] };
+const KEYS = { Space: [' ', 32], KeyK: ['k', 75], KeyL: ['l', 76], KeyO: ['o', 79], KeyJ: ['j', 74], Enter: ['Enter', 13], Escape: ['Escape', 27], ArrowRight: ['ArrowRight', 39], ArrowDown: ['ArrowDown', 40] };
 const key = (type, code) => send('Input.dispatchKeyEvent', { type, code, key: KEYS[code][0], windowsVirtualKeyCode: KEYS[code][1] });
 const press = async (code) => { await key('keyDown', code); await sleep(40); await key('keyUp', code); };
 const evaluate = async (expr) => (await send('Runtime.evaluate', { expression: expr, returnByValue: true, awaitPromise: true })).result.value;
@@ -264,6 +264,25 @@ async function fullRun() {
   const sel = await evaluate('__doubleShift.screen');
   await shot('09-level-select.png');
   if (sel !== 'select') { failed = true; console.error(`level select did not open: ${sel}`); }
+
+  // controls: SETTINGS > CONTROLS, rebind JUMP to J with real keys, then back to the defaults
+  await open('');
+  await press('KeyO');
+  for (let i = 0; i < 4; i++) await press('ArrowDown');
+  await press('Enter'); // CONTROLS
+  await press('ArrowDown');
+  await press('ArrowDown');
+  await press('Enter'); // JUMP: waiting for a key
+  await press('KeyJ');
+  await sleep(150);
+  const jumpKeys = await evaluate("JSON.parse(localStorage.getItem('double-shift.settings.v1')).binds.jump");
+  await shot('16-controls.png');
+  flow('CONTROLS rebinds JUMP to J', JSON.stringify(jumpKeys) === '["KeyJ"]', jumpKeys);
+  await press('ArrowDown');
+  await press('ArrowDown');
+  await press('Enter'); // RESET TO DEFAULTS
+  const reset = await evaluate("JSON.parse(localStorage.getItem('double-shift.settings.v1')).binds.jump");
+  flow('RESET TO DEFAULTS puts Space, W and Up back on JUMP', JSON.stringify(reset) === '["Space","KeyW","ArrowUp"]', reset);
 
   // asset gallery + offline audio loudness check (peaks before the master gain; must not clip).
   // The tools aren't in the itch build, so --root skips them.

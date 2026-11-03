@@ -25,10 +25,11 @@ Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game l
 | Tagline ✅ | One building. Two shifts. One worker. |
 | Start ✅ | Click or press SPACE to clock in |
 | Sticky Keys note ✅ | Windows: hammering Shift can open Sticky Keys — use K, or turn off the Sticky Keys shortcut. |
-| Tutorial ✅ | Press SHIFT (or K) to change shifts / Dashed outlines show the other shift |
+| Tutorial ✅ | Press Shift or K to change shifts (the keys come from the player's bindings) / Dashed outlines show the other shift |
 | Pause ✅ | ON BREAK · Esc: resume · R: restart · L: levels · O: settings |
 | Title buttons ✅ | LEVEL SELECT (L) · SETTINGS (O) |
-| Settings ✅ | SETTINGS · MASTER · MUSIC · SOUND · REDUCED EFFECTS ON/OFF · Up/Down: choose · Left/Right: change · Esc: back |
+| Settings ✅ | SETTINGS · MASTER · MUSIC · SOUND · REDUCED EFFECTS ON/OFF · CONTROLS Enter > · Up/Down: choose · Left/Right: change · Esc: back |
+| Controls ✅ | CONTROLS · LEFT · RIGHT · JUMP · SHIFT, each with its keys ("Shift or K") · RESET TO DEFAULTS · PRESS A KEY · Press the new key · Esc: cancel · Up/Down: choose · Enter: change · Esc: back · Back to the defaults. · Not that one: use a letter, a digit, an arrow, Space or Shift (R, L, O and M are the menus'). |
 | Act cards ✅ | ACT n · NAME · the line from §2.1 |
 | Level select ✅ | TIMECARDS · act tabs: ACT n + the act name, or FINALE · each card: the number, the NAME, PAR p / NOT YET, stamps ON PAR / UNDER! / +n · detail bar: n. NAME · BEST n · PAR p (or NOT YET) · Arrows: choose · SPACE or click: clock in · Esc: back |
 | Timecard ✅ | NEW BEST (when a saved best is beaten) |

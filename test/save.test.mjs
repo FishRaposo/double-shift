@@ -3,6 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createSave, isUnlocked, better, createSettings, DEFAULT_SETTINGS } from '../src/save.js';
 import { LEVELS, ACTS } from '../src/levels.js';
+import { DEFAULT_BINDS, rebind } from '../src/keys.js';
 
 function memoryStorage(initial = {}) {
   const m = new Map(Object.entries(initial));
@@ -134,4 +135,16 @@ test('saves: going back to an older revision finds its bests again', () => {
   const onlyRework = createSave(memoryStorage());
   onlyRework.record('clockout', r(9, 60), 2);
   assert.equal(onlyRework.cleared('clockout'), true, 'a clear on the rework alone counts too');
+});
+
+test('settings: binds survive a reload; corrupt binds fall back', () => {
+  const storage = memoryStorage();
+  const binds = rebind(DEFAULT_BINDS, 'shift', 'KeyJ').binds;
+  createSettings(storage).set({ binds });
+  assert.deepEqual(createSettings(storage).get().binds, binds);
+  assert.deepEqual(createSettings(memoryStorage()).get().binds, DEFAULT_BINDS, 'a fresh save has the defaults');
+  storage.setItem('double-shift.settings.v1', JSON.stringify({ master: 0.5, binds: { left: 'x', jump: ['Escape'] } }));
+  const repaired = createSettings(storage).get();
+  assert.equal(repaired.master, 0.5);
+  assert.deepEqual(repaired.binds, DEFAULT_BINDS, 'nothing usable: the defaults');
 });

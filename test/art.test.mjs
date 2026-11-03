@@ -10,6 +10,7 @@ import { CREDITS } from '../src/copy.js';
 import { exitRects, checkpointRect, shouldHatch, DAY, NIGHT } from '../src/art.js';
 import { parseLevel, tileAt, isSolidChar } from '../src/rules.js';
 import { memoPanel } from '../src/layout.js';
+import { keyLabel, isBindable } from '../src/keys.js';
 
 const FREAK_KINDS = ['lurker', 'peeker', 'squatter', 'supervisor', 'daywalker'];
 const mask = (kind) => SPRITES[kind].frames.a.map((row) => [...row].map((c) => c !== '.'));
@@ -252,5 +253,13 @@ test('memos: a memo panel never covers the exit, a tell or a sign', () => {
       const tell = { x: pr.tell.tx * 30 - 30, y: pr.tell.ty * 30 - 40, w: 90, h: 120 }; // the note above it, the eyes either side
       assert.ok(!overlap(panel, tell), `${def.id}: the memo covers ${pr.id}'s tell`);
     }
+  }
+});
+
+test('font: every key label has glyphs', () => {
+  const codes = [...'ABCDEFGHIJKLMNOPQRSTUVWXYZ'].map((c) => `Key${c}`).concat([...'0123456789'].map((d) => `Digit${d}`),
+    ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'Space', 'ShiftLeft', 'ShiftRight']);
+  for (const code of codes.filter(isBindable)) { // R, L, O and M are the menus' (RESERVED)
+    for (const ch of keyLabel(code)) assert.ok(hasGlyph(ch), `${code}: ${ch}`);
   }
 });
