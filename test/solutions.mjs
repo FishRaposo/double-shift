@@ -187,6 +187,17 @@ export const SOLUTIONS = {
     }
     return { right, shift };
   },
+  // fall up to the ceiling, walk over the high ledge and drop onto it; run off into the pit and brake mid-fall
+  // (the fall turns round and carries you to the far ceiling); drop to the exit
+  fallup: (s) => {
+    const p = s.player;
+    const x = tx(s);
+    const plan = [[2, 6, NIGHT], [13, 15, DAY]];
+    const due = plan.find(([a, b]) => x >= a && x <= b);
+    const brake = s.layer === DAY && x > 17.5 && x < 28 && p.y > 10.5 * TILE; // deep enough to carry across
+    const drop = s.layer === NIGHT && p.grounded && x > 28; // hanging on the far side: drop to the exit
+    return { right: true, shift: (!!due && s.layer !== due[2]) || brake || drop };
+  },
   // under the walkway, clock in and fall up onto it; past the pit, clock out and drop to the floor
   upside: (s) => ({ right: true, shift: (tx(s) > 7 && tx(s) < 16 && want(s, NIGHT)) || (tx(s) > 19 && want(s, DAY)) }),
   offset: (s, m) => {

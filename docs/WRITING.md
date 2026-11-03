@@ -72,7 +72,7 @@ In the order of the 21-level game (LEVELS.md §5.0). ✅ = in the build.
 | 15 Floor 3.5 (`offset`) ✅ | There is no Floor 3 anymore. It's now Floor 3.5. |
 | 16 Night Audit (`audit`) ✅ | Management is doing a walkthrough tonight. So are they. |
 | 17 Mind Your Head (`upside`) ✅ | They flipped the night shift. Mind your head. |
-| 18 Falling Up (`fallup`) | The floor is up there now. |
+| 18 Falling Up (`fallup`) ✅ | The floor is up there now. |
 | 19 Ceiling Walker (`ceiling`) | Something is walking on the ceiling. It's fine. |
 | 20 Head Over Heels (`heels`) | Up is a matter of opinion now. |
 | 21 Clock Out (`clockout`) ✅ | Almost done. Don't look at the vents. |

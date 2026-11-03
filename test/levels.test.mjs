@@ -308,3 +308,20 @@ test('Employee of the Month: one clock-in too many is not a softlock: the portra
   assert.deepEqual([s.layer, s.nightEntries], [NIGHT, 5]);
   assert.ok([16, 17, 18].every((tx) => tileAt(lvl, NIGHT, tx, 12, s.overrides) === '#'), 'by the ledge again on entry 5');
 });
+
+test('Falling Up: the first clock-in falls you up onto the ceiling (the floor is up there now)', () => {
+  const lvl = L.fallup;
+  let s = initState(lvl);
+  s = step(lvl, s, { ...NO_INPUT, shiftPressed: true });
+  for (let i = 0; i < 120 && !s.player.grounded; i++) s = step(lvl, s);
+  assert.equal(s.layer, NIGHT);
+  assert.ok(Math.abs(s.player.y - 4 * TILE) < 1, `hanging under the floor's copy, rows 0-3 (y ${s.player.y})`);
+});
+
+test('Falling Up: skipping the brake flip falls into the pit', () => {
+  const lvl = L.fallup;
+  // the solution up to the high ledge, then run off its end without the mid-fall clock-in
+  const policy = (s, m, f) => (s.shifts >= 2 && s.layer === DAY && tx(s) > 16 ? { right: true } : SOLUTIONS.fallup(s, m, f));
+  const { events } = play(lvl, policy, 120 * 15);
+  assert.ok(events.some((e) => e.type === 'death' && e.cause === 'fall'));
+});

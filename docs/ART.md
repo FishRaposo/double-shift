@@ -234,6 +234,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | `daywalker` | A DAY SHIFT sign, a mug, footprints in the day-walker's tunnel |
 | `portrait` ✅ | The portrait skin wherever it hangs (night), a nail and unfaded patch at each of its spots (`PROPS.nail`, night), the EMPLOYEE OF THE MONTH plaque and a notice board (day) |
 | `upside` ✅ | A MIND YOUR HEAD sign and a notice board (day); a coffee mug stuck upside down under the walkway (night, `flip`) |
+| `fallup` ✅ | A THIS WAY UP sign and a notice board (day), a vent stuck to the ceiling (night, `flip`); the exit isn't drawn in a shift that walls it up |
 | `clockout` | The time clock on the ledge, a coat rack, a vent, a LAST SHIFT sign, eyes everywhere in the dark |
 
 ## 7. UI and effects

@@ -1042,6 +1042,48 @@ export const LEVELS = [
     ],
   },
   {
+    id: 'fallup',
+    name: 'Falling Up',
+    act: 5,
+    note: 'The floor is up there now.',
+    par: 4,
+    // At night the floor's copy is the ceiling (rows 0-3): clock in anywhere and you fall up to it. Walk over the
+    // high ledge (row 6, 8 up, out of reach by day) and clock out: you drop onto it. Run off its end into the pit
+    // (10 wide, bottomless, too far for a jump off the ledge; a wall under the ledge means you can only come at it
+    // from above) and clock in mid-fall:
+    // the fall turns round and carries you up and across to the far side's ceiling. Clock out to drop to the exit.
+    upsideDown: true,
+    // lasers along the underside of the high ledge's night copy: hang there and they get you (otherwise you could
+    // walk off its end at night and clock out over the pit, two clock-ins in all)
+    // and the exit is shut at night (its cell is solid), so the brake's rise can't sweep you through it: clock out
+    nightPatch: [{ x0: 12, x1: 17, y0: 12, ch: '^' }, { x0: 31, y0: 13, ch: '#' }],
+    props: [
+      { kind: 'sign', tx: 3, ty: 11, text: 'THIS WAY UP', style: 'note', layer: 'day' },
+      { kind: 'noticeBoard', tx: 7, ty: 10, layer: 'day' },
+      { kind: 'vent', tx: 6, ty: 13, layer: 'night', flip: true },
+    ],
+    day: [
+      '................................',
+      '................................',
+      '................................',
+      '................................',
+      '................................',
+      '..............C.................',
+      '............######..............',
+      '.................#..............',
+      '.................#..............',
+      '.................#..............',
+      '.................#..............',
+      '.................#..............',
+      '.................#..............',
+      '.S...............#.............E',
+      '##################..........####',
+      '##################..........####',
+      '##################..........####',
+      '##################..........####',
+    ],
+  },
+  {
     id: 'clockout',
     name: 'Clock Out',
     act: FINALE_ACT,

@@ -405,7 +405,8 @@ function staticLayer(lvl, def, layer, ov) {
   const plan = skinPlan(lvl, layer, ov);
   for (const sp of plan) if (sp.draw !== 'portrait') drawSkin(ctx, sp, layer);
   for (let ty = 0; ty < lvl.h; ty++) for (let tx = 0; tx < lvl.w; tx++) drawShiftCues(ctx, lvl, layer, ov, tx, ty);
-  drawExit(ctx, lvl.exit.tx, lvl.exit.ty, layer, { hang: gravitySign(lvl, layer) < 0 });
+  // the exit, unless this shift walls it up (Falling Up shuts it at night)
+  if (!isSolidChar(tileAt(lvl, layer, lvl.exit.tx, lvl.exit.ty, ov))) drawExit(ctx, lvl.exit.tx, lvl.exit.ty, layer, { hang: gravitySign(lvl, layer) < 0 });
   if (staticCache.size > 24) staticCache.delete(staticCache.keys().next().value);
   const out = { canvas: c, portraits: plan.filter((sp) => sp.draw === 'portrait') };
   staticCache.set(key, out);
