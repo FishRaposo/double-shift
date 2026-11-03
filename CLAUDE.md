@@ -40,7 +40,7 @@ Tests and scripts target Node 22. URL flags for manual play: `?level=<id>` (or a
 ## Tests
 
 - Edge-case tests build tiny ASCII levels with `level(day, night, extra)` from `test/helpers.mjs` and assert on state (`stepN`, `place`).
-- `test/solutions.mjs` has a `SOLUTIONS` map keyed by level `id`: every level must have a scripted policy that wins at ≤ par with zero deaths, and must be unwinnable without shifting. **A new level needs a `SOLUTIONS` entry or the suite fails.** `test/fairness.test.mjs` then requires ≥ 200 ms of slack on every required input in acts 1–2 (≥ 100 ms in acts 3–6), no respawn point in a patrol, no freak over an exit; `npm run audit` shows the numbers. Policies read state like a player (position, layer, `freakClock`) rather than frame-exact scripts.
+- `test/solutions.mjs` has a `SOLUTIONS` map keyed by level `id`: every level must have a scripted policy that wins at ≤ par with zero deaths, and must be unwinnable without shifting. **A new level needs a `SOLUTIONS` entry or the suite fails.** The fallback finale `CLOCKOUT_CLASSIC` (not in `LEVELS`) keeps its policy in `SOLUTIONS_EXTRA`; a reworked level takes `rev: N` so saved bests from the old one are ignored. `test/fairness.test.mjs` then requires ≥ 200 ms of slack on every required input in acts 1–2 (≥ 100 ms in acts 3–6), no respawn point in a patrol, no freak over an exit; `npm run audit` shows the numbers. Policies read state like a player (position, layer, `freakClock`) rather than frame-exact scripts.
 - Gotcha: `play()` turns a held shift into one press — a policy must release shift between two shifts.
 - Changing `PARAMS` (tuning) re-proves every par via `npm test`; also update the metrics table in `docs/LEVELS.md` §1.
 

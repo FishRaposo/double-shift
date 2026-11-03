@@ -21,7 +21,7 @@ Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-03**.
 | Rendering | **Pixel art** (Nov 2): sprites, animated worker and freaks, pixel tiles and props, pixel font, effects; every asset in `/tools/gallery.html` |
 | Audio | Mix bus, 25 SFX (incl. planned-level sounds), **music** (day/night arrangements crossfading on every shift) |
 | Menus | Title, level select + saved bests, settings (volumes, reduced effects), act cards, pause, timecard with comment, end screen with totals |
-| Tests | <!-- n:tests -->299<!-- /n --> passing (`npm test`), including fairness; `npm run audit` clean |
+| Tests | <!-- n:tests -->306<!-- /n --> passing (`npm test`), including fairness; `npm run audit` clean |
 | Repo / CI / itch | Public repo [FishRaposo/double-shift](https://github.com/FishRaposo/double-shift), CI green, playable on [GitHub Pages](https://fishraposo.github.io/double-shift/). **No itch page** |
 
 ## 2. Milestones
@@ -111,7 +111,7 @@ Priority: **P0** = the game doesn't ship without it. **P1** = expected in the ja
 | L12 | ~~`audit` *Night Audit* (act 4 exam, #16)~~ done Nov 3, par 6 | Tier B |
 | L13 | ~~`upside` *Mind Your Head*, `fallup` *Falling Up*, `ceiling` *Ceiling Walker*~~ done Nov 3, par 2, 4 and 4 | Tier C, cut Nov 18 |
 | L14 | ~~`heels` *Head Over Heels* (act 5 combination, #20)~~ done Nov 3, par 7 | Tier C |
-| L15 | Finale rework: Clock Out upside down, one room per act (LEVELS.md §5.3) | Tier C (fallback: today's Clock Out) |
+| L15 | ~~Finale rework: Clock Out upside down, one room per act (LEVELS.md §5.3)~~ done Nov 3, par 7, `rev: 2` | Tier C (fallback: `CLOCKOUT_CLASSIC`) |
 | L9 | ~~`wet` *Wet Floor*, `daywalker` *Broad Daylight*~~ done | Tier C |
 | L10 | ~~`supervisor` *Night Management*, `offset` *Floor 3.5*~~ done | Tier C |
 | L11 | *Freight* | Post |

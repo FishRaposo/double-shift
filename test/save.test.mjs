@@ -104,3 +104,20 @@ test('settings: blocked or corrupt storage falls back to defaults without throwi
   const bad = memoryStorage({ 'double-shift.settings.v1': '{"music":"loud","reduced":"yes"}' });
   assert.deepEqual(createSettings(bad).get(), { ...DEFAULT_SETTINGS });
 });
+
+test('saves: a best from an older rev is ignored; unlocks are unaffected', () => {
+  const storage = memoryStorage();
+  const save = createSave(storage);
+  save.record('clockout', r(7, 40)); // the classic finale: rev 1, the default
+  assert.deepEqual(save.best('clockout'), r(7, 40), 'rev 1 reads its own best');
+  assert.equal(save.best('clockout', 2), null, 'the rework (rev 2) ignores it');
+  assert.equal(save.cleared('clockout'), true, 'but the level still counts as cleared');
+  assert.equal(save.record('clockout', r(9, 60), 2), true, "the first rev-2 result is its best, even if it's worse");
+  assert.deepEqual(save.best('clockout', 2), { ...r(9, 60), rev: 2 });
+  assert.equal(save.best('clockout'), null, 'and now rev 1 has none');
+  const again = createSave(storage); // survives a reload
+  assert.deepEqual(again.best('clockout', 2), { ...r(9, 60), rev: 2 });
+  assert.equal(again.record('clockout', r(10, 50), 2), false, 'within a rev, the usual rule');
+  const defs = [{ id: 'a', act: 6 }, { id: 'clockout', act: 6, rev: 2 }, { id: 'b', act: 6 }];
+  assert.equal(isUnlocked(defs, 2, again), true, 'a clear from any rev opens the next level');
+});

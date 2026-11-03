@@ -5,7 +5,7 @@ Companion to [GDD.md](GDD.md) §6 and §8. Tile = 30 px. Levels are 32×18 tiles
 **At a glance**
 - Jumpable rise: **≤ 3 tiles**. Gaps: **≤ 4** comfortable, **≥ 7** impossible (use 8 for "must shift") (§1).
 - A level is two ASCII grids (day, night) plus optional pranks, freaks and decor (§2).
-- **The game is 21 levels: five acts of four plus the finale (§5.0).** <!-- n:levels -->21<!-- /n --> built (§4): tiers A and B and all of act 5 (§5.2); the finale rework (§5.3) planned. Tier A (a complete game) is built.
+- **The game is 21 levels: five acts of four plus the finale (§5.0).** <!-- n:levels -->21<!-- /n --> built (§4): tiers A and B, all of act 5 (§5.2) and the reworked finale (§5.3). Tier A (a complete game) is built.
 - Leave **≥ 200 ms** of slack per required input in acts 1–2, **≥ 100 ms** in acts 3–5 (tested).
 - Nothing ships without a scripted par solution in the tests and the §6 checklist.
 
@@ -243,12 +243,16 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 - **Margin:** clock-ins 367–842 ms; input lag up to 150 ms still wins (`npm run audit`).
 - **Props:** a HARD HAT AREA sign and a notice board (day), a hard hat stuck to the ceiling (night, `flip`, `PROPS.hardHat`), eyes in the dark over the last gap.
 
-### 21. Clock Out: par 7 (the finale, rework planned in §5.3)
-- **Lesson:** everything you know, in one run.
-- **Room 1 (cols 0–14):** a pit with a 3-wide night stone (cols 5–7, row 13) and a higher day stone (cols 10–12, row 12): jump off each as you land, shifting mid-air to the one ahead.
-- **Room 2 (cols 15–24):** `watch`'s tunnel under a building: day crates at cols 17 and 24 force night in and out; the lurker inside (col 20) forces a day freeze. Checkpoint at col 15.
-- **Room 3 (cols 25–31):** the time clock sits on a ledge 4 tiles up (cols 28–31); the only way up is a night step at col 27. Leaving room 2 at night is clock-in 3, when they take the step (telegraphed); clock-in 4 puts it back. So clock out and in on the floor at cols 25–26, then climb. Checkpoint at col 25.
-- **Ending:** the timecard, then the end screen (WRITING.md §8). Tests pin that without the fourth clock-in the time clock is out of reach.
+### 21. Clock Out: par 7 (the finale, reworked Nov 3 as `rev: 2`; §5.3)
+- **Lesson:** everything you know, in one run, one room per act, on the flipped map.
+- **Map:** `upsideDown`; the walkway (row 5) is the night's ceiling one step above the floor, so a shift flips you in place, as in Ceiling Walker. The night's walls are drawn in the day grid's top rows so they mirror into the night's bottom ones (the gate, the door, both tunnels' floors, room 2's far wall); by day they stand on the walkway and close it off, because a mid-jump clock-in at the spawn could otherwise reach the walkway's top and walk it past every room (found by the audit's random search, then closed).
+- **Room 1 (act 1, cols 0–11):** no ceiling over the spawn: walk off the ledge and clock in as you fall, and the walkway's copy catches you; cross the 7-wide gap hanging; clock out before the gate, locked at night.
+- **Room 2 (act 2, cols 12–21):** a day wall (col 15); the door they take on the 2nd clock-in (col 16, telegraphed); a lurker in the tunnel; the far wall (col 21) is night-only, so clock out before the lurker and walk through its frozen outline. Checkpoint at col 13.
+- **Room 3 (act 3, cols 22–26):** stop on the dry floor (checkpoint, col 22) and clock in; the supervisor watches one tunnel at a time, and its clock only runs at night, so wait there, hanging, until the clipboard turns away from this tunnel, then slide over the waxed ceiling past its lurker before it turns back.
+- **Room 4 (acts 4–5, cols 27–31):** the 3rd clock-in took the step at the top of the shaft and walled up the time clock (telegraphed): clock out on the dry floor short of the day-walker, in again (the 4th puts both back), and fall up the shaft to the time clock. Checkpoint at col 27. By day the time clock sits in a pocket, so a clock-out mid-rise can't reach it either.
+- **Margin:** clock-ins 333–617 ms; input lag up to 150 ms still wins; no win below par in the audit or in 80,000 further random tries.
+- **Ending:** the timecard, then the end screen (WRITING.md §8).
+- **Fallback:** today's three-room version stays in `src/levels.js` as `CLOCKOUT_CLASSIC` (not in `LEVELS`), proven at par 7 by `SOLUTIONS_EXTRA.clockoutClassic`; shipping it again is swapping one entry. Its rooms: a pit with a night stone and a higher day stone (mid-air shifts); `watch`'s tunnel with day crates and a lurker; the time clock on a ledge whose night step they take on clock-in 3 and return on 4.
 
 ## 5.0 The 21-level sequence (20 levels + finale; Fish, 2026-11-02)
 
@@ -276,7 +280,7 @@ Five acts of four, then the finale. Each act introduces one idea, practises it, 
 | 18 | 5 | Falling Up (`fallup`) | Mid-fall flips; climb a shaft by flipping | ✅ |
 | 19 | 5 | Ceiling Walker (`ceiling`) | A freak on the ceiling; a prank on the flipped map | ✅ |
 | 20 | 5 | Head Over Heels (`heels`) | Act 5's combination: every shift freezes one freak and flips gravity | ✅ |
-| 21 | **Finale** | Clock Out (`clockout`) | Pays everything off, then the ending | ✅ built (3 rooms); rework spec §5.3 |
+| 21 | **Finale** | Clock Out (`clockout`) | Pays everything off, then the ending | ✅ reworked (`rev: 2`); the 3-room version is the fallback |
 
 **Freak and mechanic ladder** (first seen → first required):
 - **Freak evidence:** eyes and footprints in act 1, a harmless frozen peeker in Closing Time.
@@ -407,11 +411,11 @@ The levels still to build in acts 2–4, in the §5.0 order (manifest: [CONTENT.
 
 **Cut date:** the gravity flip (rules, tests, drawing) working and `upside` proven by **Nov 18**. If it misses, act 5 and the finale rework move to post-jam; the game ships acts 1–4 and today's Clock Out.
 
-## 5.3 The finale: Clock Out reworked *(planned, tier C; today's version is the fallback)*
+## 5.3 The finale: Clock Out reworked *(✅ built Nov 3 at par 7, `rev: 2`, §4; the 3-room version is the fallback)*
 
-The built Clock Out (§4, #21) is a complete finale and ships as-is if act 5 slips. The rework makes it pay off every act:
+The 3-room Clock Out (`CLOCKOUT_CLASSIC`) is a complete finale and ships again if act 5 slips. The rework makes it pay off every act:
 - **One screen, `upsideDown: true`, four rooms**, each recalling an act:
-  1. mid-air shifts across stones (act 1);
+  1. mid-air shifts across stones (act 1); built as a clock-in mid-fall off the ledge, then the gap and the gate. Stones don't work on a flipped map: a day jump rises away from the night's ceiling and a night jump drops away from the day's floor, so a mid-air shift can't carry you onto a stone of the other shift;
   2. a frozen-lurker tunnel and a telegraphed prank (act 2);
   3. a wax stop under a supervisor's gaze (act 3);
   4. a flipped climb to the time clock, where the freaks take the last step and put it back (acts 4–5).

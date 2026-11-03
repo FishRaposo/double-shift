@@ -55,7 +55,7 @@ Full specs: [LEVELS.md](LEVELS.md) §4 (built), §5 (acts 2–4 to build), §5.2
 | 18 | 5 | Falling Up | `fallup` | Shift mid-fall to reverse it; climb a shaft by flipping | C | ✅ |
 | 19 | 5 | Ceiling Walker | `ceiling` | A freak on the ceiling, a prank on the flipped map | C | ✅ |
 | 20 | 5 | Head Over Heels | `heels` | Every shift freezes one freak and flips gravity | C | ✅ |
-| 21 | Finale | Clock Out | `clockout` | Pays everything off, then the ending | A (built) / C (rework) | ✅ built; rework planned |
+| 21 | Finale | Clock Out | `clockout` | Pays everything off, then the ending | A (built) / C (rework) | ✅ reworked (`rev: 2`; the 3-room version is the fallback) |
 
 *Post-jam pool:* Freight (crates restack on a cycle). It's covered by `doors` and `stacked`, so it's not needed for the jam.
 

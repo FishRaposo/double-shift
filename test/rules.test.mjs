@@ -990,3 +990,10 @@ test('jump and land events carry where they happened (x, y and the layer), for t
   const land = events.find((e) => e.type === 'land');
   assert.deepEqual([land.x, land.y, land.layer], [s.player.x, s.player.y, DAY]);
 });
+
+test('parseLevel: a level revision defaults to 1 and must be a whole number from 1', () => {
+  const day = ['S..E', '####'];
+  assert.equal(R.parseLevel({ name: 't', par: 0, day, night: day }).rev, 1);
+  assert.equal(R.parseLevel({ name: 't', par: 0, day, night: day, rev: 2 }).rev, 2);
+  for (const rev of [0, 1.5, '2']) assert.throws(() => R.parseLevel({ name: 't', par: 0, day, night: day, rev }), /rev/);
+});

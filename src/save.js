@@ -22,20 +22,26 @@ function load(storage) {
   }
 }
 
+// A best remembers the level revision it was set on (`rev`, written only when it isn't 1, so saves from before
+// revisions read as rev 1). A reworked level (rev 2) ignores bests from the old one; clearing it once, on any
+// revision, still counts for unlocking.
+const revOf = (r) => (Number.isInteger(r?.rev) && r.rev >= 1 ? r.rev : 1);
+
 export function createSave(storage) {
   const data = load(storage);
   return {
-    best(id) {
-      return data.best[id] ?? null;
+    best(id, rev = 1) {
+      const b = data.best[id];
+      return b && revOf(b) === rev ? b : null;
     },
     cleared(id) {
       return id in data.best;
     },
-    // Returns true if this is a new best for the level.
-    record(id, r) {
-      const prev = data.best[id];
+    // Returns true if this is a new best for the level (at this revision).
+    record(id, r, rev = 1) {
+      const prev = this.best(id, rev);
       if (prev && !better(r, prev)) return false;
-      data.best[id] = { shifts: r.shifts, time: r.time, deaths: r.deaths };
+      data.best[id] = { shifts: r.shifts, time: r.time, deaths: r.deaths, ...(rev !== 1 ? { rev } : {}) };
       try {
         storage?.setItem(KEY, JSON.stringify(data));
       } catch { /* storage full or blocked: keep it for this session */ }

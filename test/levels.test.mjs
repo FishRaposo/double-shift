@@ -1,10 +1,10 @@
 // Every level is completable at par by a scripted run, and no level can be won with zero shifts.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { LEVELS } from '../src/levels.js';
-import { DAY, NIGHT, TILE, NO_INPUT, initState, step, tileAt, supervisorFacing } from '../src/rules.js';
+import { LEVELS, CLOCKOUT_CLASSIC } from '../src/levels.js';
+import { DAY, NIGHT, TILE, NO_INPUT, initState, step, tileAt, supervisorFacing, parseLevel, freakBoxes } from '../src/rules.js';
 import { play, tx } from './helpers.mjs';
-import { SOLUTIONS, L } from './solutions.mjs';
+import { SOLUTIONS, SOLUTIONS_EXTRA, L } from './solutions.mjs';
 
 test('every level has a scripted solution', () => {
   assert.deepEqual(Object.keys(SOLUTIONS).sort(), LEVELS.map((l) => l.id).sort());
@@ -97,9 +97,18 @@ test('Stacked: clocking in twice before gap A takes the bridge away; the pit res
   assert.equal(state.won, false);
 });
 
-test('Clock Out: without the fourth clock-in the step stays gone and the time clock is out of reach', () => {
-  const { state } = play(L.clockout, (s, m, f) => {
-    const want = SOLUTIONS.clockout(s, m, f);
+test('Clock Out (classic): still wins at par 7, the fallback finale', () => {
+  const lvl = parseLevel(CLOCKOUT_CLASSIC);
+  const { state } = play(lvl, SOLUTIONS_EXTRA.clockoutClassic);
+  assert.equal(state.won, true);
+  assert.equal(state.deaths, 0);
+  assert.ok(state.shifts <= CLOCKOUT_CLASSIC.par, `${state.shifts} clock-ins`);
+  assert.equal(CLOCKOUT_CLASSIC.par, 7);
+});
+
+test('Clock Out (classic): without the fourth clock-in the step stays gone and the time clock is out of reach', () => {
+  const { state } = play(parseLevel(CLOCKOUT_CLASSIC), (s, m, f) => {
+    const want = SOLUTIONS_EXTRA.clockoutClassic(s, m, f);
     return s.nightEntries >= 3 && tx(s) > 25 ? { right: true, jump: s.player.grounded || s.player.vy < 0 } : want;
   }, 120 * 12);
   assert.equal(state.won, false);
@@ -400,4 +409,51 @@ test('Head Over Heels: the final plank needs the right night entry', () => {
   // the solution gets there on the 4th clock-in, and the plank is over the gap
   const { events: won } = play(lvl, SOLUTIONS.heels, 120 * 20);
   assert.deepEqual(won.filter((e) => e.type === 'prank').map((e) => e.id), ['plank1']);
+});
+
+// The finale (rev 2): one lesson test per room.
+test('Clock Out: room 1, staying on night after the gap stops at the locked gate', () => {
+  let maxX = 0;
+  const policy = (s, m, f) => { maxX = Math.max(maxX, s.player.x); return { right: true, shift: s.shifts === 0 && SOLUTIONS.clockout(s, m, f).shift }; };
+  const { state } = play(L.clockout, policy, 120 * 6);
+  assert.equal(state.won, false);
+  assert.equal(state.layer, NIGHT);
+  assert.ok(maxX < 11 * TILE, `got to x ${maxX}`);
+});
+
+test('Clock Out: room 2, the door goes on the second clock-in, but the far wall still needs a clock-out', () => {
+  let maxX = 0;
+  const policy = (s, m, f) => { maxX = Math.max(maxX, s.player.x); return s.shifts >= 3 ? { right: true } : SOLUTIONS.clockout(s, m, f); };
+  const { state, events } = play(L.clockout, policy, 120 * 8);
+  assert.ok(events.some((e) => e.type === 'prank' && e.id === 'door'));
+  assert.equal(state.won, false);
+  assert.ok(maxX < 21 * TILE, `got to x ${maxX}`);
+});
+
+test('Clock Out: room 3, crossing the wax while the clipboard watches the far tunnel spooks', () => {
+  const policy = (s, m, f) => {
+    if (s.shifts < 5) return SOLUTIONS.clockout(s, m, f);
+    const sup = freakBoxes(L.clockout, s).find((b) => b.kind === 'supervisor');
+    if (sup.facing === 1 && sup.turnIn > 1) m.go = true;
+    return { right: !!m.go };
+  };
+  const { events } = play(L.clockout, policy, 120 * 12);
+  const death = events.find((e) => e.type === 'death');
+  assert.ok(death && death.cause === 'spooked' && death.by === 'lurker', `died of ${death?.cause}`);
+  assert.ok(death.x > 22 * TILE, `in room 3 (x ${death.x})`);
+});
+
+test('Clock Out: room 4, the third clock-in took the step: up the shaft never reaches the time clock', () => {
+  // the solution across the wax (entry 3), then straight on up the shaft without clocking out and in again: no
+  // ceiling over the shaft, and the time clock walled up, so you fly out the top or end up stuck under the wall
+  const lvl = L.clockout;
+  const policy = (s, m, f) => (s.shifts >= 5 && m.go ? { right: true } : SOLUTIONS.clockout(s, m, f));
+  const { state, events } = play(lvl, policy, 120 * 14);
+  assert.ok(events.some((e) => e.type === 'prank' && e.id === 'stepGone'));
+  assert.equal(state.won, false);
+  assert.ok(!events.some((e) => e.type === 'shift' && e.layer === DAY && events.indexOf(e) > events.findIndex((x) => x.id === 'stepGone')));
+  // and with the 4th clock-in (the solution), the step is back and the time clock open
+  const won = play(lvl, SOLUTIONS.clockout, 120 * 20);
+  assert.equal(won.state.won, true);
+  assert.deepEqual(won.events.filter((e) => e.type === 'prank').map((e) => e.id), ['door', 'stepGone', 'stepBack']);
 });

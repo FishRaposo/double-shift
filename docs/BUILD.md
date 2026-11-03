@@ -262,7 +262,7 @@ Seven milestone PRs (decided 2026-11-03). Each one passes every gate in §1.2 pl
 - **Head Over Heels:** a day-walker on the floor by day and a lurker on the ceiling by night. Every shift freezes one, wakes the other and flips gravity. It ends on a prank. Checkpoints between beats.
 - **Tests:** each lesson is required, e.g. Ceiling Walker: staying on night under the lurker gets you spooked.
 
-### T12 · Finale rework (`clockout`, #21) · needs T7–T11 · fallback stays
+### T12 · Finale rework (`clockout`, #21) · needs T7–T11 · fallback stays *(✅ built Nov 3, par 7; LEVELS.md §4)*
 - **Spec:** LEVELS.md §5.3. One screen, `upsideDown: true`, four rooms recalling the acts:
   1. mid-air stones;
   2. a frozen-lurker tunnel plus a telegraphed prank;
@@ -335,7 +335,7 @@ Seven milestone PRs (decided 2026-11-03). Each one passes every gate in §1.2 pl
 - **Per-act backdrops** (✅ built Nov 3; ART.md §2, §6): `drawBackground(..., act)` draws one quiet motif per act: act 1 scaffolding and tarps; act 2 office windows with blinds and a wall clock; act 3 warehouse shelving and pipes; act 4 fluorescent strips by day, emergency lights and EXIT glow by night; act 5 hanging lamps, inverted at night; the finale a dawn tint by day and a low moon by night.
 - **Review:** `npm run media -- --review <ids> --gray --cvd` for every level, checked against the identity checklist in LEVELS.md §6. Before/after pairs go in the PR.
 
-### T22 · Saves ignore bests from an older level revision *(PR 5, with T12)*
+### T22 · Saves ignore bests from an older level revision *(PR 5, with T12; ✅ built Nov 3)*
 - A level may carry `rev: N` (default 1). Bests are saved with their rev; `best(id, rev)` ignores a best from another rev; `cleared()` ignores revs, so unlocks never change. The reworked finale has `rev: 2`.
 
 ### T23 · Copy features *(PR 6)*

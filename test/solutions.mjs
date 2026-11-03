@@ -66,24 +66,27 @@ export const SOLUTIONS = {
     else if (s.nightEntries === 2 && x >= 20.5) target = NIGHT; // ...and in: entry 3 lays the plank over gap B
     return { right: true, shift: want(s, target) };
   },
-  clockout: (s) => {
+  // The finale, one room per act. 1: walk off the ledge and clock in as you fall (the walkway's copy catches you),
+  // cross the gap hanging, out before the night gate. 2: in at the day wall (entry 2: they've taken the door), out
+  // before the lurker (the far wall is night-only). 3: in at the dry stop and wait, hanging, until the clipboard
+  // turns away from the far tunnel, then slide over the wax past its lurker. 4: entry 3 took the step: out on the
+  // dry floor short of the day-walker, in again (entry 4 puts it back), and up the shaft to the time clock.
+  clockout: (s, m) => {
     const x = tx(s);
-    const p = s.player;
-    let target = s.layer;
-    // room 1: jump stone to stone, shifting mid-air to the stone ahead (night, then day)
-    if (x > 2 && x < 8.5) target = NIGHT;
-    else if (x >= 8.5 && x < 15) target = DAY;
-    // room 2: night past the day crate, day to freeze the lurker, night past the far crate (clock-in 3: the step goes)
-    else if (x > 15.3 && x < 18.1) target = NIGHT;
-    else if (x >= 18.1 && x < 21.9) target = DAY;
-    else if (x >= 21.9 && x < 25.1) target = NIGHT;
-    // room 3: out and back in (clock-in 4: the step comes back), then up the step to the time clock
-    else if (x >= 25.1 && x < 25.8) target = DAY;
-    else if (x >= 25.8) target = NIGHT;
-    const onStone = p.grounded && ((x > 1.0 && x < 1.5) || (x > 4.5 && x < 13));
-    const climb = p.grounded && s.nightEntries >= 4 && x > 25.9;
-    const jump = onStone || climb || (!p.grounded && p.vy < 0);
-    return { right: true, jump, shift: want(s, target) };
+    switch (s.shifts) {
+      case 0: return { right: true, shift: x >= 2.5 };
+      case 1: return { right: true, shift: x >= 9.6 };
+      case 2: return { right: true, shift: x >= 13 };
+      case 3: return { right: true, shift: x >= 16.4 };
+      case 4: return { right: x < 22.4, shift: x >= 22.4 };
+      case 5: {
+        const sup = freakBoxes(L.clockout, s).find((b) => b.kind === 'supervisor');
+        if (sup.facing === -1 && sup.turnIn >= 1) m.go = true;
+        return { right: !!m.go && x < 27.65, shift: x >= 27.65 };
+      }
+      case 6: return { shift: Math.abs(s.player.vx) < 1 };
+      default: return { right: true };
+    }
   },
   daywalker: (s) => {
     const x = tx(s);
@@ -240,5 +243,28 @@ export const SOLUTIONS = {
     const shift = airborne && Math.abs(p.vy) < 60 && s.layer !== layer;
     if (shift) m.launched = true;
     return { right: !airborne, jump, shift }; // no right in the air: land on the copy below
+  },
+};
+
+// Policies for levels kept outside LEVELS: today's Clock Out, the fallback finale (CLOCKOUT_CLASSIC).
+export const SOLUTIONS_EXTRA = {
+  clockoutClassic: (s) => {
+    const x = tx(s);
+    const p = s.player;
+    let target = s.layer;
+    // room 1: jump stone to stone, shifting mid-air to the stone ahead (night, then day)
+    if (x > 2 && x < 8.5) target = NIGHT;
+    else if (x >= 8.5 && x < 15) target = DAY;
+    // room 2: night past the day crate, day to freeze the lurker, night past the far crate (clock-in 3: the step goes)
+    else if (x > 15.3 && x < 18.1) target = NIGHT;
+    else if (x >= 18.1 && x < 21.9) target = DAY;
+    else if (x >= 21.9 && x < 25.1) target = NIGHT;
+    // room 3: out and back in (clock-in 4: the step comes back), then up the step to the time clock
+    else if (x >= 25.1 && x < 25.8) target = DAY;
+    else if (x >= 25.8) target = NIGHT;
+    const onStone = p.grounded && ((x > 1.0 && x < 1.5) || (x > 4.5 && x < 13));
+    const climb = p.grounded && s.nightEntries >= 4 && x > 25.9;
+    const jump = onStone || climb || (!p.grounded && p.vy < 0);
+    return { right: true, jump, shift: want(s, target) };
   },
 };

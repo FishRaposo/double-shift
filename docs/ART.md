@@ -237,7 +237,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | `fallup` ✅ | A THIS WAY UP sign and a notice board (day), a vent stuck to the ceiling (night, `flip`); the exit isn't drawn in a shift that walls it up |
 | `ceiling` ✅ | An IT'S FINE sign and a notice board (day); footprints on the ceiling under the plank (night, `flip`); eyes in the dark over the first pit |
 | `heels` ✅ | A HARD HAT AREA sign and a notice board (day); a hard hat stuck to the ceiling (night, `flip`; `PROPS.hardHat`, management's white one in existing colors, so it never reads as the worker's yellow); eyes in the dark over the last gap |
-| `clockout` | The time clock on the ledge, a coat rack, a vent, a LAST SHIFT sign, eyes everywhere in the dark |
+| `clockout` ✅ | A LAST SHIFT sign, a coat rack and a vent (day); the time clock hanging beside the exit at the top of the shaft (night, `flip`); eyes everywhere in the dark |
 
 ## 7. UI and effects
 

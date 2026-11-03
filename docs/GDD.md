@@ -186,7 +186,7 @@ Game Off is rated by other participants in six categories (RELEASE.md §0). What
 
 | Category | What earns it here | Gap today |
 |---|---|---|
-| Overall | A complete, polished run with a satisfying final timecard | Tier B is built (17 levels) and so is act 5 (Nov 3); the finale rework remains (§8.2); the finale and its ending are built |
+| Overall | A complete, polished run with a satisfying final timecard | Tier B is built (17 levels), and so are act 5 and the reworked finale (Nov 3; §8.2); the finale and its ending are built |
 | Gameplay | Tight movement (§5), mid-air shifting, par as a second puzzle per level | Tuning pass (G1), playtests |
 | Graphics | A deliberate code-drawn style: two palettes of one building, echoes, readable freaks (ART.md §1.1) | — |
 | Audio | Theme in two arrangements crossfaded on shift (§11.3); yelp, giggle, stamp | — |
@@ -874,7 +874,7 @@ A linear progression is sufficient.
 
 | Level | Focus | Intended Lesson | Fiction | Tier |
 |---|---|---|---|---|
-| 21. Clock Out ✅ (rework planned) | Everything | One room per act, then the time clock; the ending | Get out. Final timecard. They wave from the dark. | A built / C rework |
+| 21. Clock Out ✅ (reworked Nov 3) | Everything | One room per act, then the time clock; the ending | Get out. Final timecard. They wave from the dark. | A built / C rework |
 
 **Ladder.** Freak evidence in act 1; pranks single (5), wanted (8), moving an object (10), queued (12); visible freaks (6), the supervisor (11), the day-walker (14), a freak on the ceiling (19); one new rule per act from act 3: wax (9), offset (15), upside down (17). Floor 3.5 previews act 5: the building stops being where it was before it turns over.
 

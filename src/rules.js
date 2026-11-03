@@ -61,6 +61,7 @@ export function parseLevel(def) {
   if (!night) throw new Error(`${def.name}: needs a night grid, an offset or upsideDown`);
   const sups = (def.freaks ?? []).filter((f) => f.kind === 'supervisor');
   if (sups.length > 1) throw new Error(`${def.name}: one supervisor per level`);
+  if (def.rev !== undefined && !(Number.isInteger(def.rev) && def.rev >= 1)) throw new Error(`${def.name}: rev must be a whole number from 1`);
   for (const f of def.freaks ?? []) {
     if (f.period !== undefined && !(f.period > 0)) throw new Error(`${def.name}: ${f.kind} period must be > 0`);
     if (f.duty !== undefined && !(f.duty > 0 && f.duty <= 1)) throw new Error(`${def.name}: ${f.kind} duty must be in (0, 1]`);
@@ -126,6 +127,7 @@ export function parseLevel(def) {
   return {
     name: def.name,
     par: def.par,
+    rev: def.rev ?? 1, // a reworked level's revision: saves ignore bests from another one (save.js)
     w,
     h,
     spawnLayer: def.spawnLayer ?? DAY,

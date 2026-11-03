@@ -4,7 +4,7 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-02 (a
 
 **At a glance**
 - **The one rule:** `src/rules.js` decides everything that matters; the screen only draws it (§2).
-- `npm start` to play, `npm test` (<!-- n:tests -->299<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
+- `npm start` to play, `npm test` (<!-- n:tests -->306<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
 - Add a level: grids in `src/levels.js` + a `SOLUTIONS` entry in `test/solutions.mjs` (§6; the full recipe is BUILD.md §2.1).
 - The tier-C mechanics (wet floor, day-walker, supervisor, offset layer) are built — §6.5 documents them.
 
@@ -30,7 +30,7 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-02 (a
 | `src/copy.js` | Result-based lines: timecard comments, stamps, act card lines, spook lines, credits | No |
 | `src/layout.js` | Pure shell logic: `levelIndex` (`?level=` by id or position), `canvasScale` (whole device pixels per canvas pixel unless that wastes > 15 % of the window), the level select layout (`actRows`, `cardRect`, `tabRect`, `detailRect`, `moveSelect`, `selectClick`, `actLabel`) and the end screen's per-act `endSummary` | No |
 | `src/music.js` | The theme as note data (pure), `scheduleStep`, `createMusic` (look-ahead player with day/night crossfade) | Data no; engine yes |
-| `src/save.js` | Best result per level in localStorage (key `double-shift.progress.v1`); unlock rule for level select. Storage is passed in; blocked or corrupt storage falls back to memory | No (takes a storage object) |
+| `src/save.js` | Best result per level in localStorage (key `double-shift.progress.v1`), tagged with the level's `rev` when it isn't 1: `best(id, rev)` ignores a best from another revision, `cleared(id)` doesn't, so a rework never relocks anything; unlock rule for level select. Storage is passed in; blocked or corrupt storage falls back to memory | No (takes a storage object) |
 | `src/audio.js` | Mix bus (music + SFX → master → compressor), `voice()`, every SFX as data in `SOUNDS`, `sfx.*`, volumes, music shift/menu hooks | Yes (AudioContext) |
 | `tools/gallery.html` | Every asset on both palettes, audio board, offline loudness check (`window.__audioCheck`) | Yes |
 | `tools/cover.html` | The itch cover, drawn with the game's sprites, tiles and font | Yes |
@@ -133,7 +133,7 @@ See [LEVELS.md](LEVELS.md) §2 for the full format. Summary: `{ id, name, act, n
 
 ### 6.1 Add a level
 1. Write the grids and metadata in `src/levels.js` (or generate with a script; widths must match).
-2. Add a scripted solution policy to `SOLUTIONS` in `test/solutions.mjs`. `test/levels.test.mjs` asserts it wins at ≤ par with zero deaths and that running/jumping without shifting can't win; `test/fairness.test.mjs` checks the timing slack of every required input, respawns outside patrols and the exit clear of freaks.
+2. Add a scripted solution policy to `SOLUTIONS` in `test/solutions.mjs` (a level kept outside `LEVELS`, like `CLOCKOUT_CLASSIC`, gets its policy in `SOLUTIONS_EXTRA` and its own tests). A reworked level keeps its id and takes `rev: N` (default 1), so old bests don't count against it. `test/levels.test.mjs` asserts it wins at ≤ par with zero deaths and that running/jumping without shifting can't win; `test/fairness.test.mjs` checks the timing slack of every required input, respawns outside patrols and the exit clear of freaks.
 3. `npm test`, `npm run check`, `npm run audit -- <id>`, `npm run media -- --review <id>`, play it. BUILD.md §2.1 has the full recipe.
 
 ### 6.2 Add a prank
@@ -187,7 +187,7 @@ The four tier-C mechanics from [CONTENT.md](CONTENT.md) §3 — all built, teste
 - **Tests:** a generated night grid equals a hand-written equivalent; `nightPatch` applies after the offset; shifting on the ground in an offset level is refused and leaves the player unchanged; shifting at the apex of a jump lands on the night copy (scripted with the real jump).
 - **Drawing:** nothing new beyond the floor-number signs (ART.md §6.1).
 
-#### Upside Down (SYS-16, act 5 and the finale rework) *(built Nov 3: rules, drawing and `upside`; the other act 5 levels and the finale rework planned, cut Nov 18)*
+#### Upside Down (SYS-16, act 5 and the finale rework) *(built Nov 3: rules, drawing, all of act 5 and the finale rework)*
 - **Format:** `upsideDown: true` on a level: `parseLevel` generates `night[y] = day[H − 1 − y]` (S, E, C stay shared and unmoved), then applies `nightPatch`. It can't be combined with `night` or `offset` (validation throws, like today's night/offset check).
 - **Gravity:** a per-shift sign `g = level.upsideDown && s.layer === NIGHT ? −1 : 1`. Gravity, jump velocity, the variable-jump cut (`rising` means moving against gravity), max fall, coyote and jump buffer all use it. Grounding probes 1 px in the gravity direction (the tile above the head at night). The horizontal step is unchanged.
 - **Shift:** unchanged transaction (S-08: clean, ≤ 4 px nudge, 80 ms buffer, reject), checked against the flipped geometry. Velocity is kept as-is in screen space (S-02), so a rise becomes a fall the other way; that is the mechanic.
@@ -207,7 +207,7 @@ The four tier-C mechanics from [CONTENT.md](CONTENT.md) §3 — all built, teste
 
 | Command | What it covers |
 |---|---|
-| `npm test` | <!-- n:tests -->299<!-- /n --> tests: GDD §13.7 cases 1–15, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, Upside Down rules (flip, gravity sign, hanging, jump and cut, nudge order, coyote across a flip, hazard band, grid edges, checkpoints, fuzz), every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
+| `npm test` | <!-- n:tests -->306<!-- /n --> tests: GDD §13.7 cases 1–15, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, Upside Down rules (flip, gravity sign, hanging, jump and cut, nudge order, coyote across a flip, hazard band, grid edges, checkpoints, fuzz), every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
 | `npm run check` | Every module parses; every level validates |
 | `npm run audit` | Per level: the slack of every required shift and jump (fails under the act floor), input-lag tolerance 0–150 ms, and a random search for wins below par or without shifting (`scripts/audit-levels.mjs`). |
 | `npm run media` | Real browser (headless Edge/Chrome, no dependencies): plays level 1 with key presses, fails on page errors, a wrong outcome, audio clipping or a slow frame; saves the cover, screenshots and gallery. |

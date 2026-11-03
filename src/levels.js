@@ -42,6 +42,88 @@ function relocations(id, { start, loop, rect, entries, sound, first = 1, tells =
   });
 }
 
+// Today's Clock Out before the rework: three rooms, no Upside Down. Not in LEVELS; the rework replaces it in the
+// same slot with the same id. If act 5 has to go post-jam, shipping this again is swapping that one entry
+// (LEVELS.md §5.3); test/levels.test.mjs keeps proving it at par 7.
+export const CLOCKOUT_CLASSIC = {
+  id: 'clockout',
+  name: 'Clock Out',
+  act: FINALE_ACT,
+  note: "Almost done. Don't look at the vents.",
+  par: 7,
+  props: [
+    { kind: 'timeClock', tx: 30, ty: 9 },
+    { kind: 'coatRack', tx: 29, ty: 9, layer: 'day' },
+    { kind: 'vent', tx: 26, ty: 6 },
+    { kind: 'sign', tx: 2, ty: 9, text: 'LAST SHIFT', style: 'paper', layer: 'day' },
+  ],
+  decor: [
+    { kind: 'eyes', tx: 3, ty: 4 }, { kind: 'eyes', tx: 9, ty: 2 }, { kind: 'eyes', tx: 13, ty: 6 },
+    { kind: 'eyes', tx: 26, ty: 3 }, { kind: 'eyes', tx: 30, ty: 5 },
+  ],
+  // Everything once more, in three rooms. Room 1 (cols 0-14): a pit with a night stone and a
+  // higher day stone, so both crossings are mid-air shifts. Room 2 (cols 15-24): `watch`'s
+  // tunnel: day crates at 17 and 24 force night in and out, the lurker inside forces a day
+  // freeze. Room 3 (cols 25-31): the time clock sits on a ledge 4 tiles up; the only way up is
+  // a night step. Leaving room 2 at night is clock-in 3, when they take the step; clock-in 4
+  // puts it back. So clock out and in again before you climb. Checkpoints at rooms 2 and 3.
+  day: [
+    '.................########.......',
+    '.................########.......',
+    '.................########.......',
+    '.................########.......',
+    '.................########.......',
+    '.................########.......',
+    '.................########.......',
+    '.................########.......',
+    '.................########.......',
+    '.................########.....E.',
+    '.................########...####',
+    '.................########...####',
+    '..........###....########...####',
+    'S..............C.#......#C..####',
+    '##.............#################',
+    '##.............#################',
+    '##.............#################',
+    '##.............#################',
+  ],
+  night: [
+    '.................########.......',
+    '.................########.......',
+    '.................########.......',
+    '.................########.......',
+    '.................########.......',
+    '.................########.......',
+    '.................########.......',
+    '.................########.......',
+    '.................########.......',
+    '.................########.......',
+    '.................########...####',
+    '.................########...####',
+    '.................########..#####',
+    '.....###...................#####',
+    '##.............#################',
+    '##.............#################',
+    '##.............#################',
+    '##.............#################',
+  ],
+  freaks: [{ kind: 'lurker', tx: 20, ty: 13, range: 1, speed: 45 }],
+  pranks: [
+    {
+      id: 'stepGone',
+      onNight: 3,
+      tell: { tx: 27, ty: 10 },
+      set: [{ layer: 'night', x0: 27, x1: 27, y0: 12, y1: 13, ch: '.' }],
+    },
+    {
+      id: 'stepBack',
+      onNight: 4,
+      tell: { tx: 26, ty: 7 },
+      set: [{ layer: 'night', x0: 27, x1: 27, y0: 12, y1: 13, ch: '#' }],
+    },
+  ],
+};
+
 export const LEVELS = [
   {
     id: 'clock',
@@ -1186,78 +1268,64 @@ export const LEVELS = [
     id: 'clockout',
     name: 'Clock Out',
     act: FINALE_ACT,
+    rev: 2, // the rework: bests from today's Clock Out (CLOCKOUT_CLASSIC, rev 1) don't carry over
     note: "Almost done. Don't look at the vents.",
     par: 7,
-    props: [
-      { kind: 'timeClock', tx: 30, ty: 9 },
-      { kind: 'coatRack', tx: 29, ty: 9, layer: 'day' },
-      { kind: 'vent', tx: 26, ty: 6 },
-      { kind: 'sign', tx: 2, ty: 9, text: 'LAST SHIFT', style: 'paper', layer: 'day' },
+    // One room per act, on the flipped map: the walkway (row 5) is the night's ceiling, one step above the floor,
+    // so a shift flips you in place. Room 1 (act 1, cols 0-11): no ceiling over the spawn, so walk off the ledge
+    // and clock in as you fall; cross the gap hanging; clock out before the locked gate (night only). Room 2 (act
+    // 2, cols 12-21): a day wall; they take the door on the 2nd clock-in; clock out before the lurker, since the far
+    // wall is night-only too. Room 3 (act 3, cols 22-26): stop on the dry floor and clock in; the supervisor
+    // watches one tunnel at a time, so wait, hanging, until it looks away from this one and slide over the wax
+    // past its lurker. Room 4 (acts 4-5, cols 27-31): the 3rd clock-in took the last step at the top of the shaft:
+    // clock out short of the day-walker, in again (the 4th puts it back), and fall up to the time clock.
+    upsideDown: true,
+    // The night's walls are drawn in the day grid's top rows so they mirror into the night's bottom ones: the
+    // locked gate (col 11), the door (16), room 2's tunnel floor (16-20) and far wall (21), room 3's tunnel floor
+    // (24-26). By day they stand on the walkway and close it off, so it's no road past the rooms.
+    nightPatch: [
+      { x0: 30, x1: 31, y0: 12, ch: '.' }, // the time clock's pocket is day-only: the shaft is 3 wide at night
+      { x0: 30, y0: 13, ch: '.' },
+      { x0: 31, y0: 14, ch: '.' },
     ],
-    decor: [
-      { kind: 'eyes', tx: 3, ty: 4 }, { kind: 'eyes', tx: 9, ty: 2 }, { kind: 'eyes', tx: 13, ty: 6 },
-      { kind: 'eyes', tx: 26, ty: 3 }, { kind: 'eyes', tx: 30, ty: 5 },
-    ],
-    // Everything once more, in three rooms. Room 1 (cols 0-14): a pit with a night stone and a
-    // higher day stone, so both crossings are mid-air shifts. Room 2 (cols 15-24): `watch`'s
-    // tunnel: day crates at 17 and 24 force night in and out, the lurker inside forces a day
-    // freeze. Room 3 (cols 25-31): the time clock sits on a ledge 4 tiles up; the only way up is
-    // a night step. Leaving room 2 at night is clock-in 3, when they take the step; clock-in 4
-    // puts it back. So clock out and in again before you climb. Checkpoints at rooms 2 and 3.
-    day: [
-      '.................########.......',
-      '.................########.......',
-      '.................########.......',
-      '.................########.......',
-      '.................########.......',
-      '.................########.......',
-      '.................########.......',
-      '.................########.......',
-      '.................########.......',
-      '.................########.....E.',
-      '.................########...####',
-      '.................########...####',
-      '..........###....########...####',
-      'S..............C.#......#C..####',
-      '##.............#################',
-      '##.............#################',
-      '##.............#################',
-      '##.............#################',
-    ],
-    night: [
-      '.................########.......',
-      '.................########.......',
-      '.................########.......',
-      '.................########.......',
-      '.................########.......',
-      '.................########.......',
-      '.................########.......',
-      '.................########.......',
-      '.................########.......',
-      '.................########.......',
-      '.................########...####',
-      '.................########...####',
-      '.................########..#####',
-      '.....###...................#####',
-      '##.............#################',
-      '##.............#################',
-      '##.............#################',
-      '##.............#################',
-    ],
-    freaks: [{ kind: 'lurker', tx: 20, ty: 13, range: 1, speed: 45 }],
     pranks: [
-      {
-        id: 'stepGone',
-        onNight: 3,
-        tell: { tx: 27, ty: 10 },
-        set: [{ layer: 'night', x0: 27, x1: 27, y0: 12, y1: 13, ch: '.' }],
-      },
-      {
-        id: 'stepBack',
-        onNight: 4,
-        tell: { tx: 26, ty: 7 },
-        set: [{ layer: 'night', x0: 27, x1: 27, y0: 12, y1: 13, ch: '#' }],
-      },
+      { id: 'door', onNight: 2, tell: { tx: 16, ty: 11 }, sound: 'doorThunk', set: [{ layer: 'night', x0: 16, y0: 13, ch: '.' }] },
+      // they take the ceiling over the shaft and wall up the time clock, so rising past it on entry 3 touches nothing
+      { id: 'stepGone', onNight: 3, tell: { tx: 29, ty: 3 }, set: [{ layer: 'night', x0: 29, x1: 31, y0: 0, y1: 3, ch: '.' }, { layer: 'night', x0: 31, y0: 4, ch: '#' }] },
+      { id: 'stepBack', onNight: 4, set: [{ layer: 'night', x0: 29, x1: 31, y0: 0, y1: 3, ch: '#' }, { layer: 'night', x0: 31, y0: 4, ch: '.' }] },
+    ],
+    freaks: [
+      { kind: 'lurker', tx: 19, ty: 13, range: 1, speed: 45 },
+      { kind: 'supervisor', tx: 23, ty: 13, period: 1.6, startFacing: 'right' },
+      { kind: 'lurker', tx: 25, ty: 13, range: 1, speed: 45 },
+      { kind: 'daywalker', tx: 30, ty: 13, range: 1, speed: 45 },
+    ],
+    props: [
+      { kind: 'sign', tx: 4, ty: 9, text: 'LAST SHIFT', style: 'paper', layer: 'day' },
+      { kind: 'coatRack', tx: 12, ty: 13, layer: 'day' },
+      { kind: 'vent', tx: 20, ty: 8, layer: 'day' },
+      { kind: 'timeClock', tx: 30, ty: 4, layer: 'night', flip: true },
+    ],
+    decor: [{ kind: 'eyes', tx: 5, ty: 7 }, { kind: 'eyes', tx: 13, ty: 6 }, { kind: 'eyes', tx: 19, ty: 8 }, { kind: 'eyes', tx: 27, ty: 7 }],
+    day: [
+      '...........#....######..###.....',
+      '...........#....######..###.....',
+      '...........#....######..###.....',
+      '...........#....######..###....#',
+      '...........#....#....#........#E',
+      '..######################~~~##.##',
+      '................................',
+      '................................',
+      '................................',
+      '................................',
+      '...............#........#.......',
+      '...............#........#.......',
+      '...............#........#.......',
+      '.S...........C.#......C.#..C....',
+      '##.......################..#####',
+      '##.......################..#####',
+      '##.......################..#####',
+      '##.......################..#####',
     ],
   },
 ];

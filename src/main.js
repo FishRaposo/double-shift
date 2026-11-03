@@ -272,8 +272,9 @@ function handleEvents(events) {
         game.results[game.index] = { shifts: ev.shifts, par: ev.par, deaths: game.state.deaths, time: game.state.time };
         {
           const id = LEVELS[game.index].id;
-          const hadBest = save.cleared(id);
-          game.newBest = save.record(id, game.results[game.index]) && hadBest;
+          const rev = LEVELS[game.index].rev ?? 1;
+          const hadBest = save.best(id, rev) !== null;
+          game.newBest = save.record(id, game.results[game.index], rev) && hadBest;
         }
         setScreen('card');
         break;
@@ -767,7 +768,7 @@ function drawSelect() {
   LEVELS.forEach((def, i) => {
     const c = cardRect(LEVELS, i);
     const open = isUnlocked(LEVELS, i, save);
-    const best = save.best(def.id);
+    const best = save.best(def.id, def.rev ?? 1);
     g.globalAlpha = open ? 1 : 0.4;
     drawPanel(g, c.x, c.y, c.w, c.h, true);
     g.globalAlpha = 1;
@@ -791,7 +792,7 @@ function drawSelect() {
   // detail bar: the selected level in full
   const d = detailRect;
   const sel = LEVELS[game.selected];
-  const selBest = save.best(sel.id);
+  const selBest = save.best(sel.id, sel.rev ?? 1);
   const selOpen = isUnlocked(LEVELS, game.selected, save);
   drawPanel(g, d.x, d.y, d.w, d.h, true);
   drawText(g, `${game.selected + 1}. ${sel.name.toUpperCase()}`, d.x + 12, d.y + 11, { scale: 2, color: C.paperInk });
