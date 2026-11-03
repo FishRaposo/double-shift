@@ -919,6 +919,76 @@ export const LEVELS = [
     ],
   },
   {
+    id: 'audit',
+    name: 'Night Audit',
+    act: 4,
+    note: 'Management is doing a walkthrough tonight. So are they.',
+    par: 6,
+    // Acts 1-4 on one screen, no new rules, a checkpoint after each beat. Every beat is a 1-tile tunnel under
+    // a 4-thick roof (its top 5 up, out of reach), so no beat can be jumped or walked over.
+    // 1 (act 3, wax): a day wall sends you in at night; under a low roof, rebar by day keeps you on the night's
+    //   wax, which won't let you stop before the laser: clock out on the dry stretch (cols 6-8).
+    // 2 (act 3, the supervisor): the block is solid by day; at night a tunnel runs through it with a lurker on
+    //   each side of the supervisor (who manages every night freak here). Cross each on its slack side.
+    // 3 (act 4): the day-walker is frozen while you're on night. Past it, out and back in: that's entry 3,
+    //   when they lay the plank over the last pit (a low roof, so no jumping it). Then out again: the lurker
+    //   under the roof works nights. Their tell shows from the spawn.
+    pranks: [{ id: 'plank', onNight: 3, tell: { tx: 25, ty: 13 }, set: [{ layer: 'night', x0: 25, x1: 26, y0: 14, ch: '#' }] }],
+    freaks: [
+      { kind: 'supervisor', tx: 15, ty: 8, period: 1.6, startFacing: 'right' },
+      { kind: 'lurker', tx: 13, ty: 13, range: 1, speed: 40 },
+      { kind: 'lurker', tx: 17, ty: 13, range: 1, speed: 40 },
+      { kind: 'daywalker', tx: 21, ty: 13, range: 1, speed: 50 },
+      { kind: 'lurker', tx: 29, ty: 13 },
+    ],
+    props: [
+      { kind: 'sign', tx: 7, ty: 7, text: 'INSPECTION', style: 'paper', layer: 'day' },
+      { kind: 'noticeBoard', tx: 21, ty: 10, layer: 'day' },
+      { kind: 'mopBucket', tx: 7, ty: 13, layer: 'night' },
+      { kind: 'wetFloorSign', tx: 11, ty: 13, layer: 'night' },
+    ],
+    day: [
+      '................................',
+      '................................',
+      '................................',
+      '................................',
+      '................................',
+      '................................',
+      '................................',
+      '................................',
+      '................................',
+      '....#######.#######.....#######.',
+      '...########.#######.....#######.',
+      '...########.#######.....#######.',
+      '...########.#######.....#######.',
+      '.S.#^^....C.#######C...C.......E',
+      '#########################..#####',
+      '#########################..#####',
+      '#########################..#####',
+      '#########################..#####',
+    ],
+    night: [
+      '................................',
+      '................................',
+      '................................',
+      '................................',
+      '................................',
+      '................................',
+      '................................',
+      '................................',
+      '................................',
+      '....#######.#######.....#######.',
+      '....#######.#######.....#######.',
+      '....#######.#######.....#######.',
+      '....#######.#######.....#######.',
+      '.........^......................',
+      '####~~~~~~###############..#####',
+      '#########################..#####',
+      '#########################..#####',
+      '#########################..#####',
+    ],
+  },
+  {
     id: 'upside',
     name: 'Mind Your Head',
     act: 5,

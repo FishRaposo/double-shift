@@ -230,6 +230,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | `supervisor` | A STAFF ONLY sign, a vent, footprints |
 | `stacked` | Three tells in view from the spawn, a notice board, chalk circles and footprints on the middle floor (night) |
 | `offset` | Floor signs 3 / 3.5 |
+| `audit` ✅ | An INSPECTION sign and a notice board (day); a mop bucket and a WET FLOOR sign by the wax (night) |
 | `daywalker` | A DAY SHIFT sign, a mug, footprints in the day-walker's tunnel |
 | `portrait` ✅ | The portrait skin wherever it hangs (night), a nail and unfaded patch at each of its spots (`PROPS.nail`, night), the EMPLOYEE OF THE MONTH plaque and a notice board (day) |
 | `upside` ✅ | A MIND YOUR HEAD sign and a notice board (day); a coffee mug stuck upside down under the walkway (night, `flip`) |

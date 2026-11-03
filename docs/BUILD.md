@@ -181,7 +181,7 @@ Seven milestone PRs (decided 2026-11-03). Each one passes every gate in §1.2 pl
 - **Skins:** `portrait` at each position (drawn per frame, eyes blink). Props: `plaque`, a nail mark (a small `px` or a new prop).
 - **Place:** first level of act 4 (`act: 4`), before `daywalker`.
 
-### T6 · Night Audit (`audit`, #16, act 4, tier B)
+### T6 · Night Audit (`audit`, #16, act 4, tier B) *(✅ built Nov 3, par 6; LEVELS.md §4)*
 - **Spec:** LEVELS.md §5 "Night Audit". One screen, three beats left to right with checkpoints between:
   1. a wax corridor with a dry day stop before a hazard;
   2. a supervisor watching two short 1-tile tunnels;

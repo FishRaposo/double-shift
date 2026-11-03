@@ -70,7 +70,7 @@ In the order of the 21-level game (LEVELS.md §5.0). ✅ = in the build.
 | 13 Employee of the Month (`portrait`) ✅ | They installed a portrait of themselves. It blocks the exit. |
 | 14 Broad Daylight (`daywalker`) ✅ | One of them clocked in for the day shift. |
 | 15 Floor 3.5 (`offset`) ✅ | There is no Floor 3 anymore. It's now Floor 3.5. |
-| 16 Night Audit (`audit`) | Management is doing a walkthrough tonight. So are they. |
+| 16 Night Audit (`audit`) ✅ | Management is doing a walkthrough tonight. So are they. |
 | 17 Mind Your Head (`upside`) ✅ | They flipped the night shift. Mind your head. |
 | 18 Falling Up (`fallup`) | The floor is up there now. |
 | 19 Ceiling Walker (`ceiling`) | Something is walking on the ceiling. It's fine. |

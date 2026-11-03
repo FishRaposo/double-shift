@@ -153,6 +153,35 @@ export const SOLUTIONS = {
     const shift = !!due && s.layer !== due[2];
     return { right: true, shift, jump: p.grounded ? x > 13 && x < 24 && Math.abs(p.vx) < 1 : p.vy < 0 };
   },
+  // in past the day wall, out on the dry stretch, in at the block; through the tunnels watching the clipboard;
+  // past the frozen day-walker, out for the lurker, in for the plank
+  audit: (s, m) => {
+    const p = s.player;
+    const x = tx(s);
+    // each press in the middle of its window, so a press moved early or late still lands inside it
+    const plan = [[1.2, 2.4, NIGHT], [6.6, 7.6, DAY], [10.6, 11.4, NIGHT], [27.1, 27.8, DAY]];
+    const due = plan.find(([a, b]) => x >= a && x <= b);
+    let shift = !!due && s.layer !== due[2];
+    let right = true;
+    if (s.layer === NIGHT && x > 10.5 && x < 16.5) {
+      // the supervisor works one side at a time: at each tunnel's mouth, wait until its lurker slacks with time
+      // to spare, then go through without stopping (the left lurker reaches x 14.83, the right one from 16.57)
+      const sup = freakBoxes(L.audit, s).find((b) => b.kind === 'supervisor');
+      if (x < 11.5 && !m.goA) right = m.goA = sup.facing === 1 && sup.turnIn > 0.75;
+      else if (x >= 14.95 && !m.goB) right = m.goB = sup.facing === -1 && sup.turnIn > 0.75;
+    }
+    // past the day-walker (its reach ends at x 22.83), stop before the pit (24.4): out and back in (entry 3:
+    // the plank), then on. The stop starts early enough to absorb a slow reaction.
+    if (x > 22.9 && x < 24.4 && !m.plank) {
+      right = false;
+      if (Math.abs(p.vx) < 1) {
+        m.ticks = (m.ticks ?? 0) + 1;
+        shift = (m.ticks > 12 && m.ticks < 16 && s.layer === NIGHT) || (m.ticks > 45 && m.ticks < 49 && s.layer === DAY);
+        if (m.ticks > 80 && s.nightEntries >= 3) m.plank = true;
+      }
+    }
+    return { right, shift };
+  },
   // under the walkway, clock in and fall up onto it; past the pit, clock out and drop to the floor
   upside: (s) => ({ right: true, shift: (tx(s) > 7 && tx(s) < 16 && want(s, NIGHT)) || (tx(s) > 19 && want(s, DAY)) }),
   offset: (s, m) => {

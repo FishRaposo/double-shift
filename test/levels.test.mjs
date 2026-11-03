@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { LEVELS } from '../src/levels.js';
-import { DAY, NIGHT, TILE, NO_INPUT, initState, step, tileAt } from '../src/rules.js';
+import { DAY, NIGHT, TILE, NO_INPUT, initState, step, tileAt, supervisorFacing } from '../src/rules.js';
 import { play, tx } from './helpers.mjs';
 import { SOLUTIONS, L } from './solutions.mjs';
 
@@ -213,4 +213,57 @@ test('Employee of the Month: without the entry-2 step the ledge is out of reach'
       assert.ok(t.player.y > 9 * TILE, `on the ledge on entry ${entries}`);
     }
   }
+});
+
+// ---------- Night Audit: one test per lesson it examines ----------
+const auditAt = (x, layer, extra = {}) => {
+  const s = initState(L.audit);
+  s.layer = layer;
+  Object.assign(s.player, { x: x * TILE, y: 14 * TILE - 26, vx: 0, vy: 0, grounded: true });
+  return Object.assign(s, extra);
+};
+const run = (lvl, s, input, frames) => {
+  const events = [];
+  for (let f = 0; f < frames && s.deaths === 0 && !s.won; f++) { s = step(lvl, s, input(s, f)); events.push(...s.events); }
+  return { s, events };
+};
+
+test('Night Audit: night through the wax slides into the hazard (letting go does not stop you)', () => {
+  const lvl = L.audit;
+  const { events } = run(lvl, initState(lvl), (s) => ({ ...NO_INPUT, right: tx(s) < 4.2, shiftPressed: s.shifts === 0 && tx(s) > 1.2 }), 120 * 6);
+  assert.ok(events.some((e) => e.type === 'death' && e.cause === 'hazard'), 'slid into the laser');
+});
+
+test('Night Audit: crossing a watched tunnel spooks', () => {
+  const lvl = L.audit;
+  // facing left: the left tunnel's lurker is working
+  const sup = lvl.freaks.find((f) => f.kind === 'supervisor');
+  let t = 0;
+  while (supervisorFacing(sup, t) !== -1) t += 0.05;
+  const { events } = run(lvl, auditAt(11.3, NIGHT, { freakClock: t + 0.05, nightEntries: 2 }), () => ({ ...NO_INPUT, right: true }), 120 * 3);
+  assert.ok(events.some((e) => e.type === 'death' && e.cause === 'spooked' && e.by === 'lurker'));
+});
+
+test('Night Audit: day past the day-walker spooks', () => {
+  const lvl = L.audit;
+  const { events } = run(lvl, auditAt(19.3, DAY), () => ({ ...NO_INPUT, right: true }), 120 * 3);
+  assert.ok(events.some((e) => e.type === 'death' && e.cause === 'spooked' && e.by === 'daywalker'));
+});
+
+test('Night Audit: night past the lurker spooks', () => {
+  const lvl = L.audit;
+  const sup = lvl.freaks.find((f) => f.kind === 'supervisor');
+  let t = 0;
+  while (supervisorFacing(sup, t) !== 1) t += 0.05; // facing right: the far lurker works too
+  const { events } = run(lvl, auditAt(27.1, NIGHT, { freakClock: t + 0.05, nightEntries: 3 }), () => ({ ...NO_INPUT, right: true }), 120 * 2);
+  assert.ok(events.some((e) => e.type === 'death' && e.cause === 'spooked' && e.by === 'lurker'));
+});
+
+test('Night Audit: the last pit on the wrong night entry is a fall', () => {
+  const lvl = L.audit;
+  const sup = lvl.freaks.find((f) => f.kind === 'supervisor');
+  let t = 0;
+  while (supervisorFacing(sup, t) !== -1) t += 0.05; // the far lurker slacks: only the pit is in the way
+  const { events } = run(lvl, auditAt(23.3, NIGHT, { freakClock: t + 0.05, nightEntries: 2 }), () => ({ ...NO_INPUT, right: true }), 120 * 3);
+  assert.ok(events.some((e) => e.type === 'death' && e.cause === 'fall'), 'no plank before entry 3');
 });
