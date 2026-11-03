@@ -207,12 +207,12 @@ The screen should read in this order: **worker → what's solid now → hazards 
 
 | Screen / effect | Spec |
 |---|---|
-| Title + level select ✅ (A7) | Title: a LEVEL SELECT (L) button under the panel. Level select (night background): one row of 200×74 paper timecards per act, act label above each row; each card shows `n. NAME`, `BEST n · PAR p` or `PAR p`, and a small rotated stamp (ON PAR / UNDER! in `#c0392b`, `+n` in `#7f6a50`). Locked cards at 35% opacity reading NOT YET. Selection: 3 px `#5ff2ff` frame. Unlock: act starts always open; otherwise after the previous level is cleared. |
+| Title + level select ✅ (A7) | Title: a LEVEL SELECT (L) button under the panel. Level select (night background, laid out by `src/layout.js` so six rows fit): one row per act, with a 90-px night tab on the left (ACT n at scale 2 and the act name at scale 1, or FINALE) and up to four 196×56 paper timecards; each card shows the level number (scale 3), the name (scale 1, wrapped), and `PAR p`, NOT YET, or a small rotated stamp (ON PAR / UNDER! in `#c0392b`, `+n` in `#7f6a50`). A paper detail bar at the bottom gives the selected level's full name, best and par at scale 2. Locked cards at 40% opacity. Selection: 3 px `#5ff2ff` frame. Unlock: act starts always open; otherwise after the previous level is cleared. |
 | Settings ✅ (A6) | Opened with O from title (button) and pause. Four night panels: MASTER, MUSIC, SOUND (10-block bars + %), REDUCED EFFECTS (ON/OFF). ↑↓ choose, ←→ change (or click the left/right half of a row), Esc back. Saved. |
-| Act cards ✅ (A10) | 1.6 s split day/night card: ACT n (scale 3, yellow), the act name (scale 6, haloed), one line (WRITING.md §2.1); any key or click skips; a two-chord sting. Shown the first time an act starts in a run. |
+| Act cards ✅ (A10) | 1.6 s split day/night card: ACT n (scale 3, yellow), the act name (scale 6, haloed), one line (WRITING.md §2.1); for the finale (act 6): FINALE, then the level's name. Any key or click skips; a two-chord sting. Shown the first time an act starts in a run. |
 | Timecard comment ✅ (A8) | One line under the stamp, scale 2 when it fits, else 1 (`timecardComment` in `src/copy.js`, WRITING.md §7). |
-| End screen totals ✅ (A8) | Paper panel listing every level with clock-ins / par, and total clock-ins vs. total par. The ending: a dozen pairs of eyes open one by one in the margins, one freak waves (a small hand with a cyan rim), then "See you tonight." |
-| Credits *(planned)* | Night panel in the pixel font, from WRITING.md §8. |
+| End screen totals ✅ (A8) | Paper panel with one row per act (clock-ins / par over the levels played) and total clock-ins vs. total par. The ending: a dozen pairs of eyes open one by one in the margins, one freak waves (a small hand with a cyan rim), then "See you tonight." |
+| Credits ✅ | Three lines in the pixel font (scale 2, soft ink) on the end screen's paper panel, under the totals (WRITING.md §8). |
 | Freeze cue ✅ | On a shift to day, frozen freak outlines flash white once (0.15 s), with a scratch sound. |
 | Checkpoint ping ✅ | The clock face grows by 2 art px and settles over 0.2 s when taken. |
 

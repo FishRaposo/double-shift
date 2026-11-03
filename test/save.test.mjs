@@ -62,6 +62,23 @@ test('level select: act starts are always open; other levels open after the prev
   assert.equal(isUnlocked(LEVELS, 2, save), actStart[2], 'but not the one after');
 });
 
+// The 21-level game inserts levels between the built ones. Unlocks are keyed by id, so a returning player
+// keeps every level they cleared, and the chain runs through the new levels (pinned for docs/BUILD.md T18).
+test('level select: inserting levels keeps cleared levels open and chains through new ones', () => {
+  const save = createSave(memoryStorage());
+  for (const id of ['clock', 'scaff', 'watch', 'wet', 'supervisor']) save.record(id, r(1, 2));
+  const at = (defs, id) => defs.findIndex((d) => d.id === id);
+  const defs = [...LEVELS];
+  defs.splice(at(defs, 'watch') + 1, 0, { id: 'stairs', act: 2 }, { id: 'doors', act: 2 });
+  defs.splice(at(defs, 'wet') + 1, 0, { id: 'pillar', act: 3 });
+  assert.equal(isUnlocked(defs, at(defs, 'watch'), save), true, 'a cleared level stays open');
+  assert.equal(isUnlocked(defs, at(defs, 'stairs'), save), true, 'a new level opens after the cleared one before it');
+  assert.equal(isUnlocked(defs, at(defs, 'doors'), save), false, 'the chain still gates the next one');
+  assert.equal(isUnlocked(defs, at(defs, 'wet'), save), true, 'act starts stay open');
+  assert.equal(isUnlocked(defs, at(defs, 'pillar'), save), true, 'opens after the cleared act start');
+  assert.equal(isUnlocked(defs, at(defs, 'supervisor'), save), true, 'cleared before the insertion: still open');
+});
+
 test('every level belongs to a named act, acts never go backwards, and act 1 starts the game', () => {
   assert.equal(LEVELS[0].act, 1);
   LEVELS.forEach((d, i) => {

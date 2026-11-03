@@ -66,7 +66,8 @@ src/font.js     the pixel font
 src/audio.js    mix bus + every sound effect as data
 src/music.js    the theme and its two arrangements
 src/save.js     saved progress and settings
-src/copy.js     result-based lines (timecard comments, act cards)
+src/copy.js     result-based lines (timecard comments, act cards, credits)
+src/layout.js   level addressing, level select and end-screen layout (no DOM)
 tools/          asset gallery, itch cover
 test/           node --test suites
 scripts/        serve, check, zip for itch, media + headless checks
@@ -74,7 +75,7 @@ scripts/        serve, check, zip for itch, media + headless checks
 
 ## Tests
 
-The suite has <!-- n:tests -->142<!-- /n --> tests.
+The suite has <!-- n:tests -->152<!-- /n --> tests.
 
 ```sh
 npm test         # GDD §13.7 shift/collision edge cases, pranks and freaks, wet floor, day/night

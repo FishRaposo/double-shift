@@ -30,11 +30,11 @@ Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game l
 | Title buttons ✅ | LEVEL SELECT (L) · SETTINGS (O) |
 | Settings ✅ | SETTINGS · MASTER · MUSIC · SOUND · REDUCED EFFECTS ON/OFF · Up/Down: choose · Left/Right: change · Esc: back |
 | Act cards ✅ | ACT n · NAME · the line from §2.1 |
-| Level select ✅ | TIMECARDS · ACT n · NAME · BEST n · PAR p · NOT YET · stamps ON PAR / UNDER! / +n · Arrows: choose · SPACE or click: clock in · Esc: back |
+| Level select ✅ | TIMECARDS · act tabs: ACT n + the act name, or FINALE · each card: the number, the NAME, PAR p / NOT YET, stamps ON PAR / UNDER! / +n · detail bar: n. NAME · BEST n · PAR p (or NOT YET) · Arrows: choose · SPACE or click: clock in · Esc: back |
 | Timecard ✅ | NEW BEST (when a saved best is beaten) |
 | HUD ✅ | DAY SHIFT / NIGHT SHIFT · CLOCK-INS n · PAR p |
 | Timecard ✅ | TIMECARD · Clock-ins · Par · Time · Incidents · stamps ON PAR / UNDER PAR! / +n OVERTIME |
-| End ✅ | SHIFT COMPLETE · Thanks for working overtime. · every level with clock-ins / par · Total clock-ins · SPACE: clock in again |
+| End ✅ | SHIFT COMPLETE · Thanks for working overtime. · one row per act: ACT n · NAME (or FINALE) with clock-ins / par · Total clock-ins · the credits (§8) · SPACE: clock in again |
 
 ### 2.1 Planned UI text *(drafts)*
 
@@ -47,7 +47,7 @@ Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game l
 | Act 5 card *(planned)* | ACT 5 · UPSIDE DOWN · "The night shift turned the building over." |
 | Finale card *(planned)* | FINALE · CLOCK OUT · "One more shift." |
 | Sticky Keys joke (G14) | A freak memo: "WE PRES SHIFT 5 TIMES. FOR FUN." + the practical line kept below it |
-| End (full game) | SHIFT COMPLETE · totals · SPACE: clock in again |
+| End (full game) ✅ | SHIFT COMPLETE · one row per act · totals · credits · SPACE: clock in again |
 
 ## 3. Level notes (shown 5 s at level start)
 
@@ -146,9 +146,9 @@ Unused, kept for later: "Efficient. Suspiciously efficient."
 
 ## 8. Ending ✅ (after `clockout`)
 
-- ✅ The end screen: SHIFT COMPLETE, totals across all levels (every level's clock-ins / par, total vs. total par).
+- ✅ The end screen: SHIFT COMPLETE, one row per act (that act's clock-ins / par over the levels played this run), total vs. total par. Twenty-one level rows don't fit the screen at a readable size; six act rows do.
 - ✅ In the dark margins a dozen pairs of eyes open one after another; once they're all open, one freak waves, and "See you tonight." appears below the card.
-- *(planned)* Credits, under the end screen's totals: "Designed by Vinícius Raposo. Built with AI assistance (Claude). Made for GitHub Game Off 2026." Final wording (Fish, 2026-11-03): no design-partner line, since the art is all code-drawn.
+- ✅ Credits (`CREDITS` in `src/copy.js`), under the end screen's totals: "Designed by Vinícius Raposo. Built with AI assistance (Claude). Made for GitHub Game Off 2026." Final wording (Fish, 2026-11-03): no design-partner line, since the art is all code-drawn.
 
 ## 9. itch page copy
 

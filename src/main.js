@@ -2,19 +2,19 @@
 // Draws only what src/rules.js decided. Art lives in sprites.js (characters) and art.js (everything else).
 
 import { step, initState, parseLevel, tileAt, isSolidChar, freakBoxes, TILE, DT, DAY, NIGHT, PARAMS } from './rules.js';
-import { LEVELS, ACTS } from './levels.js';
+import { LEVELS, ACTS, FINALE_ACT } from './levels.js';
 import { createInput, GAME_KEYS } from './input.js';
 import { sfx, unlockAudio, toggleMute, setVolumes, setMusicShift, setMenu } from './audio.js';
 import { createSave, createSettings, isUnlocked } from './save.js';
-import { drawText, measureText } from './font.js';
+import { drawText, measureText, wrapText } from './font.js';
 import { drawSprite, drawEyes, workerFrame, ART, SPRITES } from './sprites.js';
 import {
   PAL, PROPS, drawBackground, drawSolidTile, drawHatch, drawEchoEdges, drawRebar, drawLaser, drawHazardEcho,
   drawExit, drawCheckpoint, drawSign, drawFreak, drawShiftRing, drawDust, drawPuff, drawSparkle, drawPanel,
   drawStamp, drawLogo, drawWetTile, px,
 } from './art.js';
-import { SPOOK_LINES, ACT_LINES, timecardComment, stampText } from './copy.js';
-import { levelIndex } from './layout.js';
+import { SPOOK_LINES, ACT_LINES, CREDITS, timecardComment, stampText } from './copy.js';
+import { levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, endSummary, CARD } from './layout.js';
 
 const W = 960;
 const H = 540;
@@ -121,7 +121,7 @@ addEventListener('keydown', (e) => {
   if (game.screen === 'act') { setScreen('play'); input.keyDown(e); return; }
   if (game.screen === 'select') {
     const dir = SELECT_KEYS[e.code];
-    if (dir) { moveSelect(dir[0], dir[1]); sfx.uiMove?.(); }
+    if (dir) { game.selected = moveSelect(LEVELS, game.selected, dir[0], dir[1]); sfx.uiMove?.(); }
     else if (e.code === 'Space' || e.code === 'Enter') {
       if (isUnlocked(LEVELS, game.selected, save)) { sfx.uiSelect?.(); startLevel(game.selected); }
       else sfx.shiftFail(); // NOT YET
@@ -174,7 +174,7 @@ canvas.addEventListener('pointerdown', (e) => {
   } else if (game.screen === 'act') {
     setScreen('play');
   } else if (game.screen === 'select') {
-    const i = LEVELS.findIndex((_, k) => inside(cardRect(k)));
+    const i = LEVELS.findIndex((_, k) => inside(cardRect(LEVELS, k)));
     if (i < 0) setScreen('title'); // click outside the cards: back
     else if (isUnlocked(LEVELS, i, save)) startLevel(i);
     else { game.selected = i; sfx.shiftFail(); } // NOT YET
@@ -187,9 +187,8 @@ canvas.addEventListener('pointerdown', (e) => {
 });
 
 // ---------- level select ----------
-// One row of timecards per act. Act starts are always open (src/save.js).
+// One row of timecards per act, laid out by src/layout.js. Act starts are always open (src/save.js).
 
-const CARD = { w: 200, h: 74, gap: 24, top: 120, rowH: 104 };
 const TITLE_SELECT = { x: W / 2 - 250, y: 444, w: 240, h: 32 };
 const TITLE_SETTINGS = { x: W / 2 + 10, y: 444, w: 240, h: 32 };
 const settingRect = (row) => ({ x: W / 2 - 260, y: 150 + row * 58, w: 520, h: 46 });
@@ -197,21 +196,6 @@ const SELECT_KEYS = {
   ArrowLeft: [-1, 0], KeyA: [-1, 0], ArrowRight: [1, 0], KeyD: [1, 0],
   ArrowUp: [0, -1], KeyW: [0, -1], ArrowDown: [0, 1], KeyS: [0, 1],
 };
-const actRows = [...new Set(LEVELS.map((d) => d.act))].map((act) => LEVELS.flatMap((d, i) => (d.act === act ? [i] : [])));
-
-function cardRect(i) {
-  const row = actRows.findIndex((r) => r.includes(i));
-  const col = actRows[row].indexOf(i);
-  const x0 = (W - (4 * CARD.w + 3 * CARD.gap)) / 2;
-  return { x: x0 + col * (CARD.w + CARD.gap), y: CARD.top + row * CARD.rowH, w: CARD.w, h: CARD.h, row, col };
-}
-
-function moveSelect(dx, dy) {
-  const { row, col } = cardRect(game.selected);
-  const r = actRows[Math.min(Math.max(row + dy, 0), actRows.length - 1)];
-  game.selected = r[Math.min(Math.max(col + dx, 0), r.length - 1)];
-}
-
 // ---------- simulation ----------
 
 let spookIx = 0;
@@ -580,14 +564,16 @@ function drawTitle() {
 }
 
 function drawAct() {
-  const act = LEVELS[game.index].act;
+  const def = LEVELS[game.index];
+  const act = def.act;
+  const finale = act === FINALE_ACT; // FINALE · CLOCK OUT · "One more shift."
   g.save(); g.beginPath(); g.rect(0, 0, W / 2, H); g.clip(); g.drawImage(background(DAY), 0, 0); g.restore();
   g.save(); g.beginPath(); g.rect(W / 2, 0, W / 2, H); g.clip(); g.drawImage(background(NIGHT), 0, 0); g.restore();
   const k = Math.min(1, game.screenTime / 0.25);
   g.fillStyle = 'rgba(0,0,0,0.55)';
   g.fillRect(0, H / 2 - 90, W, 180);
-  drawText(g, `ACT ${act}`, W / 2, H / 2 - 64, { scale: 3, color: '#ffec5a', align: 'center', alpha: k });
-  drawText(g, ACTS[act].toUpperCase(), W / 2, H / 2 - 24, { scale: 6, color: '#ffffff', halo: '#1b1209', align: 'center', alpha: k });
+  drawText(g, finale ? 'FINALE' : `ACT ${act}`, W / 2, H / 2 - 64, { scale: 3, color: '#ffec5a', align: 'center', alpha: k });
+  drawText(g, (finale ? def.name : ACTS[act]).toUpperCase(), W / 2, H / 2 - 24, { scale: 6, color: '#ffffff', halo: '#1b1209', align: 'center', alpha: k });
   drawText(g, ACT_LINES[act] ?? '', W / 2, H / 2 + 40, { scale: 2, color: '#d9f6ff', align: 'center', alpha: k });
 }
 
@@ -622,22 +608,20 @@ function drawEnd() {
   const ink = '#3b2d1f';
   drawText(g, 'SHIFT COMPLETE', W / 2, top + 18, { scale: 3, color: ink, align: 'center' });
   drawText(g, 'Thanks for working overtime.', W / 2, top + 48, { scale: 2, color: ink, align: 'center' });
-  // rows share the space between the header and the totals, whatever the level count
-  const rowsTop = top + 80;
-  const rowH = Math.min(30, Math.floor((bottom - 96 - rowsTop) / levels.length));
-  let total = 0;
-  let totalPar = 0;
-  levels.forEach((lvl, i) => {
-    const r = game.results[i];
-    const y = rowsTop + i * rowH;
-    drawText(g, `${i + 1}. ${lvl.name}`, W / 2 - 220, y, { scale: 2, color: ink });
-    drawText(g, r ? `${r.shifts} / par ${r.par}` : '—', W / 2 + 220, y, { scale: 2, color: ink, align: 'right' });
-    if (r) { total += r.shifts; totalPar += r.par; }
+  // one row per act (src/layout.js endSummary), then the totals and the credits
+  const sum = endSummary(LEVELS, game.results);
+  const rowsTop = top + 84;
+  const rowH = 26;
+  sum.rows.forEach((r, k) => {
+    const y = rowsTop + k * rowH;
+    drawText(g, r.label, W / 2 - 220, y, { scale: 2, color: ink });
+    drawText(g, r.played ? `${r.shifts} / par ${r.par}` : '—', W / 2 + 220, y, { scale: 2, color: ink, align: 'right' });
   });
-  const y = bottom - 86;
+  const y = rowsTop + sum.rows.length * rowH + 6;
   px(g, W / 2 - 220, y, 220, 1, 'rgba(59,45,31,0.4)');
   drawText(g, 'Total clock-ins', W / 2 - 220, y + 12, { scale: 2, color: ink });
-  drawText(g, `${total} / par ${totalPar}`, W / 2 + 220, y + 12, { scale: 2, color: ink, align: 'right' });
+  drawText(g, `${sum.shifts} / par ${sum.par}`, W / 2 + 220, y + 12, { scale: 2, color: ink, align: 'right' });
+  CREDITS.forEach((line, k) => drawText(g, line, W / 2, bottom - 112 + k * 22, { scale: 2, color: 'rgba(59,45,31,0.8)', align: 'center' }));
   drawText(g, 'SPACE: clock in again', W / 2, bottom - 36, { scale: 2, color: ink, align: 'center' });
   drawEndingEyes(top, bottom);
 }
@@ -673,14 +657,21 @@ function drawEndingEyes(top, bottom) {
 function drawSelect() {
   const pal = PAL[NIGHT];
   g.drawImage(background(NIGHT), 0, 0);
-  drawText(g, 'TIMECARDS', W / 2, 40, { scale: 4, color: pal.hud, halo: pal.halo, align: 'center' });
-  for (const row of actRows) {
-    const c = cardRect(row[0]);
+  drawText(g, 'TIMECARDS', W / 2, 16, { scale: 4, color: pal.hud, halo: pal.halo, align: 'center' });
+  // act tabs: ACT n and the act's name, or FINALE (src/layout.js keeps six rows on screen)
+  actRows(LEVELS).forEach((row, r) => {
+    const t = tabRect(LEVELS, r);
     const act = LEVELS[row[0]].act;
-    drawText(g, `ACT ${act} · ${ACTS[act].toUpperCase()}`, c.x, c.y - 20, { scale: 2, color: pal.hudSoft, halo: pal.halo });
-  }
+    drawPanel(g, t.x, t.y, t.w, t.h, false);
+    drawText(g, act === FINALE_ACT ? 'FINALE' : `ACT ${act}`, t.x + CARD.pad, t.y + 9, { scale: 2, color: pal.hud });
+    if (act !== FINALE_ACT) {
+      wrapText((ACTS[act] ?? '').toUpperCase(), t.w - 2 * CARD.pad, 1).slice(0, 2)
+        .forEach((line, k) => drawText(g, line, t.x + CARD.pad, t.y + 31 + k * 10, { scale: 1, color: pal.hudSoft }));
+    }
+  });
+  // cards: the level number big, the name small, the status stamp; the detail bar says the rest
   LEVELS.forEach((def, i) => {
-    const c = cardRect(i);
+    const c = cardRect(LEVELS, i);
     const open = isUnlocked(LEVELS, i, save);
     const best = save.best(def.id);
     g.globalAlpha = open ? 1 : 0.4;
@@ -694,14 +685,24 @@ function drawSelect() {
       g.fillRect(c.x + c.w + 2 * A, c.y - 3 * A, A, c.h + 6 * A);
     }
     const ink = open ? '#3b2d1f' : 'rgba(59,45,31,0.7)';
-    const name = `${i + 1}. ${def.name.toUpperCase()}`;
-    drawText(g, name, c.x + 10, c.y + 12, { scale: measureText(name, 2) > c.w - 20 ? 1 : 2, color: ink });
-    drawText(g, !open ? 'NOT YET' : best ? `BEST ${best.shifts} · PAR ${def.par}` : `PAR ${def.par}`, c.x + 10, c.y + 42, { scale: 1, color: ink });
-    if (best) {
+    drawText(g, String(i + 1), c.x + CARD.pad, c.y + 7, { scale: 3, color: ink });
+    wrapText(def.name.toUpperCase(), c.w - 2 * CARD.pad, 1).slice(0, 2)
+      .forEach((line, k) => drawText(g, line, c.x + CARD.pad, c.y + 34 + k * 10, { scale: 1, color: ink }));
+    if (!open) drawText(g, 'NOT YET', c.x + c.w - CARD.pad, c.y + 10, { scale: 1, color: ink, align: 'right' });
+    else if (best) {
       const diff = best.shifts - def.par;
-      drawStamp(g, c.x + c.w - 44, c.y + 52, diff < 0 ? 'UNDER!' : diff === 0 ? 'ON PAR' : `+${diff}`, diff <= 0 ? '#c0392b' : '#7f6a50', 1);
-    }
+      drawStamp(g, c.x + c.w - 40, c.y + 22, diff < 0 ? 'UNDER!' : diff === 0 ? 'ON PAR' : `+${diff}`, diff <= 0 ? '#c0392b' : '#7f6a50', 1);
+    } else drawText(g, `PAR ${def.par}`, c.x + c.w - CARD.pad, c.y + 10, { scale: 1, color: ink, align: 'right' });
   });
+  // detail bar: the selected level in full
+  const d = detailRect;
+  const sel = LEVELS[game.selected];
+  const selBest = save.best(sel.id);
+  const selOpen = isUnlocked(LEVELS, game.selected, save);
+  drawPanel(g, d.x, d.y, d.w, d.h, true);
+  drawText(g, `${game.selected + 1}. ${sel.name.toUpperCase()}`, d.x + 12, d.y + 11, { scale: 2, color: '#3b2d1f' });
+  const status = !selOpen ? 'NOT YET' : selBest ? `BEST ${selBest.shifts} · PAR ${sel.par}` : `PAR ${sel.par}`;
+  drawText(g, status, d.x + d.w - 12, d.y + 11, { scale: 2, color: '#3b2d1f', align: 'right' });
   drawText(g, 'Arrows: choose · SPACE or click: clock in · Esc: back', W / 2, H - 22, { scale: 2, color: pal.hudSoft, halo: pal.halo, align: 'center' });
 }
 

@@ -32,7 +32,7 @@ Tests and scripts target Node 22. URL flags for manual play: `?level=<id>` (or a
 - **Pranks** fire on the Nth entry into night (`onNight`) and write tile overrides into `state.overrides` (`'layer,tx,ty' → ch`); checkpoints snapshot and restore them.
 - **Freaks** have no mutable per-freak state: their position/`active` is a pure function of a clock that only runs on their own shift (`freakClock` by night, `dayClock` for the day-walker; the supervisor's workers use `watchedClock`). Add a kind in `freakBoxes()`, then draw it in `drawFreak()` in `src/art.js`.
 - `src/input.js` — DOM-free key events → one input frame per tick. One shift per physical key-down; OS key-repeat ignored; presses between ticks are queued.
-- `src/main.js` — fixed-step loop (accumulator, ≤12 steps/frame), screens, draw order, event → sfx/fx; caches each level's static layer per shift × prank state.
+- `src/main.js` — fixed-step loop (accumulator, ≤12 steps/frame), screens, draw order, event → sfx/fx; caches each level's static layer per shift × prank state. Shell math that can be tested lives in `src/layout.js` (`levelIndex` for `?level=`, the level select grid for six act rows, the end screen's per-act summary).
 - Art is all code on a 2-px grid: `src/sprites.js` (string-grid sprites + pure `workerFrame`), `src/art.js` (tiles, props, effects, UI), `src/font.js` (pixel font; every printed character needs a glyph — a test checks the source). Review every asset at `/tools/gallery.html`.
 - Sound: `src/audio.js` (mix bus, every SFX as data in `SOUNDS`) and `src/music.js` (note data + scheduler; day/night arrangements crossfade on shift). `src/save.js` also holds settings; `src/copy.js` holds result-based lines.
 

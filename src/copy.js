@@ -23,3 +23,10 @@ export function timecardComment(r) {
 export function stampText(diff) {
   return diff < 0 ? 'UNDER PAR!' : diff === 0 ? 'ON PAR' : `+${diff} OVERTIME`;
 }
+
+// Credits, under the end screen's totals (WRITING.md §8; final wording by Fish, 2026-11-03).
+export const CREDITS = [
+  'Designed by Vinícius Raposo.',
+  'Built with AI assistance (Claude).',
+  'Made for GitHub Game Off 2026.',
+];

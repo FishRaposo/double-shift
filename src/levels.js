@@ -16,6 +16,10 @@
 
 export const ACTS = { 1: 'Renovation', 2: 'Overtime', 3: 'Graveyard Shift', 4: 'Lights Out' };
 
+// The finale is its own act: level select gives it a row labelled FINALE, and its act card reads
+// FINALE · <level name> instead of ACT 6.
+export const FINALE_ACT = 6;
+
 export const LEVELS = [
   {
     id: 'clock',

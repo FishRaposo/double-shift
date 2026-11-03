@@ -6,6 +6,7 @@ import { GLYPHS, ROWS, CAP, measureArt, hasGlyph } from '../src/font.js';
 import { SPRITES, workerFrame, ART } from '../src/sprites.js';
 import { PARAMS, FREAK } from '../src/rules.js';
 import { LEVELS, ACTS } from '../src/levels.js';
+import { CREDITS } from '../src/copy.js';
 
 test('every glyph is a rectangle of # and . no taller than 9 rows', () => {
   for (const [ch, rows] of Object.entries(GLYPHS)) {
@@ -20,10 +21,11 @@ test('every glyph is a rectangle of # and . no taller than 9 rows', () => {
   assert.equal(measureArt('AA'), 11, 'one art pixel between glyphs');
 });
 
-// Every string literal in the game's screens, plus level names, notes and act names.
+// Every string literal in the game's screens and copy (credits, act lines, timecard comments), plus level
+// names, notes and act names.
 function gameStrings() {
   const out = [];
-  for (const f of ['src/main.js', 'src/art.js']) {
+  for (const f of ['src/main.js', 'src/art.js', 'src/copy.js']) {
     let src = '';
     try { src = readFileSync(f, 'utf8'); } catch { continue; }
     src = src.replace(/^\s*\/\/.*$/gm, '');
@@ -34,6 +36,14 @@ function gameStrings() {
   out.push(...Object.values(ACTS), ...Object.values(ACTS).map((a) => a.toUpperCase()));
   return out;
 }
+
+test('the credits read exactly as decided (WRITING.md §8)', () => {
+  assert.deepEqual(CREDITS, [
+    'Designed by Vinícius Raposo.',
+    'Built with AI assistance (Claude).',
+    'Made for GitHub Game Off 2026.',
+  ]);
+});
 
 test('every character the game prints has a glyph', () => {
   const missing = new Set();

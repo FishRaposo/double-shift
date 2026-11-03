@@ -104,7 +104,7 @@ Specs: [ART.md](ART.md). Palette rule: existing colors only, unless a color gets
 | ART-19 | Props for `audit` (clipboard memo, INSPECTION sign) and `heels` (a hard hat stuck to the ceiling) | `audit`, `heels` | B / C | ART §6.2 | planned |
 | ART-11 | Props per level: notice board, vents, barrier tape, pallets, signage, footprints, chalk circles | Every level | P1 | ART §6, §6.2 | ✅ |
 | ART-12 | Effects: prank sparkle, freeze cue on shift to day, checkpoint ping | Every level | P1 | ART §5, §7 | ✅ |
-| ART-13 | UI screens: title with level select ✅, level select ✅, settings, act cards, timecard with comment, end screen with totals, credits | Shell | P0–P1 | ART §7.1 | ✅ except credits |
+| ART-13 | UI screens: title with level select ✅, level select ✅, settings, act cards, timecard with comment, end screen with totals, credits | Shell | P0–P1 | ART §7.1 | ✅ (credits Nov 3; level select laid out for six rows) |
 | ART-14 | Cover image 1260×1000 | itch | P0 | ART §8 | ✅ (`npm run media`) |
 | ART-15 | Screenshots 960×540 | itch | P0 | ART §8 | ✅ (refresh when new levels ship) |
 | ART-16 | Demo GIF ≤ 10 s | itch | P1 | ART §8 | planned |
@@ -143,7 +143,7 @@ Specs and drafts: [WRITING.md](WRITING.md). Fish writes the final words.
 | TXT-4 | Act card titles and one-line subtitles | WRITING §2.1 | ✅ |
 | TXT-5 | Timecard comments | WRITING §7 | ✅ |
 | TXT-6 | UI strings: level select, settings, credits, Sticky Keys joke | WRITING §2.1 | drafted |
-| TXT-7 | Ending (`clockout`) | WRITING §8 | ✅ (credits planned) |
+| TXT-7 | Ending (`clockout`) | WRITING §8 | ✅ (credits built Nov 3) |
 | TXT-8 | itch description refresh when levels ship | [itch/page.md](../itch/page.md) §4 | ✅ for 12 levels |
 | TXT-9 | Devlog #1 (launch), #2 (post-jam) | RELEASE §5–6 | planned |
 
