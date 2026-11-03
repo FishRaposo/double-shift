@@ -130,7 +130,8 @@ Seven milestone PRs (decided 2026-11-03). Each one passes every gate in §1.2 pl
 
 ## 4. Task cards
 
-### T1 · Skins: doors, pillars and portraits drawn over solids *(rendering only)*
+### T1 · Skins: doors, pillars and portraits drawn over solids *(rendering only)* · ✅ built 2026-11-03
+*Built as `skinPlan` in `src/skins.js` (pure, tested in `test/skins.test.mjs`) plus `drawSkin` in `src/art.js`; a portrait hangs from its top-left cell. The gallery shows every skin before and after the pranks.*
 - **Why:** doors, the pillar and the portrait are ordinary `#` tiles in the rules (pranks move them by overriding tiles), but they must look like doors, a pillar and a portrait. Their art already exists in `src/art.js`: `drawDoor`, `drawEmptyFrame`, `drawDoorPile`, `drawPillar`, `drawCrack`, `drawPortrait`.
 - **Design:** a new optional level field `skins: [{ kind, tx, ty, w?, h?, layer? }]`, drawn in `staticLayer()` in `src/main.js` **after** the tiles. The static layer is cached per level × shift × prank state, so skins follow pranks for free.
   - `door`: covers `(tx, ty-h+1 … ty)`. If every covered cell is solid in that layer under the current overrides, draw `drawDoor(ctx, tx, ty, layer, h)`; if every cell is empty, draw `drawEmptyFrame` (the stolen door).
@@ -286,7 +287,7 @@ Seven milestone PRs (decided 2026-11-03). Each one passes every gate in §1.2 pl
 - WRITING.md §8: "Designed by Vinícius Raposo. Built with AI assistance (Claude). Made for GitHub Game Off 2026." No design-partner line (Fish, 2026-11-03: the art is all code-drawn).
 - `CREDITS` lives in `src/copy.js`; the end screen draws it under the per-act totals (T18). The font test scans `copy.js`, so the `í` glyph is required. Mark WRITING §8 ✅ and CONTENT TXT-7.
 
-### T15 · Sound hooks *(after T1)*
+### T15 · Sound hooks *(after T1)* · ✅ built 2026-11-03
 - **`doorThunk` / `pillarScrape`:** via the prank `sound` field (T1).
 - **`peekerBoing`:** in `main.js`, compare each peeker's `active` with the previous frame (cosmetic, so `main` is fine); on false→true while it's on screen and on its shift, play it.
 - **`lurkerStep`:** stays unwired (decided 2026-11-03): a constant tick under the music clutters the mix. AUDIO.md says so.

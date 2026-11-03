@@ -24,6 +24,22 @@ import { drawSprite, drawEyes, SPRITES, ART } from '../src/sprites.js';
 import * as art from '../src/art.js';
 import { unlockAudio, playSound, SOUNDS, setMusicShift, setMenu, voice, makeNoise } from '../src/audio.js';
 import { scheduleStep, STEP, STEPS_PER_BAR } from '../src/music.js';
+import { parseLevel } from '../src/rules.js';
+import { skinPlan } from '../src/skins.js';
+
+// A small room with every skin, before and after the freaks' pranks (skinPlan reads the tiles under each one).
+const SKIN_ROOM = parseLevel({
+  name: 'skins', par: 0,
+  day: ['S...#......###.E', '.#..#......###..', '.#..#..##.......', '....#..##.......'],
+  night: ['....#......###..', '.#..#......###..', '.#..#..##.......', '....#..##.......'],
+  skins: [
+    { kind: 'door', tx: 1, ty: 2 }, { kind: 'pillar', tx: 4, ty: 3 },
+    { kind: 'doorPile', tx: 7, ty: 3 }, { kind: 'portrait', tx: 11, ty: 0 },
+  ],
+});
+// after: the door is stolen, the pillar moved away, one more door on the pile
+const AFTER = Object.fromEntries([[1, 1], [1, 2], [4, 0], [4, 1], [4, 2], [4, 3]].map(([x, y]) => [`0,${x},${y}`, '.'])
+  .concat([[7, 1], [8, 1]].map(([x, y]) => [`0,${x},${y}`, '#'])));
 
 const { PAL, DAY, NIGHT, TILE, PROPS } = art;
 const cv = document.getElementById('c');
@@ -137,6 +153,17 @@ function draw(t) {
     L('door', 17); L('stolen', 19); L('door pile', 21); L('pillar', 25); L('crack', 27); L('stairs', 29);
     y += 140;
   }
+
+  // ---- skins: object art over solid tiles, before and after the pranks (src/skins.js) ----
+  section(y, 170, 'SKINS · before the pranks, and after (door stolen, pillar moved, pile grows)', DAY);
+  for (const [ov, x0, name] of [[{}, 1, 'before'], [AFTER, 18, 'after']]) {
+    g.save();
+    g.translate(x0 * TILE, y + 36);
+    for (const sp of skinPlan(SKIN_ROOM, DAY, ov)) art.drawSkin(g, sp, DAY, t);
+    g.restore();
+    label(name, x0 * TILE, y + 160, DAY);
+  }
+  y += 170;
 
   // ---- objects ----
   section(y, 140, 'OBJECTS AND SIGNS');

@@ -4,14 +4,15 @@
 import { step, initState, parseLevel, tileAt, isSolidChar, freakBoxes, TILE, DT, DAY, NIGHT, PARAMS } from './rules.js';
 import { LEVELS, ACTS, FINALE_ACT } from './levels.js';
 import { createInput, GAME_KEYS } from './input.js';
-import { sfx, unlockAudio, toggleMute, setVolumes, setMusicShift, setMenu } from './audio.js';
+import { sfx, playSound, unlockAudio, toggleMute, setVolumes, setMusicShift, setMenu } from './audio.js';
+import { skinPlan } from './skins.js';
 import { createSave, createSettings, isUnlocked } from './save.js';
 import { drawText, measureText, wrapText } from './font.js';
 import { drawSprite, drawEyes, workerFrame, ART, SPRITES } from './sprites.js';
 import {
   PAL, PROPS, drawBackground, drawSolidTile, drawHatch, drawEchoEdges, drawRebar, drawLaser, drawHazardEcho,
   drawExit, drawCheckpoint, drawSign, drawFreak, drawShiftRing, drawDust, drawPuff, drawSparkle, drawPanel,
-  drawStamp, drawLogo, drawWetTile, px,
+  drawStamp, drawLogo, drawWetTile, drawSkin, px,
 } from './art.js';
 import { SPOOK_LINES, ACT_LINES, CREDITS, timecardComment, stampText } from './copy.js';
 import { levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, endSummary, CARD } from './layout.js';
@@ -62,6 +63,7 @@ function startLevel(i, { card = true } = {}) {
   game.state = initState(levels[i]);
   game.levelTime = 0;
   game.fx = freshFx();
+  game.peekerWas = []; // each peeker's `active` last frame, for the pop-out boing
   input.clear();
   const act = LEVELS[i].act;
   if (card && act !== game.actShown) {
@@ -236,6 +238,7 @@ function handleEvents(events) {
         fx.squint = 1;
         fx.pops.push({ x: W / 2, y: 86, t: 0, text: 'hee hee hee', big: true });
         const pr = level().pranks.find((q) => q.id === ev.id);
+        if (pr?.sound) playSound(pr.sound); // e.g. doorThunk under the giggle
         for (const [, tx, ty] of pr?.cells ?? []) fx.sparkles.push({ x: tx * TILE + TILE / 2, y: ty * TILE + TILE / 2, t: 0, seed: tx * 31 + ty });
         break;
       }
@@ -274,6 +277,12 @@ function frame(now) {
       if (game.screen !== 'play') break;
     }
     game.levelTime += elapsed;
+    // a tiny boing when a peeker pops out on your shift (cosmetic: an edge on what the rules decided)
+    freakBoxes(level(), game.state).forEach((b, i) => {
+      if (b.kind !== 'peeker') return;
+      if (b.active && game.peekerWas[i] === false && b.shift === game.state.layer) sfx.peekerBoing();
+      game.peekerWas[i] = b.active;
+    });
   } else {
     acc = 0;
   }
@@ -365,6 +374,9 @@ function staticLayer(lvl, def, layer, ov) {
       if (tileAt(lvl, other, tx, ty, ov) === '^') drawHazardEcho(ctx, tx, ty, PAL[other].echo);
     }
   }
+  // object art over solid tiles (src/skins.js): a stolen door shows its frame, a moved pillar its crack.
+  // Portraits blink, so they're drawn per frame in drawPlay().
+  for (const sp of skinPlan(lvl, layer, ov)) if (sp.draw !== 'portrait') drawSkin(ctx, sp, layer);
   drawExit(ctx, lvl.exit.tx, lvl.exit.ty, layer);
   if (staticCache.size > 24) staticCache.delete(staticCache.keys().next().value);
   staticCache.set(key, c);
@@ -514,6 +526,7 @@ function drawPlay() {
   g.drawImage(background(layer), 0, 0);
   g.drawImage(staticLayer(lvl, def, layer, s.overrides), 0, 0);
   drawHazards(lvl, layer, t, s.overrides);
+  for (const sp of skinPlan(lvl, layer, s.overrides)) if (sp.draw === 'portrait') drawSkin(g, sp, layer, t);
   for (const c of lvl.checkpoints) drawCheckpoint(g, c.tx, c.ty, s.checkpoint.id === c.id, s.checkpoint.id === c.id ? game.fx.ping : 0);
   drawDecor(lvl, def, layer, t);
   drawTells(lvl, s, layer, t);

@@ -44,7 +44,10 @@ Companion to [GDD.md](GDD.md) §6 and §8. Tile = 30 px. Levels are 32×18 tiles
   night: [ ... same size ... ],
   offset: { dx, dy },          // optional, REPLACES night: night grid = day grid moved (dx,dy) tiles
   nightPatch: [{ x0, x1, y0, y1, ch }],   // optional, with offset: diffs applied to the generated night
-  pranks: [{ id, onNight: 2, tell: { tx, ty }, set: [{ layer: 'night', x0, x1, y0, y1, ch }] }],
+  pranks: [{ id, onNight: 2, tell: { tx, ty }, set: [{ layer: 'night', x0, x1, y0, y1, ch }], sound: 'doorThunk' }],  // sound optional
+  skins:  [{ kind: 'door', tx, ty, h? }, { kind: 'pillar', tx, ty, h? }, { kind: 'portrait', tx, ty, w?, h? }, { kind: 'doorPile', tx, ty, w? }],
+          // object art over solid tiles, optional layer: 'day'|'night'. Doors and pillars stand on (tx, ty), a portrait
+          // hangs from its top-left (tx, ty), the pile's bottom row is ty. The art follows the tiles (src/skins.js).
   freaks: [{ kind: 'lurker', tx, ty, range, speed }, { kind: 'peeker', tx, ty, period, duty, phase }, { kind: 'squatter', tx, ty },
            { kind: 'daywalker', tx, ty, range, speed }, { kind: 'supervisor', tx, ty, period, startFacing }],
   props:  [{ kind, tx, ty, layer?, w?, text?, style? }],   // non-collidable scenery (day/night via layer)

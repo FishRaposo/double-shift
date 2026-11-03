@@ -43,11 +43,11 @@ The 14 added since (same `SOUNDS` map, main voice only). The level-mechanic soun
 | Freeze on day shift | Filtered hush | noise, bandpass 1400 → 350 Hz, 0.08 s, vol 0.05 |
 | Menu move / select | Tick / confirm blip | square 660 Hz (select sweeps to 990) |
 | Act card sting | Two-part chord | triangle 392/494 → 523/659 Hz |
-| Peeker pop *(reserved)* | Boing | sine 300 → 600 Hz, 0.05 s |
-| Lurker footstep *(reserved)* | Soft scuff | noise, low-pass 300 Hz, 0.02 s |
+| Peeker pop (`peekerBoing`) | Boing, when a peeker pops out on your shift | sine 300 → 600 Hz, 0.05 s, vol 0.08 |
+| Lurker footstep *(not wired, by decision)* | Soft scuff | noise, low-pass 300 Hz, 0.02 s. In `SOUNDS` but never played: a constant tick under the music clutters the mix (decided 2026-11-03). |
 | Wet slide stop (`wetStop`) | Squeak | square 900 → 1300 Hz + vibrato, 0.08 s |
-| Door steal *(reserved: `doors`)* | Thunk | sine 180 → 90 Hz + noise, 0.1 s |
-| Pillar move *(reserved: `pillar`)* | Scrape | sawtooth 70 → 55 Hz + noise, 0.22 s |
+| Door steal (`doorThunk`, a prank's `sound`) | Thunk | sine 180 → 90 Hz + noise, 0.1 s (wired through the prank `sound` field; first used by `doors`) |
+| Pillar move (`pillarScrape`, a prank's `sound`) | Scrape | sawtooth 70 → 55 Hz + noise, 0.22 s (wired through the prank `sound` field; first used by `pillar`) |
 | Supervisor turn | Clipboard tick + whoosh | square 2 kHz tick, 0.02 s; noise bandpass 600 → 300 Hz, 0.1 s |
 | Shift in an offset level | Rumble | sine 55 → 45 Hz + noise, 0.25 s |
 | Day-walker spook | Giggle | 4 triangle blips 1100–1300 → 900 Hz, 60 ms apart |
@@ -85,15 +85,15 @@ Same loop, one added part per act so the game builds without new songs: act 2 ad
 
 | Event | Idea |
 |---|---|
-| Peeker pops out | Tiny "boing" (sine 300 → 600 Hz, 0.05 s), only when on screen and on night |
-| Lurker footsteps | Very quiet ticks while you're on night (positional pan by x) |
+| Peeker pops out ✅ | Tiny "boing" (sine 300 → 600 Hz, 0.05 s) on a peeker's hidden → out edge while you're on its shift (`main.js`, cosmetic) |
+| Lurker footsteps *(not wired)* | Very quiet ticks while you're on night. Decided against on 2026-11-03: it clutters the mix. |
 | Freaks freeze (shift to day) | Optional "record scratch" micro-sound layered under the shift blip |
 | Prank shimmer | Layered under the giggle when a prank fires: 3–4 quick sine pings, high (~1.5–2.5 kHz), very quiet. The "how did they do that?" half of the joke. |
 | Peeker hands | A tiny scratch (filtered noise, 0.03 s) when a peeker grips the ledge |
 | Wet floor slide | Squeak on hard stop |
 | Menu move / select | Soft clicks |
 
-### 4.1 SFX for the new levels *(built 2026-11-02; wet, supervisor, offset and day-walker sounds are wired; door and pillar sounds wait for their levels)*
+### 4.1 SFX for the new levels *(built 2026-11-02; all wired. Door and pillar sounds play through a prank's `sound` field and are first heard in `doors` and `pillar`)*
 
 Same `tone()` format as §2; every sound ≤ 0.25 s.
 

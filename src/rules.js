@@ -29,6 +29,11 @@ export const PARAMS = Object.freeze({
 export const DAY = 0;
 export const NIGHT = 1;
 
+// Skins are object art drawn over ordinary solid tiles (src/skins.js decides which); the rules only validate
+// them. Default sizes in tiles: a door is 1×2, a pillar 1×4, a portrait 3×2, the door pile 2 wide.
+export const SKIN_KINDS = Object.freeze(['door', 'pillar', 'portrait', 'doorPile']);
+const SKIN_SIZE = { door: [1, 2], pillar: [1, 4], portrait: [3, 2], doorPile: [2, 1] };
+
 // ---------- level parsing ----------
 
 // A level is { name, par, day: string[], night: string[] } — or `offset` + optional
@@ -80,7 +85,14 @@ export function parseLevel(def) {
     onNight: pr.onNight,
     tell: pr.tell ?? null,
     cells: expandCells(pr.set ?? []),
+    sound: pr.sound ?? null, // an extra sound when it fires (SOUNDS name), e.g. doorThunk
   }));
+  const skins = (def.skins ?? []).map((sk) => {
+    if (!SKIN_KINDS.includes(sk.kind)) throw new Error(`${def.name}: unknown skin kind "${sk.kind}"`);
+    const [w, h] = SKIN_SIZE[sk.kind];
+    const layer = sk.layer === 'night' ? NIGHT : sk.layer === 'day' ? DAY : null;
+    return { kind: sk.kind, tx: sk.tx, ty: sk.ty, w: sk.w ?? w, h: sk.h ?? h, layer };
+  });
   const freaks = (def.freaks ?? []).map((f, i) => ({
     id: f.id ?? `freak${i}`,
     kind: f.kind,
@@ -106,6 +118,7 @@ export function parseLevel(def) {
     checkpoints,
     pranks,
     freaks,
+    skins,
     decor: def.decor ?? [],
     offset: def.offset ?? null,
   };

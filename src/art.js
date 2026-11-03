@@ -447,6 +447,16 @@ export function drawPortrait(g, x, y, t, w = 3, h = 2) {
   drawEyes(g, 'lurker', cx - 2 * A, y + 9 * A, { state: eyesOpen(t, 9) ? 'open' : 'shut', alpha: 0.7 });
 }
 
+// One entry of skinPlan() (src/skins.js): the object art over solid tiles. Portraits blink, so they need t.
+export function drawSkin(g, sp, layer, t = 0) {
+  if (sp.draw === 'door') drawDoor(g, sp.tx, sp.ty, layer, sp.h);
+  else if (sp.draw === 'emptyFrame') drawEmptyFrame(g, sp.tx, sp.ty, layer, sp.h);
+  else if (sp.draw === 'pillar') drawPillar(g, sp.tx, sp.ty - sp.h + 1, sp.ty, layer);
+  else if (sp.draw === 'crack') drawCrack(g, sp.tx, sp.ty, layer);
+  else if (sp.draw === 'doorPile') drawDoorPile(g, sp.tx, sp.ty, layer, sp.count);
+  else if (sp.draw === 'portrait') drawPortrait(g, sp.tx * TILE, sp.ty * TILE, t, sp.w, sp.h);
+}
+
 // ---------- effects ----------
 
 export function drawShiftRing(g, x, y, k, layer) {

@@ -190,4 +190,5 @@ export const sfx = {
   daywalkerGiggle: () => playSound('daywalkerGiggle'),
   supervisorTurn: () => { playSound('clipboardTick'); playSound('turnWhoosh'); },
   offsetRumble: () => playSound('offsetRumble'),
+  peekerBoing: () => playSound('peekerBoing'),
 };
