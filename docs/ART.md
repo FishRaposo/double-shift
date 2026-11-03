@@ -108,7 +108,7 @@ Behind everything, one motif per act (§6). Every color stays ≤ 1.35:1 against
 | Supervisor facing | Head and clipboard turned to the watched side; eyes only on that side | Shape (head offset, clipboard side) |
 | Watched vs. slacking freak | Watched: normal. Slacking: eyes closed to lines, silhouette still | Closed eyes, no jitter |
 | Day-walker | Day: dark silhouette with a cream rim, an orange hard hat and shades. Night: dashed outline in the day echo orange | Silhouette (hard hat) / dashed |
-| Moved object *(planned: doors, pillar, portrait)* | Ordinary solids; its future spots carry the usual prank tells | Tell shapes (eyes / notes) |
+| Moved object ✅ (doors, pillar, portrait) | Ordinary solids drawn as the object (skins); its future spots carry the usual prank tells, and an empty spot shows a door frame or a crack | Tell shapes (eyes / notes) |
 | Offset layer | No new marks: the echo of the other shift shows the floors half a storey off. Floor signs read 3 and 3.5 | Echo dashes + sign text |
 
 **Rule:** any new element must fit this table before it goes in a level.
@@ -271,8 +271,8 @@ Effects must stay readable under rapid shifting: no stacking full-screen flashes
 
 | Asset | Size | Content |
 |---|---|---|
-| Cover image ✅ | **1260×1000** (630×500 ratio) | `tools/cover.html`, drawn with the game's own sprites, tiles and font at 2×: split day/night, the worker mid-jump on the seam (day colours left, night right) inside shift rings, a night-only plank and its echo, a smug lurker and eyes on the night side, a MINE note on the day side, the logo, the tagline |
-| Screenshots ✅ | 960×540 (native) | `npm run media`: title, level 1 day/night, timecard, Inventory day/night, Night Watch night/day, level select, act card |
+| Cover image ✅ | **1260×1000** (630×500 ratio) | `tools/cover.html`, drawn with the game's own sprites, tiles and font at 2×: split day/night, the worker mid-jump on the seam (day colours left, night right) inside shift rings, a night-only plank and its echo, a smug lurker and eyes on the night side, a lurker hanging under the plank (act 5's flipped night), a MINE note on the day side, the logo, the tagline |
+| Screenshots ✅ | 960×540 (native) | `npm run media`: 19 shots. Two come from the scripted runs, for moments real keys can't time: a prank as it lands (Inventory, 0.14 s after the plank moves) and the flip (Mind Your Head). The rest: title, level 1 day/night, timecard, act card, Inventory day/night, Night Watch night/day, level select, end, Stacked night, Clock Out day/night, Mind Your Head night, settings, controls. Upload order: itch/page.md §3 |
 | Demo GIF (tool ✅) | 480×270 (`--full` 960×540), the run plus 1.5 s of timecard, ≤ 3 MB; first in the screenshot list | `npm run gif -- <id>`: one level's scripted run, played by the game. Candidates: `doors` (a prank every clock-in), `upside` (the flip), `watch` (frozen freaks). The brief was a mid-air shift chain, then a frozen-lurker pass; Fish picks. |
 | Page theme | Background `#0b1029`, text `#d9f6ff`, links `#5ff2ff` | Matches the night palette; embed background `#0b1029` (same as `index.html`) |
 

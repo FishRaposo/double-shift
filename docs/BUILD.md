@@ -293,7 +293,10 @@ Seven milestone PRs (decided 2026-11-03). Each one passes every gate in §1.2 pl
 - **`lurkerStep`:** stays unwired (decided 2026-11-03): a constant tick under the music clutters the mix. AUDIO.md says so.
 - Update AUDIO.md §4 and §4.1 status.
 
-### T16 · Release refresh *(after each batch, and last)*
+### T16 · Release refresh *(after each batch, and last; ✅ Nov 3, repeat before submission)*
+- **Nov 3:** two shots from the scripted runs lead the itch list (a prank as it lands, the flip: `moment()` in `scripts/media.mjs`); the cover gained a lurker hanging under the night plank; the itch description lists 21 levels, gamepad, rebinding and the timer; the unzipped build passes `npm run media -- --root`; [PLAYTEST.md](PLAYTEST.md) §7 has the round-2 sheet with the 5-second test.
+
+The steps:
 1. `npm run media`. Add the new levels to its capture list and pick the itch screenshots; the first one should show a prank or the flip.
 2. Refresh `tools/cover.html` only if act 5 ships (an upside-down hint is a strong hook).
 3. Update the counts: itch/page.md (description "What's in this build", screenshot order, test count), README status line, DESIGN.md.

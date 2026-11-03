@@ -366,7 +366,7 @@ The levels still to build in acts 2–4, in the §5.0 order (manifest: [CONTENT.
 | Shared state | Levers and doors that keep one state across both shifts | New system; GDD §8.2 |
 
 
-## 5.2 Act 5: Upside Down *(planned; decided by Fish 2026-11-02)*
+## 5.2 Act 5: Upside Down *(✅ built Nov 3; decided by Fish 2026-11-02)*
 
 **The rule:** by day you play the map as drawn. **At night you play the same map upside down:** the night grid is the day grid flipped top to bottom, and gravity points up. The worker stands under what were floors, on what were ceilings. Shifting keeps your position and momentum (S-01, S-02), so every shift is also a gravity flip.
 

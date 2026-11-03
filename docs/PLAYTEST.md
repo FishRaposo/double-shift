@@ -6,6 +6,7 @@ Companion to [GDD.md](GDD.md) §19. Playtests answer questions the tests can't: 
 - Run a build: `npm start` (your machine) or the Pages link (theirs) (§2).
 - Say nothing, watch, take notes, then the form (§2, §4).
 - Biggest signals: time to first shift, do they work out that day freezes the freaks, do they replay for par (§3).
+- Round 2 (the full run) has its own sheet, with the 5-second readability test (§7).
 
 ## 1. Schedule
 
@@ -78,3 +79,46 @@ Actions (→ PRODUCTION.md backlog IDs):
 - Unfair deaths: check the level against LEVELS.md §6 (windows, tells), then fix the level, not the player.
 - If nobody retries for par, revisit pars and the timecard presentation before adding content.
 - Record decisions (freak size, primary bind, camera) in GDD §21 and PRODUCTION.md §5.
+
+## 7. Round 2 sheet (full run, by Nov 22)
+
+**Build:** the Pages link or `npm start` at the release-candidate commit (log `git log --oneline -1`). All <!-- n:levels -->21<!-- /n --> levels. Time the run per act; there's no estimate yet.
+
+**First, the 5-second test** (cold, before they've played). It checks ART.md §3.1's reading order on real screens. Make the deck with `npm run media` and `npm run media -- --review wet,daywalker`. Show each shot for 5 seconds, then hide it. Ask them to point to (or say where) **the worker, the way out, something that would hurt them, and a creature**, and whether it's **day or night**. Mark each one found, wrong or missed. Explain nothing. Check each shot yourself before the session; the key below lists what to look for.
+
+| # | Act | Shot | Shift | On screen |
+|---|---|---|---|---|
+| 1 | 1 | `media/02-clock-in-day.png` | Day | Worker bottom left; exit right; the taped gap in the floor; no creature |
+| 2 | 2 | `media/07-night-watch-night.png` | Night | Worker left; exit right; the freaks in the tunnel and by the exit |
+| 3 | 3 | `media/review/wet-night.png` | Night | Worker left; exit right; the rope across the middle; a lurker by the exit |
+| 4 | 4 | `media/review/daywalker-day.png` | Day | Worker left; exit right; the day-walker (shades) in the middle; dashed outlines of frozen freaks |
+| 5 | 5 | `media/20-flip-mind-your-head.png` | Night (upside down) | Worker hanging, left of centre; exit hanging, bottom right; no creature |
+| 6 | Finale | `media/14-clock-out-day.png` | Day | Worker bottom left; exit top right; the pit; the day-walker bottom right |
+
+Goal: every tester finds the worker and the exit in every shot and names the shift right. A miss that two testers share is a P0 readability fix (§6).
+
+**While they play,** besides §3:
+- Act 2: do they connect a door vanishing to their own clock-in (Lost & Found)?
+- Act 3: do they read the wet floor's slide, and the supervisor's clipboard?
+- Act 4: are they surprised one freak works days? Does Floor 3.5's half-storey make sense?
+- Act 5, **the flip:** their first reaction on Mind Your Head, the time to their first deliberate flip, whether they say "upside down", and whether they find the flip-as-brake on Falling Up.
+- The finale: do they recognise one room per act?
+- Pacing: note where they slow down, sigh or speed up.
+
+**After:** the form (§4), plus:
+11. What happened when the night turned upside down?
+12. Which act was the best? Which went on too long?
+13. Keyboard or gamepad? Did you change any controls?
+
+**Log:** the §5 block, plus:
+```
+5-second test (per shot: worker / exit / hazard / creature / day-night, each found, wrong or missed):
+Time per act:
+Flip: first reaction; time to the first deliberate flip:
+```
+
+**What it decides:**
+- **The flip:** if two of three testers still can't use it on purpose by Falling Up, rework Mind Your Head's teaching beat before polish.
+- **Pacing:** an act every tester calls too long loses or shortens its weakest level (CONTENT.md tiers).
+- **Readability:** the 5-second misses feed §6.
+

@@ -69,8 +69,8 @@ Specs: [TECH.md](TECH.md) §6 (mechanics), [GDD.md](GDD.md) §12 (UI).
 | SYS-2 | Day-walker freak + day-only clock | `daywalker` | C, cut Nov 12 | G8 | ✅ built |
 | SYS-3 | Supervisor freak (facing decides which freaks work) | `supervisor` | C, cut Nov 17 | G15 | ✅ built |
 | SYS-4 | Offset layer (`offset` field generates the night grid) | `offset` | C, cut Nov 17 | G9 | ✅ built |
-| SYS-16 | Upside Down: `upsideDown: true` generates the night as the day grid flipped vertically (+ `nightPatch`); gravity, jump, coyote, grounding and max fall follow a per-shift gravity sign | act 5, finale rework | C, cut Nov 18 | G16 | planned |
-| SYS-17 | Finale act card (FINALE · CLOCK OUT) before #21 | finale | C | A10 | planned |
+| SYS-16 | Upside Down: `upsideDown: true` generates the night as the day grid flipped vertically (+ `nightPatch`); gravity, jump, coyote, grounding and max fall follow a per-shift gravity sign | act 5, finale rework | C, cut Nov 18 | G16 | ✅ built Nov 3 |
+| SYS-17 | Finale act card (FINALE · CLOCK OUT) before #21 | finale | C | A10 | ✅ built Nov 3 |
 | SYS-5 | Level select + save progress (localStorage, try/catch) | Raters reaching act 2+ | P0 | A7 | ✅ (act starts always open) |
 | SYS-6 | Music engine (step sequencer, two synced arrangements, crossfade on shift) | Audio score | P0 | A5 | ✅ |
 | SYS-7 | Settings: master / music / SFX volume, reduced effects | Accessibility | P1 | A6 | ✅ |
@@ -105,8 +105,8 @@ Specs: [ART.md](ART.md). Palette rule: existing colors only, unless a color gets
 | ART-11 | Props per level: notice board, vents, barrier tape, pallets, signage, footprints, chalk circles | Every level | P1 | ART §6, §6.2 | ✅ |
 | ART-12 | Effects: prank sparkle, freeze cue on shift to day, checkpoint ping | Every level | P1 | ART §5, §7 | ✅ |
 | ART-13 | UI screens: title with level select ✅, level select ✅, settings, act cards, timecard with comment, end screen with totals, credits | Shell | P0–P1 | ART §7.1 | ✅ (credits Nov 3; level select laid out for six rows) |
-| ART-14 | Cover image 1260×1000 | itch | P0 | ART §8 | ✅ (`npm run media`) |
-| ART-15 | Screenshots 960×540 | itch | P0 | ART §8 | ✅ (refresh when new levels ship) |
+| ART-14 | Cover image 1260×1000 | itch | P0 | ART §8 | ✅ (`npm run media`; act 5 hint added Nov 3) |
+| ART-15 | Screenshots 960×540 | itch | P0 | ART §8 | ✅ 19 shots, a prank and the flip first (refresh when levels change) |
 | ART-16 | Demo GIF ≤ 10 s | itch | P1 | ART §8 | tool ✅ (`npm run gif -- <id>`); Fish picks the level and uploads |
 | ART-17 | Devlog images (before/after readability, a prank GIF) | Devlogs | P2 | ART §8 | gallery capture ✅; devlog images planned |
 | ART-20 | Identity and readability pass: text on plates and paper strips, hatched rims, one silhouette per freak kind, glowing eyes, freaks and the subtitle on the title, punch-clock checkpoint, exit sign always on screen, barrier-tape cordon, the ending's wave, whole-pixel scaling | Every level, shell | P0 | ART §3, §3.1, §5–§7 | ✅ (Nov 3) |

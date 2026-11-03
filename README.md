@@ -10,7 +10,7 @@ A puzzle-platformer for [GitHub Game Off 2026](https://itch.io/jam/game-off-2026
 
 **Play in the browser: [fishraposo.github.io/double-shift](https://fishraposo.github.io/double-shift/)** (the itch.io page comes at jam submission).
 
-> Status: **prototype**, <!-- n:levels -->21<!-- /n --> levels from Clock In to the Clock Out finale, act 5 (Upside Down) included: the jam minimum is complete, and all five new mechanics shipped. Design: [`docs/GDD.md`](docs/GDD.md) (v0.6; the full plan is 21 levels in five acts). How and why it was built: [`docs/DESIGN.md`](docs/DESIGN.md). Production docs (schedule, tech, levels, art, audio, writing, playtest, release): [`docs/INDEX.md`](docs/INDEX.md).
+> Status: **feature-complete**: <!-- n:levels -->21<!-- /n --> levels in five acts plus the Clock Out finale, act 5 (Upside Down) included, with gamepad support, rebindable controls, a speedrun timer and music that builds act by act. Playtests and polish come next; jam submission on Nov 30. Design: [`docs/GDD.md`](docs/GDD.md) (v0.6; the full plan is 21 levels in five acts). How and why it was built: [`docs/DESIGN.md`](docs/DESIGN.md). Production docs (schedule, tech, levels, art, audio, writing, playtest, release): [`docs/INDEX.md`](docs/INDEX.md).
 
 ## Game Off 2026
 
@@ -49,7 +49,7 @@ Move, jump and change shift can be rebound in SETTINGS > CONTROLS (the menu keys
 ## How it's built
 
 - Plain JavaScript ES modules on a 2D canvas. No engine, no dependencies, no asset files.
-- **Pixel art, a pixel font and music, all made in code.** Sprites are string grids drawn on a 2-px grid; tiles, props and effects are drawn procedurally; the font is hand-made 5×7 glyphs. The music is a 16-bar theme in two arrangements (jaunty by day, a theremin in the minor mode by night) that crossfade on every shift. Every asset is in the gallery: `/tools/gallery.html`.
+- **Pixel art, a pixel font and music, all made in code.** Sprites are string grids drawn on a 2-px grid; tiles, props and effects are drawn procedurally; the font is hand-made 5×7 glyphs. The music is a 16-bar theme in two arrangements (jaunty by day, a theremin in the minor mode by night) that crossfade on every shift; each act adds a layer, and act 5 plays the melody upside down. Every asset is in the gallery: `/tools/gallery.html`.
 - **Rules are pure.** `src/rules.js` has no DOM and no clock: `step(level, state, input)` returns the next state at a fixed 120 Hz. The screen only draws what the rules decided, so the tests run the real game headless.
 - **Shift rules** (GDD §3.3): same coordinates, momentum kept, no cooldown, one shift per key press. A shift into solid geometry tries a ≤4 px corner nudge, then buffers for 80 ms, then is rejected without touching the player.
 - **The freaks** (GDD §4.8–4.10): pranks fire on the Nth entry into night and change tiles; visible freaks (lurker, peeker, squatter, supervisor, day-walker) follow fixed patterns on a clock that only runs on their own shift, so switching shifts freezes them. No AI; everything is deterministic.
@@ -59,6 +59,8 @@ Move, jump and change shift can be rebound in SETTINGS > CONTROLS (the menu keys
 src/rules.js    pure game rules
 src/levels.js   level data (grids, pranks, freaks, props)
 src/input.js    key events → per-tick input (no DOM)
+src/keys.js     key bindings: rebinding rules and key labels
+src/pad.js      gamepad snapshots → key-like events
 src/main.js     loop, screens, rendering
 src/sprites.js  pixel sprites (worker, freaks) + frame selection
 src/art.js      tiles, props, effects, UI pieces
@@ -67,7 +69,8 @@ src/audio.js    mix bus + every sound effect as data
 src/music.js    the theme and its two arrangements
 src/save.js     saved progress and settings
 src/copy.js     result-based lines (timecard comments, act cards, credits)
-src/layout.js   level addressing, level select and end-screen layout (no DOM)
+src/layout.js   level addressing, level select, end-screen and memo layout (no DOM)
+src/skins.js    which art a moved object draws (door, pillar, portrait, an empty frame)
 tools/          asset gallery, itch cover
 test/           node --test suites
 scripts/        serve, check, zip for itch, media + headless checks, demo GIFs

@@ -73,8 +73,8 @@ Rules: no synonyms, no engine/tool tags, no repeating the genre or platform, no 
 - The jam also asks you to disclose AI use in the submission; say the same thing in the page's "How it was made".
 
 ### Media (ART.md §8)
-- [x] Cover 1260×1000: `npm run media` → `media/cover.png` (drawn by `tools/cover.html`)
-- [x] Screenshots: `npm run media` → `media/01…08-*.png`; upload order in itch/page.md §3
+- [x] Cover 1260×1000: `npm run media` → `media/cover.png` (drawn by `tools/cover.html`; act 5's hanging lurker added Nov 3)
+- [x] Screenshots: `npm run media` → 19 shots in `media/` (`01`–`20`; `11` is the asset gallery), led by a prank as it lands and the flip; upload order in itch/page.md §3
 - [ ] Demo GIF: `npm run gif -- <id>` → `media/demo-<id>.gif` (ART.md §8 has the candidates); upload it first in the screenshot list
 
 ## 3. Getting indexed
@@ -104,6 +104,8 @@ Publishing ≠ indexing. After going Public, check in ~1 hour by searching the *
 > | Change shift | Shift or K | B, X or RB |
 > | Restart | R | Back |
 > | Pause | Esc | Start |
+> | Level select | L | X |
+> | Settings (volumes, effects, timer, controls) | O | Y |
 > | Mute | M | |
 >
 > *On Windows, hammering Shift can open Sticky Keys. Use K, or turn off the Sticky Keys shortcut.*
@@ -119,9 +121,9 @@ Publishing ≠ indexing. After going Public, check in ~1 hour by searching the *
 
 ## 5. Submission day checklist (Nov 30)
 
-- [ ] `npm test` and `npm run check` green; CI green on the final commit.
-- [ ] `npm run zip`; unzip into an empty folder, serve it, play level 1 and the last level.
-- [ ] **First 60 seconds** (raters play dozens of entries): from the itch embed, one keypress gets from the title screen to playing; sound starts after the first input and isn't too loud; level 1 teaches the shift without reading; fullscreen works; level select reaches the freak levels.
+- [ ] `npm test` and `npm run check` green; CI green on the final commit. *(Green on the Nov 3 release candidate; run again on the final commit.)*
+- [ ] `npm run zip`; unzip into an empty folder, serve it, play level 1 and the last level. *(The automated half: `npm run media -- <outdir> --root <folder>` clears level 1 with real keys from the unzipped build and opens later levels from it; clean on Nov 3. Playing the last level stays a hand check.)*
+- [ ] **First 60 seconds** (raters play dozens of entries; `npm run media` checks the one keypress from the title to playing, the rest is by hand): from the itch embed, one keypress gets from the title screen to playing; sound starts after the first input and isn't too loud; level 1 teaches the shift without reading; fullscreen works; level select reaches the freak levels.
 - [ ] Upload to itch, play the full game **from the itch page** in a fresh browser profile (Chrome + Firefox).
 - [ ] Page: description checked against the build, media, tags, AI disclosure, theme.
 - [ ] Public; title search check scheduled for +1 h.

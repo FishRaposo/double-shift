@@ -9,7 +9,7 @@
 //   --root DIR      serve DIR instead of the repo (smoke-test the unzipped itch build: no cover, gallery or audio)
 // BROWSER env overrides the browser path (scripts/cdp.mjs starts the browser and serves the game).
 import { mkdirSync, writeFileSync } from 'node:fs';
-import { join, resolve } from 'node:path';
+import { dirname, join, resolve } from 'node:path';
 import { startBrowser, sleep } from './cdp.mjs';
 
 const root = resolve(import.meta.dirname, '..');
@@ -40,8 +40,29 @@ const KEYS = { Space: [' ', 32], KeyK: ['k', 75], KeyL: ['l', 76], KeyO: ['o', 7
 const key = (type, code) => send('Input.dispatchKeyEvent', { type, code, key: KEYS[code][0], windowsVirtualKeyCode: KEYS[code][1] });
 const press = async (code) => { await key('keyDown', code); await sleep(40); await key('keyUp', code); };
 
+// A moment from a level's scripted run (the run the tests prove: test/solutions.mjs), for shots real keys can't
+// time, like the frame after a prank. requestAnimationFrame is off while the game steps on a fixed clock.
+async function moment(id, seconds, name) {
+  const { identifier } = await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.requestAnimationFrame = () => 0;' });
+  try {
+    await open(`?level=${encodeURIComponent(id)}&autostart`);
+    await evaluate(`(async () => {
+      const g = __doubleShift;
+      const { SOLUTIONS } = await import('/test/solutions.mjs');
+      const { inputsFrom } = await import('/test/helpers.mjs');
+      const next = inputsFrom(SOLUTIONS[${JSON.stringify(id)}]);
+      for (let f = 0; f < Math.round(${seconds} / 0.02); f++) g.advance(0.02, next);
+      g.render();
+    })()`);
+    await shot(name);
+  } finally {
+    await send('Page.removeScriptToEvaluateOnNewDocument', { identifier });
+  }
+}
+
 async function shot(name) {
   const { data } = await send('Page.captureScreenshot', { format: 'png' });
+  mkdirSync(dirname(join(out, name)), { recursive: true }); // review/timer-hud.png into a fresh outdir
   writeFileSync(join(out, name), Buffer.from(data, 'base64'));
   console.log(`  ${name}`);
 }
@@ -204,7 +225,7 @@ async function fullRun() {
   for (let i = 0; i < 4; i++) await press('ArrowDown');
   await press('Enter'); // SPEEDRUN TIMER: ON
   await sleep(150);
-  await shot('10-settings.png');
+  await shot('18-settings.png');
   const timerOn = await evaluate("JSON.parse(localStorage.getItem('double-shift.settings.v1')).timer");
   flow('SETTINGS turns the speedrun timer on', timerOn === true, timerOn);
   await open('?level=clock&autostart');
@@ -241,9 +262,15 @@ async function fullRun() {
   const padState = await evaluate('({ screen: __doubleShift.screen, layer: __doubleShift.state?.layer })');
   flow('gamepad: A clocks in from the title, B shifts', padState.screen === 'play' && padState.layer === 1, padState);
 
-  // asset gallery + offline audio loudness check (peaks before the master gain; must not clip).
-  // The tools aren't in the itch build, so --root skips them.
+  // the tools and tests aren't in the itch build, so --root stops here
   if (serveRoot) return;
+
+  // the itch page's first shots: a prank as it lands (Inventory's plank moves on the 2nd night clock-in, at
+  // 1.76 s) and the flip (Mind Your Head's first clock-in turns the night over, at 0.59 s)
+  await moment('inventory', 1.9, '19-prank-inventory.png');
+  await moment('upside', 0.7, '20-flip-mind-your-head.png');
+
+  // asset gallery + offline audio loudness check (peaks before the master gain; must not clip)
   await open('tools/gallery.html', 1280, 1500);
   await sleep(500);
   await shot('11-gallery.png');

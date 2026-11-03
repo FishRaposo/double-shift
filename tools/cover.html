@@ -48,6 +48,9 @@ drawSprite(g, 'lurker', 'a', 520, 390 - 22 * 1.5, { scale: 3 });
 drawEyes(g, 'lurker', 520, 390 - 22 * 1.5, { state: 'squint', scale: 3 });
 drawSign(g, 110, 300, 'MINE', 'note', 3);
 PROPS.noticeBoard(g, 40, 330);
+// act 5's hint: on a flipped night the freaks hang from the ceiling, so one clings under the plank, watching
+drawSprite(g, 'lurker', 'a', 384, 300, { scale: 3, vflip: true });
+drawEyes(g, 'lurker', 384, 300, { state: 'open', look: -1, scale: 3, vflip: true });
 
 // the worker, mid-jump, mid-shift: day colours on the left of the seam, night on the right
 drawShiftRing(g, SEAM, 268, 0.35, NIGHT);

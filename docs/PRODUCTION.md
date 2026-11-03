@@ -3,11 +3,11 @@
 Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-03**.
 
 **At a glance**
-- **Next milestone:** M0 Feel check (Nov 2–3): play all 12 levels, Sticky Keys test, tuning. Repo + CI are done.
-- **The build plan (Nov 3):** seven milestone PRs: foundations, a quality and identity pass, Upside Down, tier B, act 5 and the finale, copy and stretch, release ([BUILD.md](BUILD.md) §3).
-- **The game:** 21 levels, five acts of four plus the finale; 12 built (tier A), tier B = 17, tier C = 21 ([CONTENT.md](CONTENT.md), LEVELS.md §5.0).
-- **Level audit (Nov 2):** every level beatable at par, fair timing (≥ 200/100 ms), no skips, no respawn loops; `npm run audit` keeps it that way.
-- **Key P0 items:** tuning, level select, music, freaks in the first minutes, freak art, media, itch page (§4). `stacked` + `clockout` done.
+- **Next for Fish:** play the full run (all 21 levels) and the Upside Down feel check (cut date Nov 18), the Sticky Keys test and tuning (M0), then playtest round 1 by Nov 8. Repo + CI are done.
+- **The build plan (Nov 3):** seven milestone PRs: foundations, a quality and identity pass, Upside Down, tier B, act 5 and the finale, copy and stretch, release ([BUILD.md](BUILD.md) §3). All seven are built and waiting for Fish's review in PR #1.
+- **The game:** 21 levels, five acts of four plus the finale, all built (tiers A, B and C; [CONTENT.md](CONTENT.md), LEVELS.md §5.0).
+- **Level audit (Nov 3, all 21):** every level beatable at par, fair timing (≥ 200/100 ms), no skips, no respawn loops; `npm run audit` keeps it that way.
+- **Open P0 items:** tuning (Fish's feel check), the playtest rounds, the itch page (§4). Level select, music, freak art and the media kit are built.
 - **Cut dates:** Upside Down proven (`upside` at par) Nov 18; content freeze Nov 22 (§2). The four earlier mechanics shipped.
 
 ## 1. Where we are
@@ -19,8 +19,10 @@ Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-03**.
 | Freaks: lurker, peeker, squatter, supervisor (frozen by day), day-walker (frozen by night) | Built, tested |
 | Levels | **<!-- n:levels -->21<!-- /n --> built** (act 1: 4, act 2: 4, act 3: 4, act 4: 4, act 5: 4, finale: 1), all proven solvable at par and fair; **tier A (jam minimum) complete** with `stacked` and `clockout`. Tier-C mechanics shipped. All 5 tier-B levels built (Nov 3); act 5's other three levels and the finale rework planned (CONTENT.md) |
 | Rendering | **Pixel art** (Nov 2): sprites, animated worker and freaks, pixel tiles and props, pixel font, effects; every asset in `/tools/gallery.html` |
-| Audio | Mix bus, 25 SFX (incl. planned-level sounds), **music** (day/night arrangements crossfading on every shift) |
-| Menus | Title, level select + saved bests, settings (volumes, reduced effects), act cards, pause, timecard with comment, end screen with totals |
+| Audio | Mix bus, 26 SFX (`lurkerStep` left unwired, AUDIO.md §4.1), **music** (day/night arrangements crossfading on every shift; each act adds a layer) |
+| Menus | Title, level select + saved bests, settings (volumes, reduced effects, speedrun timer, controls), act cards, pause, timecard with comment, end screen with totals and the run time |
+| Input | Keyboard (move, jump and shift rebindable) and gamepad (fixed standard mapping) |
+| Release kit | Cover, 19 screenshots and the demo GIF tool (`npm run media`, `npm run gif`); the zipped build passes the browser smoke test |
 | Tests | <!-- n:tests -->347<!-- /n --> passing (`npm test`), including fairness; `npm run audit` clean |
 | Repo / CI / itch | Public repo [FishRaposo/double-shift](https://github.com/FishRaposo/double-shift), CI green, playable on [GitHub Pages](https://fishraposo.github.io/double-shift/). **No itch page** |
 

@@ -191,7 +191,7 @@ Game Off is rated by other participants in six categories (RELEASE.md §0). What
 | Graphics | A deliberate code-drawn style: two palettes of one building, echoes, readable freaks (ART.md §1.1) | — |
 | Audio | Theme in two arrangements crossfaded on shift (§11.3); yelp, giggle, stamp | — |
 | Innovation | **Pranks**: each night clock-in can change the building, so clock-ins are a resource. **Freaks freeze by day**: the other shift is a pause button for the monsters. Timecard par. | — (evidence from level 1; first encounter level 3) |
-| Theme | The Shift key, the work shift, and the building that shifts, all at once (§1.7) | Sticky Keys joke (planned) |
+| Theme | The Shift key, the work shift, and the building that shifts, all at once (§1.7) | Sticky Keys joke (the freaks' sticky note on the title) |
 
 **Overlap warning.** The jam page's list of example ideas includes a puzzle-platformer where you shift between two overlapping realities and a monster might be standing on the bridge in the other one. That is our core premise, so many entries will look like ours at first glance. Everywhere a rater forms a first impression (the itch hook, cover, GIF, the first two minutes of play), lead with what only this game does: the freaks prank the building every time you clock in, and freeze when you leave the night.
 
