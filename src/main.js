@@ -12,7 +12,7 @@ import { drawSprite, drawEyes, eyesOpen, workerFrame, spriteRect, ART, SPRITES, 
 import {
   PAL, PROPS, drawBackground, drawSolidTile, drawHatch, drawEchoEdges, drawRebar, drawLaser, drawHazardEcho,
   drawExit, drawCheckpoint, drawSign, drawFreak, drawShiftRing, drawDust, drawPuff, drawSparkle, drawPanel,
-  drawStamp, drawLogo, drawWetTile, drawSkin, shouldHatch, PLATE, NOTE_STRIP, px,
+  drawStamp, drawLogo, drawWetTile, drawSkin, shouldHatch, withCellMirror, PLATE, NOTE_STRIP, px,
 } from './art.js';
 import { SPOOK_LINES, ACT_LINES, CREDITS, timecardComment, stampText } from './copy.js';
 import { levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, endSummary, selectClick, canvasScale, CARD } from './layout.js';
@@ -214,10 +214,11 @@ const SELECT_KEYS = {
 
 let spookIx = 0;
 
-// Dust kicks up at the feet: the bottom of the worker, or the top while hanging on a flipped night.
-function feetDust(p) {
-  const up = gravitySign(level(), game.state.layer) < 0;
-  return { x: p.x + PARAMS.playerW / 2, y: up ? p.y : p.y + PARAMS.playerH, t: 0, up };
+// Dust kicks up at the feet, where the jump or landing happened (the event says; a death later in the same
+// tick may already have moved the player): the bottom of the worker, or the top while hanging on a flipped night.
+function feetDust(ev) {
+  const up = gravitySign(level(), ev.layer) < 0;
+  return { x: ev.x + PARAMS.playerW / 2, y: up ? ev.y : ev.y + PARAMS.playerH, t: 0, up };
 }
 
 function handleEvents(events) {
@@ -236,15 +237,17 @@ function handleEvents(events) {
         if (level().freaks.some((f) => f.shift !== ev.layer)) { fx.freeze = 1; sfx.freeze?.(); } // someone just froze
         break;
       case 'shiftFail': sfx.shiftFail(); fx.fail = 1; break;
-      case 'jump': sfx.jump(); fx.dust.push(feetDust(p)); break;
-      case 'land': sfx.land(); fx.land = 0.1; fx.dust.push(feetDust(p)); break;
+      case 'jump': sfx.jump(); fx.dust.push(feetDust(ev)); break;
+      case 'land': sfx.land(); fx.land = 0.1; fx.dust.push(feetDust(ev)); break;
       case 'wetStop': sfx.wetStop(); break;
       case 'peek': sfx.peekerBoing(); break; // a peeker popped out on your shift
       case 'supervisorTurn': sfx.supervisorTurn(); break;
       case 'death':
         if (ev.cause === 'spooked') {
           (ev.by === 'daywalker' ? sfx.daywalkerGiggle : sfx.spooked)();
-          fx.pops.push({ x: ev.x + PARAMS.playerW / 2, y: ev.y - 20, t: 0, text: SPOOK_LINES[spookIx++ % SPOOK_LINES.length] });
+          // the line goes over the worker's head: above it, or under it while hanging on a flipped night
+          const hanging = gravitySign(level(), ev.layer) < 0;
+          fx.pops.push({ x: ev.x + PARAMS.playerW / 2, y: hanging ? ev.y + PARAMS.playerH + 50 : ev.y - 20, t: 0, text: SPOOK_LINES[spookIx++ % SPOOK_LINES.length] });
           fx.spook = { x: ev.x, y: ev.y, t: 0, layer: ev.layer ?? game.state.layer };
         } else {
           sfx.death();
@@ -377,14 +380,10 @@ function staticLayer(lvl, def, layer, ov) {
   // props first: they sit behind the geometry
   for (const pr of def.props ?? []) {
     if (pr.layer && (pr.layer === 'night') !== (layer === NIGHT)) continue;
-    if (pr.flip) {
-      // hung upside down (a prop on a flipped night): mirrored inside its cell. Signs keep flip off.
-      ctx.save();
-      ctx.translate(0, (2 * pr.ty + 1) * TILE);
-      ctx.scale(1, -1);
-    }
-    PROPS[pr.kind]?.(ctx, pr.tx * TILE, pr.ty * TILE, pr.w ?? pr, pr);
-    if (pr.flip) ctx.restore();
+    const draw = () => PROPS[pr.kind]?.(ctx, pr.tx * TILE, pr.ty * TILE, pr.w ?? pr, pr);
+    // hung upside down (a prop on a flipped night): mirrored inside its cell. Signs keep flip off.
+    if (pr.flip) withCellMirror(ctx, pr.ty, draw);
+    else draw();
   }
   drawEchoEdges(ctx, solidEdges(lvl, other, ov), PAL[other].echo);
   for (let ty = 0; ty < lvl.h; ty++) {
@@ -664,7 +663,7 @@ function drawAct() {
   const k = Math.min(1, game.screenTime / 0.25);
   g.fillStyle = 'rgba(0,0,0,0.55)';
   g.fillRect(0, H / 2 - 90, W, 180);
-  drawText(g, finale ? 'FINALE' : `ACT ${act}`, W / 2, H / 2 - 64, { scale: 3, color: '#ffec5a', align: 'center', alpha: k });
+  drawText(g, finale ? ACTS[FINALE_ACT].toUpperCase() : `ACT ${act}`, W / 2, H / 2 - 64, { scale: 3, color: '#ffec5a', align: 'center', alpha: k });
   drawText(g, (finale ? def.name : ACTS[act] ?? '').toUpperCase(), W / 2, H / 2 - 24, { scale: 6, color: '#ffffff', halo: '#1b1209', align: 'center', alpha: k });
   drawText(g, ACT_LINES[act] ?? '', W / 2, H / 2 + 40, { scale: 2, color: '#d9f6ff', align: 'center', alpha: k });
 }
@@ -755,7 +754,7 @@ function drawSelect() {
     const t = tabRect(LEVELS, r);
     const act = LEVELS[row[0]].act;
     drawPanel(g, t.x, t.y, t.w, t.h, false);
-    drawText(g, act === FINALE_ACT ? 'FINALE' : `ACT ${act}`, t.x + CARD.pad, t.y + 9, { scale: 2, color: pal.hud });
+    drawText(g, act === FINALE_ACT ? ACTS[FINALE_ACT].toUpperCase() : `ACT ${act}`, t.x + CARD.pad, t.y + 9, { scale: 2, color: pal.hud });
     if (act !== FINALE_ACT) {
       wrapText((ACTS[act] ?? '').toUpperCase(), t.w - 2 * CARD.pad, 1).slice(0, 2)
         .forEach((line, k) => drawText(g, line, t.x + CARD.pad, t.y + 31 + k * 10, { scale: 1, color: pal.hudSoft }));

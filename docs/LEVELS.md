@@ -43,14 +43,17 @@ Companion to [GDD.md](GDD.md) §6 and §8. Tile = 30 px. Levels are 32×18 tiles
   day:   [ 18 strings of 32 chars ... ],
   night: [ ... same size ... ],
   offset: { dx, dy },          // optional, REPLACES night: night grid = day grid moved (dx,dy) tiles
-  nightPatch: [{ x0, x1, y0, y1, ch }],   // optional, with offset: diffs applied to the generated night
+  upsideDown: true,            // optional, REPLACES night: night grid = day grid turned over, gravity up at night (§5.2)
+  nightPatch: [{ x0, x1, y0, y1, ch }],   // optional, with offset or upsideDown: diffs applied to the generated night
   pranks: [{ id, onNight: 2, tell: { tx, ty }, set: [{ layer: 'night', x0, x1, y0, y1, ch }], sound: 'doorThunk' }],  // sound optional
   skins:  [{ kind: 'door', tx, ty, h? }, { kind: 'pillar', tx, ty, h? }, { kind: 'portrait', tx, ty, w?, h? }, { kind: 'doorPile', tx, ty, h? }],  // a pile is 2 wide, at most h (3) high
           // object art over solid tiles, optional layer: 'day'|'night'. Doors and pillars stand on (tx, ty), a portrait
           // hangs from its top-left (tx, ty), the pile's bottom row is ty. The art follows the tiles (src/skins.js).
   freaks: [{ kind: 'lurker', tx, ty, range, speed }, { kind: 'peeker', tx, ty, period, duty, phase }, { kind: 'squatter', tx, ty },
            { kind: 'daywalker', tx, ty, range, speed }, { kind: 'supervisor', tx, ty, period, startFacing }],
-  props:  [{ kind, tx, ty, layer?, w?, text?, style? }],   // non-collidable scenery (day/night via layer)
+  props:  [{ kind, tx, ty, layer?, w?, text?, style?, flip? }],   // non-collidable scenery (day/night via layer);
+          // flip: true hangs it upside down inside its cell. In an upsideDown level every prop names its layer and
+          // night props (except signs) take flip (a test checks)
   decor:  [{ kind: 'eyes', tx, ty }],                      // night-only: eyes in the dark
 }
 ```
@@ -58,14 +61,14 @@ Companion to [GDD.md](GDD.md) §6 and §8. Tile = 30 px. Levels are 32×18 tiles
 | Char | Meaning | Layer |
 |---|---|---|
 | `#` | Solid | per layer |
-| `^` | Hazard (bottom 45% of the tile): rebar by day, laser by night | per layer |
+| `^` | Hazard (bottom 45% of the tile, the top 45% on a flipped night): rebar by day, laser by night | per layer |
 | `.` | Empty | |
 | `S` | Spawn (exactly one) | shared |
 | `E` | Exit (exactly one) | shared |
 | `C` | Checkpoint (respawn here in the shift you touched it in; restores prank state) | shared |
 | `~` | Wet floor: solid, low friction while grounded on it (every foot tile wet) | per layer |
 
-Outside the grid: left/right walls and the ceiling are solid; below the grid is open (falling out is death).
+Outside the grid: left/right walls and the ceiling are solid; below the grid is open (falling out is death). On a flipped night (`upsideDown`) it's the other way up: above the grid is open (falling out the top is death) and below it is solid.
 
 **Tip:** build grids with a small script (fill rectangles, then print) rather than typing 32-char strings; widths must match exactly or `parseLevel` throws.
 

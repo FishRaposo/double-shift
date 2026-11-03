@@ -10,8 +10,11 @@
 //         squatter (never moves), supervisor (turns every `period` s from `startFacing`; only the
 //         freaks on the side it faces work), daywalker (a lurker that works the day shift).
 // offset: { dx, dy } instead of a night grid: night is the day grid moved; `nightPatch` adds differences.
+// upsideDown: true instead of a night grid: night is the day grid turned over and gravity points up there
+//         (act 5). Author the day map; night pranks, tells, freaks and props use night screen coordinates.
 // decor:  cosmetic only.
-// props:  cosmetic scenery from PROPS in src/art.js: { kind, tx, ty, layer?: 'day'|'night', w?, text?, style? }.
+// props:  cosmetic scenery from PROPS in src/art.js: { kind, tx, ty, layer?: 'day'|'night', w?, text?, style?,
+//         flip? } (flip hangs it upside down in its cell, for a flipped night; signs stay upright).
 // act:    which act the level belongs to (the first level of each act is always open in level select).
 
 export const ACTS = { 1: 'Renovation', 2: 'Overtime', 3: 'Graveyard Shift', 4: 'Lights Out', 5: 'Upside Down', 6: 'Finale' };

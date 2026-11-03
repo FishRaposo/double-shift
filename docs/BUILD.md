@@ -197,7 +197,7 @@ Seven milestone PRs (decided 2026-11-03). Each one passes every gate in §1.2 pl
   - Put checkpoints where both shifts have floor; the respawn rule only saves where you can stand.
 - **Tests:** each beat's lesson is required (copy the `supervisor`, `wet` and `daywalker` patterns).
 
-### T7 · The Upside Down rule (SYS-16) · the tier-C gate, due Nov 18 *(rules ✅ built Nov 3; drawing and the level planned)*
+### T7 · The Upside Down rule (SYS-16) · the tier-C gate, due Nov 18 *(✅ rules, drawing and `upside` built Nov 3)*
 - **Spec:** TECH.md §6.5 "Upside Down" and LEVELS.md §5.2. The level field `upsideDown: true`: by day the map as drawn; **at night the same map flipped top to bottom, with gravity pointing up**. Author the day grid only.
 - **Rules (`src/rules.js`):**
   1. **Parse:** in `parseLevel`, if `def.upsideDown`, generate `night[y] = day[H-1-y]` (`generateNight` builds both the offset and the flipped night). Strip `S`/`E`/`C` from the copy, then apply `nightPatch`. Throw if combined with `night` or `offset`. Keep `upsideDown` on the parsed level.

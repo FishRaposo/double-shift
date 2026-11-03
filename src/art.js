@@ -389,9 +389,22 @@ export function drawRebar(g, tx, ty) {
   }
 }
 
+// Turning things over inside their cell, for a flipped layer: the one formula every hanging object uses.
+// mirrorInCell maps a span (y, height h in px) of row ty to its mirror; withCellMirror draws upside down.
+export function mirrorInCell(ty, y, h) {
+  return (2 * ty + 1) * TILE - y - h;
+}
+export function withCellMirror(g, ty, draw) {
+  g.save();
+  g.translate(0, (2 * ty + 1) * TILE); // y → (2ty + 1)·TILE − y
+  g.scale(1, -1);
+  draw();
+  g.restore();
+}
+
 // On a flipped layer (`top`) a hazard is the same drawing turned over inside its tile: the band at the top,
 // matching the rules' hitbox (overlapsHazard).
-const mirrorIn = (ty, top) => (y, h) => (top ? (2 * ty + 1) * TILE - y - h * A : y);
+const mirrorIn = (ty, top) => (y, h) => (top ? mirrorInCell(ty, y, h * A) : y);
 
 export function drawLaser(g, tx, ty, t, leftEnd, rightEnd, { top = false } = {}) {
   const x = tx * TILE;
@@ -431,7 +444,7 @@ export function exitRects(tx, ty, { hang = false } = {}) {
   const top = ty * TILE - TILE;
   const door = { x: x + A, y: top + 2 * A, w: 13 * A, h: 28 * A };
   const sign = { x: x + TILE / 2 - 21, y: top - 9 * A, w: 21 * A, h: 9 * A };
-  if (hang) for (const r of [door, sign]) r.y = (2 * ty + 1) * TILE - r.y - r.h; // turned over inside the cell
+  if (hang) for (const r of [door, sign]) r.y = mirrorInCell(ty, r.y, r.h); // turned over inside the cell
   if (hang ? sign.y + sign.h > SCREEN_H : sign.y < 0) {
     sign.y = hang ? door.y + door.h - 2 * A - sign.h : top + 4 * A;
     sign.x = x + TILE + A;
@@ -471,19 +484,12 @@ function ring(g, cx, cy, r, color) {
 export function checkpointRect(tx, ty, { hang = false } = {}) {
   const floor = (ty + 1) * TILE;
   const r = { x: tx * TILE + TILE / 2 - 6 * A, y: floor - 24 * A, w: 12 * A, h: 24 * A };
-  if (hang) r.y = (2 * ty + 1) * TILE - r.y - r.h;
+  if (hang) r.y = mirrorInCell(ty, r.y, r.h);
   return r;
 }
 
 export function drawCheckpoint(g, tx, ty, on, ping = 0, { hang = false } = {}) {
-  if (hang) {
-    g.save();
-    g.translate(0, (2 * ty + 1) * TILE); // mirror inside the cell: y → (2ty + 1)·TILE − y
-    g.scale(1, -1);
-    drawCheckpoint(g, tx, ty, on, ping);
-    g.restore();
-    return;
-  }
+  if (hang) { withCellMirror(g, ty, () => drawCheckpoint(g, tx, ty, on, ping)); return; }
   const { x, y } = checkpointRect(tx, ty);
   const floor = (ty + 1) * TILE;
   const cx = x + 6 * A;

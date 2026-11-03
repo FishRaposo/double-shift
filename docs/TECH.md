@@ -4,7 +4,7 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-02 (a
 
 **At a glance**
 - **The one rule:** `src/rules.js` decides everything that matters; the screen only draws it (§2).
-- `npm start` to play, `npm test` (<!-- n:tests -->213<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
+- `npm start` to play, `npm test` (<!-- n:tests -->227<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
 - Add a level: grids in `src/levels.js` + a `SOLUTIONS` entry in `test/solutions.mjs` (§6; the full recipe is BUILD.md §2.1).
 - The tier-C mechanics (wet floor, day-walker, supervisor, offset layer) are built — §6.5 documents them.
 
@@ -87,7 +87,7 @@ Shift happens first so a shift and a jump on the same tick see the new world (GD
 | `shift` | `layer`, `nudged` | A shift succeeds |
 | `shiftFail` | — | A buffered shift expires |
 | `prank` | `id` | A prank fires (always right after its `shift`) |
-| `jump` / `land` | — | Takeoff / touchdown |
+| `jump` / `land` | `x`, `y`, `layer` (where it happened; a death later in the tick may move the player) | Takeoff / touchdown |
 | `death` | `cause`: `hazard` \| `spooked` \| `fall`, `by` (killer kind), `x`, `y` | Before respawn |
 | `respawn` | — | After death, same tick |
 | `checkpoint` | `id` | New checkpoint taken |
@@ -185,7 +185,7 @@ The four tier-C mechanics from [CONTENT.md](CONTENT.md) §3 — all built, teste
 - **Tests:** a generated night grid equals a hand-written equivalent; `nightPatch` applies after the offset; shifting on the ground in an offset level is refused and leaves the player unchanged; shifting at the apex of a jump lands on the night copy (scripted with the real jump).
 - **Drawing:** nothing new beyond the floor-number signs (ART.md §6.1).
 
-#### Upside Down (SYS-16, act 5 and the finale rework) *(rules built Nov 3; drawing and levels planned, cut Nov 18)*
+#### Upside Down (SYS-16, act 5 and the finale rework) *(built Nov 3: rules, drawing and `upside`; the other act 5 levels and the finale rework planned, cut Nov 18)*
 - **Format:** `upsideDown: true` on a level: `parseLevel` generates `night[y] = day[H − 1 − y]` (S, E, C stay shared and unmoved), then applies `nightPatch`. It can't be combined with `night` or `offset` (validation throws, like today's night/offset check).
 - **Gravity:** a per-shift sign `g = level.upsideDown && s.layer === NIGHT ? −1 : 1`. Gravity, jump velocity, the variable-jump cut (`rising` means moving against gravity), max fall, coyote and jump buffer all use it. Grounding probes 1 px in the gravity direction (the tile above the head at night). The horizontal step is unchanged.
 - **Shift:** unchanged transaction (S-08: clean, ≤ 4 px nudge, 80 ms buffer, reject), checked against the flipped geometry. Velocity is kept as-is in screen space (S-02), so a rise becomes a fall the other way; that is the mechanic.
@@ -205,7 +205,7 @@ The four tier-C mechanics from [CONTENT.md](CONTENT.md) §3 — all built, teste
 
 | Command | What it covers |
 |---|---|
-| `npm test` | <!-- n:tests -->213<!-- /n --> tests: GDD §13.7 cases 1–10, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, Upside Down rules (flip, gravity sign, hanging, jump and cut, nudge order, coyote across a flip, hazard band, grid edges, checkpoints, fuzz), every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
+| `npm test` | <!-- n:tests -->227<!-- /n --> tests: GDD §13.7 cases 1–15, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, Upside Down rules (flip, gravity sign, hanging, jump and cut, nudge order, coyote across a flip, hazard band, grid edges, checkpoints, fuzz), every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
 | `npm run check` | Every module parses; every level validates |
 | `npm run audit` | Per level: the slack of every required shift and jump (fails under the act floor), input-lag tolerance 0–150 ms, and a random search for wins below par or without shifting (`scripts/audit-levels.mjs`). |
 | `npm run media` | Real browser (headless Edge/Chrome, no dependencies): plays level 1 with key presses, fails on page errors, a wrong outcome, audio clipping or a slow frame; saves the cover, screenshots and gallery. |

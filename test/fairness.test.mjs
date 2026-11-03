@@ -31,13 +31,13 @@ function patrolBoxes(lvl) {
 for (const def of LEVELS) {
   test(`${def.name}: no spawn or checkpoint lies inside a freak's patrol`, () => {
     const lvl = L[def.id];
-    // every place you can respawn: the spawn and each checkpoint, standing (or hanging) wherever that shift's
-    // gravity gives it ground, the same standableSpot the rules save with
-    const spots = [lvl.spawn, ...lvl.checkpoints].flatMap(({ tx, ty }) => [DAY, NIGHT]
+    // every place you can respawn: the spawn, exactly where initState puts you, and each checkpoint standing
+    // (or hanging) wherever that shift's gravity gives it ground, the same standableSpot the rules save with
+    const start = initState(lvl).checkpoint;
+    const spots = [{ x: start.x, y: start.y, at: 'spawn' }, ...lvl.checkpoints.flatMap(({ tx, ty }) => [DAY, NIGHT]
       .map((layer) => standableSpot(lvl, layer, tx, ty))
       .filter(Boolean)
-      .map((pos) => ({ ...pos, at: `${tx},${ty}` })));
-    assert.ok(spots.length > 0);
+      .map((pos) => ({ ...pos, at: `${tx},${ty}` })))];
     const boxes = patrolBoxes(lvl);
     for (const p of spots) {
       const hit = boxes.find((b) => p.x < b.x + b.w && p.x + PARAMS.playerW > b.x && p.y < b.y + b.h && p.y + PARAMS.playerH > b.y);
@@ -53,5 +53,15 @@ for (const def of LEVELS) {
     const ex = { x: lvl.exit.tx * TILE, y: lvl.exit.ty * TILE, w: TILE, h: TILE };
     const hit = patrolBoxes(lvl).find((b) => ex.x < b.x + b.w && ex.x + ex.w > b.x && ex.y < b.y + b.h && ex.y + ex.h > b.y);
     assert.equal(hit, undefined, `a ${hit?.kind} patrol covers the exit`);
+  });
+}
+
+// The spawn is the first respawn point: it must stand (or hang) on ground in its own shift, or every death
+// would drop you from it.
+for (const def of LEVELS) {
+  test(`${def.name}: the spawn has ground under it in its shift`, () => {
+    const lvl = L[def.id];
+    const s = initState(lvl);
+    assert.deepEqual(standableSpot(lvl, s.layer, lvl.spawn.tx, lvl.spawn.ty), { x: s.player.x, y: s.player.y });
   });
 }

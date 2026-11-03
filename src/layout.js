@@ -79,7 +79,7 @@ export function selectClick(defs, x, y) {
 }
 
 export function actLabel(act) {
-  return act === FINALE_ACT ? 'FINALE' : `ACT ${act} · ${(ACTS[act] ?? '').toUpperCase()}`;
+  return act === FINALE_ACT ? ACTS[FINALE_ACT].toUpperCase() : `ACT ${act} · ${(ACTS[act] ?? '').toUpperCase()}`;
 }
 
 // ---------- end screen ----------

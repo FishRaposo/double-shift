@@ -204,8 +204,12 @@ test('sprites: the worker frame follows gravity when the sign is -1', () => {
   assert.equal(Sprites.workerFrame(air(-100), 0, {}, -1), 'fall');
 });
 
-test('art: every prop in an upside-down level names its layer (a prop drawn on both shifts would hang on one)', () => {
+test('art: every prop in an upside-down level names its layer, and its night props hang (flip) unless they carry text', () => {
   for (const def of LEVELS.filter((l) => l.upsideDown)) {
-    for (const pr of def.props ?? []) assert.ok(pr.layer === 'day' || pr.layer === 'night', `${def.id}: ${pr.kind} at ${pr.tx},${pr.ty} has no layer`);
+    for (const pr of def.props ?? []) {
+      assert.ok(pr.layer === 'day' || pr.layer === 'night', `${def.id}: ${pr.kind} at ${pr.tx},${pr.ty} has no layer`);
+      if (pr.layer === 'night' && !TEXT_PROPS.includes(pr.kind)) assert.equal(pr.flip, true, `${def.id}: night ${pr.kind} at ${pr.tx},${pr.ty} stands upright under a ceiling`);
+    }
   }
 });
+const TEXT_PROPS = ['sign']; // signs stay readable: never flipped

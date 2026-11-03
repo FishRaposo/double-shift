@@ -977,3 +977,16 @@ test('upside down: determinism, and a valid shift never leaves the player inside
   };
   assert.deepEqual(run(), run());
 });
+
+test('jump and land events carry where they happened (x, y and the layer), for the dust', () => {
+  const lvl = upside();
+  let s = initState(lvl);
+  s = step(lvl, s, { ...NO_INPUT, jumpPressed: true, jumpHeld: true });
+  const jump = s.events.find((e) => e.type === 'jump');
+  assert.ok(jump, 'jumped');
+  assert.deepEqual([typeof jump.x, typeof jump.y, jump.layer], ['number', 'number', DAY]);
+  const events = [];
+  for (let i = 0; i < 120 && !events.some((e) => e.type === 'land'); i++) { s = step(lvl, s, { ...NO_INPUT, jumpHeld: true }); events.push(...s.events); }
+  const land = events.find((e) => e.type === 'land');
+  assert.deepEqual([land.x, land.y, land.layer], [s.player.x, s.player.y, DAY]);
+});

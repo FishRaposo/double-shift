@@ -533,7 +533,7 @@ export function step(level, prev, input = NO_INPUT, dt = DT) {
     p.coyote = 0;
     p.grounded = false;
     p.rising = true;
-    s.events.push({ type: 'jump' });
+    s.events.push({ type: 'jump', x: p.x, y: p.y, layer: s.layer });
   }
   if (p.rising && !input.jumpHeld && sign * p.vy < 0) {
     p.vy *= P.jumpCut;
@@ -561,7 +561,7 @@ export function step(level, prev, input = NO_INPUT, dt = DT) {
   }
   p.grounded = sign * p.vy >= 0 && isGrounded(level, s.layer, p, s.overrides);
   p.coyote = p.grounded ? P.coyoteTime : Math.max(0, p.coyote - dt);
-  if (p.grounded && !wasGrounded) s.events.push({ type: 'land' });
+  if (p.grounded && !wasGrounded) s.events.push({ type: 'land', x: p.x, y: p.y, layer: s.layer });
 
   // 7. Hazards, freaks, and falling out.
   if (overlapsHazard(level, s.layer, p.x, p.y, undefined, undefined, s.overrides)) { die(level, s, 'hazard'); return s; }
