@@ -135,3 +135,29 @@ test('Under Renovation: night alone never reaches the exit', () => {
     assert.equal(state.shifts, 1);
   }
 });
+
+test('Lost & Found: the doors go in order D1, D2, D3', () => {
+  const { events } = play(L.doors, SOLUTIONS.doors, 120 * 30);
+  assert.deepEqual(events.filter((e) => e.type === 'prank').map((e) => e.id), ['door1', 'door2', 'door3']);
+});
+
+test('Lost & Found: with two night entries the exit ledge stays out of reach', () => {
+  const lvl = L.doors;
+  // play the solution until the second door is gone, then stand at the foot of the pile at night and keep trying
+  let s = initState(lvl);
+  const mem = {};
+  let prevShift = false;
+  for (let f = 0; f < 120 * 30 && s.nightEntries < 2; f++) {
+    const want = SOLUTIONS.doors(s, mem, f);
+    s = step(lvl, s, { ...NO_INPUT, right: !!want.right, jumpHeld: !!want.jump, jumpPressed: false, shiftPressed: !!want.shift && !prevShift });
+    prevShift = !!want.shift;
+  }
+  assert.equal(s.nightEntries, 2);
+  assert.equal(s.layer, NIGHT);
+  Object.assign(s.player, { x: 25 * TILE + 6, y: 14 * TILE - 26, vx: 0, vy: 0, grounded: true });
+  for (const jumpEvery of [20, 35, 60]) {
+    let t = structuredClone(s);
+    for (let f = 0; f < 120 * 8 && !t.won; f++) t = step(lvl, t, { ...NO_INPUT, right: true, jumpHeld: f % jumpEvery < 18, jumpPressed: f % jumpEvery === 0 });
+    assert.equal(t.won, false, `climbed with two doors on the pile (jumpEvery=${jumpEvery})`);
+  }
+});

@@ -28,7 +28,7 @@
 | Score | Timecard: clock-ins vs. par (fewest shifts the designer found, proven by tests) | §15.3 |
 | Tone | Mock horror: petty monsters, deadpan worker, no gore, no jump scares | §10.5 |
 | Look and sound | Crisp pixel art on a 2-px grid, a hand-made pixel font, a spooky-goofy theme whose day/night arrangements crossfade on every shift; all made in code (built 2026-11-02) | §10, §11, ART.md, AUDIO.md |
-| Levels | **21: five acts of four plus the finale.** <!-- n:levels -->14<!-- /n --> built (tier A, the 12 built on Nov 2, is a complete game); tier B = 17, tier C = 21 with act 5 Upside Down (night flipped, gravity up) and the finale rework. Four new mechanics shipped; Upside Down is the fifth | §8.2, [CONTENT.md](CONTENT.md) |
+| Levels | **21: five acts of four plus the finale.** <!-- n:levels -->15<!-- /n --> built (tier A, the 12 built on Nov 2, is a complete game); tier B = 17, tier C = 21 with act 5 Upside Down (night flipped, gravity up) and the finale rework. Four new mechanics shipped; Upside Down is the fifth | §8.2, [CONTENT.md](CONTENT.md) |
 | Jam | Game Off 2026, theme SHIFT, due Dec 1 13:37 PST. Lead with the pranks and freezing freaks: two overlapping worlds alone is one of the jam page's example ideas. | §1.8 |
 
 **Living sections** (kept current): §0, §1, §3, §4, §8.2, §10.5, §15.3, §18, §21. **Historical sections** (the original pre-v0.2 plan, kept for the record): §13.1–13.8, §16, §22. Their banners say what replaced them.
@@ -841,7 +841,7 @@ A linear progression is sufficient.
 | 5. Inventory ✅ | First prank | Each clock-in changes the night | The plank keeps moving | A |
 | 6. Night Watch ✅ | Lurker, peeker, squatter | Freaks freeze when you go to day | Something is in the tunnel | A |
 | 7. Under Renovation ✅ | Height from one shift | Climb a night staircase, shift mid-air onto a day ledge | A staircase to nowhere; they're very proud | B |
-| 8. Lost & Found | Wanted pranks (act 2 combination) | Spend clock-ins on purpose | They stole every door | B |
+| 8. Lost & Found ✅ | Wanted pranks (act 2 combination) | Spend clock-ins on purpose | They stole every door | B |
 
 **Act 3: Graveyard Shift** (they get organized; first new rule)
 

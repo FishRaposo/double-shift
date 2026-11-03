@@ -62,7 +62,7 @@ In the order of the 21-level game (LEVELS.md §5.0). ✅ = in the build.
 | 5 Inventory ✅ | Every time you clock in, something gets moved. |
 | 6 Night Watch ✅ | Something is in the tunnel. It only moves at night. |
 | 7 Under Renovation (`stairs`) ✅ | They built a staircase. It leads nowhere. They're very proud. |
-| 8 Lost & Found (`doors`) | The freaks have stolen every door. Not the keys. The doors. |
+| 8 Lost & Found (`doors`) ✅ | The freaks have stolen every door. Not the keys. The doors. |
 | 9 Wet Floor (`wet`) ✅ | Someone waxed the floors. Nobody on the payroll waxes floors. |
 | 10 Structural Integrity (`pillar`) | They moved a load-bearing pillar. The building is somehow fine. |
 | 11 Night Management (`supervisor`) ✅ | One of them has a clipboard now. It supervises the others. |

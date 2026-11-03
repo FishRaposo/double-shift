@@ -153,7 +153,7 @@ Seven milestone PRs (decided 2026-11-03). Each one passes every gate in §1.2 pl
 - **Fairness:** act 2, so ≥ 200 ms. Give the mid-air shift a tall clear column (both shifts empty) above the ledge's start.
 - **Tests:** can't win staying on day (the ledge is too high); can't win staying on night (no ledge).
 
-### T3 · Lost & Found (`doors`, #8, act 2, tier B) · needs T1 for the look
+### T3 · Lost & Found (`doors`, #8, act 2, tier B) · needs T1 for the look *(✅ built Nov 3, par 5; LEVELS.md §4)*
 - **Spec:** LEVELS.md §5 "Lost & Found".
   - Three full-height doors D1–D3 (both shifts, `#` columns about rows 9–13 or full height) cut the floor into rooms. The exit is on a ledge about 6 up.
   - Night entry *n* steals door D*n* (the prank sets that column `.` on night) and adds one door to the pile at the ledge's foot (sets one more row of the pile `#` on night).

@@ -224,7 +224,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | `inventory` | Notice board with the plank memo, footprints to the second pit |
 | `watch` | A vent, a mug by the spawn (the squatter's hoard is part of its sprite) |
 | `stairs` ✅ | The proud sign OUR STARES! over the top step and eyes under the stairs (night); a notice board and barrier tape (day) |
-| `doors` | Empty frames, the pile, LOST & FOUND box |
+| `doors` ✅ | Three doors that leave empty frames when stolen, the pile (night), the LOST & FOUND box, a notice board (day), a vent (night) |
 | `wet` | A WET FLOOR sign, footprints on the wax |
 | `pillar` | Ceiling crack, dust outline, a memo |
 | `supervisor` | A STAFF ONLY sign, a vent, footprints |

@@ -17,11 +17,11 @@ Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-03**.
 | Core rules (move, jump, shift, buffer/nudge, coyote, jump buffer) | Built, tested |
 | Pranks (Nth night entry, tells, checkpoint restore) | Built, tested |
 | Freaks: lurker, peeker, squatter, supervisor (frozen by day), day-walker (frozen by night) | Built, tested |
-| Levels | **<!-- n:levels -->14<!-- /n --> built** (act 1: 4, act 2: 3, act 3: 3, act 4: 2, act 5: 1, finale: 1), all proven solvable at par and fair; **tier A (jam minimum) complete** with `stacked` and `clockout`. Tier-C mechanics shipped. 5 tier-B levels planned (CONTENT.md) |
+| Levels | **<!-- n:levels -->15<!-- /n --> built** (act 1: 4, act 2: 4, act 3: 3, act 4: 2, act 5: 1, finale: 1), all proven solvable at par and fair; **tier A (jam minimum) complete** with `stacked` and `clockout`. Tier-C mechanics shipped. 5 tier-B levels planned (CONTENT.md) |
 | Rendering | **Pixel art** (Nov 2): sprites, animated worker and freaks, pixel tiles and props, pixel font, effects; every asset in `/tools/gallery.html` |
 | Audio | Mix bus, 25 SFX (incl. planned-level sounds), **music** (day/night arrangements crossfading on every shift) |
 | Menus | Title, level select + saved bests, settings (volumes, reduced effects), act cards, pause, timecard with comment, end screen with totals |
-| Tests | <!-- n:tests -->234<!-- /n --> passing (`npm test`), including fairness; `npm run audit` clean |
+| Tests | <!-- n:tests -->242<!-- /n --> passing (`npm test`), including fairness; `npm run audit` clean |
 | Repo / CI / itch | Public repo [FishRaposo/double-shift](https://github.com/FishRaposo/double-shift), CI green, playable on [GitHub Pages](https://fishraposo.github.io/double-shift/). **No itch page** |
 
 ## 2. Milestones
@@ -104,7 +104,7 @@ Priority: **P0** = the game doesn't ship without it. **P1** = expected in the ja
 |---|---|---|
 | L1 | Polish pass on the built levels after playtest | P0 |
 | L2 | ~~`stairs` *Under Renovation*~~ done Nov 3, par 2 | Tier B |
-| L3 | `doors` *Lost & Found* | Tier B |
+| L3 | ~~`doors` *Lost & Found*~~ done Nov 3, par 5 | Tier B |
 | L4 | ~~`stacked` *Stacked*~~ Done Nov 2, par 5 | **Tier A** (jam minimum) |
 | L5 | ~~`clockout` *Clock Out*~~ Done Nov 2, par 7, with the ending | **Tier A** (jam minimum) |
 | L6 | `pillar` *Structural Integrity*, `portrait` *Employee of the Month* | Tier B |

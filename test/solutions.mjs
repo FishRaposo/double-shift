@@ -121,6 +121,15 @@ export const SOLUTIONS = {
     const shift = (x < 2 && want(s, NIGHT)) || (!p.grounded && x > 23.6 && want(s, DAY));
     return { right: true, shift, jump: p.grounded ? s.layer === NIGHT && (riser || (x > 21.8 && x < 23.2)) : p.vy < 0 };
   },
+  // one clock-in per room, where the room allows it; then climb the pile of doors (jump at each wall)
+  doors: (s) => {
+    const p = s.player;
+    const x = tx(s);
+    const plan = [[1.5, 3.4, NIGHT], [5, 7.2, DAY], [10, 12.2, NIGHT], [16, 18.6, DAY], [22, 23.4, NIGHT]];
+    const due = plan.find(([a, b]) => x >= a && x <= b);
+    const shift = !!due && s.layer !== due[2];
+    return { right: true, shift, jump: p.grounded ? x > 24.8 && Math.abs(p.vx) < 1 : p.vy < 0 };
+  },
   // under the walkway, clock in and fall up onto it; past the pit, clock out and drop to the floor
   upside: (s) => ({ right: true, shift: (tx(s) > 7 && tx(s) < 16 && want(s, NIGHT)) || (tx(s) > 19 && want(s, DAY)) }),
   offset: (s, m) => {
