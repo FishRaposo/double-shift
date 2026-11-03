@@ -12,6 +12,24 @@ export const PAD_BUTTONS = Object.freeze({
 // The stick latches a direction past 0.5 and lets go below 0.3, so resting near a threshold never chatters.
 export const STICK = Object.freeze({ press: 0.5, release: 0.3 });
 
+// navigator.getGamepads(), or null when the browser won't share pads: inside an embed whose iframe doesn't allow
+// gamepads, getGamepads() throws a SecurityError, and the game must carry on with the keyboard.
+export function readPads(nav) {
+  try {
+    return nav?.getGamepads?.() ?? [];
+  } catch {
+    return null;
+  }
+}
+
+// Outside a level a press stands in for a menu key: A Space, B Esc, X L (level select), Y O (settings), Start
+// Space on the title and Esc elsewhere, Back R, the d-pad or stick the arrows. Null: no menu meaning.
+const MENU_KEYS = Object.freeze({ PadA: 'Space', PadB: 'Escape', PadX: 'KeyL', PadY: 'KeyO', PadSelect: 'KeyR', PadUp: 'ArrowUp', PadDown: 'ArrowDown', PadLeft: 'ArrowLeft', PadRight: 'ArrowRight' });
+export function padMenuKey(code, screen) {
+  if (code === 'PadStart') return screen === 'title' ? 'Space' : 'Escape';
+  return MENU_KEYS[code] ?? null;
+}
+
 // The first pad with the standard mapping, else the first connected one, else none.
 export function pickPad(pads) {
   const list = [...(pads ?? [])].filter((p) => p && p.connected !== false);
@@ -44,6 +62,11 @@ export function createPad() {
       for (const code of now) if (!held.has(code)) events.push({ type: 'down', code });
       held = now;
       return events;
+    },
+    // What's down now: re-asserted every frame (as OS key-repeat does for the keyboard), so a hold survives the
+    // game clearing its input on a restart, the act card or a pause.
+    held() {
+      return held;
     },
   };
 }

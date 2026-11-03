@@ -90,3 +90,9 @@ export function keysText(codes) {
 export function keysShort(codes) {
   return [...new Set(codes.map(keyLabel))].join('/');
 }
+
+// Keys the game keeps from the page (preventDefault): everything it could bind, bound right now or not, plus
+// Enter and Esc. So a rebind never lets Space or the arrows scroll the page around an embed. Tab stays free.
+export function ownsKey(code) {
+  return isBindable(code) || RESERVED.includes(code) && code !== 'Tab';
+}

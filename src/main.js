@@ -4,8 +4,8 @@
 import { step, initState, parseLevel, tileAt, isSolidChar, freakBoxes, gravitySign, TILE, DT, DAY, NIGHT, PARAMS, FREAK } from './rules.js';
 import { LEVELS, ACTS, FINALE_ACT } from './levels.js';
 import { createInput } from './input.js';
-import { createPad } from './pad.js';
-import { ACTIONS, DEFAULT_BINDS, actionOf, rebind, keysText, keysShort } from './keys.js';
+import { createPad, readPads, padMenuKey } from './pad.js';
+import { ACTIONS, DEFAULT_BINDS, ownsKey, rebind, keysText, keysShort } from './keys.js';
 import { sfx, playSound, unlockAudio, toggleMute, setVolumes, setMusicShift, setMusicAct, setMenu } from './audio.js';
 import { skinPlan, checkpointHangs, exitPose } from './skins.js';
 import { createSave, createSettings, isUnlocked } from './save.js';
@@ -44,6 +44,7 @@ const game = {
   index: levelIndex(LEVELS, params.get('level')), // ?level=<id> or ?level=<1-based position>
   state: null,
   results: [],
+  spent: [], // seconds played per level this run, every attempt (the speedrun timer's run total)
   debug: params.has('debug'),
   fx: freshFx(),
   levelTime: 0,
@@ -149,7 +150,7 @@ function openSelect() {
 // or { code, repeat? }.
 function handleKey(e) {
   unlockAudio();
-  if (game.capturing || actionOf(settings.get().binds, e.code) || e.code === 'Enter' || e.code === 'Escape') e.preventDefault?.();
+  if (game.capturing || ownsKey(e.code)) e.preventDefault?.(); // every key the game could use, bound or not: no page scrolling
   if (e.repeat) { input.keyDown(e); return; }
   if (game.screen === 'controls' && game.capturing) { captureKey(e.code); return; } // before mute (M) and debug (the backquote) take theirs
   if (e.code === 'KeyM') { toggleMute(); return; }
@@ -196,7 +197,7 @@ function handleKey(e) {
     return;
   }
   if (game.screen === 'end') {
-    if (e.code === 'Space' || e.code === 'Enter') { game.results = []; game.actShown = 0; startLevel(0); }
+    if (e.code === 'Space' || e.code === 'Enter') { game.results = []; game.spent = []; game.actShown = 0; startLevel(0); }
     return;
   }
   if (game.screen === 'paused') {
@@ -216,11 +217,11 @@ addEventListener('keyup', (e) => { input.keyUp(e); });
 
 // ---------- gamepad (src/pad.js: a fixed mapping on the standard layout) ----------
 // In a level the pad's own codes reach input.js (A jumps; B, X or RB shift; the d-pad or stick moves), with Start
-// pausing and Back restarting. Everywhere else a press stands in for a menu key: A Space, B Esc, Start Space on
-// the title and Esc elsewhere, Back R, the d-pad or stick the arrows. Waiting for a key on CONTROLS, only B or
-// Start answers (cancel): pad buttons aren't bindable.
+// pausing and Back restarting. Everywhere else a press stands in for a menu key (padMenuKey in src/pad.js: A Space,
+// B Esc, X level select, Y settings, Start Space on the title and Esc elsewhere, Back R, the d-pad or stick the
+// arrows). Waiting for a key on CONTROLS, only B or Start answers (cancel): pad buttons aren't bindable.
 const pad = createPad();
-const PAD_MENU = { PadA: 'Space', PadB: 'Escape', PadSelect: 'KeyR', PadUp: 'ArrowUp', PadDown: 'ArrowDown', PadLeft: 'ArrowLeft', PadRight: 'ArrowRight' };
+let padOff = false; // the browser won't share gamepads (an embed's permissions): keyboard only from then on
 
 function padDown(code) {
   if (game.capturing) { if (code === 'PadB' || code === 'PadStart') handleKey({ code: 'Escape' }); return; }
@@ -230,15 +231,19 @@ function padDown(code) {
     else handleKey({ code });
     return;
   }
-  const key = code === 'PadStart' ? (game.screen === 'title' ? 'Space' : 'Escape') : PAD_MENU[code];
+  const key = padMenuKey(code, game.screen);
   if (key) handleKey({ code: key });
 }
 
 function pollPad() {
-  for (const ev of pad.poll(navigator.getGamepads?.() ?? [])) {
+  if (padOff) return;
+  const pads = readPads(navigator);
+  if (pads === null) { padOff = true; return; }
+  for (const ev of pad.poll(pads)) {
     if (ev.type === 'down') padDown(ev.code);
     else input.keyUp({ code: ev.code });
   }
+  for (const code of pad.held()) input.keyDown({ code, repeat: true }); // a hold survives input.clear(), as key-repeat does
 }
 addEventListener('blur', () => input.clear());
 // Size the canvas to a whole number of device pixels per canvas pixel unless that wastes > 15% of the window
@@ -286,7 +291,7 @@ canvas.addEventListener('pointerdown', (e) => {
     if (game.index + 1 < levels.length) startLevel(game.index + 1);
     else setScreen('end');
   } else if (game.screen === 'end') {
-    game.results = []; game.actShown = 0; startLevel(0);
+    game.results = []; game.spent = []; game.actShown = 0; startLevel(0);
   }
 });
 
@@ -359,7 +364,7 @@ function handleEvents(events) {
       case 'win':
         sfx.win();
         setTimeout(() => sfx.stamp(), 450);
-        game.results[game.index] = { shifts: ev.shifts, par: ev.par, deaths: game.state.deaths, time: game.state.time };
+        game.results[game.index] = { shifts: ev.shifts, par: ev.par, deaths: game.state.deaths, time: game.state.time, spent: game.spent[game.index] ?? game.state.time };
         {
           const { id, rev } = LEVELS[game.index]; // rev: undefined is revision 1 (save.js)
           const hadBest = save.best(id, rev) !== null;
@@ -382,6 +387,7 @@ function frame(now) {
   if (game.screen === 'act' && game.screenTime > 1.6) setScreen('play');
   if (game.screen === 'play') {
     acc += elapsed;
+    game.spent[game.index] = (game.spent[game.index] ?? 0) + elapsed;
     let steps = 0;
     while (acc >= DT && steps < 12) {
       game.state = step(level(), game.state, input.consume());
@@ -412,7 +418,7 @@ function frame(now) {
   setMenu(!(game.screen === 'play'));
   const musicLayer = inLevel && game.state ? game.state.layer : DAY;
   if (musicLayer !== game.musicLayer) { game.musicLayer = musicLayer; setMusicShift(musicLayer); }
-  const musicAct = inLevel ? LEVELS[game.index].act : 1; // each act adds a layer to the theme; menus play act 1's
+  const musicAct = inLevel || game.screen === 'act' ? LEVELS[game.index].act : 1; // each act adds a layer; menus play act 1's
   if (musicAct !== game.musicAct) { game.musicAct = musicAct; setMusicAct(musicAct); }
   render();
   requestAnimationFrame(frame);
@@ -747,7 +753,7 @@ function drawTitle() {
   const b = settings.get().binds; // the current bindings (SETTINGS > CONTROLS)
   drawText(g, `Move  ${keysShort(b.left)}  ${keysShort(b.right)}      Jump  ${keysShort(b.jump)}`, W / 2, 310, { scale: 2, color: '#d9f6ff', align: 'center' });
   drawText(g, `Change shift  ${keysText(b.shift)}      Restart  R`, W / 2, 334, { scale: 2, color: '#d9f6ff', align: 'center' });
-  drawText(g, 'Gamepad: stick or d-pad move · A jump · B, X or RB shift · Start pause · Back restart', W / 2, 354, { scale: 1, color: '#9fd8e6', align: 'center' });
+  drawText(g, 'Gamepad: stick move · A jump · B, X or RB shift · Start pause · X levels · Y settings', W / 2, 354, { scale: 1, color: '#9fd8e6', align: 'center' });
   const blink = Math.floor(game.clock * 2) % 2 === 0;
   drawText(g, 'Click or press SPACE to clock in', W / 2, 380, { scale: 2, color: blink ? '#ffec5a' : '#ffffff', align: 'center' });
   for (const [b, label] of [[TITLE_SELECT, 'LEVEL SELECT (L)'], [TITLE_SETTINGS, 'SETTINGS (O)']]) {
@@ -756,7 +762,11 @@ function drawTitle() {
   }
   // the freaks' sticky note about it (WRITING.md §2.1), then the practical line
   drawSign(g, W / 2, H - 38, 'WE PRES SHIFT 5 TIMES. FOR FUN.', 'note', 1);
-  drawText(g, 'Windows: hammering Shift can open Sticky Keys — use K, or turn off the Sticky Keys shortcut.', W / 2, H - 16, { scale: 1, color: 'rgba(255,255,255,0.8)', align: 'center' });
+  if (b.shift.some((c) => c.startsWith('Shift'))) { // only while Shift changes shifts; the other keys come from the bindings
+    const others = b.shift.filter((c) => !c.startsWith('Shift'));
+    const tip = others.length ? `use ${keysText(others)}` : 'rebind SHIFT in SETTINGS > CONTROLS';
+    drawText(g, `Windows: hammering Shift can open Sticky Keys — ${tip}, or turn off the Sticky Keys shortcut.`, W / 2, H - 16, { scale: 1, color: 'rgba(255,255,255,0.8)', align: 'center' });
+  }
 }
 
 function drawAct() {

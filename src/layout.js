@@ -90,7 +90,7 @@ export function actLabel(act) {
 export function endSummary(defs, results) {
   let shifts = 0;
   let par = 0;
-  let time = 0; // seconds over the levels played: the speedrun timer's run total
+  let time = 0; // seconds spent in the levels played, every attempt (spent; else the clearing one): the run total
   const rows = actRows(defs).map((idx) => {
     const act = defs[idx[0]].act;
     const played = idx.map((i) => results[i]).filter(Boolean);
@@ -103,7 +103,7 @@ export function endSummary(defs, results) {
     };
     shifts += row.shifts;
     par += row.par;
-    time += played.reduce((t, r) => t + (r.time ?? 0), 0);
+    time += played.reduce((t, r) => t + (r.spent ?? r.time ?? 0), 0);
     return row;
   });
   return { rows, shifts, par, time };

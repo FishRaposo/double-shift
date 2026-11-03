@@ -250,7 +250,9 @@ test('memos: a memo panel never covers the exit, a tell or a sign', () => {
     }
     for (const pr of lvl.pranks) {
       if (!pr.tell) continue;
-      const tell = { x: pr.tell.tx * 30 - 30, y: pr.tell.ty * 30 - 40, w: 90, h: 120 }; // the note above it, the eyes either side
+      const noteW = measureText(pr.tell.text ?? 'MINE', 2) + 12; // drawSign's sticky note at scale 2
+      const cx = pr.tell.tx * 30 + 15;
+      const tell = { x: Math.min(cx - noteW / 2, cx - 45), y: pr.tell.ty * 30 - 40, w: Math.max(noteW, 90), h: 120 }; // the note above it, the eyes either side
       assert.ok(!overlap(panel, tell), `${def.id}: the memo covers ${pr.id}'s tell`);
     }
   }

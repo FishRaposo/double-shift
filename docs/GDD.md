@@ -237,7 +237,7 @@ The player retains their position and movement state.
 | Narrative | Minimal / environmental |
 | Leaderboards | Stretch goal |
 | Speedrun timer | Stretch goal; built Nov 3 (SETTINGS > SPEEDRUN TIMER: the level time on the HUD, the run total on the end screen) |
-| Gamepad support | Stretch goal |
+| Gamepad support | Stretch goal; built Nov 3 (`src/pad.js`: a fixed standard mapping, menus included) |
 | Delivery | itch.io |
 | Repository | Public GitHub repository |
 

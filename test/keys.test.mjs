@@ -2,7 +2,7 @@
 // and never takes the menu keys.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ACTIONS, DEFAULT_BINDS, RESERVED, isBindable, rebind, cleanBinds, keyLabel, keysText, keysShort, actionOf } from '../src/keys.js';
+import { ACTIONS, DEFAULT_BINDS, RESERVED, isBindable, rebind, cleanBinds, keyLabel, keysText, keysShort, actionOf, ownsKey } from '../src/keys.js';
 
 function valid(b) {
   const seen = new Set();
@@ -77,4 +77,11 @@ test('keys: labels and the action a key drives', () => {
   assert.equal(keysShort(DEFAULT_BINDS.shift), 'Shift/K');
   assert.equal(actionOf(DEFAULT_BINDS, 'KeyK'), 'shift');
   assert.equal(actionOf(DEFAULT_BINDS, 'KeyJ'), null);
+});
+
+test('keys: the game keeps every key it could use from the page, bound or not (no scrolling after a rebind)', () => {
+  for (const code of ['Space', 'ArrowUp', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'KeyA', 'Digit1', 'ShiftLeft', 'Enter', 'Escape', 'KeyR']) {
+    assert.equal(ownsKey(code), true, code);
+  }
+  for (const code of ['Tab', 'F5', 'F12', 'ControlLeft', 'MetaLeft']) assert.equal(ownsKey(code), false, code);
 });

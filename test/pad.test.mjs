@@ -1,7 +1,7 @@
 // Gamepad (src/pad.js): snapshots of navigator.getGamepads() in, key-like edges out. No browser needed.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { createPad, pickPad } from '../src/pad.js';
+import { createPad, pickPad, readPads, padMenuKey } from '../src/pad.js';
 import { createInput } from '../src/input.js';
 
 // A standard-mapping pad with the given buttons held and stick position.
@@ -58,4 +58,36 @@ test('pad: its fixed codes drive the actions, whatever the keyboard bindings', (
   assert.equal(inp.consume().left, true);
   inp.keyUp({ code: 'PadLeft' });
   assert.equal(inp.consume().left, false);
+});
+
+test("pad: a browser that won't share gamepads (an embed's permissions) reads as unavailable, not a crash", () => {
+  assert.equal(readPads({ getGamepads() { throw new Error('SecurityError'); } }), null);
+  assert.deepEqual(readPads({}), []);
+  assert.deepEqual(readPads(undefined), []);
+  const pads = [pad()];
+  assert.equal(readPads({ getGamepads: () => pads }), pads);
+});
+
+test('pad: held() lists what is down, so a hold survives the game clearing its input', () => {
+  const p = createPad();
+  p.poll([pad({ buttons: [0], x: 0.9 })]);
+  assert.deepEqual([...p.held()].sort(), ['PadA', 'PadRight']);
+  const inp = createInput();
+  inp.clear(); // a restart or the act card
+  for (const code of p.held()) inp.keyDown({ code, repeat: true }); // re-asserted every frame, like key-repeat
+  const f = inp.consume();
+  assert.equal(f.right, true);
+  assert.equal(f.jumpPressed, false, 'a re-asserted hold is never a new press');
+});
+
+test('pad: in menus A confirms, B goes back, X opens level select, Y settings, Start is Space on the title', () => {
+  assert.equal(padMenuKey('PadA', 'select'), 'Space');
+  assert.equal(padMenuKey('PadB', 'settings'), 'Escape');
+  assert.equal(padMenuKey('PadX', 'title'), 'KeyL');
+  assert.equal(padMenuKey('PadY', 'paused'), 'KeyO');
+  assert.equal(padMenuKey('PadStart', 'title'), 'Space');
+  assert.equal(padMenuKey('PadStart', 'paused'), 'Escape');
+  assert.equal(padMenuKey('PadSelect', 'card'), 'KeyR');
+  assert.equal(padMenuKey('PadDown', 'select'), 'ArrowDown');
+  assert.equal(padMenuKey('PadRB', 'title'), null);
 });
