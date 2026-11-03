@@ -23,7 +23,7 @@ import { drawText } from '../src/font.js';
 import { drawSprite, drawEyes, SPRITES, ART } from '../src/sprites.js';
 import * as art from '../src/art.js';
 import { unlockAudio, playSound, SOUNDS, setMusicShift, setMenu, voice, makeNoise } from '../src/audio.js';
-import { scheduleStep, STEP, STEPS_PER_BAR } from '../src/music.js';
+import { scheduleStep, STEP, STEPS_PER_BAR, layersFor } from '../src/music.js';
 import { parseLevel } from '../src/rules.js';
 import { skinPlan } from '../src/skins.js';
 
@@ -318,7 +318,8 @@ window.__audioCheck = async () => {
     });
     report.sfx[name] = +r.peak.toFixed(3);
   }
-  for (const [name, layer] of [['day', 0], ['night', 1]]) {
+  // act 1 is the bare theme (keys `day`, `night`); the finale (act 6) plays every layer (`day6`, `night6`)
+  for (const [name, layer, act] of [['day', 0, 1], ['night', 1, 1], ['day6', 0, 6], ['night6', 1, 6]]) {
     const bars = 8;
     const r = await peakOf(bars * STEPS_PER_BAR * STEP + 0.5, (off) => {
       const noise = makeNoise(off);
@@ -328,7 +329,7 @@ window.__audioCheck = async () => {
       night.gain.value = layer === 1 ? 1 : 0;
       day.connect(off.destination);
       night.connect(off.destination);
-      for (let s = 0; s < bars * STEPS_PER_BAR; s++) scheduleStep(off, { day, night }, s, 0.05 + s * STEP, noise);
+      for (let s = 0; s < bars * STEPS_PER_BAR; s++) scheduleStep(off, { day, night }, s, 0.05 + s * STEP, noise, layersFor(act));
     });
     report.music[name] = { peak: +r.peak.toFixed(3), seconds: +(bars * STEPS_PER_BAR * STEP).toFixed(3) };
   }

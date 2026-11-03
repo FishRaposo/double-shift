@@ -274,6 +274,6 @@ async function fullRun() {
   const audio = await evaluate('window.__audioCheck()');
   const peaks = [...Object.entries(audio.sfx), ...Object.entries(audio.music).map(([k, v]) => [`music ${k}`, v.peak])];
   const loudest = peaks.sort((a, b) => b[1] - a[1])[0];
-  console.log(`  audio: loudest ${loudest[0]} peak ${loudest[1]}; music day ${audio.music.day.peak}, night ${audio.music.night.peak} over ${audio.music.day.seconds}s each`);
-  if (loudest[1] >= 1 || audio.music.day.seconds !== audio.music.night.seconds) { failed = true; console.error('audio check failed', audio); }
+  console.log(`  audio: loudest ${loudest[0]} peak ${loudest[1]}; music day ${audio.music.day.peak}, night ${audio.music.night.peak}; finale (every layer) day ${audio.music.day6.peak}, night ${audio.music.night6.peak}; over ${audio.music.day.seconds}s each`);
+  if (loudest[1] >= 1 || new Set(Object.values(audio.music).map((m) => m.seconds)).size !== 1) { failed = true; console.error('audio check failed', audio); }
 }

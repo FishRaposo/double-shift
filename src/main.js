@@ -4,7 +4,7 @@
 import { step, initState, parseLevel, tileAt, isSolidChar, freakBoxes, gravitySign, TILE, DT, DAY, NIGHT, PARAMS, FREAK } from './rules.js';
 import { LEVELS, ACTS, FINALE_ACT } from './levels.js';
 import { createInput, GAME_KEYS } from './input.js';
-import { sfx, playSound, unlockAudio, toggleMute, setVolumes, setMusicShift, setMenu } from './audio.js';
+import { sfx, playSound, unlockAudio, toggleMute, setVolumes, setMusicShift, setMusicAct, setMenu } from './audio.js';
 import { skinPlan, checkpointHangs, exitPose } from './skins.js';
 import { createSave, createSettings, isUnlocked } from './save.js';
 import { drawText, measureText, wrapText } from './font.js';
@@ -321,6 +321,8 @@ function frame(now) {
   setMenu(!(game.screen === 'play'));
   const musicLayer = inLevel && game.state ? game.state.layer : DAY;
   if (musicLayer !== game.musicLayer) { game.musicLayer = musicLayer; setMusicShift(musicLayer); }
+  const musicAct = inLevel ? LEVELS[game.index].act : 1; // each act adds a layer to the theme; menus play act 1's
+  if (musicAct !== game.musicAct) { game.musicAct = musicAct; setMusicAct(musicAct); }
   render();
   requestAnimationFrame(frame);
 }

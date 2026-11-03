@@ -39,6 +39,7 @@ export function unlockAudio() {
   noise = makeNoise(ctx);
   applyVolumes();
   music = createMusic(ctx, musicBus, noise);
+  music.setAct(act);
   music.start();
   music.setShift(shift);
 }
@@ -77,6 +78,12 @@ export function toggleMute() {
 export function setMusicShift(layer) {
   shift = layer;
   music?.setShift(layer);
+}
+// ...and the act: each one adds a layer to the theme (music.js layersFor); menus play act 1's.
+let act = 1;
+export function setMusicAct(a) {
+  act = a;
+  music?.setAct(a);
 }
 export function setMenu(on) {
   if (menu === on) return;

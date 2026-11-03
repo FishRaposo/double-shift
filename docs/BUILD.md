@@ -344,7 +344,7 @@ Seven milestone PRs (decided 2026-11-03). Each one passes every gate in §1.2 pl
 - **Notice-board memos:** a `memo` prop in every level; its text shows on a paper panel (scale 2, ≤ 360 px wide, y ≥ 60, clamped) while the worker is within 2 tiles. Copy from WRITING.md §6.1.
 
 ### T24 · Stretch features *(PR 6; approved by Fish 2026-11-03)*
-- **Per-act music layers:** `layersFor(act)` = pulse from act 2, a second lead from act 3, faster organ stabs from act 4, the melody inverted (`2·MELODY[0] − n`) from act 5; the finale plays every layer.
+- **Per-act music layers** *(✅ built Nov 3; AUDIO.md §3.1)*: `layersFor(act)` = pulse from act 2, a second lead from act 3, faster organ stabs from act 4, the melody inverted (`2·MELODY[0] − n`) from act 5; the finale plays every layer.
 - **Rebindable controls:** `src/keys.js` (`DEFAULT_BINDS`, reserved keys, `rebind`, `cleanBinds`, `keyLabel`); a CONTROLS screen under SETTINGS; title and tutorial text built from the bindings. Taking another action's only key swaps, never unbinds.
 - **Gamepad:** `src/pad.js` turns the standard mapping into edge-triggered key codes (A jump; B, X or RB shift; Start pause; Back restart; d-pad or stick with 0.5/0.3 hysteresis). Fixed mapping.
 - **Speedrun timer:** a TIMER setting; the HUD shows the level time and the end screen the run total.

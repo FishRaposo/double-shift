@@ -15,7 +15,7 @@ Companion to [GDD.md](GDD.md) §11. All audio is synthesized with WebAudio in `s
 - **The freaks** (GDD §4.8, nature undefined): mischievous **giggles and scuttles**, plus a hint of **shimmer** when a prank does something impossible. Nothing that sounds like a specific animal; it's all synthesized.
 - **One mix bus** (built 2026-11-02): music gain and SFX gain → master gain (0.55 × the Master setting) → DynamicsCompressor (−14 dB, 4:1) → speakers. Volumes come from Settings and are saved. `M` mutes. The AudioContext starts on the first key press or click (browser autoplay rules), and the music starts with it.
 - **Every sound is data:** `SOUNDS` in `src/audio.js` maps each name to a list of voices (`voice()`: oscillator or noise, pitch sweep, optional filter sweep, vibrato). Tests check every SFX is ≤ 0.25 s and ≤ 0.35 volume. Play them all in the gallery's audio board (`/tools/gallery.html`).
-- **Offline check:** `npm run media` renders every SFX and 8 bars of each music arrangement through an OfflineAudioContext and fails on a peak ≥ 1.0 (today the loudest is ≈ 0.4–0.6 before the master gain).
+- **Offline check:** `npm run media` renders every SFX and 8 bars of each music arrangement, bare (act 1) and with every layer (act 6), through an OfflineAudioContext and fails on a peak ≥ 1.0 (today the loudest is ≈ 0.4–0.6 before the master gain).
 
 ## 2. Sound effects (built)
 
@@ -77,9 +77,15 @@ The original plan, kept for reference:
 - Loop length 8–16 bars. Act 3 could add a layer (extra percussion) to the night arrangement.
 - Music never delays gameplay work: ship SFX-only if it isn't ready by M2 + 3 days.
 
-### 3.1 Per-act layers *(stretch)*
+### 3.1 Per-act layers ✅ *(stretch, built Nov 3)*
 
-Same loop, one added part per act so the game builds without new songs: act 2 adds a quiet low pulse on night; act 3 adds a muted second lead line; act 4 swaps the night organ stabs for faster ones; act 5 adds the melody turned upside down (inverted around its first note) as a night counter-melody; the finale plays every layer. *(Planned: Fish approved the stretch features on Nov 3; BUILD.md T24 has the values.)*
+Same loop, one added part per act so the game builds without new songs: act 2 adds a quiet low pulse on night; act 3 adds a muted second lead line; act 4 swaps the night organ stabs for faster ones; act 5 adds the melody turned upside down (inverted around its first note) as a night counter-melody; the finale plays every layer. Built as `layersFor(act)` in `src/music.js`, whose layers `scheduleStep` plays:
+- act 2, the pulse: a night triangle an octave under the walking bass, every beat, vol 0.05;
+- act 3, the second lead: a day square a diatonic third above the melody (`thirdAbove`), through a 1200 Hz low-pass, vol 0.03;
+- act 4, faster organ stabs: the night chord on every off-beat instead of the "and" of 2 and 4;
+- act 5, the counter-melody: `INVERTED` (`2·MELODY[0] − n`, MIDI 64–80), a night sine at vol 0.04.
+
+The act follows the level being played (menus play act 1's) and changes from the next scheduled step, so the tune never restarts. Tests pin that the layers accumulate act by act, that the inverted melody stays in range with the melody's rhythm, and that the second lead stays in the key.
 
 ## 4. More SFX (built 2026-11-02)
 
@@ -111,7 +117,7 @@ Same `tone()` format as §2; every sound ≤ 0.25 s.
 
 ## 5. Mixing checklist
 
-**Measured 2026-11-03** (offline render in the gallery's `__audioCheck`, before the master gain, which `npm run media` fails on at ≥ 1): the loudest sound effects are `shiftNight` 0.31, `shiftDay` 0.28, `checkpoint` 0.27, `stamp` 0.22 and `win` 0.22; the music peaks at 0.35–0.5 (day) and 0.38 (night); the day peak moves between runs because each hi-hat starts at a random point in the noise buffer (`src/music.js`). Everything is below 0.8, so nothing needed fixing; the compressor and the 0.55 master headroom handle stacking. Listening (headphones and laptop speakers) is Fish's check.
+**Measured 2026-11-03** (offline render in the gallery's `__audioCheck`, before the master gain, which `npm run media` fails on at ≥ 1): the loudest sound effects are `shiftNight` 0.31, `shiftDay` 0.28, `checkpoint` 0.27, `stamp` 0.22 and `win` 0.22; the music peaks at 0.35–0.5 (day) and 0.38 (night) on act 1's bare theme, and 0.38 (day) and 0.42 (night) with every layer on (the finale); the day peak moves between runs because each hi-hat starts at a random point in the noise buffer (`src/music.js`). Everything is below 0.8, so nothing needed fixing; the compressor and the 0.55 master headroom handle stacking. Listening (headphones and laptop speakers) is Fish's check.
 
 - [ ] Shift 10× per second for 3 s: still pleasant, no clipping.
 - [ ] Spook + death tint + giggle at once: still readable.
