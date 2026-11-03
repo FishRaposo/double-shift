@@ -11,6 +11,7 @@ npm test                                   # node --test test/*.test.mjs
 node --test --test-name-pattern="peeker" test/rules.test.mjs   # single test / subset
 npm run check                              # syntax-check src/*.js + validate every level via parseLevel
 npm run audit                              # per-level fairness: input slack, lag tolerance, below-par random search
+npm run counts                             # every <!-- n:KEY --> count in the docs matches the code; -- --write fixes them
 npm start                                  # local server + opens the browser (play.bat does the same on Windows)
 npm run serve                              # http://localhost:8080, no browser; next free port if busy (scripts/serve.mjs)
 npm run zip                                # double-shift-web.zip (index.html + src/) for itch.io
@@ -52,6 +53,6 @@ The jam rules and how they apply are in `docs/RELEASE.md` §0, and the category-
 
 Doc rules from `docs/INDEX.md`:
 - GDD decides *what*, other docs decide *how*; if they disagree, the GDD wins and the other doc gets fixed.
-- Every number in a doc (tuning values, sizes, test counts, pars) must match the code — update docs in the same change as the code (including the test count in README.md and TECH.md).
+- Every number in a doc (tuning values, sizes, test counts, pars) must match the code — update docs in the same change as the code. Test counts, level counts and source line counts are wrapped in `<!-- n:KEY -->N<!-- /n -->` markers: run `npm run counts -- --write` before committing (CI runs `npm run counts`).
 - Mark unbuilt things *(planned)* or *(stretch)*; never describe a planned feature as existing.
 - In-game copy lives in `docs/WRITING.md` as drafts for Fish (the designer) to edit.

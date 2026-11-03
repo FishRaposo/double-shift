@@ -3,7 +3,7 @@
 ## Commands and verification
 
 - Use Node 22+; there are no package dependencies, install step, or build step. Run commands from the repo root.
-- CI runs `npm run check`, then `npm test`. `check` only syntax-checks `src/*.js` and parses all levels; it does not replace tests or browser verification. There is no lint/typecheck script.
+- CI runs `npm run check`, then `npm test`, then `npm run counts` (every `<!-- n:KEY -->N<!-- /n -->` count in the docs must match the code; `npm run counts -- --write` rewrites them, so run it before committing). `check` only syntax-checks `src/*.js` and parses all levels; it does not replace tests or browser verification. There is no lint/typecheck script.
 - On this Windows PowerShell setup, `npm.ps1` is blocked by execution policy: use `npm.cmd` instead of `npm` (e.g. `npm.cmd test`).
 - Focused tests: `node --test test/rules.test.mjs`; filter with `node --test --test-name-pattern="peeker" test/rules.test.mjs` (options precede the file).
 - `npm run serve` starts the uncached server; `npm start` also opens the browser. Default port is 8080, but it tries subsequent ports if busy: use the printed URL. Override with `npm run serve -- --port 8090`. Do not open `index.html` via `file://` (ES modules).
@@ -27,5 +27,5 @@
 - Use `test/helpers.mjs` (`level`, `place`, `stepN`, `play`) for tiny collision scenarios and scripted runs. `play()` edge-detects jump/shift: a policy must release shift before requesting another press.
 - Every level needs an entry keyed by its ID in `test/levels.test.mjs`'s `SOLUTIONS`. Tests require a zero-death clear at or below par and exercise no-shift running/jumping policies. Changing `PARAMS` can invalidate solutions and pars across all levels: rerun the full suite.
 - Preserve the documentation rules in `docs/INDEX.md` and gameplay context in `CLAUDE.md`: GDD defines intended design; verify implemented behavior against code. Mark unbuilt mechanics as planned/stretch rather than describing them as existing.
-- Update affected documentation alongside code: tuning/movement metrics in `docs/LEVELS.md`, API/state/events in `docs/TECH.md`, and documented test counts in README/TECH. In-game copy is drafted in `docs/WRITING.md` for Fish to edit.
+- Update affected documentation alongside code: tuning/movement metrics in `docs/LEVELS.md`, API/state/events in `docs/TECH.md`, and documented counts (wrapped in markers: `npm run counts -- --write`). In-game copy is drafted in `docs/WRITING.md` for Fish to edit.
 - `docs/INDEX.md` maps task-specific docs; consult `docs/GDD.md` for rule IDs/edge cases, `docs/TECH.md` for extension recipes, and `docs/RELEASE.md` §0 for jam/release restrictions before publishing.

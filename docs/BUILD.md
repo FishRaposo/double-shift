@@ -61,7 +61,7 @@ Manual play: `npm start`, then `?level=<id>&autostart` (an id like `offset`; a 1
   - WRITING.md §3 ✅ (the note must match `note` in `levels.js` exactly);
   - PRODUCTION.md backlog row struck through;
   - ART.md §6.2 props row.
-- **Counts:** the test count in README.md, TECH.md (two places), DESIGN.md, PRODUCTION.md §1 and itch/page.md; the level count in README.md, itch/page.md, PRODUCTION.md §1, LEVELS.md At a glance, GDD At a Glance and CONTENT At a glance; `src/*.js` line counts in DESIGN.md.
+- **Counts:** run `npm run counts -- --write`. It rewrites every marked count (`<!-- n:tests -->`, `<!-- n:levels -->`, `<!-- n:lines:src/<file> -->`) in README.md, TECH.md, DESIGN.md, PRODUCTION.md §1, itch/page.md and the LEVELS, GDD and CONTENT At-a-glance boxes; CI fails if one drifts. The paste-ready itch description (itch/page.md §4) has no markers: fix its numbers by hand in the release refresh. Words around a count ("all four acts", tier names) still need a human.
 - **New rule:** TECH.md §3 (state, step order, events, API) and §6.5; LEVELS.md §1 metrics if movement changed; CLAUDE.md architecture bullets.
 - **New sound:** AUDIO.md §4.1 values must match `SOUNDS`.
 - **New art:** ART.md §5 / §6.1 / §6.2.
