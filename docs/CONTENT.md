@@ -79,8 +79,9 @@ Specs: [TECH.md](TECH.md) §6 (mechanics), [GDD.md](GDD.md) §12 (UI).
 | SYS-10 | Freak evidence from the first night shift | Raters seeing the freaks early | P0 | L8 | ✅ built |
 | SYS-11 | Sticky Keys in-joke | Theme | P1 | G14 | planned |
 | SYS-12 | Demo GIF capture (extend `scripts/media.mjs`) | itch page | P1 | A9 | planned |
-| SYS-13 | Rebindable controls | Accessibility | *stretch* | G12 | — |
-| SYS-14 | Gamepad | Reach | *stretch* | G11 | — |
+| SYS-13 | Rebindable controls | Accessibility | *stretch*, approved Nov 3 | G12 | planned (BUILD.md T24) |
+| SYS-14 | Gamepad | Reach | *stretch*, approved Nov 3 | G11 | planned (BUILD.md T24) |
+| SYS-18 | Speedrun timer (a TIMER setting) | Replay | *stretch*, approved Nov 3 | G13 | planned (BUILD.md T24) |
 | SYS-15 | Scatterer freak, shared-state objects | — | *post-jam* | G7, G10 | — |
 
 ## 4. Art (all drawn in code)
@@ -117,7 +118,7 @@ Specs: [AUDIO.md](AUDIO.md).
 |---|---|---|---|---|---|
 | SND-1 | 11 core SFX (shift ×2, rejected, jump, land, death, spooked, prank giggle, checkpoint, win, stamp) | Everything | — | AUDIO §2 | ✅ |
 | SND-2 | Music: one theme, day + night arrangements in sync, crossfade on shift | Audio score | P0 | AUDIO §3 | ✅ |
-| SND-3 | Act layers: an extra part added to the music per act | Pacing | *stretch* | AUDIO §3.1 | — |
+| SND-3 | Act layers: an extra part added to the music per act | Pacing | *stretch*, approved Nov 3 | AUDIO §3.1 | planned (BUILD.md T24) |
 | SND-4 | Peeker boing, lurker steps, freeze scratch, prank shimmer, peeker scratch | Act 2+ | P1 | AUDIO §4 | ✅ |
 | SND-5 | UI move/select clicks | Menus | P1 | AUDIO §4 | ✅ |
 | SND-6 | Wet-floor squeak (hard stop) | `wet` | C | AUDIO §4.1 | ✅ |

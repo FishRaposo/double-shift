@@ -1,19 +1,22 @@
 # Build Guide (for agents)
 
-Everything still to build for the 21-level jam game, written so an agent can pick up any task cold. Each task card says what to build, which files to touch, how (concretely), how to prove it's done, and which docs to update. Written 2026-11-02 against the build at 12 levels and 141 tests.
+Everything still to build for the 21-level jam game, written so an agent can pick up any task cold. Each task card says what to build, which files to touch, how (concretely), how to prove it's done, and which docs to update. Written 2026-11-02 against the build at 12 levels and 141 tests; updated 2026-11-03 with the full-game plan (§3), the Upside Down decisions (T7) and cards T17–T25.
 
 **At a glance**
 - **What's left:**
+  - foundations: levels addressed by id, cloud-ready media, doc counts sync, the shell for 6 acts and 21 levels (T17, T18);
+  - a quality and identity pass over everything already built (T19–T21);
   - 9 levels;
   - 1 rule system (Upside Down);
   - 1 rendering hook (skins for doors, pillars and portraits);
-  - the finale rework;
+  - the finale rework, with saves that ignore bests from an older revision (T22);
   - act 5 and finale cards;
   - credits;
   - a few sound hooks;
-  - the release refresh.
+  - copy features (T23) and four stretch features (T24);
+  - the demo GIF tool (T25) and the release refresh.
 - **Read first:** `CLAUDE.md`, then this guide's §1 (protocol) and §2 (recipes). The specs live in [LEVELS.md](LEVELS.md) §5–5.3 and [TECH.md](TECH.md) §6.5; this guide links to them, it doesn't repeat them.
-- **Order:** §3. Tasks in the same column can run in parallel (different files); arrows are hard dependencies.
+- **Order:** §3, seven milestone PRs. Each PR leaves `main` shippable.
 - **Done means:** `npm test`, `npm run check`, `npm run audit` and `npm run media` all pass, and the docs are synced (§1.3).
 
 ## 1. Protocol (every task)
@@ -108,18 +111,21 @@ Write the tests first in `test/rules.test.mjs`, using tiny ASCII levels: `level(
 
 ## 3. Work order
 
-```
-T1 skins ─┬─> T3 doors (Lost & Found)          T2 stairs (Under Renovation)     T6 audit (Night Audit)
-          ├─> T4 pillar (Structural Integrity)
-          └─> T5 portrait (Employee of the Month)
-T7 Upside Down rule ──> T8 upside ──> T9 fallup ──> T10 ceiling ──> T11 heels ──> T12 finale rework
-T13 act 5 + finale cards (after T8)     T14 credits (any time)     T15 sound hooks (after T1)
-T16 release refresh (last, and after each batch)
-```
+Seven milestone PRs (decided 2026-11-03). Each one passes every gate in §1.2 plus a code review before it's pushed, and each leaves `main` shippable.
 
-- **Tier B by Nov 15:** T1–T6.
-- **Tier C:** T7 working and T8 at par by **Nov 18**, then T9–T12. If T7/T8 miss Nov 18, stop act 5. The game ships tier B with today's Clock Out (the fallback is already built).
-- **Content freeze:** Nov 22.
+| PR | Cards | Levels after | Target |
+|---|---|---|---|
+| 1 Foundations | T17 tooling, T18 shell + T14 credits, T1 skins + T15 sound hooks | 12 | Nov 5 |
+| 2 Quality & identity | T19 quality audit, T20 readability tests, T21 identity pass + backdrops | 12 | Nov 8 (playtest round 1 plays it) |
+| 3 Upside Down | T7 rule + drawing, T8 `upside`, T13 act 5 and finale cards | 13 | Nov 11 |
+| 4 Tier B | T2 `stairs`, T3 `doors`, T4 `pillar`, T5 `portrait`, T6 `audit` | 18 | Nov 15 (M2) |
+| 5 Act 5 + finale | T9 `fallup`, T10 `ceiling`, T11 `heels`, T12 finale rework + T22 rev saves | 21 | Nov 20 |
+| 6 Copy + stretch | T23 copy features, T24 stretch features | 21 | Nov 22 |
+| 7 Release | T25 GIF tool, T16 release refresh | 21 | Nov 27 (Fish submits Nov 30) |
+
+- **Why this order:** the identity pass comes first because every later level and the flipped art build on it, and it lands before playtest round 1. Upside Down is the riskiest system, and it still lands a week before its Nov 18 gate; the 12 existing policies prove it regresses nothing.
+- **The Upside Down gate:** T7 working and T8 at par by **Nov 18**. If they miss it, act 5 and the finale rework go post-jam and the game ships with today's Clock Out (the fallback is already built).
+- **Content freeze:** Nov 22 for levels, copy and art. Stretch features that don't touch levels may land until Nov 26 if every gate passes; otherwise they're cut, timer first, then gamepad, rebinding and music layers.
 
 ## 4. Task cards
 
@@ -203,8 +209,15 @@ T16 release refresh (last, and after each batch)
   4. **Grounding:** `isGrounded` (line ~213) probes 1 px in the gravity direction (above the head when the sign is −1). Give it the sign through the layer.
   5. **Hazards:** a `^` cell's hitbox is the bottom 45% of the tile; on a flipped shift use the **top** 45% (in day terms it's the same hazard turned over). Update `overlapsHazard` to take the sign.
   6. **Freaks:** in `freakBoxes`, for night freaks in an upside-down level, hang them from the solid above: `y = ty * TILE` instead of `(ty+1) * TILE - FREAK.h`, in the flipped coordinates the author used.
-  7. **Checkpoints:** the `standable()` check (line ~506) already calls `isGrounded`; it must pass the layer's sign.
+  7. **Checkpoints:** a new exported `standableSpot(level, layer, tx, ty, ov)` replaces the inline `standable()` check; `step()` and the fairness test both use it.
   8. **Shift:** the transaction is unchanged (S-08). Velocity is kept in screen space, so a rise becomes a fall the other way.
+
+  Decided 2026-11-03 (the principle: flipping the map and gravity together is the day map seen upside down, so every rule is the day rule mirrored):
+  9. **Grid edges:** on a flipped layer `ty < 0` is open and `ty >= h` is solid (the day's ceiling and open floor, turned over). Falling out the top is a `fall` death when `p.y + playerH < -60`.
+  10. **Spawn and respawn:** `spawnPoint(tx, ty, sign)` is exported; with sign −1 the worker hangs under the cell above (`y = ty * TILE`). Spawn, checkpoint saves and respawn use the sign of the layer they save in.
+  11. **Nudge:** a blocked shift tries its ≤ 4 px nudge against the target layer's gravity first.
+  12. **Coyote time:** a shift that changes the gravity sign clears coyote time (unless you're grounded after it) and `rising`, so there's no mid-air jump right after a flip. Same-sign shifts are unchanged, so §13.7 case 10 still holds in normal levels.
+  13. **Authoring:** night pranks, tells, freaks and props use night screen coordinates. Every prop in an upside-down level names its `layer`; props take an optional `flip: true` for things stuck to the ceiling.
 - **Tests first** (`test/rules.test.mjs`):
   - the generated night equals a hand-flipped grid;
   - S/E/C aren't copied; `nightPatch` applies after the flip; validation throws;
@@ -214,15 +227,18 @@ T16 release refresh (last, and after each batch)
   - a grounded shift whose flipped geometry would embed you is refused;
   - the hazard hitbox is flipped at night;
   - a hanging freak box at night, frozen by day;
-  - a checkpoint is standable under flipped gravity;
-  - a determinism replay;
-  - every existing test still passes (non-flipped levels must not change at all).
+  - a checkpoint is standable under flipped gravity, and the respawn hangs grounded, not embedded;
+  - the nudge tries against the new gravity first;
+  - a flipping shift clears coyote time; a same-sign shift keeps it;
+  - falling out the top at night is a fall death;
+  - a determinism replay, and the no-embedding fuzz on a flipped level;
+  - every existing test still passes (non-flipped levels must not change at all), and `npm run audit` prints the same windows and pars for every existing level before and after.
 - **Drawing (`main.js`, `art.js`, `sprites.js`):**
-  - `drawSprite` gets a `vflip` option (scale(1, -1) about the sprite). The worker draws with `vflip` when the gravity sign is −1, and `workerFrame` should treat "rising" as moving against gravity.
-  - Night freaks in upside-down levels draw with `vflip`, as do their frozen outlines by day.
-  - `drawRebar`/`drawLaser` get a flipped variant for night tiles in upside-down levels (draw inside `ctx.save(); translate; scale(1,-1)`).
-  - Tells (`drawTells`) hang under the solid at night.
-  - The HUD and level note stay upright.
+  - `drawSprite` gets a `vflip` option. A pure `spriteRect(name, frame, x, y, { vflip, scale })` in `sprites.js` keeps the hitbox rows on the same screen rectangle when flipped (each sprite records its hitbox `box`: worker [9,13], freaks [10,11]); a test checks it. The worker draws with `vflip` when the gravity sign is −1, and `workerFrame(p, t, fx, sign)` treats "rising" as moving against gravity.
+  - Night freaks in upside-down levels draw with `vflip` (`freakBoxes` returns `hang: true`), as do their frozen outlines by day; the ducked-in peeker slot mirrors too.
+  - `drawLaser`, `drawHazardEcho`, `drawCheckpoint` and `drawExit` get a mirrored option for flipped tiles.
+  - Tells (`drawTells`) hang under the solid at night; dust, the spook gag and the land puff use the feet side.
+  - The HUD, notes and signs stay upright.
 - **Sound:** add `flip` to `SOUNDS` (sine sweep down, about 300 → 120 Hz, 0.12 s, vol 0.12) and play it with the shift sound in upside-down levels (`handleEvents` `case 'shift'`).
 - **Gallery:** add a flipped worker, a hanging freak and a flipped laser.
 - **Done when:** all the tests pass and a throwaway test level (not shipped) plays correctly in the browser. Then do T8.
@@ -255,23 +271,24 @@ T16 release refresh (last, and after each batch)
 - **Keep the fallback one line away:** move today's Clock Out block into `src/levels.js` as an exported `CLOCKOUT_CLASSIC` (not in `LEVELS`), keep its policy as `SOLUTIONS_EXTRA.clockoutClassic`, and keep a test that it still wins at par 7. Shipping the fallback is then swapping one array entry.
 - **Ending:** unchanged (the end screen's eyes and wave already exist).
 - **Order:** last in `LEVELS`. Give it `act: 6` with `ACTS[6] = 'Finale'` (see T13) so level select shows it on its own row.
+- **Saves:** the rework keeps the id `clockout` and gets `rev: 2`, so bests saved on the classic version are ignored (T22).
 
 ### T13 · Act 5 and finale cards *(small; after T8)*
 - `src/levels.js`: `ACTS[5] = 'Upside Down'` and `ACTS[6] = 'Finale'`.
 - `src/copy.js`: `ACT_LINES[5] = 'The night shift turned the building over.'` and `ACT_LINES[6] = 'One more shift.'`.
-- `src/main.js` `drawAct()`: when `act === 6`, draw `FINALE` instead of `ACT 6`.
-- Level select rows come from acts, so act 6 gets its own row (check that `cardRect` fits 6 rows: `CARD.top + 5 * rowH` must stay on screen; shrink `rowH` if needed).
+- `src/main.js` `drawAct()`: for `FINALE_ACT` (6), the small line reads FINALE and the big line is the level's name (CLOCK OUT), then "One more shift.".
+- Level select rows come from acts, so act 6 gets its own row; the 6-row layout is T18's. The finale is always open in level select, like every act start (Fish, 2026-11-03).
 - Tests: `test/save.test.mjs` already checks that acts never go backwards and every act has a name. The font test checks every printed character has a glyph.
 - Check the act card and level select screenshots.
 
 ### T14 · Credits *(any time)*
-- WRITING.md §8: "Designed by Vinícius Raposo. Built with AI assistance (Claude). Made for GitHub Game Off 2026." Plus the design partner, if any, as they choose to be credited.
-- Add them under the end screen's totals (it's sized from the level count), or as a second page on Space. Mark WRITING §8 ✅ and CONTENT TXT-7.
+- WRITING.md §8: "Designed by Vinícius Raposo. Built with AI assistance (Claude). Made for GitHub Game Off 2026." No design-partner line (Fish, 2026-11-03: the art is all code-drawn).
+- `CREDITS` lives in `src/copy.js`; the end screen draws it under the per-act totals (T18). The font test scans `copy.js`, so the `í` glyph is required. Mark WRITING §8 ✅ and CONTENT TXT-7.
 
 ### T15 · Sound hooks *(after T1)*
 - **`doorThunk` / `pillarScrape`:** via the prank `sound` field (T1).
 - **`peekerBoing`:** in `main.js`, compare each peeker's `active` with the previous frame (cosmetic, so `main` is fine); on false→true while it's on screen and on its shift, play it.
-- **`lurkerStep`:** optional, very quiet. Skip it if it clutters the mix.
+- **`lurkerStep`:** stays unwired (decided 2026-11-03): a constant tick under the music clutters the mix. AUDIO.md says so.
 - Update AUDIO.md §4 and §4.1 status.
 
 ### T16 · Release refresh *(after each batch, and last)*
@@ -280,6 +297,59 @@ T16 release refresh (last, and after each batch)
 3. Update the counts: itch/page.md (description "What's in this build", screenshot order, test count), README status line, DESIGN.md.
 4. `npm run zip`, and test the zip in an iframe (RELEASE.md §5 first-60-seconds check).
 5. `docs/PLAYTEST.md` round 2 on the full run.
+
+### T17 · Tooling: levels by id, cloud-ready media, doc counts *(PR 1)*
+- **Levels by id:** `levelIndex(defs, param)` in `src/layout.js` (an id → its index; an integer N → N−1, clamped; anything else → 0). `?level=offset` and `?level=11` both work. `scripts/media.mjs` addresses every shot by id, so inserting a level never breaks a capture.
+- **Media flags:** `--review a,b` writes a day and a night PNG per level into `media/review/` (night is set directly, for review only); `--gray` and `--cvd` add grayscale and color-blind variants (deuteranopia, protanopia, tritanopia); `--root <dir>` smoke-tests an unzipped build. It finds `/opt/pw-browsers/chromium` and adds `--no-sandbox` when run as root (cloud sessions).
+- **Counts:** numbers that track the code are wrapped `<!-- n:KEY -->N<!-- /n -->` (keys `tests`, `levels`, `lines:src/<file>`). `npm run counts` checks them (it runs the suite) and `npm run counts -- --write` rewrites them; CI runs the check. Dated history sentences stay unmarked.
+
+### T18 · Shell for 6 acts and 21 levels *(PR 1)*
+- **Pure layout:** `src/layout.js` holds the level select and end-screen math, tested in `test/layout.test.mjs`: everything inside 960×(60…510), nothing overlapping, every level name wrapped to ≤ 2 lines inside its card.
+- **Level select:** one row per act with a 90-px act tab on the left (ACT n at scale 2 and the act name at scale 1, or FINALE); four 196×56 cards per row, 10-px gaps, 66-px row pitch, starting at y 64. Each card shows the level number at scale 3, the name at scale 1 (wrapped, `wrapText` in `font.js`) and a status stamp or lock. A detail bar at y 470–506 gives the selected level's full name, BEST and PAR at scale 2.
+- **End screen:** one row per act (clock-ins / par over the levels played), the grand total, then the credits (T14).
+- **Saves:** a test proves that inserting levels keeps cleared levels open and the unlock chain intact.
+
+### T19 · Quality audit of everything built *(PR 2)*
+- A code review at high effort over `src/`, `scripts/` and `test/`, then a simplification pass on `src/`. A behavior bug gets a failing test before its fix; judgment calls go to Fish in the PR.
+- A docs pass: every value and claim checked against the code (known: TECH.md pointed `SOLUTIONS` at the wrong file; AGENTS.md cited a script that doesn't exist).
+- An audio pass: any peak ≥ 0.8 in `__audioCheck` is fixed or justified in AUDIO.md §5. Fish listens on headphones and laptop speakers.
+
+### T20 · Readability as tests *(PR 2)*
+- `test/palette.test.mjs` turns ART.md §3.1 into WCAG contrast checks (rgba composited over the sky it sits on, both sky bands): worker outline vs sky ≥ 3:1; solid edge vs sky ≥ 3:1; night solid fill vs night sky ≥ 1.4:1; HUD text vs its plate ≥ 7:1; note ink vs paper ≥ 7:1; echo vs the opposite sky ≥ 3:1; rebar vs day sky and laser vs night sky ≥ 3:1; freak eyes vs freak body ≥ 4.5:1; background windows and motifs vs sky ≤ 1.35:1 (the quiet layer).
+
+### T21 · Visual identity pass and per-act backdrops *(PR 2)*
+- **Identity** (ART.md §1): "A workplace comedy in two lights: warm paper-and-brick days, cool cyan-panel nights. Everything official is paper. The freaks are glowing eyes and lumpy silhouettes in the dark, more present every act."
+- **Fixes, from the 2026-11-03 screenshot review of every screen and level:**
+  - text on paper strips and plates instead of halos over textures;
+  - hatching only on the 1-tile rim of "only in this shift" regions, and none in levels with a generated night (offset, upside down), whose echoes carry the cue;
+  - quieter night windows, with one or two warm lit panes;
+  - eyes at twice the size with a soft glow, and freaks plus the subtitle on the title screen;
+  - the EXIT sign moves beside the door when it would leave the screen;
+  - barrier tape sags between two stanchions and never spans a gap at floor height;
+  - the checkpoint becomes a punch-clock box on a post;
+  - each freak kind gets its own silhouette inside today's frames (lurker low and wide, peeker tall with gripping hands, squatter on its hoard, supervisor with clipboard and visor, day-walker in sunglasses), hitboxes unchanged;
+  - the ending's freak peeks and waves a real hand;
+  - a scaling check at 1366×768 and 1920×1080.
+- **Per-act backdrops:** `drawBackground(..., act)` draws one quiet motif per act: act 1 scaffolding and tarps; act 2 office windows with blinds and a wall clock; act 3 warehouse shelving and pipes; act 4 fluorescent strips by day, emergency lights and EXIT glow by night; act 5 hanging lamps, inverted at night; the finale a dawn tint by day and a low moon by night.
+- **Review:** `npm run media -- --review <ids> --gray --cvd` for every level, checked against the identity checklist in LEVELS.md §6. Before/after pairs go in the PR.
+
+### T22 · Saves ignore bests from an older level revision *(PR 5, with T12)*
+- A level may carry `rev: N` (default 1). Bests are saved with their rev; `best(id, rev)` ignores a best from another rev; `cleared()` ignores revs, so unlocks never change. The reworked finale has `rev: 2`.
+
+### T23 · Copy features *(PR 6)*
+- **Sticky Keys memo** on the title screen: "WE PRES SHIFT 5 TIMES. FOR FUN." on a sticky note above the practical line (draft for Fish).
+- **Tell texts:** a prank's tell can carry `text` (default MINE); variants from WRITING.md §5.
+- **Notice-board memos:** a `memo` prop in every level; its text shows on a paper panel (scale 2, ≤ 360 px wide, y ≥ 60, clamped) while the worker is within 2 tiles. Copy from WRITING.md §6.1.
+
+### T24 · Stretch features *(PR 6; approved by Fish 2026-11-03)*
+- **Per-act music layers:** `layersFor(act)` = pulse from act 2, a second lead from act 3, faster organ stabs from act 4, the melody inverted (`2·MELODY[0] − n`) from act 5; the finale plays every layer.
+- **Rebindable controls:** `src/keys.js` (`DEFAULT_BINDS`, reserved keys, `rebind`, `cleanBinds`, `keyLabel`); a CONTROLS screen under SETTINGS; title and tutorial text built from the bindings. Taking another action's only key swaps, never unbinds.
+- **Gamepad:** `src/pad.js` turns the standard mapping into edge-triggered key codes (A jump; B, X or RB shift; Start pause; Back restart; d-pad or stick with 0.5/0.3 hysteresis). Fixed mapping.
+- **Speedrun timer:** a TIMER setting; the HUD shows the level time and the end screen the run total.
+- **Cut order if late:** timer, then gamepad, then rebinding, then music layers.
+
+### T25 · Demo GIF tool *(PR 7)*
+- `npm run gif -- <id>` writes `media/demo-<id>.gif` (480×270, ≤ 10 s, ≤ 3 MB) deterministically: the page imports the level's scripted policy from `test/solutions.mjs`, steps it at 120 Hz and renders every frame. A dependency-free GIF encoder (`scripts/gif-encode.mjs`) is tested in `test/gif.test.mjs`. The browser helper is shared with `media.mjs` (`scripts/cdp.mjs`).
 
 ## 5. Known gotchas
 - **Offset and Upside Down levels generate their night grid:** don't also give `night`.

@@ -183,10 +183,17 @@ The four tier-C mechanics from [CONTENT.md](CONTENT.md) §3 — all built, teste
 - **Format:** `upsideDown: true` on a level: `parseLevel` generates `night[y] = day[H − 1 − y]` (S, E, C stay shared and unmoved), then applies `nightPatch`. It can't be combined with `night` or `offset` (validation throws, like today's night/offset check).
 - **Gravity:** a per-shift sign `g = level.upsideDown && s.layer === NIGHT ? −1 : 1`. Gravity, jump velocity, the variable-jump cut (`rising` means moving against gravity), max fall, coyote and jump buffer all use it. Grounding probes 1 px in the gravity direction (the tile above the head at night). The horizontal step is unchanged.
 - **Shift:** unchanged transaction (S-08: clean, ≤ 4 px nudge, 80 ms buffer, reject), checked against the flipped geometry. Velocity is kept as-is in screen space (S-02), so a rise becomes a fall the other way; that is the mechanic.
-- **Shared objects:** checkpoints save only where they're standable under that shift's gravity (the existing "standable" check takes the gravity sign).
-- **Freaks:** boxes for night freaks hang from the solid above (`y = ty × TILE` instead of the floor).
-- **Tests (first):** generated grid equals a hand-flipped one; gravity sign per layer; jumping and landing on the ceiling at night; a mid-air shift reverses the fall and keeps speed; a grounded shift into embedded flipped geometry is refused; ceiling checkpoint standable; hanging freak boxes; determinism. The fairness test and `npm run audit` cover the levels.
-- **Drawing:** the worker sprite flips vertically when gravity is up; freak sprites and outlines flip on the night shift; tells hang under solids.
+- **Shared objects:** checkpoints save only where they're standable under that shift's gravity, through one exported `standableSpot(level, layer, tx, ty, ov)` that `step()` and the fairness test share.
+- **Freaks:** boxes for night freaks hang from the solid above (`y = ty × TILE` instead of the floor) and carry `hang: true`.
+- **Decided 2026-11-03.** The principle: flipping the map and gravity together is the day map seen upside down, so every rule is the day rule mirrored.
+  - **Grid edges:** on a flipped layer, `ty < 0` is open and `ty >= h` is solid (the day's open floor and solid ceiling, turned over). Falling out the top is a `fall` death when `p.y + playerH < −60`.
+  - **Spawn and respawn:** `spawnPoint(tx, ty, sign)` is exported; with sign −1 the worker hangs under the cell above (`y = ty × TILE`). Spawn, checkpoint saves and respawn use the sign of the layer they save in.
+  - **Nudge:** a blocked shift tries its ≤ 4 px nudge against the target layer's gravity first.
+  - **Coyote time:** a shift that changes the gravity sign clears coyote time (unless you're grounded after it) and `rising`: no mid-air jump right after a flip. Same-sign shifts are unchanged.
+  - **Hazards:** a `^` cell's hitbox is the top 45 % of the tile on a flipped layer.
+  - **Authoring:** night pranks, tells, freaks and props use night screen coordinates. Every prop in an upside-down level names its `layer`; props take an optional `flip: true`.
+- **Tests (first):** generated grid equals a hand-flipped one; gravity sign per layer; jumping and landing on the ceiling at night; a mid-air shift reverses the fall and keeps speed; a grounded shift into embedded flipped geometry is refused; the nudge direction; coyote time across a flip; falling out the top; ceiling checkpoint standable and the respawn grounded; hanging freak boxes; determinism and the no-embedding fuzz on a flipped level. The fairness test and `npm run audit` cover the levels, and the audit output of every existing level must not change.
+- **Drawing:** the worker sprite flips vertically when gravity is up (`spriteRect` keeps the hitbox in place); freak sprites and outlines flip on the night shift; lasers, hazard echoes, the checkpoint and the exit mirror on a flipped layer; tells hang under solids; the HUD, notes and signs stay upright.
 
 ## 7. Testing
 

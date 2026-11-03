@@ -1425,6 +1425,14 @@ Special cases to test:
 9. Shift immediately before landing.
 10. Shift on the same update as a jump input.
 
+Upside Down levels add (decided 2026-11-03; every rule is the day rule mirrored):
+
+11. Shift into the flipped night: you fall up and land hanging under the solid above.
+12. Jump on a flipped layer: the jump goes down the screen, and releasing early cuts it.
+13. Mid-air flip: velocity is kept on screen, so a rise becomes a fall the other way; coyote time is cleared, so there's no mid-air jump right after a flip.
+14. Grounded flip into the mirrored floor: refused like any blocked shift (nudge against the new gravity first, then buffer, then fail).
+15. Fall out the top on a flipped layer: a fall death, exactly like falling out the bottom by day.
+
 The game should resolve each case consistently.
 
 ## 13.8 Collision Strategy

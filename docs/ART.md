@@ -22,6 +22,8 @@ Companion to [GDD.md](GDD.md) §4.7, §7, §10. Everything is drawn in code on a
 
 ## 1. Pillars
 
+**Identity (decided 2026-11-03):** *A workplace comedy in two lights: warm paper-and-brick days, cool cyan-panel nights. Everything official is paper (timecards, notes, stamps). The freaks are glowing eyes and lumpy silhouettes in the dark, more present every act.* Every art change serves that sentence and the reading order in §3.1. The identity and readability pass that applies it is BUILD.md T20–T21 *(planned)*.
+
 1. **Readability beats beauty.** The player must always know: what's solid now, what's solid on the other shift, what kills, where the freaks are, which shift they're in.
 2. **Day and night are the same building.** Same architecture, different light. Never make night dark enough to hide geometry.
 3. **Mock horror.** The freaks are funny-creepy: lumpy silhouettes and blinking eyes. Never gore, never a jump scare.

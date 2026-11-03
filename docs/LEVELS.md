@@ -24,7 +24,7 @@ Companion to [GDD.md](GDD.md) §6 and §8. Tile = 30 px. Levels are 32×18 tiles
 | Shift nudge | 4 px | Overlaps of ≤ 4 px into a wall resolve automatically |
 | Freak box | 20 × 22 px, sits on its tile's floor | |
 
-**Fairness floor (Fish, 2026-11-02), enforced by `test/fairness.test.mjs`:** every shift and jump the scripted solution needs must have **≥ 200 ms** of slack in acts 1–2 and **≥ 100 ms** in acts 3–4 (one press moved earlier/later, everything else unchanged, still wins). At a full run 200 ms ≈ 1.8 tiles: leave about 2 tiles where both shifts are safe to switch in. The same tests check that no spawn or checkpoint sits in a freak's patrol and that no freak patrols over the exit.
+**Fairness floor (Fish, 2026-11-02), enforced by `test/fairness.test.mjs`:** every shift and jump the scripted solution needs must have **≥ 200 ms** of slack in acts 1–2 and **≥ 100 ms** in acts 3–6, the finale included (one press moved earlier/later, everything else unchanged, still wins). At a full run 200 ms ≈ 1.8 tiles: leave about 2 tiles where both shifts are safe to switch in. The same tests check that no spawn or checkpoint sits in a freak's patrol and that no freak patrols over the exit.
 
 `npm run audit` prints, per level: the slack of every required input, how much input lag the solution tolerates, and a random search for wins below par or without shifting. Run it after any level or `PARAMS` change.
 

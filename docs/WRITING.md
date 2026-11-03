@@ -148,7 +148,7 @@ Unused, kept for later: "Efficient. Suspiciously efficient."
 
 - ✅ The end screen: SHIFT COMPLETE, totals across all levels (every level's clock-ins / par, total vs. total par).
 - ✅ In the dark margins a dozen pairs of eyes open one after another; once they're all open, one freak waves, and "See you tonight." appears below the card.
-- *(planned)* Credits: Designed by Vinícius Raposo. Built with AI assistance (Claude). [Design partner, as they choose to be credited.] Made for GitHub Game Off 2026.
+- *(planned)* Credits, under the end screen's totals: "Designed by Vinícius Raposo. Built with AI assistance (Claude). Made for GitHub Game Off 2026." Final wording (Fish, 2026-11-03): no design-partner line, since the art is all code-drawn.
 
 ## 9. itch page copy
 

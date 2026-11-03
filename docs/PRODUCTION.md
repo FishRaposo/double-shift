@@ -1,9 +1,10 @@
 # Production Plan
 
-Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-02**.
+Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-03**.
 
 **At a glance**
 - **Next milestone:** M0 Feel check (Nov 2–3): play all 12 levels, Sticky Keys test, tuning. Repo + CI are done.
+- **The build plan (Nov 3):** seven milestone PRs: foundations, a quality and identity pass, Upside Down, tier B, act 5 and the finale, copy and stretch, release ([BUILD.md](BUILD.md) §3).
 - **The game:** 21 levels, five acts of four plus the finale; 12 built (tier A), tier B = 17, tier C = 21 ([CONTENT.md](CONTENT.md), LEVELS.md §5.0).
 - **Level audit (Nov 2):** every level beatable at par, fair timing (≥ 200/100 ms), no skips, no respawn loops; `npm run audit` keeps it that way.
 - **Key P0 items:** tuning, level select, music, freaks in the first minutes, freak art, media, itch page (§4). `stacked` + `clockout` done.
@@ -16,7 +17,7 @@ Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-02**.
 | Core rules (move, jump, shift, buffer/nudge, coyote, jump buffer) | Built, tested |
 | Pranks (Nth night entry, tells, checkpoint restore) | Built, tested |
 | Freaks: lurker, peeker, squatter, supervisor (frozen by day), day-walker (frozen by night) | Built, tested |
-| Levels | **12 built** (act 1: 4, act 2: 2, act 3: 3, act 4: 3), all proven solvable at par and fair; **tier A (jam minimum) complete** with `stacked` and `clockout`. Tier-C mechanics shipped. 4 tier-B levels planned (CONTENT.md) |
+| Levels | **12 built** (act 1: 4, act 2: 2, act 3: 3, act 4: 3), all proven solvable at par and fair; **tier A (jam minimum) complete** with `stacked` and `clockout`. Tier-C mechanics shipped. 5 tier-B levels planned (CONTENT.md) |
 | Rendering | **Pixel art** (Nov 2): sprites, animated worker and freaks, pixel tiles and props, pixel font, effects; every asset in `/tools/gallery.html` |
 | Audio | Mix bus, 25 SFX (incl. planned-level sounds), **music** (day/night arrangements crossfading on every shift) |
 | Menus | Title, level select + saved bests, settings (volumes, reduced effects), act cards, pause, timecard with comment, end screen with totals |
@@ -30,10 +31,11 @@ The whole game is listed in [CONTENT.md](CONTENT.md): **21 levels, five acts of 
 | Date | Milestone | Exit criterion (must be true to move on) |
 |---|---|---|
 | **Nov 2–3** | **M0: Feel check** | Fish has played all 12 built levels on Windows. Sticky Keys result recorded. Movement tuning pass done. ~~Public GitHub repo with CI green~~ (done). |
-| **Nov 8** | **M1: Core locked** | Shift, freeze and prank feel good to Fish. One cold playtest. `PARAMS` frozen except small tweaks. `stairs` and `doors` built and at par. |
-| **Nov 15** | **M2: Tier B complete** | 17 levels playable: + `stairs`, `doors`, `pillar`, `portrait`, `audit`, all fair (`npm run audit`). Gravity-flip rules and tests started. |
-| **Nov 18** | **Cut date: Upside Down** | The gravity flip (rules, tests, drawing) works and `upside` is proven at par, or act 5 and the finale rework move to post-jam (the game ships 17 levels with today's Clock Out). |
-| **Nov 22** | **M3: Content freeze** | 21 levels (or the tier that held), all proven at par and fair; finale rework in; act 5 and finale cards; all copy in. Second playtest round. **No new features after this date.** |
+| **Nov 8** | **M1: Core locked** | Shift, freeze and prank feel good to Fish. One cold playtest, on the build with the quality and identity pass (PR 2). `PARAMS` frozen except small tweaks. |
+| **Nov 11** | **Upside Down in** | PR 3: the gravity flip (rules, tests, drawing) works, `upside` is proven at par, act 5 and finale cards are in. Fish's feel check decides whether act 5 stays. |
+| **Nov 15** | **M2: Tier B complete** | 18 levels playable: + `stairs`, `doors`, `pillar`, `portrait`, `audit`, all fair (`npm run audit`). |
+| **Nov 18** | **Cut date: Upside Down** | If the flip isn't readable and proven by now, act 5 and the finale rework move to post-jam (the game ships 17 levels with today's Clock Out). |
+| **Nov 22** | **M3: Content freeze** | 21 levels (or the tier that held), all proven at par and fair; finale rework in; all copy in. Second playtest round. **No new levels, copy or art after this date.** Stretch features that don't touch levels may land until Nov 26 if every gate passes (decided Nov 3; flagged for Fish). |
 | **Nov 26** | **M4: Release candidate** | Bug-free on Chrome/Firefox/Edge. itch draft with fresh cover, screenshots, GIF. |
 | **Nov 30** | **M5: Submitted** | itch page public, submitted to the jam, repo linked, played from the itch page itself. |
 | Dec 1 18:37 BRT | Jam deadline | — (buffer day; only emergency fixes) |
@@ -44,27 +46,27 @@ The whole game is listed in [CONTENT.md](CONTENT.md): **21 levels, five acts of 
 
 ## 3. Weekly plan
 
-### Week 1 (Nov 2–8): feel and the first tier-B levels
+### Week 1 (Nov 2–8): foundations and the quality and identity pass
 - Fish plays everything on Windows; record the Sticky Keys result in GDD §3.2.
 - Tuning pass on `PARAMS` (TECH.md §4), then re-prove pars and fairness (`npm test`, `npm run audit`).
-- Build `stairs` and `doors` (LEVELS.md §5).
-- First cold playtest on what exists.
+- PR 1 (Nov 5): levels by id, cloud-ready media, doc counts, the 6-act shell and credits, skins and sound hooks (BUILD.md T17, T18, T14, T1, T15).
+- PR 2 (Nov 8): the quality audit, readability tests, the visual identity pass and per-act backdrops (BUILD.md T19–T21).
+- First cold playtest on the PR 2 build, with the 5-second test (PLAYTEST.md).
 
-### Week 2 (Nov 9–15): tier B and the gravity flip
-- Build `pillar`, `portrait`, `audit` (LEVELS.md §5).
-- Gravity flip: tests first, then rules (TECH.md §6.5 Upside Down), then drawing.
-- → **M2 Nov 15: 17 levels.**
+### Week 2 (Nov 9–15): Upside Down and tier B
+- PR 3 (Nov 11): the gravity flip (tests first), `upside`, act 5 and finale cards (BUILD.md T7, T8, T13).
+- PR 4 (Nov 15): `stairs`, `doors`, `pillar`, `portrait`, `audit` (LEVELS.md §5).
+- → **M2 Nov 15: 18 levels.**
 
-### Week 3 (Nov 16–22): act 5, the finale, content freeze
-- Build `upside` and prove it by **Nov 18** (cut date); then `fallup`, `ceiling`, `heels` (LEVELS.md §5.2).
-- Finale rework (LEVELS.md §5.3), with today's Clock Out kept as the fallback.
-- Act 5 and finale cards; memos and props for the new levels.
+### Week 3 (Nov 16–22): act 5, the finale, copy and stretch
+- PR 5 (Nov 20): `fallup`, `ceiling`, `heels`, the finale rework with today's Clock Out kept as the fallback (LEVELS.md §5.2–5.3).
+- PR 6 (Nov 22): memos, tells and the Sticky Keys memo; the stretch features (music layers, rebinding, gamepad, timer).
 - Second playtest round on the full run.
 - → **M3 content freeze Nov 22: 21 levels.**
 
 ### Week 4 (Nov 23–30): polish and ship
 - Bug fixing from playtests; GDD §13.7 edge cases in the browser.
-- `npm run media` for a fresh cover and screenshots; GIF (A9).
+- PR 7 (Nov 27): `npm run gif` and `npm run media` for a fresh cover, screenshots and GIFs (A9); the release refresh (BUILD.md T16, T25).
 - itch page from [itch/page.md](../itch/page.md): update the level count and description to what shipped, draft → play on the page → Public → submit.
 - Devlog #1; X posts (Fish writes the final words).
 - First-60-seconds check from the itch embed (RELEASE.md §5).
@@ -90,9 +92,9 @@ Priority: **P0** = the game doesn't ship without it. **P1** = expected in the ja
 | G8 | ~~Day-walker freak + day-only clock~~ Done | Tier C, cut Nov 12 | TECH.md §6.5; level `daywalker` |
 | G9 | ~~Offset layer~~ Done | Tier C, cut Nov 17 | TECH.md §6.5; level `offset` |
 | G10 | Shared-state objects (levers/doors) | Post | GDD §8.2 |
-| G11 | Gamepad support | P2 | Gamepad API polling into `input.js` frames |
-| G12 | Rebindable controls | P2 | Stretch in GDD §12.5 |
-| G13 | Speedrun timer display | P2 | `state.time` already tracked |
+| G11 | Gamepad support | P2, planned (Fish approved the stretch features Nov 3) | `src/pad.js` turns Gamepad API polling into key events (BUILD.md T24) |
+| G12 | Rebindable controls | P2, planned | `src/keys.js`, a CONTROLS screen (BUILD.md T24); GDD §12.5 |
+| G13 | Speedrun timer display | P2, planned | A TIMER setting; `state.time` already tracked (BUILD.md T24) |
 | G14 | Sticky Keys in-joke (memo from the freaks on title/pause, practical advice kept) | P1 | GDD §1.7; the jam page jokes about it too |
 | G16 | Upside Down: night = map flipped, gravity up (act 5's four levels + the finale rework) | Tier C, cut Nov 18 | TECH.md §6.5; LEVELS.md §5.2 |
 | G15 | ~~Supervisor freak (facing decides which freaks work)~~ Done | Tier C, cut Nov 17 | TECH.md §6.5; level `supervisor` |
@@ -145,7 +147,9 @@ Priority: **P0** = the game doesn't ship without it. **P1** = expected in the ja
 
 | Decision | Options | Recommendation | Deadline |
 |---|---|---|---|
-| Camera | Single-screen rooms (current) vs scrolling levels with camera | Single-screen rooms: every level fits 32×18, which keeps puzzles readable at a glance and both maps fully visible. Add a camera only if a level needs it. | Nov 8 |
+| ~~Camera~~ | Single-screen rooms vs scrolling levels with camera | **Decided Nov 3: single-screen rooms.** Every planned level fits 32×18, which keeps puzzles readable at a glance and both maps fully visible. | — |
+| Freeze scope | Freeze everything on Nov 22, or let stretch features that don't touch levels land until Nov 26 | Let them land until Nov 26 if every gate passes, else cut them (timer → gamepad → rebinding → music layers). In the plan; Fish can overrule. | Nov 22 |
+| ~~Finale in level select~~ | Always open (like every act start) vs locked until act 5 is cleared | **Decided Nov 3 (Fish): always open.** | — |
 | Primary shift bind | Shift vs K | Decided by the Sticky Keys test | Nov 3 |
 | Subtitle | *The Freaks Come Out at Night* vs none | Keep: it's the tone in one line and helps itch title search | Nov 22 |
 | Freak size | 20×22 (current) vs worker-sized or bigger | Decide after first playtest | Nov 8 |

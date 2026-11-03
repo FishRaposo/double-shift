@@ -79,7 +79,7 @@ The original plan, kept for reference:
 
 ### 3.1 Per-act layers *(stretch)*
 
-Same loop, one added part per act so the game builds without new songs: act 2 adds a quiet low pulse on night; act 3 adds a muted second lead line; act 4 swaps the night organ stabs for faster ones. Only if A5 ships with time to spare.
+Same loop, one added part per act so the game builds without new songs: act 2 adds a quiet low pulse on night; act 3 adds a muted second lead line; act 4 swaps the night organ stabs for faster ones; act 5 adds the melody turned upside down (inverted around its first note) as a night counter-melody; the finale plays every layer. *(Planned: Fish approved the stretch features on Nov 3; BUILD.md T24 has the values.)*
 
 ## 4. More SFX (built 2026-11-02)
 
