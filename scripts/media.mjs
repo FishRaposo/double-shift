@@ -1,10 +1,11 @@
 // itch.io media: drives headless Edge/Chrome over the DevTools protocol (no dependencies), presses real keys
 // at full speed, and saves the cover + screenshots to media/. Also a full-speed smoke test: exits 1 if level 1
 // can't be cleared with real keys or the page logs an error.
-// Usage: node scripts/media.mjs [outdir] [--review id,id] [--gray] [--cvd] [--root DIR]
+// Usage: node scripts/media.mjs [outdir] [--review id,id] [--gray] [--cvd] [--memo] [--root DIR]
 //   --review id,id  only a day and a night shot of each level, into <outdir>/review/ (night is set directly:
 //                   a picture of the geometry, not a playable state)
 //   --gray, --cvd   with --review: also grayscale and color-blind (deuteranopia, protanopia, tritanopia) variants
+//   --memo          with --review: also <id>-memo.png, the worker by the level's memo with its panel open
 //   --root DIR      serve DIR instead of the repo (smoke-test the unzipped itch build: no cover, gallery or audio)
 // BROWSER env overrides the browser path.
 import { spawn } from 'node:child_process';
@@ -138,6 +139,16 @@ async function reviewShots(ids) {
         console.log(`  review/${name}`);
       }
       await evaluate(`document.getElementById('game').style.filter = 'none'`);
+    }
+    if (flag('--memo')) {
+      // the worker moved to the memo's column, in the memo's shift, so its panel is open (WRITING.md §6.1)
+      const at = await evaluate(`(async () => { const g = __doubleShift; const { LEVELS } = await import('/src/levels.js'); const m = (LEVELS[g.index].props ?? []).find((p) => p.kind === 'memo'); if (!m) return null; const s = g.state; s.layer = m.layer === 'night' ? 1 : 0; s.player.x = m.tx * 30 + 6; s.won = true; return m.tx; })()`);
+      if (at !== null) {
+        await sleep(250);
+        const { data } = await send('Page.captureScreenshot', { format: 'png' });
+        writeFileSync(join(dir, `${id}-memo.png`), Buffer.from(data, 'base64'));
+        console.log(`  review/${id}-memo.png`);
+      }
     }
   }
 }

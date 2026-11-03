@@ -2,13 +2,14 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { GLYPHS, ROWS, CAP, measureArt, hasGlyph } from '../src/font.js';
+import { GLYPHS, ROWS, CAP, measureArt, hasGlyph, measureText } from '../src/font.js';
 import { SPRITES, workerFrame, ART } from '../src/sprites.js';
 import { PARAMS, FREAK } from '../src/rules.js';
 import { LEVELS, ACTS } from '../src/levels.js';
 import { CREDITS } from '../src/copy.js';
 import { exitRects, checkpointRect, shouldHatch, DAY, NIGHT } from '../src/art.js';
 import { parseLevel, tileAt, isSolidChar } from '../src/rules.js';
+import { memoPanel } from '../src/layout.js';
 
 const FREAK_KINDS = ['lurker', 'peeker', 'squatter', 'supervisor', 'daywalker'];
 const mask = (kind) => SPRITES[kind].frames.a.map((row) => [...row].map((c) => c !== '.'));
@@ -97,6 +98,8 @@ function gameStrings() {
     for (const m of src.matchAll(/`([^`]*)`/g)) out.push(m[1].replace(/\$\{[^}]*\}/g, ''));
   }
   for (const l of LEVELS) out.push(l.name, l.note ?? '', l.name.toUpperCase());
+  for (const l of LEVELS) for (const p of l.props ?? []) if (p.text) out.push(p.text); // signs and memos
+  for (const l of LEVELS) for (const p of l.pranks ?? []) if (p.tell?.text) out.push(p.tell.text);
   out.push(...Object.values(ACTS), ...Object.values(ACTS).map((a) => a.toUpperCase()));
   return out;
 }
@@ -224,6 +227,30 @@ test('art: a prop stuck to a flipped night ceiling has a ceiling there that no p
       assert.ok(isSolidChar(tileAt(lvl, NIGHT, pr.tx, pr.ty - 1)), `${at} hangs from nothing`);
       const taken = lvl.pranks.some((p) => p.cells.some(([layer, tx, ty, ch]) => layer === NIGHT && tx === pr.tx && ty === pr.ty - 1 && !isSolidChar(ch)));
       assert.ok(!taken, `${at}: a prank takes its ceiling away`);
+    }
+  }
+});
+
+test('memos: a memo panel never covers the exit, a tell or a sign', () => {
+  const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
+  for (const def of LEVELS) {
+    const m = (def.props ?? []).find((p) => p.kind === 'memo');
+    if (!m) continue;
+    const panel = memoPanel(m.text, m.tx, m.ty, { maxW: m.w });
+    const lvl = parseLevel(def);
+    for (const hang of def.upsideDown ? [false, true] : [false]) {
+      const { door, sign } = exitRects(lvl.exit.tx, lvl.exit.ty, { hang });
+      assert.ok(!overlap(panel, door) && !overlap(panel, sign), `${def.id}: the memo covers the exit`);
+    }
+    for (const sg of (def.props ?? []).filter((q) => q.kind === 'sign' && (!q.layer || !m.layer || q.layer === m.layer))) {
+      const w = measureText(sg.text, 1) + 12; // drawSign's paper at scale 1
+      const box = { x: sg.tx * 30 + 15 - w / 2, y: sg.ty * 30 + 15 - 10, w, h: 20 };
+      assert.ok(!overlap(panel, box), `${def.id}: the memo covers the ${sg.text} sign`);
+    }
+    for (const pr of lvl.pranks) {
+      if (!pr.tell) continue;
+      const tell = { x: pr.tell.tx * 30 - 30, y: pr.tell.ty * 30 - 40, w: 90, h: 120 }; // the note above it, the eyes either side
+      assert.ok(!overlap(panel, tell), `${def.id}: the memo covers ${pr.id}'s tell`);
     }
   }
 });

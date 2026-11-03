@@ -46,7 +46,7 @@ Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game l
 | Act 4 card | ACT 4 · LIGHTS OUT · "The building doesn't add up anymore." |
 | Act 5 card ✅ | ACT 5 · UPSIDE DOWN · "The night shift turned the building over." |
 | Finale card ✅ | FINALE · CLOCK OUT · "One more shift." |
-| Sticky Keys joke (G14) | A freak memo: "WE PRES SHIFT 5 TIMES. FOR FUN." + the practical line kept below it |
+| Sticky Keys joke (G14) ✅ | A freak memo: "WE PRES SHIFT 5 TIMES. FOR FUN." on a sticky note on the title screen, the practical line kept below it |
 | End (full game) ✅ | SHIFT COMPLETE · one row per act · totals · credits · SPACE: clock in again |
 
 ## 3. Level notes (shown 5 s at level start)
@@ -91,8 +91,8 @@ SPOOKED! · AAAGH! · NOPE! · EEP! · NOT PAID ENOUGH
 |---|---|
 | Prank fires ✅ | hee hee hee |
 | Sticky note tell (day) ✅ | MINE |
-| More tells | MINE NOW · DO NOT TUCH · FINDERS KEEPERS · (a drawing of eyes) |
-| Hex-flavored tells *(candidates)* | MINE BY ANSHENT LAW · HEXED. NO TUCH · THE PLANK IS OURS NOW · WE SEE YOU (WE R SHINY) |
+| More tells ✅ (Nov 3: MINE NOW on Inventory's and Stacked's planks, DO NOT TUCH on Stacked's gate, FINDERS KEEPERS on the finale's door) | MINE NOW · DO NOT TUCH · FINDERS KEEPERS · (a drawing of eyes) |
+| Hex-flavored tells *(candidates; HEXED. NO TUCH is on Night Audit's plank)* | MINE BY ANSHENT LAW · HEXED. NO TUCH · THE PLANK IS OURS NOW · WE SEE YOU (WE R SHINY) |
 | The freaks' proud sign over the staircase (`stairs`) *(draft)* | OUR STARES! |
 
 ### 5.1 Signs in the levels ✅ *(in the build; drafts for Fish)*
@@ -114,9 +114,9 @@ SPOOKED! · AAAGH! · NOPE! · EEP! · NOT PAID ENOUGH
 | `heels` | HARD HAT AREA |
 | `clockout` | LAST SHIFT |
 
-## 6. Notice board memos *(planned, A3)*
+## 6. Notice board memos ✅ (Nov 3: one per level, §6.1)
 
-Shown as props; readable when the worker stands near (or always, small).
+A memo is a scrap of paper pinned to the wall (`memo` prop); while the worker stands within 2 tiles of it, its text shows on a paper panel above it (scale 2, at most 360 px wide; `memoPanel` in `src/layout.js`). Tests pin that every level has one, that the scripted route passes close enough to read it, and that its panel never covers the exit, a tell or a sign.
 
 - "To the night crew: please stop moving the planks. — Management"
 - "To the day crew: we do not have a night crew. — Night Management"
@@ -129,7 +129,7 @@ Shown as props; readable when the worker stands near (or always, small).
 - "Break room: all snacks have been taken. The wrappers have been arranged in a circle. With candles."
 - "Do not leave shiny objects unattended."
 
-### 6.1 One memo per level *(drafts; pick from §6 or these)*
+### 6.1 One memo per level ✅ *(in the build; drafts for Fish)*
 
 | Level | Memo |
 |---|---|
@@ -148,6 +148,11 @@ Shown as props; readable when the worker stands near (or always, small).
 | `offset` | "The elevator now stops at 3.5. Do not press 3.5." |
 | `daywalker` | "Day crew: if you see eyes, no you didn't." |
 | `portrait` | "Employee of the Month: [photo is just eyes]" |
+| `audit` | "Pest control visit cancelled. Pest control would like to not talk about it." (from §6) |
+| `upside` | "Ceiling inspection passed. The ceiling is now the floor. — Facilities" *(new draft)* |
+| `fallup` | "Gravity will be restored after the renovation. — Facilities" *(new draft)* |
+| `ceiling` | "To the night crew: please stop moving the planks. — Management" (from §6) |
+| `heels` | "To the day crew: we do not have a night crew. — Night Management" (from §6) |
 | `clockout` | "Overtime is mandatory. So are the freaks, apparently." |
 
 ## 7. Timecard comments ✅

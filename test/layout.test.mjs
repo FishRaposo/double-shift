@@ -4,6 +4,7 @@ import assert from 'node:assert/strict';
 import { LEVELS, ACTS, FINALE_ACT } from '../src/levels.js';
 import {
   levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, actLabel, endSummary, selectClick, canvasScale, CARD, TAB, SELECT_BOUNDS,
+  memoPanel, memoNear, MEMO,
 } from '../src/layout.js';
 import { wrapText, measureText } from '../src/font.js';
 
@@ -137,4 +138,27 @@ test('wrapText keeps every line within maxPx', () => {
   }
   assert.deepEqual(wrapText('', 100, 2), []);
   assert.deepEqual(wrapText('Short', 100, 2), ['Short']);
+});
+
+test('memos: every level has one, and its panel wraps within 360 px, on screen and below the HUD', () => {
+  for (const def of LEVELS) {
+    const memos = (def.props ?? []).filter((p) => p.kind === 'memo');
+    assert.equal(memos.length, 1, `${def.id}: one memo`);
+    const m = memos[0];
+    assert.ok(m.text, `${def.id}: the memo says something`);
+    const p = memoPanel(m.text, m.tx, m.ty, { maxW: m.w });
+    assert.ok(p.w <= MEMO.maxW, `${def.id}: ${p.w} px wide`);
+    assert.ok(p.x >= 0 && p.x + p.w <= 960 && p.y >= MEMO.top && p.y + p.h <= 540, `${def.id}: panel ${JSON.stringify(p)}`);
+    for (const line of p.lines) assert.ok(measureText(line, MEMO.scale) <= p.w - 2 * MEMO.pad, `${def.id}: "${line}"`);
+  }
+});
+
+test('memos: the panel shows while the worker is within 2 tiles of the memo', () => {
+  const m = { tx: 10, ty: 12 };
+  const at = (tx, ty) => ({ x: tx * 30 + 6, y: ty * 30 + 4 });
+  assert.equal(memoNear(at(10, 12), m), true);
+  assert.equal(memoNear(at(12, 13), m), true);
+  assert.equal(memoNear(at(8, 10), m), true);
+  assert.equal(memoNear(at(13, 12), m), false);
+  assert.equal(memoNear(at(10, 15), m), false);
 });

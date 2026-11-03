@@ -244,7 +244,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | Element | Spec |
 |---|---|
 | Font | The pixel font (§0). Scales: 9 logo, 6 act title, 4 screen titles, 3 headings and tutorial, 2 HUD and body, 1 footnotes and debug |
-| HUD | Top-left `n/N LEVEL NAME`; top-right shift label + pixel sun / crescent moon; below it `CLOCK-INS n · PAR p` (red over par); the level note centred near the bottom of the screen for the first 5 s (where it can't cover an exit, a tell or a freak), on a paper strip. All scale 2; HUD lines sit on plates in the shift's sky colour (§3.1) |
+| HUD | Top-left `n/N LEVEL NAME`; top-right shift label + pixel sun / crescent moon; below it `CLOCK-INS n · PAR p` (red over par); the level note centred near the bottom of the screen for the first 5 s (where it can't cover an exit, a tell or a freak), on a paper strip. All scale 2; HUD lines sit on plates in the shift's sky colour (§3.1). A memo's text (WRITING.md §6) shows on the same paper and rim, in a panel above the memo, while the worker stands within 2 tiles of it |
 | Tutorial | Level 1 until first shift: "Press SHIFT (or K) to change shifts" + "Dashed outlines show the other shift" |
 | Shift effect | Screen tint 0.12 s (day: warm `rgba(255,240,200,·0.22)`, night: blue `rgba(40,80,200,·0.18)`), expanding ring 0.3 s from the worker |
 | Death effect | Red tint 0.3 s |

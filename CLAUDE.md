@@ -16,7 +16,7 @@ npm start                                  # local server + opens the browser (p
 npm run serve                              # http://localhost:8080, no browser; next free port if busy (scripts/serve.mjs)
 npm run zip                                # double-shift-web.zip (index.html + src/) for itch.io
 npm run media                              # headless Edge/Chrome: real-key level-1 run, cover/screenshots/gallery, audio clipping + draw-cost checks
-npm run media -- --review clock,watch --gray --cvd   # day + night shots per level (+ grayscale, color-blind) in media/review/
+npm run media -- --review clock,watch --gray --cvd   # day + night shots per level (+ grayscale, color-blind; --memo: memo panel open) in media/review/
 npm run media -- --root <dir>              # smoke-test another folder, e.g. the unzipped itch build
 ```
 

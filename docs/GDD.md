@@ -178,7 +178,7 @@ SHIFT is read three ways at once:
 - **The work shift** is the fiction.
 - **Things shifted** is the antagonist: the freaks move things around between shifts, up to whole floors in act 3.
 
-The jam page's own theme text mentions "work the night shift" and jokes that Shift is the key that "accidentally enable[s] sticky keys". We already have both: the night shift is the fiction, and the Sticky Keys warning is a real design constraint (§3.2). *(planned)* Turn the warning into an in-joke: a memo on the title or pause screen from the freaks, written as if they set off Sticky Keys on purpose. Keep the practical advice next to it.
+The jam page's own theme text mentions "work the night shift" and jokes that Shift is the key that "accidentally enable[s] sticky keys". We already have both: the night shift is the fiction, and the Sticky Keys warning is a real design constraint (§3.2). *(built Nov 3, on the title)* Turn the warning into an in-joke: a memo on the title or pause screen from the freaks, written as if they set off Sticky Keys on purpose. Keep the practical advice next to it.
 
 ## 1.8 Jam Fit and Scoring
 

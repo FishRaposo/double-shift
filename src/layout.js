@@ -2,6 +2,8 @@
 // (test/layout.test.mjs); src/main.js only draws what these functions return.
 
 import { ACTS, FINALE_ACT } from './levels.js';
+import { TILE, PARAMS } from './rules.js';
+import { wrapText, measureText, CAP } from './font.js';
 
 // `?level=` accepts a level id (`?level=offset`) or a 1-based position (`?level=11`). An id is stable when
 // levels are inserted; a position isn't. Numbers clamp to the list; anything else starts at the first level.
@@ -103,4 +105,29 @@ export function endSummary(defs, results) {
     return row;
   });
   return { rows, shifts, par };
+}
+
+// ---------- memos (notice-board notes, WRITING.md §6.1) ----------
+// A memo prop is a scrap of paper on the wall. While the worker stands within 2 tiles of it (by their middle), its
+// text shows on a paper panel above it in the note strip's style: scale 2, at most 360 px wide, below the HUD and
+// clamped on screen, on the 2-px art grid; a memo's `w` narrows it where tells crowd the room. The panel carries
+// its own metrics, so src/art.js just draws it.
+export const MEMO = Object.freeze({ scale: 2, maxW: 360, pad: 8, top: 60, near: 2, lineH: 18 });
+
+export function memoNear(p, memo) {
+  const cx = Math.floor((p.x + PARAMS.playerW / 2) / TILE);
+  const cy = Math.floor((p.y + PARAMS.playerH / 2) / TILE);
+  return Math.abs(cx - memo.tx) <= MEMO.near && Math.abs(cy - memo.ty) <= MEMO.near;
+}
+
+export function memoPanel(text, tx, ty, { maxW = MEMO.maxW, W = 960, H = 540 } = {}) {
+  const even = (v) => 2 * Math.ceil(v / 2);
+  const { scale, pad, lineH } = MEMO;
+  const cap = Math.min(maxW, MEMO.maxW);
+  const lines = wrapText(text, cap - 2 * pad, scale);
+  const w = Math.min(cap, even(Math.max(...lines.map((l) => measureText(l, scale))) + 2 * pad));
+  const h = even((lines.length - 1) * lineH + CAP * scale + 2 * pad);
+  const x = Math.min(Math.max(even(tx * TILE + TILE / 2 - w / 2), 8), W - 8 - w);
+  const y = Math.min(Math.max(even(ty * TILE - h - 6), MEMO.top), H - 8 - h);
+  return { x, y, w, h, lines, scale, pad, lineH };
 }

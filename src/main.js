@@ -12,10 +12,10 @@ import { drawSprite, drawEyes, eyesOpen, workerFrame, spriteRect, ART, SPRITES, 
 import {
   PAL, PROPS, drawBackground, drawSolidTile, drawHatch, drawEchoEdges, drawRebar, drawLaser, drawHazardEcho,
   drawExit, drawCheckpoint, drawSign, drawFreak, drawShiftRing, drawDust, drawPuff, drawSparkle, drawPanel,
-  drawStamp, drawLogo, drawWetTile, drawSkin, shouldHatch, withCellMirror, PLATE, NOTE_STRIP, px,
+  drawStamp, drawLogo, drawWetTile, drawSkin, shouldHatch, withCellMirror, PLATE, NOTE_STRIP, px, drawMemoPanel,
 } from './art.js';
 import { SPOOK_LINES, ACT_LINES, CREDITS, timecardComment, stampText } from './copy.js';
-import { levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, endSummary, selectClick, canvasScale, CARD } from './layout.js';
+import { levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, endSummary, selectClick, canvasScale, CARD, memoPanel, memoNear } from './layout.js';
 
 const W = 960;
 const H = 540;
@@ -451,7 +451,7 @@ function drawTells(lvl, s, layer, t) {
       PROPS.eyes(g, x - 30, up ? y + 42 : y - 50, { t, seed: 7 });
       PROPS.eyes(g, x + 4, up ? y + 56 : y - 64, { t, seed: 3 });
     } else {
-      drawSign(g, x, y - 36, 'MINE', 'note', 2);
+      drawSign(g, x, y - 36, pr.tell.text ?? 'MINE', 'note', 2); // the freaks' sticky note (WRITING.md §5)
     }
   }
 }
@@ -616,6 +616,10 @@ function drawPlay() {
   if (game.fx.spook) drawSpookGag();
   else drawWorker(s, layer);
   drawFx(layer, reduced);
+  // a memo's text, while you stand by it (in its shift)
+  for (const m of def.props ?? []) {
+    if (m.kind === 'memo' && (!m.layer || (m.layer === 'night') === (layer === NIGHT)) && memoNear(s.player, m)) drawMemoPanel(g, memoPanel(m.text, m.tx, m.ty, { maxW: m.w }));
+  }
   drawHud(lvl, s, layer);
   if (game.debug) drawDebug(s);
 }
@@ -654,6 +658,8 @@ function drawTitle() {
     drawPanel(g, b.x, b.y, b.w, b.h, false);
     drawText(g, label, b.x + b.w / 2, b.y + 9, { scale: 2, color: '#ffffff', align: 'center' });
   }
+  // the freaks' sticky note about it (WRITING.md §2.1), then the practical line
+  drawSign(g, W / 2, H - 38, 'WE PRES SHIFT 5 TIMES. FOR FUN.', 'note', 1);
   drawText(g, 'Windows: hammering Shift can open Sticky Keys — use K, or turn off the Sticky Keys shortcut.', W / 2, H - 16, { scale: 1, color: 'rgba(255,255,255,0.8)', align: 'center' });
 }
 

@@ -77,7 +77,7 @@ Specs: [TECH.md](TECH.md) §6 (mechanics), [GDD.md](GDD.md) §12 (UI).
 | SYS-8 | Act title cards between acts | Structure, pacing | P1 | A10 | ✅ |
 | SYS-9 | Timecard comments; end screen with totals for every level | Replay hook | P1 | A8 | ✅ |
 | SYS-10 | Freak evidence from the first night shift | Raters seeing the freaks early | P0 | L8 | ✅ built |
-| SYS-11 | Sticky Keys in-joke | Theme | P1 | G14 | planned |
+| SYS-11 | Sticky Keys in-joke | Theme | P1 | G14 | ✅ (Nov 3: the freaks' sticky note on the title) |
 | SYS-12 | Demo GIF capture (extend `scripts/media.mjs`) | itch page | P1 | A9 | planned |
 | SYS-13 | Rebindable controls | Accessibility | *stretch*, approved Nov 3 | G12 | planned (BUILD.md T24) |
 | SYS-14 | Gamepad | Reach | *stretch*, approved Nov 3 | G11 | planned (BUILD.md T24) |
@@ -140,8 +140,8 @@ Specs and drafts: [WRITING.md](WRITING.md). Fish writes the final words.
 |---|---|---|---|
 | TXT-1 | Level notes for all 21 (from Fish's idea-pool lines, trimmed to one line) | WRITING §3 | 12 ✅, 9 drafted |
 | TXT-10 | Act 5 card: ACT 5 · UPSIDE DOWN · "The night shift turned the building over."; finale card: FINALE · CLOCK OUT · "One more shift." | WRITING §2.1 | drafted |
-| TXT-2 | One notice-board memo per level | WRITING §6 | drafts |
-| TXT-3 | Prank tell variants (MINE and friends) | WRITING §5 | drafts |
+| TXT-2 | One notice-board memo per level | WRITING §6 | ✅ built (Nov 3); the words are drafts for Fish |
+| TXT-3 | Prank tell variants (MINE and friends) | WRITING §5 | ✅ built (Nov 3: four variants); drafts for Fish |
 | TXT-4 | Act card titles and one-line subtitles | WRITING §2.1 | ✅ |
 | TXT-5 | Timecard comments | WRITING §7 | ✅ |
 | TXT-6 | UI strings: level select, settings, credits, Sticky Keys joke | WRITING §2.1 | drafted |

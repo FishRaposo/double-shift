@@ -5,6 +5,7 @@ import { LEVELS, CLOCKOUT_CLASSIC } from '../src/levels.js';
 import { DAY, NIGHT, TILE, NO_INPUT, initState, step, tileAt, supervisorFacing, parseLevel, freakBoxes, gravitySign } from '../src/rules.js';
 import { play, tx } from './helpers.mjs';
 import { skinPlan } from '../src/skins.js';
+import { memoNear } from '../src/layout.js';
 import { SOLUTIONS, SOLUTIONS_EXTRA, L } from './solutions.mjs';
 
 test('every level has a scripted solution', () => {
@@ -500,4 +501,18 @@ test('relocations never run out: P2, the step, the planks all come round again b
   assert.ok(solidAt(L.portrait, toggleTo(L.portrait, 41), [[16, 12], [17, 12], [18, 12]]), 'portrait by the ledge on entry 41');
   assert.ok(solidAt(L.ceiling, toggleTo(L.ceiling, 40), [[22, 11], [29, 11]]), 'plank over pit B on entry 40');
   assert.ok(solidAt(L.heels, toggleTo(L.heels, 40), [[2, 3], [9, 3]]), 'plank over the last gap on entry 40');
+});
+
+test('memos: the solution passes close enough to read every memo, in its shift', () => {
+  for (const def of LEVELS) {
+    const m = (def.props ?? []).find((p) => p.kind === 'memo');
+    if (!m) continue;
+    const shift = m.layer === 'night' ? NIGHT : m.layer === 'day' ? DAY : null;
+    let read = false;
+    play(L[def.id], (s, mem, f) => {
+      if (!read && (shift === null || s.layer === shift) && memoNear(s.player, m)) read = true;
+      return SOLUTIONS[def.id](s, mem, f);
+    });
+    assert.ok(read, `${def.id}: the memo at ${m.tx},${m.ty} is never in reach`);
+  }
 });

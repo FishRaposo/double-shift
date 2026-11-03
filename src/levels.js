@@ -131,6 +131,7 @@ export const LEVELS = [
     name: 'Clock In',
     act: 1,
     props: [
+      { kind: 'memo', tx: 14, ty: 11, text: "Mind the gap. Seriously. — Renovation" },
       { kind: 'barrierTape', tx: 11, ty: 13, w: 10, layer: 'day' }, // a cordon from floor edge to floor edge
       { kind: 'sign', tx: 8, ty: 10, text: 'RENOVATION', style: 'note' },
       { kind: 'footprints', tx: 21, ty: 13, layer: 'night' },
@@ -188,6 +189,7 @@ export const LEVELS = [
     name: 'Scaffolding',
     act: 1,
     props: [
+      { kind: 'memo', tx: 12, ty: 11, text: "Deliveries go on the ledge. Not on the scaffolding. Not on the ledge either. — Receiving" },
       { kind: 'pallet', tx: 18, ty: 7, layer: 'day' },
       { kind: 'crate', tx: 20, ty: 7, layer: 'day' },
       { kind: 'sign', tx: 5, ty: 9, text: 'DELIVERIES', style: 'paper' },
@@ -242,7 +244,10 @@ export const LEVELS = [
     id: 'closing',
     name: 'Closing Time',
     act: 1,
-    props: [{ kind: 'sign', tx: 5, ty: 10, text: 'CLOSING TIME', style: 'paper' }, { kind: 'sign', tx: 22, ty: 10, text: 'LASERS', style: 'red', layer: 'night' }],
+    props: [
+      { kind: 'memo', tx: 13, ty: 11, text: "Lasers are for security, not for jumping over. — Night Management" },
+      { kind: 'sign', tx: 5, ty: 10, text: 'CLOSING TIME', style: 'paper' }, { kind: 'sign', tx: 22, ty: 10, text: 'LASERS', style: 'red', layer: 'night' },
+    ],
     decor: [{ kind: 'eyes', tx: 24, ty: 4 }],
     // a peeker sealed past the far night gate: it blinks at night, and by day its frozen
     // outline stands beside the exit — the first freak a new player walks through
@@ -294,7 +299,10 @@ export const LEVELS = [
     id: 'midair',
     name: 'Mid-Air',
     act: 1,
-    props: [{ kind: 'vent', tx: 24, ty: 4 }, { kind: 'barrierTape', tx: 4, ty: 13, w: 2, layer: 'day' }],
+    props: [
+      { kind: 'memo', tx: 6, ty: 11, text: "Please report blinking in the dark to nobody." },
+      { kind: 'vent', tx: 24, ty: 4 }, { kind: 'barrierTape', tx: 4, ty: 13, w: 2, layer: 'day' },
+    ],
     note: 'Something up there blinked.',
     par: 3,
     day: [
@@ -343,7 +351,10 @@ export const LEVELS = [
     id: 'inventory',
     name: 'Inventory',
     act: 2,
-    props: [{ kind: 'noticeBoard', tx: 3, ty: 10 }, { kind: 'footprints', tx: 17, ty: 13 }, { kind: 'footprints', tx: 18, ty: 13 }],
+    props: [
+      { kind: 'memo', tx: 9, ty: 11, text: "Lost: one (1) plank. If found, please return to the pit." },
+      { kind: 'noticeBoard', tx: 3, ty: 10 }, { kind: 'footprints', tx: 17, ty: 13 }, { kind: 'footprints', tx: 18, ty: 13 },
+    ],
     note: 'Every time you clock in, something gets moved.',
     par: 3,
     day: [
@@ -390,7 +401,7 @@ export const LEVELS = [
       {
         id: 'plank',
         onNight: 2,
-        tell: { tx: 23, ty: 13 },
+        tell: { tx: 23, ty: 13, text: 'MINE NOW' },
         set: [
           { layer: 'night', x0: 7, x1: 14, y0: 14, ch: '.' },
           { layer: 'night', x0: 20, x1: 27, y0: 14, ch: '#' },
@@ -402,7 +413,10 @@ export const LEVELS = [
     id: 'watch',
     name: 'Night Watch',
     act: 2,
-    props: [{ kind: 'vent', tx: 22, ty: 11 }, { kind: 'mug', tx: 3, ty: 13, layer: 'day' }],
+    props: [
+      { kind: 'memo', tx: 5, ty: 11, text: "Reminder: the vents are not a break room." },
+      { kind: 'vent', tx: 22, ty: 11 }, { kind: 'mug', tx: 3, ty: 13, layer: 'day' },
+    ],
     note: 'Something is in the tunnel. It only moves at night.',
     par: 4,
     day: [
@@ -462,6 +476,7 @@ export const LEVELS = [
     // same height, then stops. Climb at night, jump off the top step toward the tower, clock out mid-air and land
     // on it. The exit is 7 tiles past the top step: a night jump falls short.
     props: [
+      { kind: 'memo', tx: 9, ty: 11, text: "Who approved the staircase. — Facilities" },
       { kind: 'noticeBoard', tx: 3, ty: 10, layer: 'day' },
       { kind: 'sign', tx: 21, ty: 7, text: 'OUR STARES!', style: 'note', layer: 'night' },
       { kind: 'barrierTape', tx: 21, ty: 13, w: 2, layer: 'day' },
@@ -532,6 +547,7 @@ export const LEVELS = [
     ],
     freaks: [{ kind: 'lurker', tx: 20, ty: 13, range: 1, speed: 40 }],
     props: [
+      { kind: 'memo', tx: 10, ty: 11, text: "Doors are now available at Lost & Found. Please take only your own door.", w: 200 },
       { kind: 'noticeBoard', tx: 1, ty: 10, layer: 'day' },
       { kind: 'lostFoundBox', tx: 25, ty: 13 },
       { kind: 'vent', tx: 11, ty: 8, layer: 'night' },
@@ -584,6 +600,7 @@ export const LEVELS = [
     note: 'Someone waxed the floors. Nobody on the payroll waxes floors.',
     par: 4,
     props: [
+      { kind: 'memo', tx: 6, ty: 11, text: "Floors were waxed at 3 AM. We do not employ anyone at 3 AM." },
       { kind: 'wetFloorSign', tx: 5, ty: 13, layer: 'night' },
       { kind: 'footprints', tx: 6, ty: 13, layer: 'night' },
       { kind: 'footprints', tx: 7, ty: 13, layer: 'night' },
@@ -656,6 +673,7 @@ export const LEVELS = [
       { kind: 'pillar', tx: 13, ty: 13, layer: 'night' },
     ],
     props: [
+      { kind: 'memo', tx: 5, ty: 12, text: "Structural survey: fine. Somehow. — Engineering", w: 200 },
       { kind: 'noticeBoard', tx: 2, ty: 10, layer: 'day' },
       { kind: 'sign', tx: 6, ty: 8, text: 'LOAD BEARING', style: 'paper', layer: 'day' },
       { kind: 'pallet', tx: 15, ty: 13, layer: 'day' },
@@ -708,6 +726,7 @@ export const LEVELS = [
     note: 'One of them has a clipboard now. It supervises the others.',
     par: 2,
     props: [
+      { kind: 'memo', tx: 6, ty: 12, text: "We did not hire a night supervisor. — HR" },
       { kind: 'sign', tx: 4, ty: 9, text: 'STAFF ONLY', style: 'paper', layer: 'day' },
       { kind: 'vent', tx: 16, ty: 13 },
       { kind: 'footprints', tx: 15, ty: 13 },
@@ -772,6 +791,7 @@ export const LEVELS = [
     note: "They've been busy.",
     par: 5,
     props: [
+      { kind: 'memo', tx: 4, ty: 11, text: "Whoever keeps drawing circles in chalk on the loading dock: stop.", w: 300 },
       { kind: 'noticeBoard', tx: 2, ty: 10 },
       { kind: 'chalkCircles', tx: 15, ty: 13, layer: 'night' },
       { kind: 'footprints', tx: 16, ty: 13, layer: 'night' },
@@ -836,7 +856,7 @@ export const LEVELS = [
       {
         id: 'gateC',
         onNight: 2,
-        tell: { tx: 18, ty: 9 },
+        tell: { tx: 18, ty: 9, text: 'DO NOT TUCH' },
         set: [
           { layer: 'night', x0: 18, x1: 18, y0: 0, y1: 13, ch: '.' },
           { layer: 'night', x0: 6, x1: 13, y0: 14, ch: '.' },
@@ -845,7 +865,7 @@ export const LEVELS = [
       {
         id: 'plankB',
         onNight: 3,
-        tell: { tx: 27, ty: 12 },
+        tell: { tx: 27, ty: 12, text: 'MINE NOW' },
         set: [{ layer: 'night', x0: 23, x1: 30, y0: 14, ch: '#' }],
       },
     ],
@@ -868,6 +888,7 @@ export const LEVELS = [
       { kind: 'portrait', tx: 16, ty: 12, layer: 'night' },
     ],
     props: [
+      { kind: 'memo', tx: 3, ty: 11, text: "Employee of the Month: [photo is just eyes]", w: 200 },
       { kind: 'plaque', tx: 13, ty: 10, layer: 'day' },
       { kind: 'noticeBoard', tx: 7, ty: 10, layer: 'day' },
       { kind: 'nail', tx: 26, ty: 12, layer: 'night' }, // where it hangs when it isn't there
@@ -922,6 +943,7 @@ export const LEVELS = [
     note: 'One of them clocked in for the day shift.',
     par: 5,
     props: [
+      { kind: 'memo', tx: 17, ty: 11, text: "Day crew: if you see eyes, no you didn't." },
       { kind: 'sign', tx: 3, ty: 10, text: 'DAY SHIFT', style: 'paper', layer: 'day' },
       { kind: 'footprints', tx: 12, ty: 13, layer: 'day' },
       { kind: 'mug', tx: 4, ty: 13, layer: 'day' },
@@ -991,6 +1013,7 @@ export const LEVELS = [
     // lasers trace where the day floor continues at night: the copy ends, don't wander off
     nightPatch: [{ x0: 11, x1: 18, y0: 11, ch: '^' }],
     props: [
+      { kind: 'memo', tx: 11, ty: 11, text: "The elevator now stops at 3.5. Do not press 3.5." },
       { kind: 'sign', tx: 3, ty: 12, text: '3', style: 'paper' },
       { kind: 'sign', tx: 12, ty: 6, text: '3.5', style: 'note', layer: 'night' },
     ],
@@ -1032,7 +1055,7 @@ export const LEVELS = [
     //   when they lay the plank over the last pit (a low roof, so no jumping it). Then the lurker under the roof:
     //   it works nights, but it answers to the clipboard too, so clock out or wait until it slacks. Their tell
     //   shows from the spawn, just before the roof.
-    pranks: [{ id: 'plank', onNight: 3, tell: { tx: 23, ty: 13 }, set: [{ layer: 'night', x0: 25, x1: 26, y0: 14, ch: '#' }] }],
+    pranks: [{ id: 'plank', onNight: 3, tell: { tx: 23, ty: 13, text: 'HEXED. NO TUCH' }, set: [{ layer: 'night', x0: 25, x1: 26, y0: 14, ch: '#' }] }],
     freaks: [
       { kind: 'supervisor', tx: 15, ty: 8, period: 1.6, startFacing: 'right' },
       { kind: 'lurker', tx: 13, ty: 13, range: 1, speed: 40 },
@@ -1041,6 +1064,7 @@ export const LEVELS = [
       { kind: 'lurker', tx: 29, ty: 13 },
     ],
     props: [
+      { kind: 'memo', tx: 11, ty: 11, text: "Pest control visit cancelled. Pest control would like to not talk about it." },
       { kind: 'sign', tx: 7, ty: 7, text: 'INSPECTION', style: 'paper', layer: 'day' },
       { kind: 'noticeBoard', tx: 21, ty: 10, layer: 'day' },
       { kind: 'mopBucket', tx: 7, ty: 13, layer: 'night' },
@@ -1100,6 +1124,7 @@ export const LEVELS = [
     // floor. The checkpoint hangs from the walkway at night and sits on a shelf by day.
     upsideDown: true,
     props: [
+      { kind: 'memo', tx: 17, ty: 13, text: "Ceiling inspection passed. The ceiling is now the floor. — Facilities", layer: 'day' },
       { kind: 'sign', tx: 4, ty: 12, text: 'MIND YOUR HEAD', style: 'note', layer: 'day' },
       { kind: 'noticeBoard', tx: 26, ty: 12, layer: 'day' },
       { kind: 'mug', tx: 13, ty: 12, layer: 'night', flip: true }, // someone's coffee, upside down under the walkway
@@ -1145,6 +1170,7 @@ export const LEVELS = [
     // floor in two clock-ins (found by the full audit's random search).
     nightPatch: [{ x0: 12, x1: 17, y0: 12, ch: '^' }, { x0: 31, y0: 13, ch: '#' }, { x0: 17, y0: 13, y1: 17, ch: '#' }],
     props: [
+      { kind: 'memo', tx: 4, ty: 11, text: "Gravity will be restored after the renovation. — Facilities", layer: 'day' },
       { kind: 'sign', tx: 3, ty: 11, text: 'THIS WAY UP', style: 'note', layer: 'day' },
       { kind: 'noticeBoard', tx: 7, ty: 10, layer: 'day' },
       { kind: 'vent', tx: 6, ty: 4, layer: 'night', flip: true }, // under the floor's copy, where you hang
@@ -1190,6 +1216,7 @@ export const LEVELS = [
     pranks: relocations('plank', { start: 5, loop: [22, 5], rect: (x0) => ({ x0, x1: x0 + 7, y0: 11 }), first: 2, tells: 1 }),
     freaks: [{ kind: 'lurker', tx: 16, ty: 12, range: 1, speed: 40 }],
     props: [
+      { kind: 'memo', tx: 12, ty: 11, text: "To the night crew: please stop moving the planks. — Management", layer: 'day' },
       { kind: 'sign', tx: 2, ty: 10, text: "IT'S FINE", style: 'note', layer: 'day' },
       { kind: 'noticeBoard', tx: 21, ty: 10, layer: 'day' },
       { kind: 'footprints', tx: 13, ty: 12, layer: 'night', flip: true }, // on the walkway's copy, not the plank
@@ -1242,6 +1269,7 @@ export const LEVELS = [
       { kind: 'lurker', tx: 13, ty: 4, range: 1, speed: 45 },
     ],
     props: [
+      { kind: 'memo', tx: 20, ty: 12, text: "To the day crew: we do not have a night crew. — Night Management", layer: 'day' },
       { kind: 'sign', tx: 24, ty: 9, text: 'HARD HAT AREA', style: 'paper', layer: 'day' },
       { kind: 'noticeBoard', tx: 11, ty: 10, layer: 'day' },
       { kind: 'hardHat', tx: 24, ty: 13, layer: 'night', flip: true },
@@ -1293,7 +1321,7 @@ export const LEVELS = [
       { x0: 31, y0: 14, ch: '.' },
     ],
     pranks: [
-      { id: 'door', onNight: 2, tell: { tx: 16, ty: 11 }, sound: 'doorThunk', set: [{ layer: 'night', x0: 16, y0: 13, y1: 14, ch: '.' }] },
+      { id: 'door', onNight: 2, tell: { tx: 16, ty: 11, text: 'FINDERS KEEPERS' }, sound: 'doorThunk', set: [{ layer: 'night', x0: 16, y0: 13, y1: 14, ch: '.' }] },
       // they take the ceiling over the shaft and wall up the time clock, so rising past it on entry 3 touches nothing
       { id: 'stepGone', onNight: 3, tell: { tx: 29, ty: 3 }, set: [{ layer: 'night', x0: 29, x1: 31, y0: 0, y1: 3, ch: '.' }, { layer: 'night', x0: 31, y0: 4, ch: '#' }] },
       // the same spot: its tell stays up after the step goes, so one more clock-in reads as the way back
@@ -1307,6 +1335,7 @@ export const LEVELS = [
       { kind: 'daywalker', tx: 30, ty: 13, range: 1, speed: 45 },
     ],
     props: [
+      { kind: 'memo', tx: 7, ty: 12, text: "Overtime is mandatory. So are the freaks, apparently.", layer: 'day' },
       { kind: 'sign', tx: 4, ty: 9, text: 'LAST SHIFT', style: 'paper', layer: 'day' },
       { kind: 'coatRack', tx: 12, ty: 13, layer: 'day' },
       { kind: 'vent', tx: 20, ty: 8, layer: 'day' },

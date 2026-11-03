@@ -699,6 +699,13 @@ export const PROPS = {
     px(g, x + TILE + TILE / 2 - A, y - 2 * A, 2, 2, '#8a8f99');
     px(g, x + TILE + TILE / 2 - A, y - 2 * A, 1, 1, '#d9dde3');
   },
+  // a memo pinned to the wall: its text shows on a panel while you're near (memoPanel in src/layout.js)
+  memo(g, x, y) {
+    px(g, x + 4 * A, y + 3 * A, 8, 10, NOTE_STRIP.border);
+    px(g, x + 5 * A, y + 4 * A, 6, 8, C.paper);
+    for (const r of [6, 8, 10]) px(g, x + 6 * A, y + r * A, r === 10 ? 3 : 4, 1, C.paperInk);
+    px(g, x + 7 * A, y + 2 * A, 2, 2, '#e0473c'); // the pin
+  },
   // a spare hard hat, management's white one (never the worker's yellow); Head Over Heels sticks it to the ceiling
   hardHat(g, x, y) {
     const f = y + TILE;
@@ -911,4 +918,11 @@ export function drawLogo(g, cx, y, scale = 8) {
   drawText(g, 'DOUBLE', left, y, { scale, color: PAL[DAY].hud, shadow: '#c9ad84' });
   drawText(g, 'SHIFT', left + wl + gap, y, { scale, color: PAL[NIGHT].hud, shadow: '#3aa8bd' });
   return { left, gapX: left + wl, gap };
+}
+
+// A memo's text on a paper panel: the note strip's paper and rim, laid out by memoPanel (src/layout.js).
+export function drawMemoPanel(g, p) {
+  px(g, p.x, p.y, p.w / A, p.h / A, NOTE_STRIP.border);
+  px(g, p.x + A, p.y + A, p.w / A - 2, p.h / A - 2, NOTE_STRIP.paper);
+  p.lines.forEach((line, i) => drawText(g, line, p.x + p.pad, p.y + p.pad + i * p.lineH, { scale: p.scale, color: NOTE_STRIP.ink }));
 }
