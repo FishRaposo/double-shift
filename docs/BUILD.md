@@ -45,12 +45,13 @@ npm run audit
 ```bash
 npm run media
 ```
-- **`npm test`:** all tests, including fairness (≈ 2 min).
+- **`npm test`:** all tests, including fairness (about 10 s on 12 levels; the files run in parallel).
 - **`npm run check`:** syntax plus every level parses.
-- **`npm run audit`:** per-level input slack, lag tolerance, and a random search for wins below par.
-- **`npm run media`:** headless Edge or Chrome plays level 1 with real keys and runs the flow checks; it also checks audio clipping and draw cost, and saves screenshots to `media/` for you to look at.
+- **`npm run audit`:** per-level input slack, lag tolerance, and a random search for wins below par (about 3 min on 12 levels; `npm run audit -- <id>` for one).
+- **`npm run media`:** headless Edge, Chrome or Chromium plays level 1 with real keys and runs the flow checks; it also checks audio clipping and draw cost, and saves screenshots to `media/` for you to look at. In a cloud session it finds `/opt/pw-browsers/chromium` and adds `--no-sandbox` as root.
+- **Review shots:** `npm run media -- --review <id,id> --gray --cvd` writes a day and a night picture of each level, plus grayscale and color-blind variants, to `media/review/`. Read them: that's the visual check for every level (§2.1 step 6).
 
-Manual play: `npm start`, then `?level=N&autostart` (N = position in `src/levels.js`), `?debug` for the overlay (clocks, layer, night entries). In the console, `__doubleShift` is the game object.
+Manual play: `npm start`, then `?level=<id>&autostart` (an id like `offset`; a 1-based position like `?level=11` also works), `?debug` for the overlay (clocks, layer, night entries). In the console, `__doubleShift` is the game object.
 
 ### 1.3 Doc sync checklist (tick what your change touches)
 - **New or changed level:**
@@ -99,7 +100,7 @@ Manual play: `npm start`, then `?level=N&autostart` (N = position in `src/levels
    Return `{ right, left, jump, shift }`. `play()` turns a held shift into one press, so release between shifts. Model on `watch`, `supervisor` (waiting on a freak), `offset` (apex shifts, with a `m` memo object) and `clockout` (jumping on landing).
 4. **Level-specific tests** in `test/levels.test.mjs`: the lesson is required. For example, staying on one shift gets you spooked, or the skip you worried about doesn't win. Copy the Night Watch, Broad Daylight, Stacked and Clock Out tests.
 5. **Run** `npm test` and `npm run audit -- <id>`. Fix any input under the act's floor by widening the space, not by tightening the policy. If the audit's random search finds a win below par, close the route (that's how the Night Watch roof and the Floor 3.5 exit came about).
-6. **Look at it:** add `[<position>, <night?>, 'NN-<id>-<shift>.png']` to the level list in `scripts/media.mjs`, run it, and read the screenshot. Check that no HUD text covers the exit, a tell or a freak.
+6. **Look at it:** run `npm run media -- --review <id> --gray` and read the PNGs in `media/review/`. Check that no HUD text covers the exit, a tell or a freak, and that the worker, the exit, every hazard and every freak are findable in grayscale. If the level is an itch screenshot, add `['<id>', <night?>, 'NN-<id>-<shift>.png']` to the capture list in `scripts/media.mjs`.
 7. **Docs:** §1.3.
 
 ### 2.2 Add or change a rule

@@ -1,14 +1,25 @@
 // itch.io media: drives headless Edge/Chrome over the DevTools protocol (no dependencies), presses real keys
 // at full speed, and saves the cover + screenshots to media/. Also a full-speed smoke test: exits 1 if level 1
 // can't be cleared with real keys or the page logs an error.
-// Usage: node scripts/media.mjs [outdir]   (BROWSER env overrides the browser path)
+// Usage: node scripts/media.mjs [outdir] [--review id,id] [--gray] [--cvd] [--root DIR]
+//   --review id,id  only a day and a night shot of each level, into <outdir>/review/ (night is set directly:
+//                   a picture of the geometry, not a playable state)
+//   --gray, --cvd   with --review: also grayscale and color-blind (deuteranopia, protanopia, tritanopia) variants
+//   --root DIR      serve DIR instead of the repo (smoke-test the unzipped itch build: no cover, gallery or audio)
+// BROWSER env overrides the browser path.
 import { spawn } from 'node:child_process';
 import { existsSync, mkdirSync, mkdtempSync, rmSync, writeFileSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
 const root = resolve(import.meta.dirname, '..');
-const out = resolve(process.argv[2] || join(root, 'media'));
+const argv = process.argv.slice(2);
+const flag = (name) => argv.includes(name);
+const option = (name) => (argv.includes(name) ? argv[argv.indexOf(name) + 1] : null);
+const review = option('--review')?.split(',').filter(Boolean) ?? null;
+const serveRoot = option('--root');
+const positional = argv.filter((a, i) => !a.startsWith('--') && !['--review', '--root'].includes(argv[i - 1]));
+const out = resolve(positional[0] || join(root, 'media'));
 const PORT = 8095;
 const DEBUG_PORT = 9333;
 const BROWSERS = [
@@ -19,6 +30,7 @@ const BROWSERS = [
   '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome',
   '/usr/bin/google-chrome',
   '/usr/bin/chromium',
+  '/opt/pw-browsers/chromium', // cloud sessions (Playwright's Chromium)
 ].filter(Boolean);
 
 const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
@@ -26,11 +38,14 @@ const browserPath = BROWSERS.find((p) => existsSync(p));
 if (!browserPath) { console.error('No Edge/Chrome found; set BROWSER to its path.'); process.exit(1); }
 mkdirSync(out, { recursive: true });
 
-const server = spawn(process.execPath, [join(root, 'scripts/serve.mjs'), '--port', String(PORT)], { stdio: 'ignore' });
+const serveArgs = [join(root, 'scripts/serve.mjs'), '--port', String(PORT), ...(serveRoot ? ['--root', serveRoot] : [])];
+const server = spawn(process.execPath, serveArgs, { stdio: 'ignore' });
 const profile = mkdtempSync(join(tmpdir(), 'ds-media-'));
 const browser = spawn(browserPath, [
   '--headless=new', `--remote-debugging-port=${DEBUG_PORT}`, `--user-data-dir=${profile}`,
-  '--no-first-run', '--autoplay-policy=no-user-gesture-required', 'about:blank',
+  '--no-first-run', '--autoplay-policy=no-user-gesture-required',
+  ...(process.getuid?.() === 0 ? ['--no-sandbox'] : []), // Chromium refuses to sandbox as root (containers)
+  'about:blank',
 ], { stdio: 'ignore' });
 
 let ws;
@@ -83,6 +98,44 @@ async function shot(name) {
   console.log(`  ${name}`);
 }
 
+// Color-vision simulation for review shots (the common Brettel/Viénot matrices, applied in sRGB).
+const CVD = {
+  deuteranopia: '0.625 0.375 0 0 0  0.7 0.3 0 0 0  0 0.3 0.7 0 0  0 0 0 1 0',
+  protanopia: '0.567 0.433 0 0 0  0.558 0.442 0 0 0  0 0.242 0.758 0 0  0 0 0 1 0',
+  tritanopia: '0.95 0.05 0 0 0  0 0.433 0.567 0 0  0 0.475 0.525 0 0  0 0 0 1 0',
+};
+const CVD_SVG = Object.entries(CVD)
+  .map(([k, v]) => `<filter id="cvd-${k}" color-interpolation-filters="sRGB"><feColorMatrix type="matrix" values="${v}"/></filter>`)
+  .join('');
+
+// Review: a day and a night picture of each level, plus the requested variants. The simulation is stopped
+// (won = true makes step() a no-op) so nothing falls or dies between the two shots.
+async function reviewShots(ids) {
+  const dir = join(out, 'review');
+  mkdirSync(dir, { recursive: true });
+  const variants = [['', 'none'], ...(flag('--gray') ? [['-gray', 'grayscale(1)']] : []),
+    ...(flag('--cvd') ? Object.keys(CVD).map((k) => [`-${k.slice(0, 4)}`, `url(#cvd-${k})`]) : [])];
+  for (const id of ids) {
+    await open(`?level=${encodeURIComponent(id)}&autostart`);
+    const found = await evaluate(`(() => { const g = __doubleShift; return g.state && g.screen === 'play'; })()`);
+    if (!found) throw new Error(`review: level ${id} did not start`);
+    await evaluate(`(() => { const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('width', '0'); s.setAttribute('height', '0'); s.style.position = 'absolute'; s.innerHTML = '${CVD_SVG}'; document.body.appendChild(s); })()`);
+    for (const [shiftName, layer] of [['day', 0], ['night', 1]]) {
+      await evaluate(`(() => { const s = __doubleShift.state; s.layer = ${layer}; s.won = true; })()`);
+      await sleep(250);
+      for (const [suffix, filter] of variants) {
+        await evaluate(`document.getElementById('game').style.filter = '${filter}'`);
+        await sleep(60);
+        const name = `${id}-${shiftName}${suffix}.png`;
+        const { data } = await send('Page.captureScreenshot', { format: 'png' });
+        writeFileSync(join(dir, name), Buffer.from(data, 'base64'));
+        console.log(`  review/${name}`);
+      }
+      await evaluate(`document.getElementById('game').style.filter = 'none'`);
+    }
+  }
+}
+
 let failed = false;
 try {
   await connect();
@@ -91,9 +144,29 @@ try {
   await send('Page.bringToFront');
   await send('Emulation.setFocusEmulationEnabled', { enabled: true }); // keep rAF running like a focused tab
   console.log(`Saving to ${out}`);
+  if (review) await reviewShots(review);
+  else await fullRun();
+} catch (e) {
+  failed = true;
+  console.error(e.message);
+} finally {
+  ws?.close();
+  browser.kill();
+  server.kill();
+  await sleep(500);
+  try { rmSync(profile, { recursive: true, force: true }); } catch { /* browser may still hold files */ }
+}
+if (errors.length) { failed = true; console.error('page errors:', errors); }
+if (failed) console.log('FAILED');
+else if (review) console.log(`ok: review shots saved for ${review.join(', ')}, no page errors`);
+else console.log(`ok: media saved, level 1 cleared with real keys, no page errors${serveRoot ? ` (served from ${serveRoot})` : ''}`);
+process.exit(failed ? 1 : 0);
 
-  await open('tools/cover.html', 1260, 1000);
-  await shot('cover.png');
+async function fullRun() {
+  if (!serveRoot) {
+    await open('tools/cover.html', 1260, 1000);
+    await shot('cover.png');
+  }
 
   await open('');
   await shot('01-title.png');
@@ -139,7 +212,7 @@ try {
   await press('Space');
   flow('Space in the first 0.6 s keeps the timecard up', (await evaluate('__doubleShift.screen')) === 'card');
   // 3. settings opened from pause keep the night music
-  await open('?level=6&autostart');
+  await open('?level=watch&autostart');
   await press('KeyK');
   await sleep(200);
   await press('Escape');
@@ -147,23 +220,24 @@ try {
   await sleep(100);
   const m = await evaluate('({ screen: __doubleShift.screen, music: __doubleShift.musicLayer })');
   flow('settings from pause keep the night music', m.screen === 'settings' && m.music === 1, m);
-  // 4. the end screen fits every level
-  await evaluate('(() => { const g = __doubleShift; g.results = g.results.length ? g.results : []; for (let i = 0; i < 16; i++) if (!g.results[i] && i < 10) g.results[i] = { shifts: 3, par: 3, deaths: 0, time: 4 }; g.screen = "end"; })()');
+  // 4. the end screen fits every level (results for every level, played or not)
+  await evaluate('(() => { const g = __doubleShift; for (let i = 0; i < 64; i++) if (!g.results[i]) g.results[i] = { shifts: 3, par: 3, deaths: 0, time: 4 }; g.screen = "end"; })()');
   await sleep(3500); // let the ending play: eyes open one by one, then one waves
   await shot('12-end.png');
 
-  for (const [lvl, night, name] of [[5, false, '05-inventory-day.png'], [5, true, '06-inventory-night.png'], [6, true, '07-night-watch-night.png'], [6, false, '08-night-watch-day.png'], [9, true, '13-stacked-night.png'], [12, false, '14-clock-out-day.png'], [12, true, '15-clock-out-night.png']]) {
-    await open(`?level=${lvl}&autostart`);
+  // levels by id, so inserting a level never shifts a capture
+  for (const [id, night, name] of [['inventory', false, '05-inventory-day.png'], ['inventory', true, '06-inventory-night.png'], ['watch', true, '07-night-watch-night.png'], ['watch', false, '08-night-watch-day.png'], ['stacked', true, '13-stacked-night.png'], ['clockout', false, '14-clock-out-day.png'], ['clockout', true, '15-clock-out-night.png']]) {
+    await open(`?level=${id}&autostart`);
     if (night) { await press('KeyK'); await sleep(400); }
     await shot(name);
   }
 
-  // frame-time check on the busiest level (freaks, lasers, night): rAF intervals over 2 s
-  await open('?level=6&autostart');
+  // draw cost on the busiest level (freaks, lasers, night): render the frame 120 times directly
+  // (headless rAF timing is throttled, so frame intervals aren't used)
+  await open('?level=watch&autostart');
   await press('KeyK');
-  // draw cost: render the busiest frame 120 times directly (headless rAF timing is throttled, so not used)
   const ft = await evaluate(`(() => { const g = __doubleShift; g.render(); const t0 = performance.now(); for (let i = 0; i < 120; i++) g.render(); const ms = (performance.now() - t0) / 120; return { ms }; })()`);
-  console.log(`  draw cost (level 6, night): ${ft.ms.toFixed(2)} ms per frame (budget 16.7)`);
+  console.log(`  draw cost (Night Watch, night): ${ft.ms.toFixed(2)} ms per frame (budget 16.7)`);
   if (ft.ms > 8) { failed = true; console.error('drawing a frame is too slow'); }
 
   // level select, after the level-1 clear above was saved (same browser profile)
@@ -174,7 +248,9 @@ try {
   await shot('09-level-select.png');
   if (sel !== 'select') { failed = true; console.error(`level select did not open: ${sel}`); }
 
-  // asset gallery + offline audio loudness check (peaks before the master gain; must not clip)
+  // asset gallery + offline audio loudness check (peaks before the master gain; must not clip).
+  // The tools aren't in the itch build, so --root skips them.
+  if (serveRoot) return;
   await open('tools/gallery.html', 1280, 1500);
   await sleep(500);
   await shot('11-gallery.png');
@@ -183,16 +259,4 @@ try {
   const loudest = peaks.sort((a, b) => b[1] - a[1])[0];
   console.log(`  audio: loudest ${loudest[0]} peak ${loudest[1]}; music day ${audio.music.day.peak}, night ${audio.music.night.peak} over ${audio.music.day.seconds}s each`);
   if (loudest[1] >= 1 || audio.music.day.seconds !== audio.music.night.seconds) { failed = true; console.error('audio check failed', audio); }
-} catch (e) {
-  failed = true;
-  console.error(e.message);
-} finally {
-  ws?.close();
-  browser.kill();
-  server.kill();
-  await sleep(500);
-  try { rmSync(profile, { recursive: true, force: true }); } catch { /* browser may still hold files */ }
 }
-if (errors.length) { failed = true; console.error('page errors:', errors); }
-console.log(failed ? 'FAILED' : 'ok: media saved, level 1 cleared with real keys, no page errors');
-process.exit(failed ? 1 : 0);

@@ -29,7 +29,7 @@ Needs [Node.js](https://nodejs.org) 22 or newer; nothing to install.
 
 The server runs at http://localhost:8080 (it picks the next free port if 8080 is busy). Nothing is cached, so edit a file and reload. Opening `index.html` directly from the folder won't work, because browsers block ES modules on `file://`.
 
-URL options: `?level=3` start at a level, `?autostart` skip the title, `?debug` show the collision/state overlay (toggle with `` ` ``).
+URL options: `?level=offset` start at a level by id (or by position, `?level=3`), `?autostart` skip the title, `?debug` show the collision/state overlay (toggle with `` ` ``).
 
 ## Controls
 

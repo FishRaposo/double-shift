@@ -230,7 +230,7 @@ GitHub Pages serves `main` (root) at <https://fishraposo.github.io/double-shift/
 
 ## 9. Debug
 
-- `?level=N` start at level N; `?autostart` skip the title; `?debug` overlay (hitbox, position, velocity, grounding, coyote, layer, pending shift). Toggle overlay with `` ` ``.
+- `?level=<id>` start at a level by id (`?level=offset`), or `?level=N` by 1-based position (`levelIndex` in `src/layout.js`; an id survives level insertions, a position doesn't); `?autostart` skip the title; `?debug` overlay (hitbox, position, velocity, grounding, coyote, layer, pending shift). Toggle overlay with `` ` ``.
 - `globalThis.__doubleShift` exposes the game object (screen, state, results) for smoke tests and console poking.
 - `M` mutes.
 

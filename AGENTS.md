@@ -7,10 +7,10 @@
 - On this Windows PowerShell setup, `npm.ps1` is blocked by execution policy: use `npm.cmd` instead of `npm` (e.g. `npm.cmd test`).
 - Focused tests: `node --test test/rules.test.mjs`; filter with `node --test --test-name-pattern="peeker" test/rules.test.mjs` (options precede the file).
 - `npm run serve` starts the uncached server; `npm start` also opens the browser. Default port is 8080, but it tries subsequent ports if busy: use the printed URL. Override with `npm run serve -- --port 8090`. Do not open `index.html` via `file://` (ES modules).
-- Browser debugging: `?level=3&autostart&debug` selects a 1-based level, skips the title, and enables the overlay; `globalThis.__doubleShift` exposes game state. Use K instead of repeated Shift presses to avoid Windows Sticky Keys.
-- `npm run media -- <outdir>` runs a real-key browser smoke test and writes cover/screenshots (default `media/`). It launches its own server/browser; keep ports 8095 and 9333 free. Requires installed Edge/Chrome, not Playwright; set `BROWSER` to the executable path if autodetection fails.
+- Browser debugging: `?level=offset&autostart&debug` selects a level by id (a 1-based position like `?level=3` also works), skips the title, and enables the overlay; `globalThis.__doubleShift` exposes game state. Use K instead of repeated Shift presses to avoid Windows Sticky Keys.
+- `npm run media -- <outdir>` runs a real-key browser smoke test and writes cover/screenshots (default `media/`). It launches its own server/browser; keep ports 8095 and 9333 free. It needs Edge/Chrome or Chromium (it also finds `/opt/pw-browsers/chromium` in cloud sessions and adds `--no-sandbox` when run as root); set `BROWSER` to the executable path if autodetection fails. `--review id,id [--gray] [--cvd]` writes day/night review shots per level (plus grayscale and color-blind variants) to `media/review/`; `--root <dir>` smoke-tests another folder, such as the unzipped itch build.
 - Alternative smoke test: `node scripts/smoke.mjs http://localhost:8080/ media` requires separately available Playwright + Chromium and an already-running server. Neither browser test runs in CI.
-- `npm run zip` packages only `index.html` and `src/` into `double-shift-web.zip` (PowerShell on Windows, system `zip` elsewhere). New runtime files outside those paths will not ship unless packaging changes. ZIPs and generated `media/*.png` are ignored.
+- `npm run zip` packages only `index.html` and `src/` into `double-shift-web.zip` (PowerShell on Windows, system `zip` elsewhere). New runtime files outside those paths will not ship unless packaging changes. ZIPs, generated `media/*.png` and `media/*.gif`, and `media/review/` are ignored.
 
 ## Gameplay boundaries and invariants
 

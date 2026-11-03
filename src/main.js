@@ -14,6 +14,7 @@ import {
   drawStamp, drawLogo, drawWetTile, px,
 } from './art.js';
 import { SPOOK_LINES, ACT_LINES, timecardComment, stampText } from './copy.js';
+import { levelIndex } from './layout.js';
 
 const W = 960;
 const H = 540;
@@ -37,7 +38,7 @@ const game = {
   settingsRow: 0,
   selected: 0, // highlighted card on the level select screen
   newBest: false, // the last clear beat a saved best
-  index: Math.min(Math.max((parseInt(params.get('level'), 10) || 1) - 1, 0), levels.length - 1),
+  index: levelIndex(LEVELS, params.get('level')), // ?level=<id> or ?level=<1-based position>
   state: null,
   results: [],
   debug: params.has('debug'),

@@ -1,12 +1,14 @@
 // Local playtest server: serves the repo root with no caching, no dependencies.
-// Usage: node scripts/serve.mjs [--open] [--port N]   (PORT env also works; default 8080, next free port if busy)
+// Usage: node scripts/serve.mjs [--open] [--port N] [--root DIR]   (PORT env also works; default 8080, next
+// free port if busy; --root serves another folder, e.g. the unzipped itch build)
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { extname, join, normalize, resolve, sep } from 'node:path';
 import { execFile } from 'node:child_process';
 
-const root = resolve(import.meta.dirname, '..');
 const args = process.argv.slice(2);
+const rootArg = args.indexOf('--root');
+const root = rootArg >= 0 ? resolve(args[rootArg + 1]) : resolve(import.meta.dirname, '..');
 const portArg = args.indexOf('--port');
 const firstPort = Number(portArg >= 0 ? args[portArg + 1] : process.env.PORT) || 8080;
 const open = args.includes('--open');
@@ -45,7 +47,7 @@ function listen(port, triesLeft) {
   server.listen(port, '127.0.0.1', () => {
     const url = `http://localhost:${port}/`;
     console.log(`Double Shift is running at ${url}`);
-    console.log(`  level N:  ${url}?level=3&autostart`);
+    console.log(`  a level:  ${url}?level=offset&autostart   (an id, or a 1-based position like ?level=3)`);
     console.log(`  debug:    ${url}?debug   (toggle overlay with \`)`);
     console.log('Edit files and reload the page; nothing is cached. Ctrl+C to stop.');
     if (open) openBrowser(url);
