@@ -10,7 +10,7 @@ export const C = {
   hat: '#ffcc33', skin: '#f2c79a', eye: '#222222', boots: '#5a3d10',
   overallsDay: '#2f6fdc', overallsDayShade: '#2558b8', overallsNight: '#3f86ff', overallsNightShade: '#2f6fdc',
   vestDay: '#ffe680', vestNight: '#c6ff4d', nightInk: '#d9f6ff',
-  freak: '#05060f', rim: '#5ff2ff', freakEye: '#ffec5a',
+  freak: '#05060f', rim: '#5ff2ff', freakEye: '#ffec5a', visor: '#2bdc6a', shades: '#3a4048',
   plank: '#8a6a45', note: '#ffe96b',
 };
 
@@ -88,23 +88,26 @@ const LURKER1 = [
   '..RDDR.RDDR.',
   '..RRR...RRR.',
 ];
+// Each kind has its own silhouette (a frozen freak is only its outline, so the outline has to say which kind
+// it is; test/art.test.mjs keeps them ≥ 12 art px apart): the lurker's pointed ears and wide body; the
+// peeker narrow, fingers gripping above its head; the squatter low on its hoard; the supervisor's green visor
+// and clipboard; the day-walker in a hard hat (it clocked in for the day shift) and, drawn on top, shades.
 const PEEKER = [
-  '....RRRR....',
-  '...RDDDDR...',
+  '.RR......RR.',
+  '.RDR....RDR.',
+  '..RDRRRRDR..',
   '..RDDDDDDR..',
   '..RDDDDDDR..',
   '..RDDDDDDR..',
   '..RDDDDDDR..',
   '..RDDDDDDR..',
-  '.RDRDDDDRDR.',
-  '.RDRDDDDRDR.',
+  '..RDDDDDDR..',
   '..RDDDDDDR..',
   '..RDDDDDDR..',
   '..RDDDDDDR..',
   '..RRRRRRRR..',
 ];
 const SQUATTER = [
-  '............',
   '............',
   '............',
   '...R.RR.R...',
@@ -114,14 +117,15 @@ const SQUATTER = [
   'RDDDDDDDDDDR',
   'RDDDDDDDDDDR',
   'RDDDDDDDDDDR',
+  '.RDDDDDDDDR.',
   '.RRRRRRRRRR.',
   'PPPPPPPPYYY.',
   'PPPPPPPPYYYY',
 ];
 const SUPERVISOR = [
-  '......RR....',
-  '.....RDDR...',
+  '.....RRRR...',
   '....RDDDDR..',
+  '....RGGGGGGG',
   '...RDDDDDDR.',
   '..RDDDDDDDR.',
   '.RDDDDDDDDR.',
@@ -133,7 +137,35 @@ const SUPERVISOR = [
   '.RDDR..RDDR.',
   '.RRR....RRR.',
 ];
-const FREAK_NIGHT = { D: C.freak, R: C.rim, P: C.plank, Y: C.hat, C: C.paper, I: C.paperInk };
+const DAYWALKER_TOP = [
+  '...RRRRRR...',
+  '..RYYYYYYR..',
+  '.RYYYYYYYYR.',
+  'RYYYYYYYYYYR',
+  '.RDDDDDDDDR.',
+  '.RDDDDDDDDR.',
+  '.RDDDDDDDDR.',
+  '.RDDDDDDDDR.',
+  '.RDDDDDDDDR.',
+  '.RDDDDDDDDR.',
+  '.RDDDDDDDDR.',
+];
+const DAYWALKER0 = [...DAYWALKER_TOP, '.RDDR..RDDR.', '.RRR....RRR.'];
+const DAYWALKER1 = [...DAYWALKER_TOP, '..RDDR.RDDR.', '..RRR...RRR.'];
+// the ending's wave: a freak's hand, 8×10 art px
+const HAND = [
+  '.R.R.R..',
+  'RDRDRDR.',
+  'RDRDRDR.',
+  'RDDDDDR.',
+  'RDDDDDDR',
+  'RDDDDDDR',
+  'RDDDDDR.',
+  '.RDDDR..',
+  '.RDDDR..',
+  '.RDDDR..',
+];
+const FREAK_NIGHT = { D: C.freak, R: C.rim, P: C.plank, Y: C.hat, C: C.paper, I: C.paperInk, G: C.visor };
 const FREAK_DAY = { ...FREAK_NIGHT, R: C.cream }; // the day-walker reads against the warm sky
 
 // eyes: [x, y] of the left eye in art px within the sprite; `gap` art px between the eyes
@@ -143,7 +175,8 @@ export const SPRITES = {
   peeker: { frames: { a: PEEKER }, palette: FREAK_NIGHT, anchor: [1, 2], eyes: [4, 3], gap: 2 },
   squatter: { frames: { a: SQUATTER }, palette: FREAK_NIGHT, anchor: [1, 2], eyes: [4, 5], gap: 2 },
   supervisor: { frames: { a: SUPERVISOR }, palette: FREAK_NIGHT, anchor: [1, 2], eyes: [5, 3], gap: 2 },
-  daywalker: { frames: { a: LURKER0, b: LURKER1 }, palette: FREAK_DAY, anchor: [1, 2], eyes: [4, 5], gap: 2 },
+  daywalker: { frames: { a: DAYWALKER0, b: DAYWALKER1 }, palette: FREAK_DAY, anchor: [1, 2], eyes: [4, 5], gap: 2 },
+  hand: { frames: { a: HAND }, palette: FREAK_NIGHT, anchor: [0, 0] },
 };
 
 // ---------- frame selection (pure) ----------

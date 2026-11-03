@@ -21,7 +21,7 @@ Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game l
 | Where | Text |
 |---|---|
 | Title ✅ | DOUBLE SHIFT |
-| Subtitle *(provisional)* | The Freaks Come Out at Night |
+| Subtitle *(provisional)* | The Freaks Come Out at Night. On the title screen since Nov 3 as "The freaks come out at night." under the logo, as on the itch cover, so the hook lands before level 6; Fish makes the final call by Nov 22 |
 | Tagline ✅ | One building. Two shifts. One worker. |
 | Start ✅ | Click or press SPACE to clock in |
 | Sticky Keys note ✅ | Windows: hammering Shift can open Sticky Keys — use K, or turn off the Sticky Keys shortcut. |

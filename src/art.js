@@ -2,10 +2,10 @@
 // Tiles, background, hazards, the exit, checkpoints, notes, signs, props, effects and UI panels.
 // Pure drawing helpers: they take a canvas context and data, and never read game state themselves.
 
-import { ART, C, drawSprite, drawEyes, eyesOpen } from './sprites.js';
+import { ART, C, SPRITES, drawSprite, drawEyes, eyesOpen } from './sprites.js';
 import { drawText, measureText } from './font.js';
 
-import { TILE, DAY, NIGHT } from './rules.js';
+import { TILE, DAY, NIGHT, tileAt, isSolidChar } from './rules.js';
 
 export { TILE, DAY, NIGHT };
 const A = ART;
@@ -20,6 +20,7 @@ export const PAL = {
   },
   [NIGHT]: {
     skyTop: '#0b1029', skyBot: '#1d2a56', window: 'rgba(255,214,110,0.12)', frame: 'rgba(120,150,255,0.05)',
+    windowDark: 'rgba(120,150,255,0.05)', // unlit panes: most of the building is dark at night
     solid: '#2e4173', mortar: '#24345e', brickHi: '#3a5088', lip: '#5ff2ff', lipShade: '#3aa8bd', shadow: '#1a2647',
     echo: 'rgba(52,96,230,1)', hatch: 'rgba(95,242,255,0.35)',
     hud: '#d9f6ff', hudSoft: 'rgba(217,246,255,0.85)', halo: 'rgba(11,16,41,0.9)',
@@ -31,10 +32,11 @@ export const PAL = {
 export const PLATE = { [DAY]: 'rgba(246,231,200,0.85)', [NIGHT]: 'rgba(11,16,41,0.85)' };
 // The level note's paper strip.
 export const NOTE_STRIP = { paper: C.paper, ink: C.paperInk, border: '#c9ad84' };
-// Hazards: rebar spikes (alternating rows) on a base; the laser beam and the dim color it flickers to.
+// Hazards: rebar spikes (alternating rows) on a base; the laser beam and the dim color it flickers to. Every
+// color holds ≥ 3:1 against both sky bands (the rebar was 1.8:1 and the dim laser 2.4:1 before Nov 3).
 export const HAZARD = {
-  rebarBase: '#7a3418', rebar: ['#e07a45', '#c4572a'],
-  laser: '#ff3b5c', laserDim: '#c2283f', laserGlow: '255,59,92', emitter: '#ff9db0',
+  rebarBase: '#6a2c12', rebar: ['#b04a20', '#8f3a18'],
+  laser: '#ff3b5c', laserDim: '#e8324f', laserGlow: '255,59,92', emitter: '#ff9db0',
 };
 
 // fill an art-pixel rectangle: (x, y) in screen px, w/h in art px
@@ -67,13 +69,12 @@ export function drawBackground(g, layer, W, H, t = 0) {
       px(g, x, y, 1, 1, `rgba(255,255,255,${tw})`);
     }
   }
-  // the back wall's windows: quiet, never brighter than a solid's edge
+  // the back wall's windows: quiet, never brighter than a solid's edge. At night most are dark, two are lit.
   for (let i = 0; i < 6; i++) {
     const x = 40 + i * 160;
     px(g, x - 6, 60, 56, 100, pal.frame);
-    const lit = layer === DAY || (i * 7) % 3 !== 0;
-    if (!lit) continue;
-    g.fillStyle = pal.window;
+    const lit = layer === DAY || i === 1 || i === 4;
+    g.fillStyle = lit ? pal.window : pal.windowDark;
     for (const [dx, dy] of [[0, 6], [52, 6], [0, 102], [52, 102]]) g.fillRect(x + dx, 60 + dy, 48, 92);
   }
 }
@@ -186,19 +187,36 @@ export function drawHazardEcho(g, tx, ty, color) {
 
 // ---------- shared objects ----------
 
-export function drawExit(g, tx, ty, layer) {
+const SCREEN_W = 32 * TILE;
+
+// Where the exit's door and its lit sign go (pure, tested). The door is two tiles tall, standing on (tx, ty).
+// The sign sits above it; with no room above (an exit on row 1) it hangs beside the door instead, and it never
+// leaves the screen at the sides.
+export function exitRects(tx, ty) {
   const x = tx * TILE;
-  const y = ty * TILE - TILE; // two tiles tall, standing on the floor
-  const door = layer === DAY ? '#3d7a4a' : '#1f6b47';
-  px(g, x + A, y + 2 * A, 13, 28, '#9dffb8');
-  px(g, x + 2 * A, y + 3 * A, 11, 27, door);
-  px(g, x + 4 * A, y + 6 * A, 7, 5, layer === DAY ? '#a9e6bc' : '#5fd18f'); // window
-  px(g, x + 10 * A, y + 17 * A, 2, 2, '#9dffb8'); // knob
+  const top = ty * TILE - TILE;
+  const door = { x: x + A, y: top + 2 * A, w: 13 * A, h: 28 * A };
+  const sign = { x: x + TILE / 2 - 21, y: top - 9 * A, w: 21 * A, h: 9 * A };
+  if (sign.y < 0) {
+    sign.y = top + 4 * A;
+    sign.x = x + TILE + A;
+    if (sign.x + sign.w > SCREEN_W) sign.x = x - A - sign.w;
+  }
+  sign.x = Math.min(Math.max(sign.x, 0), SCREEN_W - sign.w);
+  return { door, sign };
+}
+
+export function drawExit(g, tx, ty, layer) {
+  const { door: d, sign: s } = exitRects(tx, ty);
+  const fill = layer === DAY ? '#3d7a4a' : '#1f6b47';
+  px(g, d.x, d.y, 13, 28, '#9dffb8');
+  px(g, d.x + A, d.y + A, 11, 27, fill);
+  px(g, d.x + 3 * A, d.y + 4 * A, 7, 5, layer === DAY ? '#a9e6bc' : '#5fd18f'); // window
+  px(g, d.x + 9 * A, d.y + 15 * A, 2, 2, '#9dffb8'); // knob
   // lit sign
-  const sw = 21;
-  px(g, x + (15 - sw) / 2 * A, y - 9 * A, sw, 9, '#06210f');
-  px(g, x + ((15 - sw) / 2 + 1) * A, y - 8 * A, sw - 2, 7, '#2bdc6a');
-  drawText(g, 'EXIT', x + TILE / 2, y - 7 * A + 1, { scale: 1, color: '#06210f', align: 'center' });
+  px(g, s.x, s.y, 21, 9, '#06210f');
+  px(g, s.x + A, s.y + A, 19, 7, '#2bdc6a');
+  drawText(g, 'EXIT', s.x + s.w / 2, s.y + 2 * A + 1, { scale: 1, color: '#06210f', align: 'center' });
 }
 
 // pixel circle helper
@@ -211,23 +229,54 @@ function ring(g, cx, cy, r, color) {
   }
 }
 
-export function drawCheckpoint(g, tx, ty, on, ping = 0) {
-  const cx = tx * TILE + TILE / 2;
+// The checkpoint is a punch clock on a post (pure rect, tested): a metal box with a clock face and a card
+// slot; once taken, the face lights up and a timecard sticks out of the top. It stands on (tx, ty).
+export function checkpointRect(tx, ty) {
   const floor = (ty + 1) * TILE;
-  px(g, cx - A, floor - 11 * A, 2, 11, '#6b5a48');
-  px(g, cx - 3 * A, floor - A, 6, 1, '#4a3b2c');
-  const r = 3 + (ping > 0 ? Math.round(ping * 2) : 0);
-  const face = on ? '#ffd23f' : '#9a9a9a';
-  // clock face: pixel disc
+  return { x: tx * TILE + TILE / 2 - 6 * A, y: floor - 24 * A, w: 12 * A, h: 24 * A };
+}
+
+export function drawCheckpoint(g, tx, ty, on, ping = 0) {
+  const { x, y } = checkpointRect(tx, ty);
+  const floor = (ty + 1) * TILE;
+  const cx = x + 6 * A;
+  px(g, cx - A, floor - 10 * A, 2, 10, '#6b5a48'); // post
+  px(g, cx - 3 * A, floor - A, 6, 1, '#4a3b2c'); // foot
+  const by = floor - 20 * A; // the box: 12×10 art px
+  px(g, x, by, 12, 10, '#3a4048');
+  px(g, x + A, by + A, 10, 8, '#9aa3ad');
+  // the face: a pixel disc that swells on the ping
+  const r = Math.min(4, 3 + (ping > 0 ? Math.round(ping * 2) : 0));
+  const fx = cx;
+  const fy = by + 4 * A;
   for (let j = -r; j <= r; j++) {
     for (let i = -r; i <= r; i++) {
       if (i * i + j * j > r * r + 1) continue;
       const edge = i * i + j * j > (r - 1) * (r - 1) + 1;
-      px(g, cx + i * A - A / 2, floor - (14 + j) * A - A / 2, 1, 1, edge ? '#2a2018' : face);
+      px(g, fx + i * A - A / 2, fy + j * A - A / 2, 1, 1, edge ? '#2a2018' : on ? '#ffd23f' : '#d6dbe0');
     }
   }
-  px(g, cx - A / 2, floor - 16 * A - A / 2, 1, 2, '#2a2018');
-  px(g, cx - A / 2, floor - 14 * A - A / 2, 2, 1, '#2a2018');
+  px(g, fx - A / 2, fy - 2 * A - A / 2, 1, 2, '#2a2018'); // hands
+  px(g, fx - A / 2, fy - A / 2, 2, 1, '#2a2018');
+  px(g, x + 3 * A, by + 8 * A, 6, 1, '#1b1209'); // the card slot
+  if (on) {
+    // a timecard punched in, sticking out of the top
+    px(g, cx - A, y, 3, 4, C.paper);
+    px(g, cx - A, y + A, 3, 1, '#c0392b');
+  }
+}
+
+// Hatch marks "this exists only in this shift". Only a region's rim is hatched, so a big region reads as a
+// solid with a hatched edge instead of a field of stripes; the screen edge isn't a rim. Levels whose night is
+// generated from the day (offset, upside down) differ almost everywhere, so the echoes carry the cue instead.
+export function shouldHatch(level, layer, ov, tx, ty) {
+  if (level.nightGenerated) return false;
+  const onlyHere = (x, y) => {
+    if (x < 0 || y < 0 || x >= level.w || y >= level.h) return true;
+    return isSolidChar(tileAt(level, layer, x, y, ov)) && !isSolidChar(tileAt(level, 1 - layer, x, y, ov));
+  };
+  if (tx < 0 || ty < 0 || tx >= level.w || ty >= level.h || !onlyHere(tx, ty)) return false;
+  return [[1, 0], [-1, 0], [0, 1], [0, -1]].some(([dx, dy]) => !onlyHere(tx + dx, ty + dy));
 }
 
 // sticky note / sign with pixel text; style: 'note' | 'paper' | 'green' | 'red'
@@ -262,6 +311,7 @@ export function drawFreak(g, b, i, t, { layer, freakShift = NIGHT, frozenFlash =
     const jitter = b.active ? Math.round(Math.sin(t * 14 + i) * 0.6) * A : 0;
     const frame = (kind === 'lurker' || kind === 'daywalker') && b.active ? (Math.floor(t * 6 + i) % 2 ? 'b' : 'a') : 'a';
     drawSprite(g, kind, frame, b.x + jitter, b.y, { flip });
+    if (kind === 'daywalker') { drawShades(g, b.x + jitter, b.y, look); return; }
     const state = !b.active ? 'shut' : prankSquint > 0 ? 'squint' : eyesOpen(t, i) ? 'open' : 'shut';
     drawEyes(g, kind, b.x + jitter, b.y, { state, look, flip });
   } else {
@@ -269,7 +319,34 @@ export function drawFreak(g, b, i, t, { layer, freakShift = NIGHT, frozenFlash =
     const color = PAL[freakShift].echo;
     drawSprite(g, kind, 'a', b.x, b.y, { outline: color, alpha: frozenFlash > 0 ? 1 : 0.85, flip });
     if (frozenFlash > 0) drawSprite(g, kind, 'a', b.x, b.y, { outline: '#ffffff', alpha: frozenFlash, flip });
-    if (b.active || kind === 'supervisor') drawEyes(g, kind, b.x, b.y, { state: 'open', alpha: 0.6, flip });
+    if (kind === 'daywalker') drawShades(g, b.x, b.y, 0, 0.6);
+    else if (b.active || kind === 'supervisor') drawEyes(g, kind, b.x, b.y, { state: 'open', alpha: 0.6, flip });
+  }
+}
+
+// The day-walker works the day shift in shades: two lenses with a glint where the eyes would be.
+function drawShades(g, x, y, look = 0, alpha = 1) {
+  const s = SPRITES.daywalker;
+  const left = Math.round(x) + (s.eyes[0] - 1 - s.anchor[0] + look) * A;
+  const top = Math.round(y) + (s.eyes[1] - s.anchor[1]) * A;
+  const prev = g.globalAlpha;
+  g.globalAlpha = prev * alpha;
+  px(g, left, top, 6, 1, C.shades); // the bridge
+  px(g, left, top + A, 2, 2, C.shades);
+  px(g, left + 4 * A, top + A, 2, 2, C.shades);
+  px(g, left, top + A, 1, 1, '#ffffff'); // glints
+  px(g, left + 4 * A, top + A, 1, 1, '#ffffff');
+  g.globalAlpha = prev;
+}
+
+// Eyes in the dark (decor and prank tells): twice the freaks' eye size, with a soft glow, blinking.
+export function drawGlowEyes(g, cx, y, { t = 0, seed = 0 } = {}) {
+  const open = eyesOpen(t, seed);
+  for (const ex of [cx - 4 * A, cx + 2 * A]) {
+    if (open) {
+      px(g, ex - A, y - A, 4, 6, 'rgba(255,236,90,0.25)');
+      px(g, ex, y, 2, 4, C.freakEye);
+    } else px(g, ex, y + 2 * A, 2, 1, C.freakEye);
   }
 }
 
@@ -293,8 +370,24 @@ export const PROPS = {
     px(g, x + A, y + 3 * A, 13, 7, '#262c38');
     for (let i = 0; i < 4; i++) px(g, x + A, y + (4 + i * 2) * A, 13, 1, '#6c7a90');
   },
-  barrierTape(g, x, y, w = 1) {
-    for (let i = 0; i < w * 15; i++) px(g, x + i * A, y + 8 * A, 1, 2, Math.floor(i / 3) % 2 ? '#ffcc33' : '#1b1209');
+  // A cordon: two stanchions standing on the floor at the centers of the first and last of `w` cells, with
+  // striped tape sagging between their tops (never a line at floor height, which reads as a bridge).
+  barrierTape(g, x, y, w = 2) {
+    const n = Math.max(2, typeof w === 'number' ? w : 2);
+    const x0 = x + TILE / 2 - A;
+    const x1 = x + (n - 1) * TILE + TILE / 2 - A;
+    const topY = y + TILE - 12 * A;
+    for (const sx of [x0, x1]) {
+      px(g, sx, topY, 2, 12, '#3a4048'); // post
+      px(g, sx - A, y + TILE - A, 4, 1, '#1b1209'); // base
+      px(g, sx, topY - A, 2, 1, '#ffcc33'); // cap
+    }
+    const span = (x1 - x0) / A;
+    for (let i = 2; i < span; i++) {
+      const u = i / span;
+      const sag = Math.round(4 * 4 * u * (1 - u)); // up to 4 art px at the middle
+      px(g, x0 + i * A, topY + (1 + sag) * A, 1, 2, Math.floor(i / 3) % 2 ? '#ffcc33' : '#1b1209');
+    }
   },
   pallet(g, x, y) {
     const f = y + TILE;
@@ -378,7 +471,7 @@ export const PROPS = {
     drawSign(g, x + TILE / 2, y + TILE / 2, opt.text ?? 'SIGN', opt.style ?? 'paper');
   },
   eyes(g, x, y, opt = {}) {
-    drawEyes(g, 'lurker', x + TILE / 2 - 6 * A, y + 4 * A, { state: eyesOpen(opt.t ?? 0, opt.seed ?? 0) ? 'open' : 'shut' });
+    drawGlowEyes(g, x + TILE / 2, y + 4 * A, { t: opt.t ?? 0, seed: opt.seed ?? 0 });
   },
 };
 

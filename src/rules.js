@@ -135,6 +135,7 @@ export function parseLevel(def) {
     skins,
     decor: def.decor ?? [],
     offset: def.offset ?? null,
+    nightGenerated: !def.night, // the night grid was generated from the day one (offset; upside down later)
   };
 }
 

@@ -26,7 +26,7 @@ export const LEVELS = [
     name: 'Clock In',
     act: 1,
     props: [
-      { kind: 'barrierTape', tx: 12, ty: 13, w: 8, layer: 'day' },
+      { kind: 'barrierTape', tx: 11, ty: 13, w: 10, layer: 'day' }, // a cordon from floor edge to floor edge
       { kind: 'sign', tx: 8, ty: 10, text: 'RENOVATION', style: 'note' },
       { kind: 'footprints', tx: 21, ty: 13, layer: 'night' },
       { kind: 'footprints', tx: 22, ty: 13, layer: 'night' },
@@ -189,7 +189,7 @@ export const LEVELS = [
     id: 'midair',
     name: 'Mid-Air',
     act: 1,
-    props: [{ kind: 'vent', tx: 24, ty: 4 }, { kind: 'barrierTape', tx: 6, ty: 13, w: 1, layer: 'day' }],
+    props: [{ kind: 'vent', tx: 24, ty: 4 }, { kind: 'barrierTape', tx: 4, ty: 13, w: 2, layer: 'day' }],
     note: 'Something up there blinked.',
     par: 3,
     day: [

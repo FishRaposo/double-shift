@@ -4,7 +4,7 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-02 (a
 
 **At a glance**
 - **The one rule:** `src/rules.js` decides everything that matters; the screen only draws it (§2).
-- `npm start` to play, `npm test` (<!-- n:tests -->180<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
+- `npm start` to play, `npm test` (<!-- n:tests -->185<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
 - Add a level: grids in `src/levels.js` + a `SOLUTIONS` entry in `test/solutions.mjs` (§6; the full recipe is BUILD.md §2.1).
 - The tier-C mechanics (wet floor, day-walker, supervisor, offset layer) are built — §6.5 documents them.
 
@@ -23,12 +23,12 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-02 (a
 | `src/rules.js` | **All gameplay rules.** Pure: `step(level, state, input)` → next state | No |
 | `src/levels.js` | Level data (ASCII grids + pranks/freaks/decor) | No |
 | `src/input.js` | Key events → one input frame per physics tick | No (takes event-like objects) |
-| `src/main.js` | Fixed-step loop, screens, event → sfx/fx, draw order; caches the static layer (echo, solids, hatch, props, exit) per level × shift × prank state | Yes |
+| `src/main.js` | Fixed-step loop, screens, event → sfx/fx, draw order; caches the static layer (echo, solids, hatched rims, skins, props, exit) per level × shift × prank state; sizes the canvas on resize (`fitCanvas`, whole-pixel scale from `canvasScale`) | Yes |
 | `src/sprites.js` | Pixel sprites as string grids (worker frames, freaks), palettes, `workerFrame()` (pure), `drawSprite`/`drawEyes` | Data no; drawing yes |
-| `src/art.js` | Procedural pixel drawing: tiles, hatch, echoes, hazards, exit, checkpoint, signs, freaks, `PROPS`, planned-level objects, effects, panels, stamps, logo | Yes (canvas) |
+| `src/art.js` | Procedural pixel drawing: tiles, hatch, echoes, hazards, exit, checkpoint, signs, freaks, `PROPS`, planned-level objects, effects, panels, stamps, logo. Also the pure pieces the art tests check: the identity colors (`PAL`, `PLATE`, `NOTE_STRIP`, `HAZARD`), `exitRects` and `checkpointRect` (always on screen), and `shouldHatch` (only a one-shift region's rim; none when the night is generated) | Yes (canvas) |
 | `src/font.js` | The pixel font: glyph table (pure), `measureText`, `wrapText`, `drawText` (cached string canvases) | Data no; drawing yes |
 | `src/copy.js` | Result-based lines: timecard comments, stamps, act card lines, spook lines, credits | No |
-| `src/layout.js` | Pure shell logic: `levelIndex` (`?level=` by id or position), the level select layout (`actRows`, `cardRect`, `tabRect`, `detailRect`, `moveSelect`) and the end screen's per-act `endSummary` | No |
+| `src/layout.js` | Pure shell logic: `levelIndex` (`?level=` by id or position), `canvasScale` (whole-pixel scale once the window allows 2×), the level select layout (`actRows`, `cardRect`, `tabRect`, `detailRect`, `moveSelect`, `selectClick`, `actLabel`) and the end screen's per-act `endSummary` | No |
 | `src/music.js` | The theme as note data (pure), `scheduleStep`, `createMusic` (look-ahead player with day/night crossfade) | Data no; engine yes |
 | `src/save.js` | Best result per level in localStorage (key `double-shift.progress.v1`); unlock rule for level select. Storage is passed in; blocked or corrupt storage falls back to memory | No (takes a storage object) |
 | `src/audio.js` | Mix bus (music + SFX → master → compressor), `voice()`, every SFX as data in `SOUNDS`, `sfx.*`, volumes, music shift/menu hooks | Yes (AudioContext) |
@@ -179,7 +179,7 @@ The four tier-C mechanics from [CONTENT.md](CONTENT.md) §3 — all built, teste
 - **Drawing:** clipboard, a head turned toward the watched side, an eye glow on that side, a squint just before each turn; non-color cue (ART.md §5.1).
 
 #### Offset layer (SYS-4, level `offset`)
-- **Format:** a level may give `offset: { dx, dy }` (in tiles) instead of a full `night` grid. `parseLevel` generates night as the day grid moved by (dx, dy), so `night[y][x] = day[y − dy][x − dx]`, with empty `.` outside the grid. `S`, `E` and `C` stay shared and aren't moved. An optional `nightPatch` (the same rectangle format as prank `set`) adds differences: the exit approach, hazards.
+- **Format:** a level may give `offset: { dx, dy }` (in tiles) instead of a full `night` grid. `parseLevel` generates night as the day grid moved by (dx, dy), so `night[y][x] = day[y − dy][x − dx]`, with empty `.` outside the grid. `S`, `E` and `C` stay shared and aren't moved; the parsed level gets `nightGenerated: true`, which turns hatching off (the echoes carry the cue: nearly every tile differs). An optional `nightPatch` (the same rectangle format as prank `set`) adds differences: the exit approach, hazards.
 - **Nothing else changes:** after parsing it's an ordinary two-layer level, so collision, pranks, freaks and echoes all just work.
 - **Expected behavior:** shifting while standing on a floor puts you inside the other shift's copy of that floor (3 tiles away, well beyond the 4 px nudge), so the shift is refused (S-08). That's intended and taught (LEVELS.md `offset`).
 - **Tests:** a generated night grid equals a hand-written equivalent; `nightPatch` applies after the offset; shifting on the ground in an offset level is refused and leaves the player unchanged; shifting at the apex of a jump lands on the night copy (scripted with the real jump).
@@ -205,7 +205,7 @@ The four tier-C mechanics from [CONTENT.md](CONTENT.md) §3 — all built, teste
 
 | Command | What it covers |
 |---|---|
-| `npm test` | <!-- n:tests -->180<!-- /n --> tests: GDD §13.7 cases 1–10, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
+| `npm test` | <!-- n:tests -->185<!-- /n --> tests: GDD §13.7 cases 1–10, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
 | `npm run check` | Every module parses; every level validates |
 | `npm run audit` | Per level: the slack of every required shift and jump (fails under the act floor), input-lag tolerance 0–150 ms, and a random search for wins below par or without shifting (`scripts/audit-levels.mjs`). |
 | `npm run media` | Real browser (headless Edge/Chrome, no dependencies): plays level 1 with key presses, fails on page errors, a wrong outcome, audio clipping or a slow frame; saves the cover, screenshots and gallery. |

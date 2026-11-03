@@ -72,7 +72,7 @@ test("readability: the other shift's echo shows on this sky (≥ 3:1)", () => {
   }
 });
 
-test('readability: hazards stand out from the sky in every color they flicker through (≥ 3:1)', { todo: 'rebar spikes and the dim laser flicker are below 3:1 on the low sky band; the identity pass (BUILD T21) fixes them' }, () => {
+test('readability: hazards stand out from the sky in every color they flicker through (≥ 3:1)', () => {
   for (const c of HAZARD.rebar) for (const sky of SKIES[DAY]) atLeast(contrast(solid(c), sky), 3, `rebar ${c}`);
   for (const c of [HAZARD.laser, HAZARD.laserDim]) for (const sky of SKIES[NIGHT]) atLeast(contrast(solid(c), sky), 3, `laser ${c}`);
 });
@@ -84,7 +84,7 @@ test('readability: freak eyes on the freak body (≥ 4.5:1)', () => {
 test('readability: the background stays quiet (windows and frames ≤ 1.35:1 against the sky)', () => {
   for (const L of [DAY, NIGHT]) {
     for (const sky of SKIES[L]) {
-      for (const c of [PAL[L].window, PAL[L].frame]) {
+      for (const c of [PAL[L].window, PAL[L].frame, PAL[L].windowDark].filter(Boolean)) {
         const r = contrast(over(c, sky), sky);
         assert.ok(r <= 1.35, `${NAME[L]} ${c}: ${r.toFixed(2)}:1 > 1.35:1`);
       }

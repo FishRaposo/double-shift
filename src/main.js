@@ -1,21 +1,21 @@
 // Double Shift — browser shell: input capture, fixed-step loop, rendering.
 // Draws only what src/rules.js decided. Art lives in sprites.js (characters) and art.js (everything else).
 
-import { step, initState, parseLevel, tileAt, isSolidChar, freakBoxes, TILE, DT, DAY, NIGHT, PARAMS } from './rules.js';
+import { step, initState, parseLevel, tileAt, isSolidChar, freakBoxes, TILE, DT, DAY, NIGHT, PARAMS, FREAK } from './rules.js';
 import { LEVELS, ACTS, FINALE_ACT } from './levels.js';
 import { createInput, GAME_KEYS } from './input.js';
 import { sfx, playSound, unlockAudio, toggleMute, setVolumes, setMusicShift, setMenu } from './audio.js';
 import { skinPlan } from './skins.js';
 import { createSave, createSettings, isUnlocked } from './save.js';
 import { drawText, measureText, wrapText } from './font.js';
-import { drawSprite, drawEyes, workerFrame, ART, SPRITES, C } from './sprites.js';
+import { drawSprite, drawEyes, eyesOpen, workerFrame, ART, SPRITES, C } from './sprites.js';
 import {
   PAL, PROPS, drawBackground, drawSolidTile, drawHatch, drawEchoEdges, drawRebar, drawLaser, drawHazardEcho,
   drawExit, drawCheckpoint, drawSign, drawFreak, drawShiftRing, drawDust, drawPuff, drawSparkle, drawPanel,
-  drawStamp, drawLogo, drawWetTile, drawSkin, px,
+  drawStamp, drawLogo, drawWetTile, drawSkin, shouldHatch, PLATE, NOTE_STRIP, px,
 } from './art.js';
 import { SPOOK_LINES, ACT_LINES, CREDITS, timecardComment, stampText } from './copy.js';
-import { levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, endSummary, selectClick, CARD } from './layout.js';
+import { levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, endSummary, selectClick, canvasScale, CARD } from './layout.js';
 
 const W = 960;
 const H = 540;
@@ -156,6 +156,16 @@ addEventListener('keydown', (e) => {
 });
 addEventListener('keyup', (e) => { input.keyUp(e); });
 addEventListener('blur', () => input.clear());
+// Size the canvas in whole pixels where the window allows 2× or more (src/layout.js canvasScale); the CSS in
+// index.html is the fallback before this runs.
+function fitCanvas() {
+  const k = canvasScale(innerWidth, innerHeight);
+  canvas.style.width = `${Math.round(W * k)}px`;
+  canvas.style.height = `${Math.round(H * k)}px`;
+}
+addEventListener('resize', fitCanvas);
+fitCanvas();
+
 // In an itch.io embed the first click is what gives the game keyboard focus, so let it clock in too.
 canvas.addEventListener('pointerdown', (e) => {
   canvas.focus();
@@ -343,7 +353,7 @@ function makeCanvas() {
 // and the other shift's hazards.
 function drawShiftCues(ctx, lvl, layer, ov, tx, ty) {
   const other = 1 - layer;
-  if (isSolidChar(tileAt(lvl, layer, tx, ty, ov)) && !isSolidChar(tileAt(lvl, other, tx, ty, ov))) drawHatch(ctx, tx, ty, layer);
+  if (shouldHatch(lvl, layer, ov, tx, ty)) drawHatch(ctx, tx, ty, layer); // the rim of a one-shift region (art.js)
   if (tileAt(lvl, other, tx, ty, ov) === '^') drawHazardEcho(ctx, tx, ty, PAL[other].echo);
 }
 
@@ -478,15 +488,38 @@ function drawFx(layer, reduced) {
   }
 }
 
+// HUD text sits on a plate (the shift's sky at 85%) instead of a halo, so it never smears over brick or
+// hatching (ART.md §3.1; contrast checked in test/palette.test.mjs).
+function plate(left, top, w, h, layer) {
+  g.fillStyle = PLATE[layer];
+  g.fillRect(Math.round(left), Math.round(top), Math.round(w), Math.round(h));
+}
+
 function hud(text, x, y, layer, { align = 'left', scale = 2, color } = {}) {
-  drawText(g, text, x, y, { scale, align, color: color ?? PAL[layer].hud, halo: PAL[layer].halo });
+  const w = measureText(text, scale);
+  const left = align === 'center' ? x - w / 2 : align === 'right' ? x - w : x;
+  plate(left - 4, y - 4, w + 8, 9 * scale + 6, layer);
+  drawText(g, text, x, y, { scale, align, color: color ?? PAL[layer].hud });
+}
+
+// The level note: a paper strip, like everything official in the building.
+function drawNoteStrip(text) {
+  const w = measureText(text, 2);
+  const left = Math.round(W / 2 - w / 2 - 10);
+  const top = H - 36;
+  px(g, left, top, (w + 20) / A, 14, NOTE_STRIP.border);
+  px(g, left + A, top + A, (w + 20) / A - 2, 12, NOTE_STRIP.paper);
+  drawText(g, text, W / 2, top + 7, { scale: 2, color: NOTE_STRIP.ink, align: 'center' });
 }
 
 function drawHud(lvl, s, layer) {
   const pal = PAL[layer];
   hud(`${game.index + 1}/${levels.length}  ${lvl.name.toUpperCase()}`, 14, 12, layer);
-  // shift indicator: icon + label (not colour alone)
-  hud(layer === DAY ? 'DAY SHIFT' : 'NIGHT SHIFT', W - 40, 12, layer, { align: 'right' });
+  // shift indicator: icon + label (not colour alone), on one plate
+  const label = layer === DAY ? 'DAY SHIFT' : 'NIGHT SHIFT';
+  const lw = measureText(label, 2);
+  plate(W - 40 - lw - 4, 8, lw + 34, 24, layer);
+  drawText(g, label, W - 40, 12, { scale: 2, align: 'right', color: pal.hud });
   const ix = W - 30;
   if (layer === DAY) {
     px(g, ix, 10, 6, 6, '#f2a516');
@@ -501,7 +534,7 @@ function drawHud(lvl, s, layer) {
   const over = s.shifts > lvl.par;
   hud(`CLOCK-INS ${s.shifts}  ·  PAR ${lvl.par}`, W - 14, 36, layer, { align: 'right', color: over ? '#e0473c' : pal.hud });
   const note = LEVELS[game.index].note;
-  if (game.levelTime < 5 && note) hud(note, W / 2, H - 30, layer, { align: 'center', color: pal.hud });
+  if (game.levelTime < 5 && note) drawNoteStrip(note);
   if (game.index === 0 && s.shifts === 0) {
     hud('Press SHIFT (or K) to change shifts', W / 2, 140, layer, { align: 'center', scale: 3 });
     hud('Dashed outlines show the other shift', W / 2, 172, layer, { align: 'center', color: pal.hudSoft });
@@ -571,9 +604,15 @@ function drawTitle() {
   const logo = drawLogo(g, W / 2, 96, 9);
   const bob = Math.floor(game.clock * 1.6) % 2;
   drawSprite(g, 'worker', `idle${bob}`, logo.gapX + logo.gap / 2 - 13, 112, { scale: 3, palette: game.clock % 4 < 2 ? null : NIGHT_PAL });
-  // eyes in the night half
-  PROPS.eyes(g, 800, 330, { t: game.clock, seed: 2 });
-  PROPS.eyes(g, 680, 250, { t: game.clock, seed: 5 });
+  // the hook, under the logo (matches the itch cover; the subtitle is Fish's call, WRITING.md §2)
+  drawText(g, 'The freaks come out at night.', W / 2, 196, { scale: 2, color: '#ffec5a', halo: '#1b1209', align: 'center' });
+  // the night half isn't empty: eyes in the dark, and a lurker by the floor, watching the worker
+  PROPS.eyes(g, 790, 210, { t: game.clock, seed: 2 });
+  PROPS.eyes(g, 875, 300, { t: game.clock, seed: 5 });
+  PROPS.eyes(g, 812, 405, { t: game.clock, seed: 9 });
+  const peek = Math.floor(game.clock * 6) % 2 ? 'b' : 'a';
+  drawSprite(g, 'lurker', peek, 900, 16 * TILE - FREAK.h);
+  drawEyes(g, 'lurker', 900, 16 * TILE - FREAK.h, { state: eyesOpen(game.clock, 4) ? 'open' : 'shut', look: -1 });
   drawPanel(g, W / 2 - 270, 250, 540, 176, false);
   drawText(g, 'One building. Two shifts. One worker.', W / 2, 270, { scale: 2, color: '#ffffff', align: 'center' });
   drawText(g, 'Move  A/D or ←/→      Jump  Space/W/↑', W / 2, 310, { scale: 2, color: '#d9f6ff', align: 'center' });
@@ -666,14 +705,14 @@ function drawEndingEyes(top, bottom) {
   });
   const all = 0.4 + spots.length * 0.18;
   if (t > all + 0.3) {
-    // a small dark hand beside the last pair, waving
-    const [x, y] = spots[spots.length - 1];
-    const wave = Math.round(Math.sin((t - all) * 9)) * A;
-    const hx = x + 15 * A + wave;
-    px(g, hx - A, y - 4 * A, 6, 7, 'rgba(95,242,255,0.6)'); // rim, so it reads against the dark
-    px(g, hx, y - 2 * A, 4, 4, '#05060f');
-    px(g, hx, y - 3 * A, 1, 1, '#05060f');
-    px(g, hx + 2 * A, y - 3 * A, 1, 1, '#05060f');
+    // one of them rises out of the bottom margin and waves
+    const rise = Math.min(1, (t - all - 0.3) / 0.4);
+    const fx = W - 120;
+    const fy = H - Math.round(rise * 30);
+    drawSprite(g, 'lurker', 'a', fx, fy, { scale: 3 });
+    drawEyes(g, 'lurker', fx, fy, { state: 'open', scale: 3, look: -1 });
+    const wave = Math.round(Math.sin((t - all) * 9) * 2) * A;
+    drawSprite(g, 'hand', 'a', fx - 34 + wave, fy - 16, { scale: 3 });
     if (t > all + 0.8) drawText(g, 'See you tonight.', W / 2, bottom + 6, { scale: 2, color: '#ffec5a', align: 'center' });
   }
 }

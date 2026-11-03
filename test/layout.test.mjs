@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { LEVELS, ACTS, FINALE_ACT } from '../src/levels.js';
 import {
-  levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, actLabel, endSummary, selectClick, CARD, TAB, SELECT_BOUNDS,
+  levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, actLabel, endSummary, selectClick, canvasScale, CARD, TAB, SELECT_BOUNDS,
 } from '../src/layout.js';
 import { wrapText, measureText } from '../src/font.js';
 
@@ -105,6 +105,15 @@ test('layout: endSummary sums per act and marks unplayed acts', () => {
   assert.equal(s.rows[2].shifts, 5);
   assert.equal(s.shifts, 10);
   assert.equal(s.par, 7);
+});
+
+test('canvasScale: whole pixels once the window allows 2× or more, otherwise fit the window', () => {
+  assert.equal(canvasScale(960, 540), 1, 'the itch embed');
+  assert.equal(canvasScale(1920, 1080), 2);
+  assert.equal(canvasScale(2560, 1440), 2, '2.67× would make uneven pixels: 2× with a border');
+  assert.equal(canvasScale(3840, 2160), 4);
+  assert.ok(Math.abs(canvasScale(1366, 768) - 768 / 540) < 1e-9, 'below 2×, fit (1×, the only whole step, would waste the screen)');
+  assert.ok(Math.abs(canvasScale(800, 600) - 800 / 960) < 1e-9, 'a small window shrinks to fit');
 });
 
 test('wrapText keeps every line within maxPx', () => {

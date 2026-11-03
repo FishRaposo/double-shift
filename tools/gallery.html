@@ -116,12 +116,14 @@ function draw(t) {
   label('frozen by day (night echo blue)', 950, y + 112);
   y += 130;
 
-  section(y, 100, 'DAY-WALKER · day, and frozen by night', DAY);
-  drawSprite(g, 'daywalker', Math.floor(t * 6) % 2 ? 'b' : 'a', 40, y + 40, { scale: 3 });
-  drawEyes(g, 'daywalker', 40, y + 40, { state: 'open', scale: 3 });
-  drawSprite(g, 'daywalker', 'a', 160, y + 40, { outline: PAL[DAY].echo, scale: 3 });
-  label('day-walker', 36, y + 86, DAY);
+  section(y, 100, 'DAY-WALKER · day (hard hat and shades), and frozen by night', DAY);
+  const dw = (x, active) => ({ kind: 'daywalker', shift: DAY, x, y: y + 40, w: 20, h: 22, active, facing: 0 });
+  art.drawFreak(g, dw(40, true), 0, t, { layer: DAY, freakShift: DAY });
+  art.drawFreak(g, dw(160, true), 0, t, { layer: NIGHT, freakShift: DAY });
+  label('day-walker', 30, y + 86, DAY);
   label('its outline at night (day echo orange)', 150, y + 86, DAY);
+  drawSprite(g, 'hand', 'a', 520, y + 30, { scale: 3 });
+  label('the ending: one of them waves', 470, y + 86, DAY);
   y += 100;
 
   // ---- tiles ----

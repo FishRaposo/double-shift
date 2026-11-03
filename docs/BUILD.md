@@ -321,18 +321,18 @@ Seven milestone PRs (decided 2026-11-03). Each one passes every gate in §1.2 pl
 
 ### T21 · Visual identity pass and per-act backdrops *(PR 2)*
 - **Identity** (ART.md §1): "A workplace comedy in two lights: warm paper-and-brick days, cool cyan-panel nights. Everything official is paper. The freaks are glowing eyes and lumpy silhouettes in the dark, more present every act."
-- **Fixes, from the 2026-11-03 screenshot review of every screen and level:**
+- **Fixes, from the 2026-11-03 screenshot review of every screen and level** (✅ built Nov 3; ART.md §3, §3.1, §5, §6, §7):
   - text on paper strips and plates instead of halos over textures;
   - hatching only on the 1-tile rim of "only in this shift" regions, and none in levels with a generated night (offset, upside down), whose echoes carry the cue;
-  - quieter night windows, with one or two warm lit panes;
+  - quieter night windows: two of the six lit, at the old warm `0.12` (a brighter `0.22` pane broke the quiet-layer rule), the rest nearly black;
   - eyes at twice the size with a soft glow, and freaks plus the subtitle on the title screen;
   - the EXIT sign moves beside the door when it would leave the screen;
   - barrier tape sags between two stanchions and never spans a gap at floor height;
   - the checkpoint becomes a punch-clock box on a post;
-  - each freak kind gets its own silhouette inside today's frames (lurker low and wide, peeker tall with gripping hands, squatter on its hoard, supervisor with clipboard and visor, day-walker in sunglasses), hitboxes unchanged;
+  - each freak kind gets its own silhouette inside today's frames (lurker low and wide, peeker tall with gripping hands, squatter on its hoard, supervisor with clipboard and visor, day-walker in a hard hat and shades), hitboxes unchanged; `test/art.test.mjs` checks that every pair differs by ≥ 12 art px and every silhouette fills ≥ 75 % of its hitbox;
   - the ending's freak peeks and waves a real hand;
-  - a scaling check at 1366×768 and 1920×1080.
-- **Per-act backdrops:** `drawBackground(..., act)` draws one quiet motif per act: act 1 scaffolding and tarps; act 2 office windows with blinds and a wall clock; act 3 warehouse shelving and pipes; act 4 fluorescent strips by day, emergency lights and EXIT glow by night; act 5 hanging lamps, inverted at night; the finale a dawn tint by day and a low moon by night.
+  - a scaling check at 1366×768 and 1920×1080: a fractional scale stretches some art pixels to 3 screen px and others to 2, so from 2× up the canvas snaps to a whole multiple (`canvasScale` in `src/layout.js`); below 2× it still fits the window.
+- **Per-act backdrops** *(planned, Task 8 of the plan)*: `drawBackground(..., act)` draws one quiet motif per act: act 1 scaffolding and tarps; act 2 office windows with blinds and a wall clock; act 3 warehouse shelving and pipes; act 4 fluorescent strips by day, emergency lights and EXIT glow by night; act 5 hanging lamps, inverted at night; the finale a dawn tint by day and a low moon by night.
 - **Review:** `npm run media -- --review <ids> --gray --cvd` for every level, checked against the identity checklist in LEVELS.md §6. Before/after pairs go in the PR.
 
 ### T22 · Saves ignore bests from an older level revision *(PR 5, with T12)*

@@ -7,6 +7,61 @@ import { SPRITES, workerFrame, ART } from '../src/sprites.js';
 import { PARAMS, FREAK } from '../src/rules.js';
 import { LEVELS, ACTS } from '../src/levels.js';
 import { CREDITS } from '../src/copy.js';
+import { exitRects, checkpointRect, shouldHatch, DAY, NIGHT } from '../src/art.js';
+import { parseLevel } from '../src/rules.js';
+
+const FREAK_KINDS = ['lurker', 'peeker', 'squatter', 'supervisor', 'daywalker'];
+const mask = (kind) => SPRITES[kind].frames.a.map((row) => [...row].map((c) => c !== '.'));
+
+test('freaks: every kind has a distinct silhouette (≥ 12 art px apart, pairwise)', () => {
+  // the frozen outline is the silhouette, so a frozen freak must still say which kind it is
+  for (let i = 0; i < FREAK_KINDS.length; i++) {
+    for (let j = i + 1; j < FREAK_KINDS.length; j++) {
+      const a = mask(FREAK_KINDS[i]);
+      const b = mask(FREAK_KINDS[j]);
+      let diff = 0;
+      a.forEach((row, y) => row.forEach((v, x) => { if (v !== b[y][x]) diff++; }));
+      assert.ok(diff >= 12, `${FREAK_KINDS[i]} vs ${FREAK_KINDS[j]}: only ${diff} art px differ`);
+    }
+  }
+});
+
+test('freaks: the silhouette fills ≥ 75% of the hitbox, so a touch looks like a touch', () => {
+  for (const kind of FREAK_KINDS) {
+    const [ax, ay] = SPRITES[kind].anchor;
+    const m = mask(kind);
+    let filled = 0;
+    for (let y = ay; y < ay + 11; y++) for (let x = ax; x < ax + 10; x++) if (m[y][x]) filled++;
+    assert.ok(filled >= 0.75 * 110, `${kind}: ${filled}/110 hitbox art px filled`);
+  }
+});
+
+test('checkpoint and exit draw inside the screen for any cell', () => {
+  const inside = (r) => r.x >= 0 && r.y >= 0 && r.x + r.w <= 960 && r.y + r.h <= 540;
+  for (let tx = 0; tx < 32; tx++) {
+    for (let ty = 1; ty < 18; ty++) {
+      const e = exitRects(tx, ty);
+      assert.ok(inside(e.door) && inside(e.sign), `exit at ${tx},${ty}: ${JSON.stringify(e)}`);
+      assert.ok(inside(checkpointRect(tx, ty)), `checkpoint at ${tx},${ty}: ${JSON.stringify(checkpointRect(tx, ty))}`);
+    }
+  }
+});
+
+test('hatch: only the rim of a one-shift region, never along the screen edge, and none when the night is generated', () => {
+  const day = ['........', '.####...', '.####...', '.####...', 'S......E', '########'];
+  const night = ['........', '........', '........', '........', '........', '########'];
+  const lvl = parseLevel({ name: 't', par: 0, day, night });
+  assert.equal(shouldHatch(lvl, DAY, {}, 1, 1), true, 'corner of the day-only block');
+  assert.equal(shouldHatch(lvl, DAY, {}, 2, 2), false, 'the middle of the block (all four neighbours are block)');
+  assert.equal(shouldHatch(lvl, DAY, {}, 2, 3), true, 'its bottom row (open air below)');
+  assert.equal(shouldHatch(lvl, DAY, {}, 0, 5), false, 'floor in both shifts');
+  const wide = parseLevel({ name: 't', par: 0, day: ['S......E', '######..', '######..', '######..', '######..'], night: ['........', '........', '........', '........', '........'] });
+  assert.equal(shouldHatch(wide, DAY, {}, 2, 2), false, 'interior of a big day-only block: no hatch');
+  assert.equal(shouldHatch(wide, DAY, {}, 0, 3), false, 'along the screen edge: no hatch');
+  assert.equal(shouldHatch(wide, DAY, {}, 5, 2), true, 'its open side: hatched');
+  const offset = parseLevel({ name: 't', par: 0, day: ['S......E', '####....', '####....'], offset: { dx: 3, dy: 0 } });
+  for (let x = 0; x < 8; x++) for (let y = 0; y < 3; y++) assert.equal(shouldHatch(offset, DAY, {}, x, y), false, `offset level ${x},${y}`);
+});
 
 test('every glyph is a rectangle of # and . no taller than 9 rows', () => {
   for (const [ch, rows] of Object.entries(GLYPHS)) {

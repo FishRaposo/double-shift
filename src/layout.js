@@ -14,6 +14,14 @@ export function levelIndex(defs, param) {
   return Math.min(Math.max(n - 1, 0), defs.length - 1);
 }
 
+// The canvas's on-screen size, as a multiple of 960×540. Pixel art at a fractional scale gets uneven pixels
+// (some art pixels 2 screen px wide, some 3), so once the window allows 2× or more it snaps to the largest
+// whole multiple; below that, whole steps would waste too much of the screen, so it fits the window.
+export function canvasScale(winW, winH) {
+  const fit = Math.min(winW / 960, winH / 540);
+  return fit >= 2 ? Math.floor(fit) : fit;
+}
+
 // ---------- level select ----------
 // One row per act: an act tab on the left, then up to four timecards. The selected level's full name, best
 // and par sit in a detail bar at the bottom, so the cards can stay small enough for six rows (five acts of
