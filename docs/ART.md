@@ -163,6 +163,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 - ✅ Peeker hidden: a dark slot with eyes.
 - ✅ By day: dotted outline of the silhouette in the night echo blue, eyes at 60%. On every shift to day the outlines **flash** white once (freeze cue, 0.15 s).
 - ✅ Prank sparkle: plus-shaped twinkles in the freak-eye yellow over the changed tiles (0.5 s). Off with reduced effects.
+- ✅ Upside Down (Nov 3): a freak of a flipped shift hangs from the solid above its cell (`hang` on its box, rules.js) and draws upside down (`vflip`), outline and eyes included; a ducked peeker's slot sits on the ceiling side. The day-walker belongs to the day, which never flips.
 - *(post-jam)* Scatterer: scurry pose.
 
 ### 5.1 New freaks *(built 2026-11-02; used in `supervisor` and `daywalker`)*
@@ -210,6 +211,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | Nail / pale square | `portrait` | Where the portrait used to hang | Shift `hudSoft` |
 | Floor signs "3" / "3.5" | `offset` | Wall signs at each landing | Timecard paper `#f7efdc`, ink `#3b2d1f` |
 | Time clock (the exit) | `clockout` | The exit door with a punch clock beside it | Exit colors + checkpoint clock `#ffd23f` |
+| Upside Down night ✅ (Nov 3) | act 5 | Everything with a floor side turns over on the flipped night: the worker (`vflip`; `spriteRect` keeps the hitbox rows, so the hat hangs below), freaks, lasers and hazard echoes (the band at the top of the tile, matching the rules), the checkpoint (mirrored inside its cell) and the exit (the door hangs from its cell top; the sign goes under it, or beside it with no room). Dust kicks from the feet side, the spook gag pops away from the floor, tells hang under their target, and a prop with `flip: true` is mirrored inside its cell. The HUD, notes, signs and the EXIT text stay upright | Existing colors |
 
 ### 6.2 Props per level *(prop drawings built; the 12 built levels have their props via the `props` field; planned levels add theirs when built)*
 

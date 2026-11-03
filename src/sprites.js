@@ -173,20 +173,22 @@ const FREAK_DAY = { ...FREAK_NIGHT, R: C.cream, Y: C.hatOrange };
 
 // eyes: [x, y] of the left eye in art px within the sprite; `gap` art px between the eyes
 export const SPRITES = {
-  worker: { frames: workerFrames, palette: WORKER_DAY, nightPalette: WORKER_NIGHT, anchor: [1, 3] },
-  lurker: { frames: { a: LURKER0, b: LURKER1 }, palette: FREAK_NIGHT, anchor: [1, 2], eyes: [4, 5], gap: 2 },
-  peeker: { frames: { a: PEEKER }, palette: FREAK_NIGHT, anchor: [1, 2], eyes: [4, 3], gap: 2 },
-  squatter: { frames: { a: SQUATTER }, palette: FREAK_NIGHT, anchor: [1, 2], eyes: [4, 5], gap: 2 },
-  supervisor: { frames: { a: SUPERVISOR }, palette: FREAK_NIGHT, anchor: [1, 2], eyes: [5, 3], gap: 2 },
-  daywalker: { frames: { a: DAYWALKER0, b: DAYWALKER1 }, palette: FREAK_DAY, anchor: [1, 2], eyes: [4, 5], gap: 2 },
-  hand: { frames: { a: HAND }, palette: FREAK_NIGHT, anchor: [0, 0] },
+  // anchor: the hitbox's top-left inside the frame; box: the hitbox in art px (vflip mirrors around it)
+  worker: { frames: workerFrames, palette: WORKER_DAY, nightPalette: WORKER_NIGHT, anchor: [1, 3], box: [9, 13] },
+  lurker: { frames: { a: LURKER0, b: LURKER1 }, palette: FREAK_NIGHT, anchor: [1, 2], box: [10, 11], eyes: [4, 5], gap: 2 },
+  peeker: { frames: { a: PEEKER }, palette: FREAK_NIGHT, anchor: [1, 2], box: [10, 11], eyes: [4, 3], gap: 2 },
+  squatter: { frames: { a: SQUATTER }, palette: FREAK_NIGHT, anchor: [1, 2], box: [10, 11], eyes: [4, 5], gap: 2 },
+  supervisor: { frames: { a: SUPERVISOR }, palette: FREAK_NIGHT, anchor: [1, 2], box: [10, 11], eyes: [5, 3], gap: 2 },
+  daywalker: { frames: { a: DAYWALKER0, b: DAYWALKER1 }, palette: FREAK_DAY, anchor: [1, 2], box: [10, 11], eyes: [4, 5], gap: 2 },
+  hand: { frames: { a: HAND }, palette: FREAK_NIGHT, anchor: [0, 0], box: [8, 10] },
 };
 
 // ---------- frame selection (pure) ----------
 
-// Which worker frame to draw for a player state. fx.land > 0 right after touching down.
-export function workerFrame(p, t, fx = {}) {
-  if (!p.grounded) return p.vy < 0 ? 'jump' : 'fall';
+// Which worker frame to draw for a player state. fx.land > 0 right after touching down. `sign` is the gravity
+// (rules.js gravitySign): moving against it is a jump, with it a fall.
+export function workerFrame(p, t, fx = {}, sign = 1) {
+  if (!p.grounded) return sign * p.vy < 0 ? 'jump' : 'fall';
   if ((fx.land ?? 0) > 0) return 'land';
   if (Math.abs(p.vx) > 20) return `run${Math.floor(t * 12) % 4}`;
   return `idle${Math.floor(t * 1.6) % 2}`;
@@ -237,24 +239,37 @@ function frameCanvas(name, frame, palette, mode) {
   return c;
 }
 
+// Where a frame lands on screen (pure, tested): its anchor on (x, y), the top-left of the hitbox in screen px.
+// Upside down (vflip) the frame turns over around the hitbox, so the hitbox rows stay put and what stuck out
+// above it (the worker's hat) now hangs below.
+export function spriteRect(name, frame, x, y, { vflip = false, scale = ART } = {}) {
+  const s = SPRITES[name];
+  const rows = s.frames[frame];
+  const [ax, ay] = s.anchor;
+  const below = rows.length - ay - s.box[1]; // frame rows under the hitbox
+  return {
+    left: Math.round(x) - ax * scale,
+    top: Math.round(y) - (vflip ? below : ay) * scale,
+    w: rows[0].length * scale,
+    h: rows.length * scale,
+  };
+}
+
 // Draw a sprite frame so that its anchor lines up with (x, y), the top-left of the hitbox in screen px.
-export function drawSprite(g, name, frame, x, y, { flip = false, palette = null, outline = null, alpha = 1, scale = ART } = {}) {
+// flip mirrors it left-right (facing); vflip turns it upside down (a flipped shift's gravity).
+export function drawSprite(g, name, frame, x, y, { flip = false, vflip = false, palette = null, outline = null, alpha = 1, scale = ART } = {}) {
   const s = SPRITES[name];
   const pal = outline ? { outline } : palette ?? s.palette;
   const c = frameCanvas(name, frame, pal, outline ? 'outline' : 'fill');
-  const [ax, ay] = s.anchor;
-  const w = c.width * scale;
-  const h = c.height * scale;
-  const left = Math.round(x) - ax * scale;
-  const top = Math.round(y) - ay * scale;
+  const { left, top, w, h } = spriteRect(name, frame, x, y, { vflip, scale });
   const prevSmooth = g.imageSmoothingEnabled;
   const prevAlpha = g.globalAlpha;
   g.imageSmoothingEnabled = false;
   g.globalAlpha = prevAlpha * alpha;
-  if (flip) {
+  if (flip || vflip) {
     g.save();
-    g.translate(left + w, top);
-    g.scale(-1, 1);
+    g.translate(flip ? left + w : left, vflip ? top + h : top);
+    g.scale(flip ? -1 : 1, vflip ? -1 : 1);
     g.drawImage(c, 0, 0, w, h);
     g.restore();
   } else {
@@ -265,20 +280,23 @@ export function drawSprite(g, name, frame, x, y, { flip = false, palette = null,
 }
 
 // Eyes on a freak drawn with drawSprite at (x, y). state: 'open' | 'shut' | 'squint'. look: -1..1 glance.
-export function drawEyes(g, name, x, y, { state = 'open', look = 0, flip = false, color = C.freakEye, alpha = 1, scale = ART } = {}) {
+// vflip puts them where they land on the upside-down sprite, lids on the other side.
+export function drawEyes(g, name, x, y, { state = 'open', look = 0, flip = false, vflip = false, color = C.freakEye, alpha = 1, scale = ART } = {}) {
   const s = SPRITES[name];
-  const w = SPRITES[name].frames.a[0].length;
+  const rows = SPRITES[name].frames.a;
   const [ex0, ey] = s.eyes;
-  const ex = flip ? w - ex0 - (s.gap + 2) : ex0;
+  const ex = flip ? rows[0].length - ex0 - (s.gap + 2) : ex0;
   const P = scale;
-  const left = Math.round(x) - s.anchor[0] * P + (ex + look) * P;
-  const top = Math.round(y) - s.anchor[1] * P + ey * P;
+  const r = spriteRect(name, 'a', x, y, { vflip, scale });
+  const left = r.left + (ex + look) * P;
+  const top = r.top + (vflip ? rows.length - 2 - ey : ey) * P; // the eyes are 2 rows tall
+  const lid = vflip ? 0 : P; // a shut eye is the row nearer the cheek
   const prevAlpha = g.globalAlpha;
   g.globalAlpha = prevAlpha * alpha;
   g.fillStyle = color;
   for (const dx of [0, 1 + s.gap]) {
     if (state === 'open') g.fillRect(left + dx * P, top, P, P * 2);
-    else g.fillRect(left + dx * P - (state === 'squint' ? P / 2 : 0), top + P, state === 'squint' ? P * 2 : P * 1.5, P);
+    else g.fillRect(left + dx * P - (state === 'squint' ? P / 2 : 0), top + lid, state === 'squint' ? P * 2 : P * 1.5, P);
   }
   g.globalAlpha = prevAlpha;
 }

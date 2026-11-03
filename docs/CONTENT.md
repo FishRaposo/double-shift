@@ -100,7 +100,7 @@ Specs: [ART.md](ART.md). Palette rule: existing colors only, unless a color gets
 | ART-8 | Staircase to nowhere + the freaks' proud sign | `stairs` | B | ART §6.1 | ✅ built, level pending |
 | ART-9 | Portrait ("just eyes") | `portrait` | B | ART §6.1 | ✅ built, level pending |
 | ART-10 | Offset-layer echo treatment (floor label "3.5") | `offset` | C | ART §6.1 | ✅ |
-| ART-18 | Upside Down: worker sprite flipped vertically at night in act 5, upside-down freak outlines, tells hanging from the ceiling | act 5 | C | ART §5, §6.1 | planned |
+| ART-18 | Upside Down: worker sprite flipped vertically at night in act 5, upside-down freak outlines, tells hanging from the ceiling | act 5 | C | ART §5, §6.1 | ✅ built Nov 3 (gallery); first level pending |
 | ART-19 | Props for `audit` (clipboard memo, INSPECTION sign) and `heels` (a hard hat stuck to the ceiling) | `audit`, `heels` | B / C | ART §6.2 | planned |
 | ART-11 | Props per level: notice board, vents, barrier tape, pallets, signage, footprints, chalk circles | Every level | P1 | ART §6, §6.2 | ✅ |
 | ART-12 | Effects: prank sparkle, freeze cue on shift to day, checkpoint ping | Every level | P1 | ART §5, §7 | ✅ |
@@ -130,7 +130,7 @@ Specs: [AUDIO.md](AUDIO.md).
 | SND-10 | Offset rumble (on every shift in `offset`) | `offset` | C | AUDIO §4.1 | ✅ |
 | SND-11 | Day-walker giggle (by day) | `daywalker` | C | AUDIO §4.1 | ✅ |
 | SND-12 | Act-card sting | SYS-8 | P1 | AUDIO §4.1 | ✅ |
-| SND-13 | Gravity flip "whoomp" layered on the shift sound in act 5 | act 5 | C | AUDIO §4.1 | planned |
+| SND-13 | Gravity flip "whoomp" layered on the shift sound in act 5 | act 5 | C | AUDIO §4.1 | ✅ built Nov 3 (`flip`); first level pending |
 
 ## 6. Text
 

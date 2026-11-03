@@ -156,6 +156,7 @@ export const SOUNDS = {
   sting: [392, 494].map((f) => ({ type: 'triangle', f0: f, dur: 0.12, vol: 0.12 })).concat([523, 659].map((f) => ({ type: 'triangle', f0: f, dur: 0.18, vol: 0.12, delay: 0.13 }))),
   // planned levels (built now)
   peekerBoing: [{ type: 'sine', f0: 300, f1: 600, dur: 0.05, vol: 0.08 }],
+  flip: [{ type: 'sine', f0: 300, f1: 120, dur: 0.12, vol: 0.12 }], // under every shift in an Upside Down level: gravity turns over
   lurkerStep: [{ type: 'noise', dur: 0.02, vol: 0.04, filter: { type: 'lowpass', freq: 300 } }],
   wetSqueak: [{ type: 'square', f0: 900, f1: 1300, dur: 0.08, vol: 0.06, vibrato: 6, filter: { type: 'lowpass', freq: 3000 } }],
   doorThunk: [{ type: 'sine', f0: 180, f1: 90, dur: 0.1, vol: 0.22 }, { type: 'noise', dur: 0.06, vol: 0.06, filter: { type: 'lowpass', freq: 500 } }],
@@ -191,4 +192,5 @@ export const sfx = {
   supervisorTurn: () => { playSound('clipboardTick'); playSound('turnWhoosh'); },
   offsetRumble: () => playSound('offsetRumble'),
   peekerBoing: () => playSound('peekerBoing'),
+  flip: () => playSound('flip'),
 };

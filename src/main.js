@@ -1,14 +1,14 @@
 // Double Shift — browser shell: input capture, fixed-step loop, rendering.
 // Draws only what src/rules.js decided. Art lives in sprites.js (characters) and art.js (everything else).
 
-import { step, initState, parseLevel, tileAt, isSolidChar, freakBoxes, TILE, DT, DAY, NIGHT, PARAMS, FREAK } from './rules.js';
+import { step, initState, parseLevel, tileAt, isSolidChar, freakBoxes, gravitySign, TILE, DT, DAY, NIGHT, PARAMS, FREAK } from './rules.js';
 import { LEVELS, ACTS, FINALE_ACT } from './levels.js';
 import { createInput, GAME_KEYS } from './input.js';
 import { sfx, playSound, unlockAudio, toggleMute, setVolumes, setMusicShift, setMenu } from './audio.js';
 import { skinPlan } from './skins.js';
 import { createSave, createSettings, isUnlocked } from './save.js';
 import { drawText, measureText, wrapText } from './font.js';
-import { drawSprite, drawEyes, eyesOpen, workerFrame, ART, SPRITES, C } from './sprites.js';
+import { drawSprite, drawEyes, eyesOpen, workerFrame, spriteRect, ART, SPRITES, C } from './sprites.js';
 import {
   PAL, PROPS, drawBackground, drawSolidTile, drawHatch, drawEchoEdges, drawRebar, drawLaser, drawHazardEcho,
   drawExit, drawCheckpoint, drawSign, drawFreak, drawShiftRing, drawDust, drawPuff, drawSparkle, drawPanel,
@@ -214,6 +214,12 @@ const SELECT_KEYS = {
 
 let spookIx = 0;
 
+// Dust kicks up at the feet: the bottom of the worker, or the top while hanging on a flipped night.
+function feetDust(p) {
+  const up = gravitySign(level(), game.state.layer) < 0;
+  return { x: p.x + PARAMS.playerW / 2, y: up ? p.y : p.y + PARAMS.playerH, t: 0, up };
+}
+
 function handleEvents(events) {
   const p = game.state.player;
   const fx = game.fx;
@@ -223,14 +229,15 @@ function handleEvents(events) {
       case 'shift':
         sfx.shift(ev.layer === NIGHT);
         if (level().offset) sfx.offsetRumble(); // the building is half a storey off here
+        if (level().upsideDown) sfx.flip(); // gravity just turned over
         fx.flash = 1;
         fx.flashLayer = ev.layer;
         fx.rings.push({ x: cx, y: p.y + PARAMS.playerH / 2, t: 0, layer: ev.layer });
         if (level().freaks.some((f) => f.shift !== ev.layer)) { fx.freeze = 1; sfx.freeze?.(); } // someone just froze
         break;
       case 'shiftFail': sfx.shiftFail(); fx.fail = 1; break;
-      case 'jump': sfx.jump(); fx.dust.push({ x: cx, y: p.y + PARAMS.playerH, t: 0 }); break;
-      case 'land': sfx.land(); fx.land = 0.1; fx.dust.push({ x: cx, y: p.y + PARAMS.playerH, t: 0 }); break;
+      case 'jump': sfx.jump(); fx.dust.push(feetDust(p)); break;
+      case 'land': sfx.land(); fx.land = 0.1; fx.dust.push(feetDust(p)); break;
       case 'wetStop': sfx.wetStop(); break;
       case 'peek': sfx.peekerBoing(); break; // a peeker popped out on your shift
       case 'supervisorTurn': sfx.supervisorTurn(); break;
@@ -354,7 +361,7 @@ function makeCanvas() {
 function drawShiftCues(ctx, lvl, layer, ov, tx, ty) {
   const other = 1 - layer;
   if (shouldHatch(lvl, layer, ov, tx, ty)) drawHatch(ctx, tx, ty, layer); // the rim of a one-shift region (art.js)
-  if (tileAt(lvl, other, tx, ty, ov) === '^') drawHazardEcho(ctx, tx, ty, PAL[other].echo);
+  if (tileAt(lvl, other, tx, ty, ov) === '^') drawHazardEcho(ctx, tx, ty, PAL[other].echo, { top: gravitySign(lvl, other) < 0 });
 }
 
 // Everything that doesn't move, drawn once per level × shift × prank state:
@@ -370,7 +377,14 @@ function staticLayer(lvl, def, layer, ov) {
   // props first: they sit behind the geometry
   for (const pr of def.props ?? []) {
     if (pr.layer && (pr.layer === 'night') !== (layer === NIGHT)) continue;
+    if (pr.flip) {
+      // hung upside down (a prop on a flipped night): mirrored inside its cell. Signs keep flip off.
+      ctx.save();
+      ctx.translate(0, (2 * pr.ty + 1) * TILE);
+      ctx.scale(1, -1);
+    }
     PROPS[pr.kind]?.(ctx, pr.tx * TILE, pr.ty * TILE, pr.w ?? pr, pr);
+    if (pr.flip) ctx.restore();
   }
   drawEchoEdges(ctx, solidEdges(lvl, other, ov), PAL[other].echo);
   for (let ty = 0; ty < lvl.h; ty++) {
@@ -392,7 +406,7 @@ function staticLayer(lvl, def, layer, ov) {
   const plan = skinPlan(lvl, layer, ov);
   for (const sp of plan) if (sp.draw !== 'portrait') drawSkin(ctx, sp, layer);
   for (let ty = 0; ty < lvl.h; ty++) for (let tx = 0; tx < lvl.w; tx++) drawShiftCues(ctx, lvl, layer, ov, tx, ty);
-  drawExit(ctx, lvl.exit.tx, lvl.exit.ty, layer);
+  drawExit(ctx, lvl.exit.tx, lvl.exit.ty, layer, { hang: gravitySign(lvl, layer) < 0 });
   if (staticCache.size > 24) staticCache.delete(staticCache.keys().next().value);
   const out = { canvas: c, portraits: plan.filter((sp) => sp.draw === 'portrait') };
   staticCache.set(key, out);
@@ -420,7 +434,7 @@ function drawHazards(lvl, layer, t, ov) {
     for (let tx = 0; tx < lvl.w; tx++) {
       if (tileAt(lvl, layer, tx, ty, ov) !== '^') continue;
       if (layer === DAY) drawRebar(g, tx, ty);
-      else drawLaser(g, tx, ty, t, tx === 0 || tileAt(lvl, layer, tx - 1, ty, ov) !== '^', tx === lvl.w - 1 || tileAt(lvl, layer, tx + 1, ty, ov) !== '^');
+      else drawLaser(g, tx, ty, t, tx === 0 || tileAt(lvl, layer, tx - 1, ty, ov) !== '^', tx === lvl.w - 1 || tileAt(lvl, layer, tx + 1, ty, ov) !== '^', { top: gravitySign(lvl, layer) < 0 });
     }
   }
 }
@@ -431,8 +445,10 @@ function drawTells(lvl, s, layer, t) {
     const x = pr.tell.tx * TILE + TILE / 2;
     const y = pr.tell.ty * TILE + TILE / 2;
     if (layer === NIGHT) {
-      PROPS.eyes(g, x - 30, y - 50, { t, seed: 7 });
-      PROPS.eyes(g, x + 4, y - 64, { t, seed: 3 });
+      // eyes over the target, or under it when the night hangs upside down (the eyes are 8 px tall)
+      const up = gravitySign(lvl, layer) < 0;
+      PROPS.eyes(g, x - 30, up ? y + 42 : y - 50, { t, seed: 7 });
+      PROPS.eyes(g, x + 4, up ? y + 56 : y - 64, { t, seed: 3 });
     } else {
       drawSign(g, x, y - 36, 'MINE', 'note', 2);
     }
@@ -449,32 +465,37 @@ function drawDecor(lvl, def, layer, t) {
 function drawWorker(s, layer) {
   const p = s.player;
   const fx = game.fx;
-  const opts = (extra) => ({ flip: p.facing < 0, palette: layer === NIGHT ? NIGHT_PAL : null, ...extra });
+  const sign = gravitySign(level(), layer);
+  const vflip = sign < 0; // hanging on a flipped night: head down
   if (fx.fail > 0) {
+    // a red frame 3 art px around the sprite (which sticks out on the hat side)
     g.fillStyle = `rgba(255,70,70,${fx.fail})`;
+    const r = spriteRect('worker', 'idle0', p.x, p.y, { vflip });
     const x = Math.round(p.x) - 3 * A;
-    const y = Math.round(p.y) - 6 * A;
+    const y = r.top - 3 * A;
+    const h = r.h + 6 * A;
     g.fillRect(x, y, PARAMS.playerW + 6 * A, A);
-    g.fillRect(x, y + PARAMS.playerH + 8 * A, PARAMS.playerW + 6 * A, A);
-    g.fillRect(x, y, A, PARAMS.playerH + 9 * A);
-    g.fillRect(x + PARAMS.playerW + 5 * A, y, A, PARAMS.playerH + 9 * A);
+    g.fillRect(x, y + h - A, PARAMS.playerW + 6 * A, A);
+    g.fillRect(x, y, A, h);
+    g.fillRect(x + PARAMS.playerW + 5 * A, y, A, h);
   }
-  drawSprite(g, 'worker', workerFrame(p, s.time, fx), p.x, p.y, opts());
+  drawSprite(g, 'worker', workerFrame(p, s.time, fx, sign), p.x, p.y, { flip: p.facing < 0, vflip, palette: layer === NIGHT ? NIGHT_PAL : null });
 }
 
 function drawSpookGag() {
-  // the worker leaps out of their boots; the boots stay put for a beat
+  // the worker leaps out of their boots, away from the floor; the boots stay put for a beat
   const sp = game.fx.spook;
   if (!sp) return;
+  const vflip = gravitySign(level(), sp.layer) < 0;
   const pop = Math.sin(Math.min(1, sp.t / 0.35) * Math.PI) * 26;
   const palette = sp.layer === NIGHT ? NIGHT_PAL : null;
-  drawSprite(g, 'worker', 'boots', sp.x, sp.y, { palette });
-  drawSprite(g, 'worker', 'spookBody', sp.x, sp.y - pop, { palette });
+  drawSprite(g, 'worker', 'boots', sp.x, sp.y, { palette, vflip });
+  drawSprite(g, 'worker', 'spookBody', sp.x, sp.y + (vflip ? pop : -pop), { palette, vflip });
 }
 
 function drawFx(layer, reduced) {
   const fx = game.fx;
-  for (const d of fx.dust) drawDust(g, d.x, d.y, d.t / 0.3);
+  for (const d of fx.dust) drawDust(g, d.x, d.y, d.t / 0.3, { up: d.up });
   for (const q of fx.puffs) drawPuff(g, q.x, q.y, q.t / 0.4);
   if (!reduced) {
     for (const r of fx.rings) drawShiftRing(g, r.x, r.y, r.t / 0.3, r.layer);
@@ -557,7 +578,7 @@ function drawDebug(s) {
   const t = (str, y) => drawText(g, str, 16, y, { scale: 1, color: '#00ff00' });
   t(`pos ${p.x.toFixed(1)},${p.y.toFixed(1)}  tile ${(p.x / TILE).toFixed(2)},${(p.y / TILE).toFixed(2)}`, H - 70);
   t(`vel ${p.vx.toFixed(0)},${p.vy.toFixed(0)}  grounded ${p.grounded}  coyote ${p.coyote.toFixed(3)}`, H - 54);
-  t(`layer ${s.layer}  pending ${s.shiftPending.toFixed(3)}  deaths ${s.deaths}`, H - 38);
+  t(`layer ${s.layer}  g ${gravitySign(level(), s.layer)}  pending ${s.shiftPending.toFixed(3)}  deaths ${s.deaths}`, H - 38);
   t(`night clock ${s.freakClock.toFixed(2)}  day clock ${s.dayClock.toFixed(2)}  night entries ${s.nightEntries}`, H - 22);
 }
 
@@ -577,7 +598,8 @@ function drawPlay() {
     // the shift cues on top of the per-frame portrait, like the static layer does for everything else
     for (let dy = 0; dy < sp.h; dy++) for (let dx = 0; dx < sp.w; dx++) drawShiftCues(g, lvl, layer, s.overrides, sp.tx + dx, sp.ty + dy);
   }
-  for (const c of lvl.checkpoints) drawCheckpoint(g, c.tx, c.ty, s.checkpoint.id === c.id, s.checkpoint.id === c.id ? game.fx.ping : 0);
+  const hang = gravitySign(lvl, layer) < 0;
+  for (const c of lvl.checkpoints) drawCheckpoint(g, c.tx, c.ty, s.checkpoint.id === c.id, s.checkpoint.id === c.id ? game.fx.ping : 0, { hang });
   drawDecor(lvl, def, layer, t);
   drawTells(lvl, s, layer, t);
   freakBoxes(lvl, s).forEach((b, i) => {

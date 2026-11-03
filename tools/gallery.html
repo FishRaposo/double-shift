@@ -116,6 +116,33 @@ function draw(t) {
   label('frozen by day (night echo blue)', 950, y + 112);
   y += 130;
 
+  // ---- upside down: the flipped night hangs everything from the ceiling ----
+  section(y, 170, 'UPSIDE DOWN · the flipped night: hanging worker, freaks, hazards, checkpoint and exit');
+  {
+    const top = y + 40; // a ceiling to hang from
+    for (let x = 0; x < W; x += TILE) art.drawSolidTile(g, x / TILE, top / TILE - 1, NIGHT, { up: false, down: true, left: false, right: false });
+    const hangY = Math.round(top / TILE) * TILE;
+    const row = hangY / TILE;
+    drawSprite(g, 'worker', 'idle0', 40, hangY, { vflip: true, palette: NIGHT_PAL });
+    drawSprite(g, 'worker', 'jump', 100, hangY + 40, { vflip: true, palette: NIGHT_PAL });
+    drawSprite(g, 'worker', 'fall', 160, hangY + 40, { vflip: true, palette: NIGHT_PAL });
+    label('worker: hanging, jumping, falling', 30, y + 150);
+    const fb = (kind, x, active = true) => ({ kind, shift: NIGHT, x, y: hangY, w: 20, h: 22, active, facing: 1, turnIn: 9, hang: true });
+    [['lurker', 240], ['peeker', 300], ['squatter', 360], ['supervisor', 420]].forEach(([k, x], i) => art.drawFreak(g, fb(k, x), i, t, { layer: NIGHT, freakShift: NIGHT }));
+    art.drawFreak(g, fb('peeker', 480, false), 1, t, { layer: NIGHT, freakShift: NIGHT });
+    art.drawFreak(g, fb('lurker', 540), 0, t, { layer: DAY, freakShift: NIGHT });
+    label('hanging freaks, a ducked peeker, a frozen outline', 230, y + 150);
+    art.drawLaser(g, 20, row, t, true, false, { top: true });
+    art.drawLaser(g, 21, row, t, false, true, { top: true });
+    art.drawHazardEcho(g, 23, row, PAL[NIGHT].echo, { top: true });
+    label('laser + echo, top of tile', 600, y + 150);
+    art.drawCheckpoint(g, 26, row, false, 0, { hang: true });
+    art.drawCheckpoint(g, 27, row, true, Math.abs(Math.sin(t * 3)), { hang: true });
+    art.drawExit(g, 29, row, NIGHT, { hang: true });
+    label('hanging checkpoints and exit', 790, y + 150);
+  }
+  y += 170;
+
   section(y, 100, 'DAY-WALKER · day (orange hard hat and shades), and frozen by night', DAY);
   const dw = (x, active) => ({ kind: 'daywalker', shift: DAY, x, y: y + 40, w: 20, h: 22, active, facing: 0 });
   art.drawFreak(g, dw(40, true), 0, t, { layer: DAY, freakShift: DAY });

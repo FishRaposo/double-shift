@@ -389,20 +389,28 @@ export function drawRebar(g, tx, ty) {
   }
 }
 
-export function drawLaser(g, tx, ty, t, leftEnd, rightEnd) {
+// On a flipped layer (`top`) a hazard is the same drawing turned over inside its tile: the band at the top,
+// matching the rules' hitbox (overlapsHazard).
+const mirrorIn = (ty, top) => (y, h) => (top ? (2 * ty + 1) * TILE - y - h * A : y);
+
+export function drawLaser(g, tx, ty, t, leftEnd, rightEnd, { top = false } = {}) {
   const x = tx * TILE;
   const base = (ty + 1) * TILE;
   const y = base - 4 * A;
+  const Y = mirrorIn(ty, top);
   const on = Math.sin(t * 18 + tx) > -0.3;
-  px(g, x, y - A, 15, 3, `rgba(${HAZARD.laserGlow},${on ? 0.28 : 0.14})`);
-  px(g, x, y, 15, 1, on ? HAZARD.laser : HAZARD.laserDim);
-  if (leftEnd) { px(g, x, base - HZ * A, 2, HZ, HAZARD.emitter); px(g, x, base - HZ * A, 2, 1, '#ffffff'); }
-  if (rightEnd) { px(g, x + 13 * A, base - HZ * A, 2, HZ, HAZARD.emitter); px(g, x + 13 * A, base - HZ * A, 2, 1, '#ffffff'); }
+  px(g, x, Y(y - A, 3), 15, 3, `rgba(${HAZARD.laserGlow},${on ? 0.28 : 0.14})`);
+  px(g, x, Y(y, 1), 15, 1, on ? HAZARD.laser : HAZARD.laserDim);
+  for (const [end, ex] of [[leftEnd, x], [rightEnd, x + 13 * A]]) {
+    if (!end) continue;
+    px(g, ex, Y(base - HZ * A, HZ), 2, HZ, HAZARD.emitter);
+    px(g, ex, Y(base - HZ * A, 1), 2, 1, '#ffffff'); // the tip, at the open end
+  }
 }
 
-export function drawHazardEcho(g, tx, ty, color) {
+export function drawHazardEcho(g, tx, ty, color, { top: flipped = false } = {}) {
   const x = tx * TILE;
-  const top = (ty + 1) * TILE - HZ * A;
+  const top = flipped ? ty * TILE : (ty + 1) * TILE - HZ * A; // the dotted box is symmetric: only its band moves
   g.fillStyle = color;
   for (let i = 1; i < 14; i += 2) { g.fillRect(x + i * A, top, A, A); g.fillRect(x + i * A, top + (HZ - 1) * A, A, A); }
   for (let j = 0; j < HZ; j += 2) { g.fillRect(x + A, top + j * A, A, A); g.fillRect(x + 13 * A, top + j * A, A, A); }
@@ -411,17 +419,21 @@ export function drawHazardEcho(g, tx, ty, color) {
 // ---------- shared objects ----------
 
 const SCREEN_W = 32 * TILE;
+const SCREEN_H = 18 * TILE;
 
 // Where the exit's door and its lit sign go (pure, tested). The door is two tiles tall, standing on (tx, ty).
 // The sign sits above it; with no room above (an exit on row 1) it hangs beside the door instead, and it never
 // leaves the screen at the sides.
-export function exitRects(tx, ty) {
+// On a flipped layer (`hang`) the door hangs from the top of its cell and the sign goes under it (or beside it,
+// with no room below); the sign's text stays upright.
+export function exitRects(tx, ty, { hang = false } = {}) {
   const x = tx * TILE;
   const top = ty * TILE - TILE;
   const door = { x: x + A, y: top + 2 * A, w: 13 * A, h: 28 * A };
   const sign = { x: x + TILE / 2 - 21, y: top - 9 * A, w: 21 * A, h: 9 * A };
-  if (sign.y < 0) {
-    sign.y = top + 4 * A;
+  if (hang) for (const r of [door, sign]) r.y = (2 * ty + 1) * TILE - r.y - r.h; // turned over inside the cell
+  if (hang ? sign.y + sign.h > SCREEN_H : sign.y < 0) {
+    sign.y = hang ? door.y + door.h - 2 * A - sign.h : top + 4 * A;
     sign.x = x + TILE + A;
     if (sign.x + sign.w > SCREEN_W) sign.x = x - A - sign.w;
   }
@@ -429,13 +441,14 @@ export function exitRects(tx, ty) {
   return { door, sign };
 }
 
-export function drawExit(g, tx, ty, layer) {
-  const { door: d, sign: s } = exitRects(tx, ty);
+export function drawExit(g, tx, ty, layer, { hang = false } = {}) {
+  const { door: d, sign: s } = exitRects(tx, ty, { hang });
+  const Y = (off, h) => d.y + (hang ? d.h - off - h * A : off); // the door's own details, turned over
   const fill = layer === DAY ? '#3d7a4a' : '#1f6b47';
   px(g, d.x, d.y, 13, 28, '#9dffb8');
-  px(g, d.x + A, d.y + A, 11, 27, fill);
-  px(g, d.x + 3 * A, d.y + 4 * A, 7, 5, layer === DAY ? '#a9e6bc' : '#5fd18f'); // window
-  px(g, d.x + 9 * A, d.y + 15 * A, 2, 2, '#9dffb8'); // knob
+  px(g, d.x + A, Y(A, 27), 11, 27, fill);
+  px(g, d.x + 3 * A, Y(4 * A, 5), 7, 5, layer === DAY ? '#a9e6bc' : '#5fd18f'); // window
+  px(g, d.x + 9 * A, Y(15 * A, 2), 2, 2, '#9dffb8'); // knob
   // lit sign
   px(g, s.x, s.y, 21, 9, '#06210f');
   px(g, s.x + A, s.y + A, 19, 7, '#2bdc6a');
@@ -454,12 +467,23 @@ function ring(g, cx, cy, r, color) {
 
 // The checkpoint is a punch clock on a post (pure rect, tested): a metal box with a clock face and a card
 // slot; once taken, the face lights up and a timecard sticks out of the top. It stands on (tx, ty).
-export function checkpointRect(tx, ty) {
+// On a flipped layer (`hang`) the clock hangs from the top of its cell: the same drawing, turned over.
+export function checkpointRect(tx, ty, { hang = false } = {}) {
   const floor = (ty + 1) * TILE;
-  return { x: tx * TILE + TILE / 2 - 6 * A, y: floor - 24 * A, w: 12 * A, h: 24 * A };
+  const r = { x: tx * TILE + TILE / 2 - 6 * A, y: floor - 24 * A, w: 12 * A, h: 24 * A };
+  if (hang) r.y = (2 * ty + 1) * TILE - r.y - r.h;
+  return r;
 }
 
-export function drawCheckpoint(g, tx, ty, on, ping = 0) {
+export function drawCheckpoint(g, tx, ty, on, ping = 0, { hang = false } = {}) {
+  if (hang) {
+    g.save();
+    g.translate(0, (2 * ty + 1) * TILE); // mirror inside the cell: y → (2ty + 1)·TILE − y
+    g.scale(1, -1);
+    drawCheckpoint(g, tx, ty, on, ping);
+    g.restore();
+    return;
+  }
   const { x, y } = checkpointRect(tx, ty);
   const floor = (ty + 1) * TILE;
   const cx = x + 6 * A;
@@ -524,26 +548,27 @@ export function drawFreak(g, b, i, t, { layer, freakShift = NIGHT, frozenFlash =
   const kind = b.kind;
   const live = layer === freakShift;
   const flip = kind === 'supervisor' && b.facing < 0; // its facing is the planning tell, frozen or not
+  const vflip = !!b.hang; // a freak of a flipped shift hangs from the solid above (rules.js freakBoxes)
   if (live) {
     if (kind === 'peeker' && !b.active) {
-      // ducked in: a dark slot with eyes
-      px(g, b.x - A, b.y + b.h - 3 * A, 12, 3, 'rgba(0,0,0,0.6)');
-      drawEyes(g, 'peeker', b.x, b.y + b.h - 13 * A + 2, { state: eyesOpen(t, i) ? 'open' : 'shut' });
+      // ducked in: a dark slot with eyes, on the floor side (the ceiling side when it hangs)
+      px(g, b.x - A, vflip ? b.y : b.y + b.h - 3 * A, 12, 3, 'rgba(0,0,0,0.6)');
+      drawEyes(g, 'peeker', b.x, vflip ? b.y + 13 * A - b.h - 2 : b.y + b.h - 13 * A + 2, { state: eyesOpen(t, i) ? 'open' : 'shut', vflip });
       return;
     }
     const jitter = b.active ? Math.round(Math.sin(t * 14 + i) * 0.6) * A : 0;
     const frame = (kind === 'lurker' || kind === 'daywalker') && b.active ? (Math.floor(t * 6 + i) % 2 ? 'b' : 'a') : 'a';
-    drawSprite(g, kind, frame, b.x + jitter, b.y, { flip });
+    drawSprite(g, kind, frame, b.x + jitter, b.y, { flip, vflip });
     if (kind === 'daywalker') { drawShades(g, b.x + jitter, b.y, look); return; }
     const state = !b.active ? 'shut' : prankSquint > 0 ? 'squint' : eyesOpen(t, i) ? 'open' : 'shut';
-    drawEyes(g, kind, b.x + jitter, b.y, { state, look, flip });
+    drawEyes(g, kind, b.x + jitter, b.y, { state, look, flip, vflip });
   } else {
     // frozen on the other shift: dotted outline in its own shift's echo color
     const color = PAL[freakShift].echo;
-    drawSprite(g, kind, 'a', b.x, b.y, { outline: color, alpha: frozenFlash > 0 ? 1 : 0.85, flip });
-    if (frozenFlash > 0) drawSprite(g, kind, 'a', b.x, b.y, { outline: '#ffffff', alpha: frozenFlash, flip });
+    drawSprite(g, kind, 'a', b.x, b.y, { outline: color, alpha: frozenFlash > 0 ? 1 : 0.85, flip, vflip });
+    if (frozenFlash > 0) drawSprite(g, kind, 'a', b.x, b.y, { outline: '#ffffff', alpha: frozenFlash, flip, vflip });
     if (kind === 'daywalker') drawShades(g, b.x, b.y, 0, 0.6);
-    else if (b.active || kind === 'supervisor') drawEyes(g, kind, b.x, b.y, { state: 'open', alpha: 0.6, flip });
+    else if (b.active || kind === 'supervisor') drawEyes(g, kind, b.x, b.y, { state: 'open', alpha: 0.6, flip, vflip });
   }
 }
 
@@ -790,11 +815,13 @@ export function drawShiftRing(g, x, y, k, layer) {
   ring(g, x, y, 10 + k * 40, layer === NIGHT ? `rgba(95,242,255,${1 - k})` : `rgba(255,200,90,${1 - k})`);
 }
 
-export function drawDust(g, x, y, k) {
+// Dust puffs away from the floor at (x, y): up the screen, or down it when `up` (hanging on a flipped night).
+export function drawDust(g, x, y, k, { up = false } = {}) {
   const a = 1 - k;
+  const away = (dy) => (up ? y + dy - A : y - dy); // mirrored: a 1-art-px puff at y + dy − A
   for (const d of [-1, 1]) {
-    px(g, x + d * (4 + k * 10) * A / 2 - A / 2, y - (1 + k * 3) * A, 1, 1, `rgba(220,210,190,${a})`);
-    px(g, x + d * (2 + k * 6) * A / 2 - A / 2, y - k * 2 * A, 1, 1, `rgba(220,210,190,${a * 0.7})`);
+    px(g, x + d * (4 + k * 10) * A / 2 - A / 2, away((1 + k * 3) * A), 1, 1, `rgba(220,210,190,${a})`);
+    px(g, x + d * (2 + k * 6) * A / 2 - A / 2, away(k * 2 * A), 1, 1, `rgba(220,210,190,${a * 0.7})`);
   }
 }
 

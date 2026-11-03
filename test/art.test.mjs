@@ -44,6 +44,15 @@ test('checkpoint and exit draw inside the screen for any cell', () => {
       assert.ok(inside(e.door) && inside(e.sign), `exit at ${tx},${ty}: ${JSON.stringify(e)}`);
       assert.ok(inside(checkpointRect(tx, ty)), `checkpoint at ${tx},${ty}: ${JSON.stringify(checkpointRect(tx, ty))}`);
     }
+    // hanging on a flipped night: the door and the clock hang from the top of their cell
+    for (let ty = 0; ty < 17; ty++) {
+      const e = exitRects(tx, ty, { hang: true });
+      assert.ok(inside(e.door) && inside(e.sign), `hanging exit at ${tx},${ty}: ${JSON.stringify(e)}`);
+      assert.equal(e.door.y, ty * 30, 'the door hangs from its cell top');
+      const c = checkpointRect(tx, ty, { hang: true });
+      assert.ok(inside(c), `hanging checkpoint at ${tx},${ty}: ${JSON.stringify(c)}`);
+      assert.equal(c.y, ty * 30, 'the clock hangs from its cell top');
+    }
   }
 });
 
@@ -159,4 +168,44 @@ test('freaks: the day-walker, out on the same shift as the worker, wears none of
   const walker = colors(SPRITES.daywalker, SPRITES.daywalker.palette);
   const shared = [...walker].filter((c) => worker.has(c));
   assert.deepEqual(shared, [], `the day-walker shares ${shared.join(', ')} with the worker`);
+});
+
+// ---------- Upside Down drawing ----------
+// Namespace import, so a missing export fails these tests alone.
+import * as Sprites from '../src/sprites.js';
+
+test('sprites: every box matches its rules hitbox, and a vflipped sprite covers the same hitbox rows (mirrored)', () => {
+  for (const [name, hit] of [['worker', [PARAMS.playerW, PARAMS.playerH]], ...FREAK_KINDS.map((k) => [k, [FREAK.w, FREAK.h]])]) {
+    const s = SPRITES[name];
+    assert.deepEqual(s.box.map((n) => n * ART), hit, `${name}: box vs hitbox`);
+    for (const frame of Object.keys(s.frames)) {
+      const rows = s.frames[frame];
+      const x = 100;
+      const y = 200;
+      const up = Sprites.spriteRect(name, frame, x, y, { scale: ART });
+      const down = Sprites.spriteRect(name, frame, x, y, { vflip: true, scale: ART });
+      assert.deepEqual([down.left, down.w, down.h], [up.left, up.w, up.h], `${name}/${frame}: same size and column`);
+      for (let k = 0; k < s.box[1]; k++) {
+        const screenY = y + k * ART; // hitbox-relative art row k
+        const rowUp = (screenY - up.top) / ART; // the frame row drawn there, upright
+        const rowDown = rows.length - 1 - (screenY - down.top) / ART; // and flipped (the canvas turns rows over)
+        assert.equal(rowUp, s.anchor[1] + k, `${name}/${frame}: upright row ${k}`);
+        assert.equal(rowDown, s.anchor[1] + s.box[1] - 1 - k, `${name}/${frame}: flipped row ${k} is the mirror`);
+      }
+    }
+  }
+});
+
+test('sprites: the worker frame follows gravity when the sign is -1', () => {
+  const air = (vy) => ({ grounded: false, vx: 0, vy });
+  assert.equal(workerFrame(air(-100), 0), 'jump');
+  assert.equal(workerFrame(air(100), 0), 'fall');
+  assert.equal(Sprites.workerFrame(air(100), 0, {}, -1), 'jump', 'moving down the screen is rising when gravity pulls up');
+  assert.equal(Sprites.workerFrame(air(-100), 0, {}, -1), 'fall');
+});
+
+test('art: every prop in an upside-down level names its layer (a prop drawn on both shifts would hang on one)', () => {
+  for (const def of LEVELS.filter((l) => l.upsideDown)) {
+    for (const pr of def.props ?? []) assert.ok(pr.layer === 'day' || pr.layer === 'night', `${def.id}: ${pr.kind} at ${pr.tx},${pr.ty} has no layer`);
+  }
 });

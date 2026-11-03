@@ -107,6 +107,7 @@ Same `tone()` format as §2; every sound ≤ 0.25 s.
 | Offset rumble (every shift in `offset`) | `offset` | Low rumble | sine 55 → 45 Hz, 0.25 s, vol 0.2, plus low-passed noise |
 | Day-walker giggle (by day) | `daywalker` | Giggle, pitched up | 4 triangle blips 1100/1300 → 900 Hz, 0.05 s each, 60 ms apart, vol 0.11 |
 | Act-card sting | act cards | Two-chord sting | triangle 392 + 494 Hz, then 523 + 659 Hz, 0.12 s each |
+| Gravity flip (`flip`, every shift in an Upside Down level, under the shift sound) | act 5 | A falling whoomp | sine 300 → 120 Hz, 0.12 s, vol 0.12 |
 
 ## 5. Mixing checklist
 
