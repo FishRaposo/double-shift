@@ -117,6 +117,20 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | Score state at a glance | `CLOCK-INS n · PAR p` turns red (`#e0473c`) once over par |
 | Prank warnings are noticeable | Night tell eyes at 4 px; day MINE note 42×30 |
 
+**These rules are tests** (`test/palette.test.mjs`, 2026-11-03): WCAG contrast between the colors that actually meet on screen, rgba composited over what it's drawn on, checked against both sky bands of each shift.
+
+| Pair | Minimum | Measured (Nov 3) |
+|---|---|---|
+| Worker outline vs sky | ≥ 3:1 | 11.3–16.6 |
+| Solid vs sky, by fill or edge (day: the brick fill; night: the cyan edge) | ≥ 3:1 | day 4.0–5.4, night 10.3–14.0 |
+| Night solid fill vs night sky | ≥ 1.3:1 (lighter than the sky) | 1.4–1.9 |
+| HUD text vs its plate (`PLATE`, the sky at 85 %), over sky or any solid | ≥ 7:1 | passes |
+| Note strip ink vs paper; sticky note ink vs note | ≥ 7:1; ≥ 4.5:1 | 11.6; 8.1 |
+| The other shift's echo vs this sky | ≥ 3:1 | 3.2–9.0 |
+| Hazards vs sky, in every color they flicker through (`HAZARD`) | ≥ 3:1 | *todo:* rebar spikes 1.8–3.6 and the dim laser 2.4–3.3 fail on the low sky band; the identity pass (BUILD.md T21) fixes them |
+| Freak eyes vs freak body | ≥ 4.5:1 | 16.7 |
+| Background windows and frames vs sky (the quiet layer) | ≤ 1.35:1 | 1.05–1.33 |
+
 ## 4. The worker
 
 - Hitbox 18×26 px (9×13 art px); sprite 11×16 art px with a built-in outline (`#1b1209` by day, `#d9f6ff` by night). Blue overalls (`#2f6fdc` / shade `#2558b8` day, `#3f86ff` / `#2f6fdc` night), face `#f2c79a`, eye on the facing side, yellow hard hat `#ffcc33`, hi-vis stripe (`#ffe680` day, `#c6ff4d` night), brown boots `#5a3d10`.

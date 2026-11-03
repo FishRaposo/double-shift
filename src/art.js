@@ -26,6 +26,17 @@ export const PAL = {
   },
 };
 
+// Identity colors the readability tests check (test/palette.test.mjs, ART.md §3.1).
+// HUD plates: the shift's sky at 85%, behind HUD text over the playfield.
+export const PLATE = { [DAY]: 'rgba(246,231,200,0.85)', [NIGHT]: 'rgba(11,16,41,0.85)' };
+// The level note's paper strip.
+export const NOTE_STRIP = { paper: C.paper, ink: C.paperInk, border: '#c9ad84' };
+// Hazards: rebar spikes (alternating rows) on a base; the laser beam and the dim color it flickers to.
+export const HAZARD = {
+  rebarBase: '#7a3418', rebar: ['#e07a45', '#c4572a'],
+  laser: '#ff3b5c', laserDim: '#c2283f', laserGlow: '255,59,92', emitter: '#ff9db0',
+};
+
 // fill an art-pixel rectangle: (x, y) in screen px, w/h in art px
 export function px(g, x, y, w = 1, h = 1, color) {
   if (color) g.fillStyle = color;
@@ -143,13 +154,13 @@ const HZ = 7; // hazard height in art px (bottom 45% of a tile)
 export function drawRebar(g, tx, ty) {
   const x = tx * TILE;
   const base = (ty + 1) * TILE;
-  px(g, x, base - A, 15, 1, '#7a3418');
+  px(g, x, base - A, 15, 1, HAZARD.rebarBase);
   for (let i = 0; i < 3; i++) {
     const sx = x + i * 5 * A;
     // a 5-wide spike: two rows each at widths 5, 3, 1
     for (let r = 0; r < 6; r++) {
       const w = r < 2 ? 5 : r < 4 ? 3 : 1;
-      px(g, sx + ((5 - w) / 2) * A, base - (r + 2) * A, w, 1, r % 2 ? '#c4572a' : '#e07a45');
+      px(g, sx + ((5 - w) / 2) * A, base - (r + 2) * A, w, 1, HAZARD.rebar[r % 2]);
     }
   }
 }
@@ -159,10 +170,10 @@ export function drawLaser(g, tx, ty, t, leftEnd, rightEnd) {
   const base = (ty + 1) * TILE;
   const y = base - 4 * A;
   const on = Math.sin(t * 18 + tx) > -0.3;
-  px(g, x, y - A, 15, 3, `rgba(255,59,92,${on ? 0.28 : 0.14})`);
-  px(g, x, y, 15, 1, on ? '#ff3b5c' : '#c2283f');
-  if (leftEnd) { px(g, x, base - HZ * A, 2, HZ, '#ff9db0'); px(g, x, base - HZ * A, 2, 1, '#ffffff'); }
-  if (rightEnd) { px(g, x + 13 * A, base - HZ * A, 2, HZ, '#ff9db0'); px(g, x + 13 * A, base - HZ * A, 2, 1, '#ffffff'); }
+  px(g, x, y - A, 15, 3, `rgba(${HAZARD.laserGlow},${on ? 0.28 : 0.14})`);
+  px(g, x, y, 15, 1, on ? HAZARD.laser : HAZARD.laserDim);
+  if (leftEnd) { px(g, x, base - HZ * A, 2, HZ, HAZARD.emitter); px(g, x, base - HZ * A, 2, 1, '#ffffff'); }
+  if (rightEnd) { px(g, x + 13 * A, base - HZ * A, 2, HZ, HAZARD.emitter); px(g, x + 13 * A, base - HZ * A, 2, 1, '#ffffff'); }
 }
 
 export function drawHazardEcho(g, tx, ty, color) {
