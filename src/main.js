@@ -8,7 +8,7 @@ import { sfx, playSound, unlockAudio, toggleMute, setVolumes, setMusicShift, set
 import { skinPlan } from './skins.js';
 import { createSave, createSettings, isUnlocked } from './save.js';
 import { drawText, measureText, wrapText } from './font.js';
-import { drawSprite, drawEyes, workerFrame, ART, SPRITES } from './sprites.js';
+import { drawSprite, drawEyes, workerFrame, ART, SPRITES, C } from './sprites.js';
 import {
   PAL, PROPS, drawBackground, drawSolidTile, drawHatch, drawEchoEdges, drawRebar, drawLaser, drawHazardEcho,
   drawExit, drawCheckpoint, drawSign, drawFreak, drawShiftRing, drawDust, drawPuff, drawSparkle, drawPanel,
@@ -216,7 +216,7 @@ function handleEvents(events) {
         fx.flash = 1;
         fx.flashLayer = ev.layer;
         fx.rings.push({ x: cx, y: p.y + PARAMS.playerH / 2, t: 0, layer: ev.layer });
-        if (freakBoxes(level(), game.state).some((b) => b.shift !== ev.layer)) { fx.freeze = 1; sfx.freeze?.(); }
+        if (level().freaks.some((f) => f.shift !== ev.layer)) { fx.freeze = 1; sfx.freeze?.(); } // someone just froze
         break;
       case 'shiftFail': sfx.shiftFail(); fx.fail = 1; break;
       case 'jump': sfx.jump(); fx.dust.push({ x: cx, y: p.y + PARAMS.playerH, t: 0 }); break;
@@ -606,7 +606,7 @@ function drawCard() {
   const lvl = level();
   const cx = W / 2;
   drawPanel(g, cx - 240, 100, 480, 330, true);
-  const ink = '#3b2d1f';
+  const ink = C.paperInk;
   drawText(g, 'TIMECARD', cx, 120, { scale: 3, color: ink, align: 'center' });
   drawText(g, lvl.name, cx, 152, { scale: 2, color: ink, align: 'center' });
   px(g, cx - 180, 176, 180, 1, 'rgba(59,45,31,0.4)');
@@ -629,7 +629,7 @@ function drawEnd() {
   const top = 24;
   const bottom = H - 24;
   drawPanel(g, W / 2 - 260, top, 520, bottom - top, true);
-  const ink = '#3b2d1f';
+  const ink = C.paperInk;
   drawText(g, 'SHIFT COMPLETE', W / 2, top + 18, { scale: 3, color: ink, align: 'center' });
   drawText(g, 'Thanks for working overtime.', W / 2, top + 48, { scale: 2, color: ink, align: 'center' });
   // one row per act (src/layout.js endSummary), then the totals and the credits
@@ -708,14 +708,14 @@ function drawSelect() {
       g.fillRect(c.x - 3 * A, c.y - 3 * A, A, c.h + 6 * A);
       g.fillRect(c.x + c.w + 2 * A, c.y - 3 * A, A, c.h + 6 * A);
     }
-    const ink = open ? '#3b2d1f' : 'rgba(59,45,31,0.7)';
+    const ink = open ? C.paperInk : 'rgba(59,45,31,0.7)';
     drawText(g, String(i + 1), c.x + CARD.pad, c.y + 7, { scale: 3, color: ink });
     wrapText(def.name.toUpperCase(), c.w - 2 * CARD.pad, 1).slice(0, 2)
       .forEach((line, k) => drawText(g, line, c.x + CARD.pad, c.y + 34 + k * 10, { scale: 1, color: ink }));
     if (!open) drawText(g, 'NOT YET', c.x + c.w - CARD.pad, c.y + 10, { scale: 1, color: ink, align: 'right' });
     else if (best) {
       const diff = best.shifts - def.par;
-      drawStamp(g, c.x + c.w - 40, c.y + 22, diff < 0 ? 'UNDER!' : diff === 0 ? 'ON PAR' : `+${diff}`, diff <= 0 ? '#c0392b' : '#7f6a50', 1);
+      drawStamp(g, c.x + c.w - 40, c.y + 22, stampText(diff, { short: true }), diff <= 0 ? '#c0392b' : '#7f6a50', 1);
     } else drawText(g, `PAR ${def.par}`, c.x + c.w - CARD.pad, c.y + 10, { scale: 1, color: ink, align: 'right' });
   });
   // detail bar: the selected level in full
@@ -724,9 +724,9 @@ function drawSelect() {
   const selBest = save.best(sel.id);
   const selOpen = isUnlocked(LEVELS, game.selected, save);
   drawPanel(g, d.x, d.y, d.w, d.h, true);
-  drawText(g, `${game.selected + 1}. ${sel.name.toUpperCase()}`, d.x + 12, d.y + 11, { scale: 2, color: '#3b2d1f' });
+  drawText(g, `${game.selected + 1}. ${sel.name.toUpperCase()}`, d.x + 12, d.y + 11, { scale: 2, color: C.paperInk });
   const status = !selOpen ? 'NOT YET' : selBest ? `BEST ${selBest.shifts} · PAR ${sel.par}` : `PAR ${sel.par}`;
-  drawText(g, status, d.x + d.w - 12, d.y + 11, { scale: 2, color: '#3b2d1f', align: 'right' });
+  drawText(g, status, d.x + d.w - 12, d.y + 11, { scale: 2, color: C.paperInk, align: 'right' });
   drawText(g, 'Arrows: choose · SPACE or click: clock in · Esc: back', W / 2, H - 22, { scale: 2, color: pal.hudSoft, halo: pal.halo, align: 'center' });
 }
 

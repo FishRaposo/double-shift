@@ -20,8 +20,11 @@ export function timecardComment(r) {
   return 'Clocked in a lot. The freaks noticed.';
 }
 
-export function stampText(diff) {
-  return diff < 0 ? 'UNDER PAR!' : diff === 0 ? 'ON PAR' : `+${diff} OVERTIME`;
+// The rubber stamp for a result (diff = clock-ins − par). `short` is the level select's small card stamp.
+export function stampText(diff, { short = false } = {}) {
+  if (diff < 0) return short ? 'UNDER!' : 'UNDER PAR!';
+  if (diff === 0) return 'ON PAR';
+  return short ? `+${diff}` : `+${diff} OVERTIME`;
 }
 
 // Credits, under the end screen's totals (WRITING.md §8; final wording by Fish, 2026-11-03).

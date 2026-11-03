@@ -24,10 +24,17 @@ export const TAB = { x: 20, w: 90 };
 export const CARD = { w: 196, h: 56, gap: 10, top: 64, rowH: 66, pad: 8, x0: TAB.x + TAB.w + 10 };
 export const detailRect = { x: 20, y: 470, w: 920, h: 36 };
 
-// Level indices grouped by act, in order of appearance.
+// Level indices grouped by act, in order of appearance. Memoized per level list: the select screen asks for
+// it once per card, every frame.
+const rowsCache = new WeakMap();
 export function actRows(defs) {
-  const acts = [...new Set(defs.map((d) => d.act))];
-  return acts.map((act) => defs.flatMap((d, i) => (d.act === act ? [i] : [])));
+  let rows = rowsCache.get(defs);
+  if (!rows) {
+    const acts = [...new Set(defs.map((d) => d.act))];
+    rows = acts.map((act) => defs.flatMap((d, i) => (d.act === act ? [i] : [])));
+    rowsCache.set(defs, rows);
+  }
+  return rows;
 }
 
 export function cardRect(defs, i) {
