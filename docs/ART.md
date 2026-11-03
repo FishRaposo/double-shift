@@ -211,7 +211,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | Nail / pale square | `portrait` | Where the portrait used to hang | Shift `hudSoft` |
 | Floor signs "3" / "3.5" | `offset` | Wall signs at each landing | Timecard paper `#f7efdc`, ink `#3b2d1f` |
 | Time clock (the exit) | `clockout` | The exit door with a punch clock beside it | Exit colors + checkpoint clock `#ffd23f` |
-| Upside Down night ✅ (Nov 3) | act 5 | Everything with a floor side turns over on the flipped night: the worker (`vflip`; `spriteRect` keeps the hitbox rows, so the hat hangs below), freaks, lasers and hazard echoes (the band at the top of the tile, matching the rules), the checkpoint (mirrored inside its cell, but only where the flipped night holds it: one that only the day can stand on stays upright on the day floor's echo, `checkpointHangs` in `src/skins.js`) and the exit (the door hangs from its cell top; the sign goes under it, or beside it with no room). Dust kicks from the feet side, the spook gag pops away from the floor, tells hang under their target, and a prop with `flip: true` is mirrored inside its cell. The HUD, notes, signs and the EXIT text stay upright | Existing colors |
+| Upside Down night ✅ (Nov 3) | act 5 | Everything with a floor side turns over on the flipped night: the worker (`vflip`; `spriteRect` keeps the hitbox rows, so the hat hangs below), freaks, lasers and hazard echoes (the band at the top of the tile, matching the rules), the checkpoint (mirrored inside its cell, but only where the flipped night holds it: one that only the day can stand on stays upright on the day floor's echo, `checkpointHangs` in `src/skins.js`) and the exit (the door hangs from its cell top, or stands if nothing is above it; not drawn while walled up: `exitPose` in `src/skins.js`; the sign goes under it, or beside it with no room). Dust kicks from the feet side, the spook gag pops away from the floor, tells hang under their target, and a prop with `flip: true` is mirrored inside its cell, so it hangs from the cell above, which must be solid at night and never taken by a prank (tested). The HUD, notes, signs and the EXIT text stay upright | Existing colors |
 
 ### 6.2 Props per level *(prop drawings built; the 12 built levels have their props via the `props` field; planned levels add theirs when built)*
 
@@ -234,10 +234,10 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | `daywalker` | A DAY SHIFT sign, a mug, footprints in the day-walker's tunnel |
 | `portrait` ✅ | The portrait skin wherever it hangs (night), a nail and unfaded patch at each of its spots (`PROPS.nail`, night), the EMPLOYEE OF THE MONTH plaque and a notice board (day) |
 | `upside` ✅ | A MIND YOUR HEAD sign and a notice board (day); a coffee mug stuck upside down under the walkway (night, `flip`) |
-| `fallup` ✅ | A THIS WAY UP sign and a notice board (day), a vent stuck to the ceiling (night, `flip`); the exit isn't drawn in a shift that walls it up |
-| `ceiling` ✅ | An IT'S FINE sign and a notice board (day); footprints on the ceiling under the plank (night, `flip`); eyes in the dark over the first pit |
+| `fallup` ✅ | A THIS WAY UP sign and a notice board (day), a vent stuck to the ceiling where you hang (night, `flip`); the exit isn't drawn in a shift that walls it up |
+| `ceiling` ✅ | An IT'S FINE sign and a notice board (day); footprints on the walkway's copy (night, `flip`; never on the moving plank); eyes in the dark over the first pit |
 | `heels` ✅ | A HARD HAT AREA sign and a notice board (day); a hard hat stuck to the ceiling (night, `flip`; `PROPS.hardHat`, management's white one in existing colors, so it never reads as the worker's yellow); eyes in the dark over the last gap |
-| `clockout` ✅ | A LAST SHIFT sign, a coat rack and a vent (day); the time clock hanging beside the exit at the top of the shaft (night, `flip`); eyes everywhere in the dark |
+| `clockout` ✅ | A LAST SHIFT sign, a coat rack and a vent (day); the time clock by the exit (day) and under the ceiling beside the shaft's top (night, `flip`); Lost & Found's door in room 2's tunnel mouth, then its empty frame; eyes everywhere in the dark |
 
 ## 7. UI and effects
 

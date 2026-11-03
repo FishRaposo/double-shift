@@ -8,7 +8,7 @@ import { PARAMS, FREAK } from '../src/rules.js';
 import { LEVELS, ACTS } from '../src/levels.js';
 import { CREDITS } from '../src/copy.js';
 import { exitRects, checkpointRect, shouldHatch, DAY, NIGHT } from '../src/art.js';
-import { parseLevel } from '../src/rules.js';
+import { parseLevel, tileAt, isSolidChar } from '../src/rules.js';
 
 const FREAK_KINDS = ['lurker', 'peeker', 'squatter', 'supervisor', 'daywalker'];
 const mask = (kind) => SPRITES[kind].frames.a.map((row) => [...row].map((c) => c !== '.'));
@@ -213,3 +213,17 @@ test('art: every prop in an upside-down level names its layer, and its night pro
   }
 });
 const TEXT_PROPS = ['sign']; // signs stay readable: never flipped
+
+test('art: a prop stuck to a flipped night ceiling has a ceiling there that no prank takes away', () => {
+  // `flip` mirrors a prop inside its cell, so it hangs from the cell above: that cell has to be solid at night,
+  // before and after every prank (else the prop hangs from nothing, and reads as a ceiling you could use)
+  for (const def of LEVELS.filter((d) => d.upsideDown)) {
+    const lvl = parseLevel(def);
+    for (const pr of (def.props ?? []).filter((q) => q.flip && q.layer === 'night')) {
+      const at = `${def.id}: ${pr.kind} at ${pr.tx},${pr.ty}`;
+      assert.ok(isSolidChar(tileAt(lvl, NIGHT, pr.tx, pr.ty - 1)), `${at} hangs from nothing`);
+      const taken = lvl.pranks.some((p) => p.cells.some(([layer, tx, ty, ch]) => layer === NIGHT && tx === pr.tx && ty === pr.ty - 1 && !isSolidChar(ch)));
+      assert.ok(!taken, `${at}: a prank takes its ceiling away`);
+    }
+  }
+});

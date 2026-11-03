@@ -113,11 +113,25 @@ test('saves: a best from an older rev is ignored; unlocks are unaffected', () =>
   assert.equal(save.best('clockout', 2), null, 'the rework (rev 2) ignores it');
   assert.equal(save.cleared('clockout'), true, 'but the level still counts as cleared');
   assert.equal(save.record('clockout', r(9, 60), 2), true, "the first rev-2 result is its best, even if it's worse");
-  assert.deepEqual(save.best('clockout', 2), { ...r(9, 60), rev: 2 });
-  assert.equal(save.best('clockout'), null, 'and now rev 1 has none');
+  assert.deepEqual(save.best('clockout', 2), r(9, 60));
   const again = createSave(storage); // survives a reload
-  assert.deepEqual(again.best('clockout', 2), { ...r(9, 60), rev: 2 });
+  assert.deepEqual(again.best('clockout', 2), r(9, 60));
   assert.equal(again.record('clockout', r(10, 50), 2), false, 'within a rev, the usual rule');
   const defs = [{ id: 'a', act: 6 }, { id: 'clockout', act: 6, rev: 2 }, { id: 'b', act: 6 }];
   assert.equal(isUnlocked(defs, 2, again), true, 'a clear from any rev opens the next level');
+});
+
+test('saves: going back to an older revision finds its bests again', () => {
+  // the fallback: if the classic finale ships again (rev 1), a player's classic best is still there
+  const storage = memoryStorage();
+  const save = createSave(storage);
+  save.record('clockout', r(7, 40));
+  save.record('clockout', r(9, 60), 2);
+  const again = createSave(storage);
+  assert.deepEqual(again.best('clockout'), r(7, 40));
+  assert.deepEqual(again.best('clockout', 2), r(9, 60));
+  assert.equal(createSave(memoryStorage()).cleared('clockout'), false);
+  const onlyRework = createSave(memoryStorage());
+  onlyRework.record('clockout', r(9, 60), 2);
+  assert.equal(onlyRework.cleared('clockout'), true, 'a clear on the rework alone counts too');
 });

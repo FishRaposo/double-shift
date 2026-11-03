@@ -1138,12 +1138,15 @@ export const LEVELS = [
     upsideDown: true,
     // lasers along the underside of the high ledge's night copy: hang there and they get you (otherwise you could
     // walk off its end at night and clock out over the pit, two clock-ins in all)
-    // and the exit is shut at night (its cell is solid), so the brake's rise can't sweep you through it: clock out
-    nightPatch: [{ x0: 12, x1: 17, y0: 12, ch: '^' }, { x0: 31, y0: 13, ch: '#' }],
+    // and the exit is shut at night (its cell is solid), so the brake's rise can't sweep you through it: clock out.
+    // The wall's night copy runs on down to the grid's edge (col 17, rows 13-17): otherwise a clock-in falling at
+    // its foot passed under it on the night side, rose into the pit and clocked out going up, an arc onto the far
+    // floor in two clock-ins (found by the full audit's random search).
+    nightPatch: [{ x0: 12, x1: 17, y0: 12, ch: '^' }, { x0: 31, y0: 13, ch: '#' }, { x0: 17, y0: 13, y1: 17, ch: '#' }],
     props: [
       { kind: 'sign', tx: 3, ty: 11, text: 'THIS WAY UP', style: 'note', layer: 'day' },
       { kind: 'noticeBoard', tx: 7, ty: 10, layer: 'day' },
-      { kind: 'vent', tx: 6, ty: 13, layer: 'night', flip: true },
+      { kind: 'vent', tx: 6, ty: 4, layer: 'night', flip: true }, // under the floor's copy, where you hang
     ],
     day: [
       '................................',
@@ -1188,8 +1191,8 @@ export const LEVELS = [
     props: [
       { kind: 'sign', tx: 2, ty: 10, text: "IT'S FINE", style: 'note', layer: 'day' },
       { kind: 'noticeBoard', tx: 21, ty: 10, layer: 'day' },
-      { kind: 'footprints', tx: 8, ty: 12, layer: 'night', flip: true },
-      { kind: 'footprints', tx: 10, ty: 12, layer: 'night', flip: true },
+      { kind: 'footprints', tx: 13, ty: 12, layer: 'night', flip: true }, // on the walkway's copy, not the plank
+      { kind: 'footprints', tx: 14, ty: 12, layer: 'night', flip: true },
     ],
     decor: [{ kind: 'eyes', tx: 9, ty: 6 }],
     day: [
@@ -1289,11 +1292,13 @@ export const LEVELS = [
       { x0: 31, y0: 14, ch: '.' },
     ],
     pranks: [
-      { id: 'door', onNight: 2, tell: { tx: 16, ty: 11 }, sound: 'doorThunk', set: [{ layer: 'night', x0: 16, y0: 13, ch: '.' }] },
+      { id: 'door', onNight: 2, tell: { tx: 16, ty: 11 }, sound: 'doorThunk', set: [{ layer: 'night', x0: 16, y0: 13, y1: 14, ch: '.' }] },
       // they take the ceiling over the shaft and wall up the time clock, so rising past it on entry 3 touches nothing
       { id: 'stepGone', onNight: 3, tell: { tx: 29, ty: 3 }, set: [{ layer: 'night', x0: 29, x1: 31, y0: 0, y1: 3, ch: '.' }, { layer: 'night', x0: 31, y0: 4, ch: '#' }] },
-      { id: 'stepBack', onNight: 4, set: [{ layer: 'night', x0: 29, x1: 31, y0: 0, y1: 3, ch: '#' }, { layer: 'night', x0: 31, y0: 4, ch: '.' }] },
+      // the same spot: its tell stays up after the step goes, so one more clock-in reads as the way back
+      { id: 'stepBack', onNight: 4, tell: { tx: 29, ty: 3 }, set: [{ layer: 'night', x0: 29, x1: 31, y0: 0, y1: 3, ch: '#' }, { layer: 'night', x0: 31, y0: 4, ch: '.' }] },
     ],
+    skins: [{ kind: 'door', tx: 16, ty: 14, layer: 'night' }], // Lost & Found's door, in the tunnel's mouth
     freaks: [
       { kind: 'lurker', tx: 19, ty: 13, range: 1, speed: 45 },
       { kind: 'supervisor', tx: 23, ty: 13, period: 1.6, startFacing: 'right' },
@@ -1304,7 +1309,8 @@ export const LEVELS = [
       { kind: 'sign', tx: 4, ty: 9, text: 'LAST SHIFT', style: 'paper', layer: 'day' },
       { kind: 'coatRack', tx: 12, ty: 13, layer: 'day' },
       { kind: 'vent', tx: 20, ty: 8, layer: 'day' },
-      { kind: 'timeClock', tx: 30, ty: 4, layer: 'night', flip: true },
+      { kind: 'timeClock', tx: 31, ty: 4, layer: 'day' },
+      { kind: 'timeClock', tx: 28, ty: 4, layer: 'night', flip: true }, // under the ceiling they leave alone
     ],
     decor: [{ kind: 'eyes', tx: 5, ty: 7 }, { kind: 'eyes', tx: 13, ty: 6 }, { kind: 'eyes', tx: 19, ty: 8 }, { kind: 'eyes', tx: 27, ty: 7 }],
     day: [

@@ -57,3 +57,13 @@ export function checkpointHangs(level, layer, c, ov = {}) {
   const anchor = !standableSpot(level, layer, c.tx, c.ty, ov) && standableSpot(level, other, c.tx, c.ty, ov) ? other : layer;
   return gravitySign(level, anchor) < 0;
 }
+
+// The exit is drawn where its cell is open in that shift (walled up, it isn't drawn at all: Falling Up shuts it at
+// night, Clock Out while the step is gone). On a flipped night it hangs from the solid above its cell; with nothing
+// above it and a floor under it, it stands, so it never hangs from nothing.
+export function exitPose(level, layer, ov = {}) {
+  const { tx, ty } = level.exit;
+  if (solid(level, layer, ov, tx, ty)) return null;
+  const flipped = gravitySign(level, layer) < 0;
+  return { hang: flipped && (solid(level, layer, ov, tx, ty - 1) || !solid(level, layer, ov, tx, ty + 1)) };
+}

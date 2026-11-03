@@ -5,7 +5,7 @@ import { step, initState, parseLevel, tileAt, isSolidChar, freakBoxes, gravitySi
 import { LEVELS, ACTS, FINALE_ACT } from './levels.js';
 import { createInput, GAME_KEYS } from './input.js';
 import { sfx, playSound, unlockAudio, toggleMute, setVolumes, setMusicShift, setMenu } from './audio.js';
-import { skinPlan, checkpointHangs } from './skins.js';
+import { skinPlan, checkpointHangs, exitPose } from './skins.js';
 import { createSave, createSettings, isUnlocked } from './save.js';
 import { drawText, measureText, wrapText } from './font.js';
 import { drawSprite, drawEyes, eyesOpen, workerFrame, spriteRect, ART, SPRITES, C } from './sprites.js';
@@ -271,8 +271,7 @@ function handleEvents(events) {
         setTimeout(() => sfx.stamp(), 450);
         game.results[game.index] = { shifts: ev.shifts, par: ev.par, deaths: game.state.deaths, time: game.state.time };
         {
-          const id = LEVELS[game.index].id;
-          const rev = LEVELS[game.index].rev ?? 1;
+          const { id, rev } = LEVELS[game.index]; // rev: undefined is revision 1 (save.js)
           const hadBest = save.best(id, rev) !== null;
           game.newBest = save.record(id, game.results[game.index], rev) && hadBest;
         }
@@ -406,8 +405,9 @@ function staticLayer(lvl, def, layer, ov) {
   const plan = skinPlan(lvl, layer, ov);
   for (const sp of plan) if (sp.draw !== 'portrait') drawSkin(ctx, sp, layer);
   for (let ty = 0; ty < lvl.h; ty++) for (let tx = 0; tx < lvl.w; tx++) drawShiftCues(ctx, lvl, layer, ov, tx, ty);
-  // the exit, unless this shift walls it up (Falling Up shuts it at night)
-  if (!isSolidChar(tileAt(lvl, layer, lvl.exit.tx, lvl.exit.ty, ov))) drawExit(ctx, lvl.exit.tx, lvl.exit.ty, layer, { hang: gravitySign(lvl, layer) < 0 });
+  // the exit, unless this shift walls it up (src/skins.js)
+  const exit = exitPose(lvl, layer, ov);
+  if (exit) drawExit(ctx, lvl.exit.tx, lvl.exit.ty, layer, exit);
   if (staticCache.size > 24) staticCache.delete(staticCache.keys().next().value);
   const out = { canvas: c, portraits: plan.filter((sp) => sp.draw === 'portrait') };
   staticCache.set(key, out);
@@ -768,7 +768,7 @@ function drawSelect() {
   LEVELS.forEach((def, i) => {
     const c = cardRect(LEVELS, i);
     const open = isUnlocked(LEVELS, i, save);
-    const best = save.best(def.id, def.rev ?? 1);
+    const best = save.best(def.id, def.rev);
     g.globalAlpha = open ? 1 : 0.4;
     drawPanel(g, c.x, c.y, c.w, c.h, true);
     g.globalAlpha = 1;
@@ -792,7 +792,7 @@ function drawSelect() {
   // detail bar: the selected level in full
   const d = detailRect;
   const sel = LEVELS[game.selected];
-  const selBest = save.best(sel.id, sel.rev ?? 1);
+  const selBest = save.best(sel.id, sel.rev);
   const selOpen = isUnlocked(LEVELS, game.selected, save);
   drawPanel(g, d.x, d.y, d.w, d.h, true);
   drawText(g, `${game.selected + 1}. ${sel.name.toUpperCase()}`, d.x + 12, d.y + 11, { scale: 2, color: C.paperInk });

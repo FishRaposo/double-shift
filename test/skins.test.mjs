@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { DAY, NIGHT, SKIN_KINDS, parseLevel } from '../src/rules.js';
-import { skinPlan, checkpointHangs } from '../src/skins.js';
+import { skinPlan, checkpointHangs, exitPose } from '../src/skins.js';
 import { L } from './solutions.mjs';
 import { LEVELS } from '../src/levels.js';
 import { SOUNDS } from '../src/audio.js';
@@ -145,4 +145,17 @@ test('checkpoint art: drawn the way the shift it saves in holds it (no hanging f
   const tiny = parseLevel({ name: 'tiny', par: 0, upsideDown: true, day: ['....', '..C.', 'S..E', '####'] });
   assert.equal(checkpointHangs(tiny, DAY, tiny.checkpoints[0]), true);
   assert.equal(checkpointHangs(tiny, NIGHT, tiny.checkpoints[0]), true);
+});
+
+test('exit art: not drawn where its cell is walled up; on a flipped night it hangs only from a ceiling', () => {
+  assert.equal(exitPose(L.fallup, NIGHT), null, 'Falling Up shuts its exit at night');
+  assert.deepEqual(exitPose(L.fallup, DAY), { hang: false });
+  assert.deepEqual(exitPose(L.upside, NIGHT), { hang: true }, "Mind Your Head's hangs from the beam's copy");
+  // Clock Out's is walled up while the step is gone (entry 3), and hangs again once it's back (entry 4)
+  const cells = (id) => Object.fromEntries(L.clockout.pranks.find((p) => p.id === id).cells.map(([l, x, y, c]) => [`${l},${x},${y}`, c]));
+  assert.equal(exitPose(L.clockout, NIGHT, cells('stepGone')), null);
+  assert.deepEqual(exitPose(L.clockout, NIGHT, { ...cells('stepGone'), ...cells('stepBack') }), { hang: true });
+  // open, nothing above and a floor under it: it stands, rather than hanging from nothing
+  const tiny = parseLevel({ name: 't', par: 0, upsideDown: true, day: ['....', '....', 'S..E', '####'], nightPatch: [{ x0: 3, y0: 3, ch: '#' }] });
+  assert.deepEqual(exitPose(tiny, NIGHT), { hang: false });
 });

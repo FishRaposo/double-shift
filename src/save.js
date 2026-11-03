@@ -22,26 +22,25 @@ function load(storage) {
   }
 }
 
-// A best remembers the level revision it was set on (`rev`, written only when it isn't 1, so saves from before
-// revisions read as rev 1). A reworked level (rev 2) ignores bests from the old one; clearing it once, on any
-// revision, still counts for unlocking.
-const revOf = (r) => (Number.isInteger(r?.rev) && r.rev >= 1 ? r.rev : 1);
+// A reworked level (`rev` 2 and up) keeps its bests apart from the old one's, under `id#rev` (rev 1 stays under
+// plain `id`, so saves from before revisions read as rev 1). A rework starts with no best; shipping the old version
+// again finds its bests untouched; a clear on any revision counts for unlocking.
+const keyOf = (id, rev) => (rev === 1 ? id : `${id}#${rev}`);
 
 export function createSave(storage) {
   const data = load(storage);
   return {
     best(id, rev = 1) {
-      const b = data.best[id];
-      return b && revOf(b) === rev ? b : null;
+      return data.best[keyOf(id, rev)] ?? null;
     },
     cleared(id) {
-      return id in data.best;
+      return Object.keys(data.best).some((k) => k === id || k.startsWith(`${id}#`));
     },
     // Returns true if this is a new best for the level (at this revision).
     record(id, r, rev = 1) {
       const prev = this.best(id, rev);
       if (prev && !better(r, prev)) return false;
-      data.best[id] = { shifts: r.shifts, time: r.time, deaths: r.deaths, ...(rev !== 1 ? { rev } : {}) };
+      data.best[keyOf(id, rev)] = { shifts: r.shifts, time: r.time, deaths: r.deaths };
       try {
         storage?.setItem(KEY, JSON.stringify(data));
       } catch { /* storage full or blocked: keep it for this session */ }
