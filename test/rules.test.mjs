@@ -997,3 +997,16 @@ test('parseLevel: a level revision defaults to 1 and must be a whole number from
   assert.equal(R.parseLevel({ name: 't', par: 0, day, night: day, rev: 2 }).rev, 2);
   for (const rev of [0, 1.5, '2']) assert.throws(() => R.parseLevel({ name: 't', par: 0, day, night: day, rev }), /rev/);
 });
+
+test('pranks: a prank with `every: n` fires on its entry and again every n entries after', () => {
+  const day = ['S..E', '####'];
+  const lvl = R.parseLevel({ name: 't', par: 0, day, night: day, pranks: [{ id: 'p', onNight: 2, every: 3, set: [{ layer: 'night', x0: 1, y0: 0, ch: '#' }] }] });
+  let s = R.initState(lvl);
+  const fired = [];
+  for (let k = 0; k < 2 * 11 - 1; k++) {
+    s = R.step(lvl, s, { ...R.NO_INPUT, shiftPressed: true });
+    if (s.events.some((e) => e.type === 'prank')) fired.push(s.nightEntries);
+  }
+  assert.deepEqual(fired, [2, 5, 8, 11]);
+  assert.throws(() => R.parseLevel({ name: 't', par: 0, day, night: day, pranks: [{ id: 'p', onNight: 1, every: 0, set: [] }] }), /every/);
+});

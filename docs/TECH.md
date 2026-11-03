@@ -4,7 +4,7 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-02 (a
 
 **At a glance**
 - **The one rule:** `src/rules.js` decides everything that matters; the screen only draws it (§2).
-- `npm start` to play, `npm test` (<!-- n:tests -->312<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
+- `npm start` to play, `npm test` (<!-- n:tests -->314<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
 - Add a level: grids in `src/levels.js` + a `SOLUTIONS` entry in `test/solutions.mjs` (§6; the full recipe is BUILD.md §2.1).
 - The tier-C mechanics (wet floor, day-walker, supervisor, offset layer) are built — §6.5 documents them.
 
@@ -137,9 +137,9 @@ See [LEVELS.md](LEVELS.md) §2 for the full format. Summary: `{ id, name, act, n
 3. `npm test`, `npm run check`, `npm run audit -- <id>`, `npm run media -- --review <id>`, play it. BUILD.md §2.1 has the full recipe.
 
 ### 6.2 Add a prank
-Add to the level's `pranks`: `{ id, onNight: N, tell: { tx, ty }, set: [{ layer: 'day'|'night', x0, x1, y0, y1, ch }] }`. The engine handles validation, tells, the giggle, and checkpoint restore.
+Add to the level's `pranks`: `{ id, onNight: N, every?: n, tell: { tx, ty }, set: [{ layer: 'day'|'night', x0, x1, y0, y1, ch }] }`. With `every`, it fires again every n night entries after N. The engine handles validation, tells (shown until entry N), the giggle, and checkpoint restore.
 
-One object moved by every night entry (the pillar, the portrait, Ceiling Walker's plank): `relocations(id, { start, loop, rect, entries, sound?, first?, tells? })` in `src/levels.js` writes the pranks. Entry `first` (default 1) moves it from `start` to `loop[0]`, each later entry to the next place round the loop, `entries` moves in all; `rect(place)` gives the cells, and the first `tells` moves (default one lap) get a tell. Give it laps enough that a clock-in too many costs a lap, not the level.
+One object moved by every night entry (the pillar, the portrait, Ceiling Walker's plank): `relocations(id, { start, loop, rect, sound?, first?, tells? })` in `src/levels.js` writes the pranks. Entry `first` (default 1) moves it from `start` to `loop[0]`, each later entry to the next place round the loop, for good (the lap's moves use `every`), so a clock-in too many costs a lap, never the level; `rect(place)` gives the cells, and the first `tells` moves (default one lap) get a tell.
 
 ### 6.3 Add a freak kind
 1. In `freakBoxes()` give the kind its position/`active` rule as a pure function of its shift's clock (`s.freakClock` by night, `s.dayClock` by day, or `watchedClock` under a supervisor), with no per-freak mutable state.
@@ -207,7 +207,7 @@ The four tier-C mechanics from [CONTENT.md](CONTENT.md) §3 — all built, teste
 
 | Command | What it covers |
 |---|---|
-| `npm test` | <!-- n:tests -->312<!-- /n --> tests: GDD §13.7 cases 1–15, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, Upside Down rules (flip, gravity sign, hanging, jump and cut, nudge order, coyote across a flip, hazard band, grid edges, checkpoints, fuzz), every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
+| `npm test` | <!-- n:tests -->314<!-- /n --> tests: GDD §13.7 cases 1–15, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, Upside Down rules (flip, gravity sign, hanging, jump and cut, nudge order, coyote across a flip, hazard band, grid edges, checkpoints, fuzz), every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
 | `npm run check` | Every module parses; every level validates |
 | `npm run audit` | Per level: the slack of every required shift and jump (fails under the act floor), input-lag tolerance 0–150 ms, and a random search for wins below par or without shifting (`scripts/audit-levels.mjs`). |
 | `npm run media` | Real browser (headless Edge/Chrome, no dependencies): plays level 1 with key presses, fails on page errors, a wrong outcome, audio clipping or a slow frame; saves the cover, screenshots and gallery. |

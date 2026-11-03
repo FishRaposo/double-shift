@@ -485,3 +485,19 @@ test('Clock Out: the stolen door leaves its empty frame', () => {
   assert.equal(state.nightEntries, 2);
   assert.deepEqual(skinPlan(lvl, NIGHT, state.overrides), [{ draw: 'emptyFrame', tx: 16, ty: 14, h: 2 }]);
 });
+
+// A relocated object goes round its places forever: however many clock-ins, its useful place comes back.
+const toggleTo = (lvl, entries) => {
+  let s = initState(lvl);
+  for (let k = 0; k < 2 * entries - 1; k++) s = step(lvl, s, { ...NO_INPUT, shiftPressed: true }); // in place at the spawn
+  assert.deepEqual([s.layer, s.nightEntries], [NIGHT, entries]);
+  return s;
+};
+const solidAt = (lvl, s, cells) => cells.every(([tx, ty]) => tileAt(lvl, NIGHT, tx, ty, s.overrides) === '#');
+
+test('relocations never run out: P2, the step, the planks all come round again by entry 40-41', () => {
+  assert.ok(solidAt(L.pillar, toggleTo(L.pillar, 41), [[20, 10], [20, 11], [20, 12], [20, 13]]), 'pillar at P2 on entry 41');
+  assert.ok(solidAt(L.portrait, toggleTo(L.portrait, 41), [[16, 12], [17, 12], [18, 12]]), 'portrait by the ledge on entry 41');
+  assert.ok(solidAt(L.ceiling, toggleTo(L.ceiling, 40), [[22, 11], [29, 11]]), 'plank over pit B on entry 40');
+  assert.ok(solidAt(L.heels, toggleTo(L.heels, 40), [[2, 3], [9, 3]]), 'plank over the last gap on entry 40');
+});

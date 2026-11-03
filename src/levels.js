@@ -24,17 +24,18 @@ export const ACTS = { 1: 'Renovation', 2: 'Overtime', 3: 'Graveyard Shift', 4: '
 export const FINALE_ACT = 6;
 
 // One object moved by every night entry around a loop of places (the pillar, the portrait, a plank): entry `first`
-// (default 1) takes it from `start` to loop[0], each later entry to the next place, for `entries` moves in all. A
-// clock-in too many costs a lap instead of locking the level (there's no death to reset it). The first `tells`
-// moves (default: the first lap) get a tell at their destination.
-function relocations(id, { start, loop, rect, entries, sound, first = 1, tells = loop.length }) {
-  return Array.from({ length: entries }, (_, i) => {
+// (default 1) takes it from `start` to loop[0], each later entry to the next place, round the loop for good (the
+// lap's moves repeat with `every`). So a clock-in too many costs a lap, never the level (pillar and portrait have
+// no death to reset them). The first `tells` moves (default: the first lap) get a tell at their destination.
+function relocations(id, { start, loop, rect, sound, first = 1, tells = loop.length }) {
+  return Array.from({ length: loop.length + 1 }, (_, i) => {
     const from = i === 0 ? start : loop[(i - 1) % loop.length];
     const to = loop[i % loop.length];
     const r = rect(to);
     return {
       id: `${id}${i + 1}`,
       onNight: first + i,
+      ...(i > 0 ? { every: loop.length } : {}),
       ...(i < tells ? { tell: { tx: Math.floor((r.x0 + (r.x1 ?? r.x0)) / 2), ty: r.y0 } } : {}),
       ...(sound ? { sound } : {}),
       set: [{ layer: 'night', ...rect(from), ch: '.' }, { layer: 'night', ...r, ch: '#' }],
@@ -646,8 +647,8 @@ export const LEVELS = [
     // and the mezzanine top) and P3 (col 13, out of the way). Clock in to pass P0, out to pass P1, climb the
     // day crate, and clock back in mid-jump off it: that's entry 2, and the pillar lands under you. One clock-in
     // too many and it's on P3 when you jump.
-    // P0 → P1 → P2 → P3, then around P1, P2, P3 again (three laps)
-    pranks: relocations('pillar', { start: 6, loop: [11, 20, 13], rect: (col) => ({ x0: col, y0: 10, y1: 13 }), entries: 9, sound: 'pillarScrape' }),
+    // P0 → P1 → P2 → P3, then around P1, P2, P3 again (for good)
+    pranks: relocations('pillar', { start: 6, loop: [11, 20, 13], rect: (col) => ({ x0: col, y0: 10, y1: 13 }), sound: 'pillarScrape' }),
     skins: [
       { kind: 'pillar', tx: 6, ty: 13 },
       { kind: 'pillar', tx: 11, ty: 13, layer: 'night' },
@@ -859,8 +860,8 @@ export const LEVELS = [
     // doorway; by day the doorway is clear but you can't get over the ledge. Each night entry rehangs it: high on
     // the wall (P1), then low against the ledge (P2), where its top is the step you were missing (floor → 2 →
     // the ledge, 3 more), then back in the doorway (P3). On entry 2 the doorway is clear too: climb, drop, out.
-    // P0 (the doorway) → P1 (high) → P2 (the step) → P0, and around again (three laps)
-    pranks: relocations('portrait', { start: [26, 12], loop: [[3, 4], [16, 12], [26, 12]], rect: ([x, y]) => ({ x0: x, x1: x + 2, y0: y, y1: y + 1 }), entries: 9 }),
+    // P0 (the doorway) → P1 (high) → P2 (the step) → P0, and around again (for good)
+    pranks: relocations('portrait', { start: [26, 12], loop: [[3, 4], [16, 12], [26, 12]], rect: ([x, y]) => ({ x0: x, x1: x + 2, y0: y, y1: y + 1 }) }),
     skins: [
       { kind: 'portrait', tx: 26, ty: 12, layer: 'night' },
       { kind: 'portrait', tx: 3, ty: 4, layer: 'night' },
@@ -1186,7 +1187,7 @@ export const LEVELS = [
       { x0: 5, x1: 12, y0: 11, ch: '#' }, // the plank, over pit A until they move it
       { x0: 30, x1: 31, y0: 13, y1: 17, ch: '#' },
     ],
-    pranks: relocations('plank', { start: 5, loop: [22, 5], rect: (x0) => ({ x0, x1: x0 + 7, y0: 11 }), entries: 8, first: 2, tells: 1 }),
+    pranks: relocations('plank', { start: 5, loop: [22, 5], rect: (x0) => ({ x0, x1: x0 + 7, y0: 11 }), first: 2, tells: 1 }),
     freaks: [{ kind: 'lurker', tx: 16, ty: 12, range: 1, speed: 40 }],
     props: [
       { kind: 'sign', tx: 2, ty: 10, text: "IT'S FINE", style: 'note', layer: 'day' },
@@ -1233,7 +1234,7 @@ export const LEVELS = [
     // clock-in, back on the 5th, and so on: arrive with a clock-in to spare and it isn't there yet.
     upsideDown: true,
     nightPatch: [{ x0: 20, x1: 27, y0: 3, ch: '#' }], // the plank, over the pit's copy until they move it
-    pranks: relocations('plank', { start: 20, loop: [2, 20], rect: (x0) => ({ x0, x1: x0 + 7, y0: 3 }), entries: 8, first: 4, tells: 1 }),
+    pranks: relocations('plank', { start: 20, loop: [2, 20], rect: (x0) => ({ x0, x1: x0 + 7, y0: 3 }), first: 4, tells: 1 }),
     freaks: [
       { kind: 'daywalker', tx: 13, ty: 13, range: 1, speed: 45 },
       { kind: 'lurker', tx: 18, ty: 13, range: 1, speed: 45 },

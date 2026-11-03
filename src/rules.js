@@ -62,6 +62,9 @@ export function parseLevel(def) {
   const sups = (def.freaks ?? []).filter((f) => f.kind === 'supervisor');
   if (sups.length > 1) throw new Error(`${def.name}: one supervisor per level`);
   if (def.rev !== undefined && !(Number.isInteger(def.rev) && def.rev >= 1)) throw new Error(`${def.name}: rev must be a whole number from 1`);
+  for (const pr of def.pranks ?? []) {
+    if (pr.every !== undefined && !(Number.isInteger(pr.every) && pr.every >= 1)) throw new Error(`${def.name}: prank ${pr.id} every must be a whole number from 1`);
+  }
   for (const f of def.freaks ?? []) {
     if (f.period !== undefined && !(f.period > 0)) throw new Error(`${def.name}: ${f.kind} period must be > 0`);
     if (f.duty !== undefined && !(f.duty > 0 && f.duty <= 1)) throw new Error(`${def.name}: ${f.kind} duty must be in (0, 1]`);
@@ -95,6 +98,7 @@ export function parseLevel(def) {
   const pranks = (def.pranks ?? []).map((pr) => ({
     id: pr.id,
     onNight: pr.onNight,
+    every: pr.every ?? 0, // > 0: fires again every that many night entries after onNight (a relocation's lap)
     tell: pr.tell ?? null,
     cells: expandCells(pr.set ?? []),
     sound: pr.sound ?? null, // an extra sound when it fires (SOUNDS name), e.g. doorThunk
@@ -393,7 +397,7 @@ export const NO_INPUT = Object.freeze({ left: false, right: false, jumpHeld: fal
 // Pranks due on the next entry into night. The freaks act in the moment of transition,
 // the one moment the player can't see.
 function pranksFor(level, entry) {
-  return level.pranks.filter((pr) => pr.onNight === entry);
+  return level.pranks.filter((pr) => pr.onNight === entry || (pr.every > 0 && entry > pr.onNight && (entry - pr.onNight) % pr.every === 0));
 }
 
 function withPranks(ov, pranks) {
