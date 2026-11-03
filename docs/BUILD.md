@@ -162,7 +162,7 @@ Seven milestone PRs (decided 2026-11-03). Each one passes every gate in §1.2 pl
 - **Skins:** `door` for D1–D3 (empty frame once stolen), `doorPile`. Props: `lostFoundBox`. Prank `sound: 'doorThunk'`.
 - **Tests:** below 3 entries the ledge is unreachable; the prank order (D1 then D2 then D3).
 
-### T4 · Structural Integrity (`pillar`, #10, act 3, tier B) · needs T1 for the look
+### T4 · Structural Integrity (`pillar`, #10, act 3, tier B) · needs T1 for the look *(✅ built Nov 3, par 3; LEVELS.md §4)*
 - **Spec:** LEVELS.md §5 "Structural Integrity".
   - A mezzanine (top about 7 up) holds the exit.
   - By day a 4-tall pillar blocks the floor route; a 3-tall day-only crate stack sits further on.

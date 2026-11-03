@@ -3,7 +3,7 @@
 Everything the finished jam game contains, in one place. Each row has an ID, its tier, its status and where its full spec lives. Planned 2026-11-02, starting from the 6-level build; the tier-C mechanics and their levels shipped since.
 
 **At a glance**
-- **21 levels: five acts of four plus the finale**, about 35–50 minutes. <!-- n:levels -->15<!-- /n --> built (the 12 of tier A, today's Clock Out finale included, are a complete game; `upside` opens act 5); tiers B (17) and C (21) on top, so any cut still ships complete (§1).
+- **21 levels: five acts of four plus the finale**, about 35–50 minutes. <!-- n:levels -->16<!-- /n --> built (the 12 of tier A, today's Clock Out finale included, are a complete game; `upside` opens act 5); tiers B (17) and C (21) on top, so any cut still ships complete (§1).
 - **5 new mechanics, one per act from act 3:** wet floor, supervisor and day-walker freaks, offset layer (all shipped), and Upside Down (act 5, cut date Nov 18).
 - This doc says *what* is in the game. *When* and *in what order* is [PRODUCTION.md](PRODUCTION.md); *how* is in the linked specs, and the build task for each planned item is in [BUILD.md](BUILD.md) §4.
 - Status: ✅ built · **planned** (in the jam plan) · *stretch* (only if ahead) · *post-jam*.
@@ -44,7 +44,7 @@ Full specs: [LEVELS.md](LEVELS.md) §4 (built), §5 (acts 2–4 to build), §5.2
 | 7 | 2 | Under Renovation | `stairs` | Night staircase to nowhere → mid-air shift onto a day ledge | B | ✅ |
 | 8 | 2 | Lost & Found | `doors` | You *need* the pranks: the stolen-door pile grows each night | B | ✅ |
 | 9 | 3 · Graveyard Shift | Wet Floor | `wet` | Wet floor `~`: slide at night, grip by day | C | ✅ |
-| 10 | 3 | Structural Integrity | `pillar` | A pillar moves each night clock-in | B | planned |
+| 10 | 3 | Structural Integrity | `pillar` | A pillar moves each night clock-in | B | ✅ |
 | 11 | 3 | Night Management | `supervisor` | Supervisor freak: watched freaks work, the rest slack off | C | ✅ |
 | 12 | 3 | Stacked | `stacked` | Several queued pranks; the order of clock-ins | A | ✅ |
 | 13 | 4 · Lights Out | Employee of the Month | `portrait` | The portrait blocks the exit and is rehung each clock-in | B | planned |

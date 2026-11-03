@@ -107,6 +107,18 @@ test('skinPlan: a moved pillar leaves a crack', () => {
   assert.deepEqual(skinPlan(lvl, DAY, {}), [], 'a night skin draws nothing by day');
 });
 
+test('skinPlan: an empty slot the object never stood in draws nothing; one it left draws what it left', () => {
+  // a pillar that moves from slot A (col 1) to slot B (col 4) and on: B is empty in the grid until a prank fills it
+  const night = ['.#....', '.#....', '.#....', '.#....', '######'];
+  const lvl = level(['......', '......', '......', 'S....E', '######'], night, {
+    skins: [{ kind: 'pillar', tx: 1, ty: 3, layer: 'night' }, { kind: 'pillar', tx: 4, ty: 3, layer: 'night' }],
+  });
+  const cells = (tx, ch) => Object.fromEntries([0, 1, 2, 3].map((ty) => [`1,${tx},${ty}`, ch]));
+  assert.deepEqual(skinPlan(lvl, NIGHT, {}), [{ draw: 'pillar', tx: 1, ty: 3, h: 4 }], 'slot B: no crack before the pillar ever stood there');
+  assert.deepEqual(skinPlan(lvl, NIGHT, { ...cells(1, '.'), ...cells(4, '#') }), [{ draw: 'crack', tx: 1, ty: 0 }, { draw: 'pillar', tx: 4, ty: 3, h: 4 }]);
+  assert.deepEqual(skinPlan(lvl, NIGHT, { ...cells(1, '.'), ...cells(4, '.') }), [{ draw: 'crack', tx: 1, ty: 0 }, { draw: 'crack', tx: 4, ty: 0 }], 'moved on from B: a crack there too');
+});
+
 test('skinPlan: a portrait covers a w×h rect from its top-left cell', () => {
   const day = ['......', '.###..', '.###..', 'S....E', '######'];
   const lvl = level(day, day, { skins: [{ kind: 'portrait', tx: 1, ty: 1 }] });

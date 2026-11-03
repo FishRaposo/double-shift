@@ -28,7 +28,7 @@
 | Score | Timecard: clock-ins vs. par (fewest shifts the designer found, proven by tests) | §15.3 |
 | Tone | Mock horror: petty monsters, deadpan worker, no gore, no jump scares | §10.5 |
 | Look and sound | Crisp pixel art on a 2-px grid, a hand-made pixel font, a spooky-goofy theme whose day/night arrangements crossfade on every shift; all made in code (built 2026-11-02) | §10, §11, ART.md, AUDIO.md |
-| Levels | **21: five acts of four plus the finale.** <!-- n:levels -->15<!-- /n --> built (tier A, the 12 built on Nov 2, is a complete game); tier B = 17, tier C = 21 with act 5 Upside Down (night flipped, gravity up) and the finale rework. Four new mechanics shipped; Upside Down is the fifth | §8.2, [CONTENT.md](CONTENT.md) |
+| Levels | **21: five acts of four plus the finale.** <!-- n:levels -->16<!-- /n --> built (tier A, the 12 built on Nov 2, is a complete game); tier B = 17, tier C = 21 with act 5 Upside Down (night flipped, gravity up) and the finale rework. Four new mechanics shipped; Upside Down is the fifth | §8.2, [CONTENT.md](CONTENT.md) |
 | Jam | Game Off 2026, theme SHIFT, due Dec 1 13:37 PST. Lead with the pranks and freezing freaks: two overlapping worlds alone is one of the jam page's example ideas. | §1.8 |
 
 **Living sections** (kept current): §0, §1, §3, §4, §8.2, §10.5, §15.3, §18, §21. **Historical sections** (the original pre-v0.2 plan, kept for the record): §13.1–13.8, §16, §22. Their banners say what replaced them.
@@ -848,7 +848,7 @@ A linear progression is sufficient.
 | Level | Focus | Intended Lesson | Fiction | Tier |
 |---|---|---|---|---|
 | 9. Wet Floor ✅ | Wet floor `~` | Slide at night, grip by day | Floors waxed at night (by whom?) | C |
-| 10. Structural Integrity | Moving object | Count your night entries: the pillar is a wall, then a step | The load-bearing pillar moved | B |
+| 10. Structural Integrity ✅ | Moving object | Count your night entries: the pillar is a wall, then a step | The load-bearing pillar moved | B |
 | 11. Night Management ✅ | Supervisor freak | Cross on the side it isn't watching | One of them has a clipboard | C |
 | 12. Stacked ✅ | Multiple pranks (act 3 combination) | Order your clock-ins | They've been busy | A |
 

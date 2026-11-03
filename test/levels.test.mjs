@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { LEVELS } from '../src/levels.js';
-import { DAY, NIGHT, TILE, NO_INPUT, initState, step } from '../src/rules.js';
+import { DAY, NIGHT, TILE, NO_INPUT, initState, step, tileAt } from '../src/rules.js';
 import { play, tx } from './helpers.mjs';
 import { SOLUTIONS, L } from './solutions.mjs';
 
@@ -160,4 +160,29 @@ test('Lost & Found: with two night entries the exit ledge stays out of reach', (
     for (let f = 0; f < 120 * 8 && !t.won; f++) t = step(lvl, t, { ...NO_INPUT, right: true, jumpHeld: f % jumpEvery < 18, jumpPressed: f % jumpEvery === 0 });
     assert.equal(t.won, false, `climbed with two doors on the pile (jumpEvery=${jumpEvery})`);
   }
+});
+
+test('Structural Integrity: the pillar stands at P1, P2, P3 after entries 1, 2, 3', () => {
+  const lvl = L.pillar;
+  const P = { P0: 6, P1: 11, P2: 20, P3: 13 };
+  const standsAt = (s, col) => [10, 11, 12, 13].every((ty) => tileAt(lvl, NIGHT, col, ty, s.overrides) === '#');
+  let s = initState(lvl); // toggle at the spawn, where both shifts are open
+  const expect = [['P0'], ['P1'], ['P2'], ['P3']];
+  assert.ok(standsAt(s, P.P0));
+  for (let entry = 1; entry <= 3; entry++) {
+    if (s.layer === NIGHT) s = step(lvl, s, { ...NO_INPUT, shiftPressed: true });
+    s = step(lvl, s, { ...NO_INPUT, shiftPressed: true });
+    assert.equal(s.nightEntries, entry);
+    const where = Object.entries(P).filter(([, col]) => standsAt(s, col)).map(([k]) => k);
+    assert.deepEqual(where, expect[entry], `after entry ${entry}`);
+  }
+});
+
+test('Structural Integrity: reaching the crate on entry 3 misses the staircase', () => {
+  const lvl = L.pillar;
+  // waste one entry at the spawn (night, day), then play the solution: the crate jump's clock-in is entry 3
+  const policy = (s, m, f) => (s.shifts < 2 ? { shift: f % 4 < 2 } : SOLUTIONS.pillar(s, m, f));
+  const { state } = play(lvl, policy, 120 * 15);
+  assert.equal(state.won, false);
+  assert.ok(state.nightEntries >= 3);
 });

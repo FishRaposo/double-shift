@@ -226,7 +226,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | `stairs` ✅ | The proud sign OUR STARES! over the top step and eyes under the stairs (night); a notice board and barrier tape (day) |
 | `doors` ✅ | Three doors that leave empty frames when stolen, the pile (night), the LOST & FOUND box, a notice board (day), a vent (night) |
 | `wet` | A WET FLOOR sign, footprints on the wax |
-| `pillar` | Ceiling crack, dust outline, a memo |
+| `pillar` ✅ | The pillar skin at each place it stands, a crack and dust outline where it stood (night), a notice board, a LOAD BEARING sign and a pallet (day) |
 | `supervisor` | A STAFF ONLY sign, a vent, footprints |
 | `stacked` | Three tells in view from the spawn, a notice board, chalk circles and footprints on the middle floor (night) |
 | `offset` | Floor signs 3 / 3.5 |

@@ -5,7 +5,7 @@ Companion to [GDD.md](GDD.md) §6 and §8. Tile = 30 px. Levels are 32×18 tiles
 **At a glance**
 - Jumpable rise: **≤ 3 tiles**. Gaps: **≤ 4** comfortable, **≥ 7** impossible (use 8 for "must shift") (§1).
 - A level is two ASCII grids (day, night) plus optional pranks, freaks and decor (§2).
-- **The game is 21 levels: five acts of four plus the finale (§5.0).** <!-- n:levels -->15<!-- /n --> built (§4); 5 tier-B levels specced (§5); act 5 Upside Down (§5.2) and the finale rework (§5.3) planned. Tier A (a complete game) is built.
+- **The game is 21 levels: five acts of four plus the finale (§5.0).** <!-- n:levels -->16<!-- /n --> built (§4); 5 tier-B levels specced (§5); act 5 Upside Down (§5.2) and the finale rework (§5.3) planned. Tier A (a complete game) is built.
 - Leave **≥ 200 ms** of slack per required input in acts 1–2, **≥ 100 ms** in acts 3–5 (tested).
 - Nothing ships without a scripted par solution in the tests and the §6 checklist.
 
@@ -151,25 +151,34 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 - **Solution:** night onto the wax (the col-4 wall) → day before the lasers (dry floor: you stop) and walk past them → night again before the day wall at 15–16 → day to stop short of the lurker and walk past its outline.
 - Inside the 1-tile tunnel you can't jump, and on wax steering back takes ≈ 2.4 tiles to stop (no turn-around boost, `wetAccel` 500), so the dry day floor is the brake. Checkpoints before the lasers and before the lurker.
 
-### 10. Night Management: par 2 (act 3)
+### 10. Structural Integrity: par 3 (act 3, built Nov 3)
+- **Lesson:** one object, moved by each clock-in, is a wall in one place and a step in another. Count your night entries.
+- **Both shifts:** the pillar (4 tall, skinned) at P0 (col 6), and the mezzanine (cols 21–31, top 7 up) with the exit. **Day only:** a crate stack, 3 tall (cols 17–18).
+- **Pranks (night only, `pillarScrape`):** entry 1 moves the night pillar to P1 (col 11, a wall on the night floor), entry 2 to P2 (col 20, against the mezzanine: crate 3 → pillar top 4 → mezzanine 7), entry 3 to P3 (col 13, out of the way). The day pillar stays at P0. A crack marks only the places it stood (`skinPlan` now leaves a slot bare until the pillar has been there). All three tells show from the spawn.
+- **Solution:** clock in to pass P0, out to pass P1, climb the crate by day, jump off its far end and clock in mid-air: that's entry 2, and the pillar lands under you. From its top, jump against the mezzanine.
+- **Par:** 3, the minimum (the spec said about 4; nothing shorter wins and nothing longer was needed). One entry too many and the pillar is on P3 when you jump (a test pins it); R restarts.
+- **Margin:** clock-ins 567–600 ms, jumps 183–333 ms, input lag up to 150 ms still wins.
+- **Props:** a notice board and a LOAD BEARING sign on the day pillar, a pallet by the crates (day).
+
+### 11. Night Management: par 2 (act 3)
 - **Lesson:** freaks only work while watched — cross on the side the supervisor isn't facing.
 - **Night:** the supervisor sits on a perch mid-screen (out of reach) and turns every 2 s. A lurker patrols a 1-tile tunnel on each side; only the watched one moves. **Day:** walls at cols 11–12 and 20–21 force night for both crossings; a night wall at cols 26–27 forces day for the exit.
 - **Solution:** clock into night short of the first tunnel, wait for the supervisor to face right, cross; wait in the nook (cols 14–18, checkpoint at col 16) for it to face left, cross; back to day at the night wall.
 
-### 11. Stacked: par 5 (act 3)
+### 12. Stacked: par 5 (act 3)
 - **Lesson:** several pranks are queued; each fixes one obstacle and breaks another. The puzzle is where you clock in.
 - **Layout:** spawn floor cols 0–5, gap A cols 6–13, middle floor cols 14–17, a day wall at col 18 (only the night gets past), landing cols 19–22, gap B cols 23–30, the exit on col 31.
 - **Pranks (all three tells visible from the spawn):** entry 1 bridges gap A but drops a night gate at col 18; entry 2 lifts the gate but takes the bridge back; entry 3 lays a plank over gap B.
 - **Solution:** night on the spawn floor (bridge) → cross → day and night again on the middle floor (gate lifts, bridge goes) → past col 18 → day and night again on the landing (plank) → cross to the exit. Five clock-ins; checkpoint at col 20.
 - Clock in at the wrong place (e.g. twice before gap A) and the bridge is gone before you cross: the pit resets the pranks (checkpoint rule). A test pins it.
 
-### 12. Broad Daylight: par 5 (act 4)
+### 13. Broad Daylight: par 5 (act 4)
 - **Lesson:** day is no longer safe — one freak works the day shift — and each shift freezes the other shift's freaks.
 - **Two tunnels, mirror images.** First a day tunnel under a building (cols 7–15, rows 0–12) with the day-walker in it (col 10, range 2); night gates at cols 6 and 16 let only the day shift in and out. Then `watch`'s tunnel the other way round: a building at cols 19–27 with day pillars at 19 and 27 and a lurker inside (col 22, range 2). Checkpoint at col 17 between them.
 - **Solution:** day into the first tunnel → night inside (the day-walker freezes; walk through its outline) → day before the far gate → night into the second tunnel → day to freeze the lurker → night out → exit.
 - Rebuilt 2026-11-02: the first version let you simply jump over the day-walker, so its mechanic was never needed. Two tests pin it now (staying on day gets you spooked; jumping can't clear it).
 
-### 13. Floor 3.5: par 4 (act 4)
+### 14. Floor 3.5: par 4 (act 4)
 - **Lesson:** the night shift is the same building half a storey higher — shift at a jump's apex to step onto the other shift's floor.
 - **Day:** a tower of ledges (floor, then ledges at +6 and +12 tiles; the top ledge runs cols 11–24 with the exit at col 22). **Night** is generated by `offset: { dx: 0, dy: -3 }` plus a laser patch where the day floor has no copy.
 - **Solution:** four hops — jump and shift at the apex, alternating day/night, each time landing on a floor's copy 3 tiles up. Grounded shifts are refused (the copy would embed you), which the first floor teaches.
@@ -177,7 +186,7 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 - **Margin:** the full jump peaks at ≈ 93.5 px against the 90 px needed (plus the 4 px nudge): each apex shift has ≈ 250 ms. Any lower `jumpVelocity` breaks this level first — re-run `npm run audit` after tuning. `dy: -2` is the fallback.
 - **Props:** floor signs read 3 and 3.5.
 
-### 14. Mind Your Head: par 2 (act 5, built Nov 3)
+### 15. Mind Your Head: par 2 (act 5, built Nov 3)
 - **Lesson:** at night the building is upside down: you fall up, and walk along what was the ceiling (`upsideDown: true`; the night is generated, §5.2).
 - **Day:** a floor with an 8-tile pit (cols 10–17, too far to jump); a walkway high above it (row 6, cols 6–25) with a wall standing on it at col 24 (rows 2–5); a beam over the exit (row 3, cols 28–31); a shelf at (20, 13) under the checkpoint. **Night** is that map turned over: the walkway is at row 11, three rows above the worker's head on the floor, the wall hangs under it (rows 12–15), and the exit hangs from the beam's copy.
 - **Solution:** clock in under the walkway (cols 6–9) and fall up onto it; walk across the pit hanging from it; past the pit, clock out and drop to the floor; exit. The wall is deeper than a night jump (96 px against 120 px), so staying on night never gets past it.
@@ -186,7 +195,7 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 - **Margin:** both clock-ins have ≈ 990 ms; input lag up to 150 ms still wins (`npm run audit`).
 - **Props:** a MIND YOUR HEAD sign (day), a notice board (day), and a coffee mug stuck upside down under the walkway (night, `flip`).
 
-### 15. Clock Out: par 7 (the finale; #21 in the full game, rework planned in §5.3)
+### 16. Clock Out: par 7 (the finale; #21 in the full game, rework planned in §5.3)
 - **Lesson:** everything you know, in one run.
 - **Room 1 (cols 0–14):** a pit with a 3-wide night stone (cols 5–7, row 13) and a higher day stone (cols 10–12, row 12): jump off each as you land, shifting mid-air to the one ahead.
 - **Room 2 (cols 15–24):** `watch`'s tunnel under a building: day crates at cols 17 and 24 force night in and out; the lurker inside (col 20) forces a day freeze. Checkpoint at col 15.
@@ -208,7 +217,7 @@ Five acts of four, then the finale. Each act introduces one idea, practises it, 
 | 7 | 2 | Under Renovation (`stairs`) | Height from one shift carries into the other | ✅ |
 | 8 | 2 | Lost & Found (`doors`) | **Wanted pranks**; act 2's combination (pranks + a lurker) | ✅ |
 | 9 | **3 · Graveyard Shift** (they get organized) | Wet Floor (`wet`) | **Wet floor**: slide at night, grip by day | ✅ |
-| 10 | 3 | Structural Integrity (`pillar`) | One object moved each clock-in: wall, then step | spec (§5) |
+| 10 | 3 | Structural Integrity (`pillar`) | One object moved each clock-in: wall, then step | ✅ |
 | 11 | 3 | Night Management (`supervisor`) | **Supervisor**: watched freaks work, the rest slack | ✅ |
 | 12 | 3 | Stacked (`stacked`) | Several queued pranks; act 3's combination | ✅ |
 | 13 | **4 · Lights Out** (the rules bend) | Employee of the Month (`portrait`) | The obstacle is the tool | spec (§5) |
@@ -263,7 +272,7 @@ The levels still to build in acts 2–4, in the §5.0 order (manifest: [CONTENT.
 - **Par note:** this level inverts "fewest clock-ins": par is the shifts needed to earn 3 night entries safely, proven by the scripted solution like every other par.
 - **Props:** door frames left behind (empty, non-solid), the pile, a LOST & FOUND box.
 
-### Structural Integrity (`pillar`, #10): target par 4 (act 3, tier B)
+### Structural Integrity (`pillar`, #10): target par 4 (act 3, tier B) ✅ built Nov 3 at par 3 (§4)
 - **Lesson:** one object, moved by each clock-in, is a wall in one place and a step in another. Count your night entries.
 - **Fiction:** "They've moved a load-bearing pillar. The building is somehow fine."
 - **Both shifts:** a mezzanine (top about 7 tiles above the floor) holds the exit.
@@ -352,7 +361,7 @@ The levels still to build in acts 2–4, in the §5.0 order (manifest: [CONTENT.
 
 ## 5.3 The finale: Clock Out reworked *(planned, tier C; today's version is the fallback)*
 
-The built Clock Out (§4, #15 in today's build) is a complete finale and ships as-is if act 5 slips. The rework makes it pay off every act:
+The built Clock Out (§4, #16 in today's build) is a complete finale and ships as-is if act 5 slips. The rework makes it pay off every act:
 - **One screen, `upsideDown: true`, four rooms**, each recalling an act:
   1. mid-air shifts across stones (act 1);
   2. a frozen-lurker tunnel and a telegraphed prank (act 2);

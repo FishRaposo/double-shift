@@ -130,6 +130,19 @@ export const SOLUTIONS = {
     const shift = !!due && s.layer !== due[2];
     return { right: true, shift, jump: p.grounded ? x > 24.8 && Math.abs(p.vx) < 1 : p.vy < 0 };
   },
+  // night past P0, day past P1, up the day crate, then jump off it and clock in mid-air: entry 2 puts the
+  // pillar under you; from its top, jump against the mezzanine
+  pillar: (s, m) => {
+    const p = s.player;
+    const x = tx(s);
+    const plan = [[1.5, 5.4, NIGHT], [7, 10.4, DAY]];
+    const due = plan.find(([a, b]) => x >= a && x <= b);
+    const onCrate = p.grounded && s.layer === DAY && p.y < 11 * TILE;
+    if (onCrate && x > 17.3) m.launched = true;
+    const shift = (!!due && s.layer !== due[2]) || (m.launched && !p.grounded && s.layer === DAY);
+    const jump = p.grounded ? (Math.abs(p.vx) < 1 && x > 15) || (onCrate && x > 17.3) : p.vy < 0;
+    return { right: true, shift, jump };
+  },
   // under the walkway, clock in and fall up onto it; past the pit, clock out and drop to the floor
   upside: (s) => ({ right: true, shift: (tx(s) > 7 && tx(s) < 16 && want(s, NIGHT)) || (tx(s) > 19 && want(s, DAY)) }),
   offset: (s, m) => {
