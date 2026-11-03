@@ -81,14 +81,15 @@ function openSettings() {
   input.clear();
 }
 
-// Settings rows: three volumes, reduced effects, then the controls screen.
-const SETTING_ROWS = [['master', 'MASTER'], ['music', 'MUSIC'], ['sfx', 'SOUND'], ['reduced', 'REDUCED EFFECTS'], ['controls', 'CONTROLS']];
+// Settings rows: three volumes, two switches, then the controls screen.
+const SETTING_ROWS = [['master', 'MASTER'], ['music', 'MUSIC'], ['sfx', 'SOUND'], ['reduced', 'REDUCED EFFECTS'], ['timer', 'SPEEDRUN TIMER'], ['controls', 'CONTROLS']];
+const SWITCHES = ['reduced', 'timer'];
 
 function adjustSetting(row, dir) {
   const [key] = SETTING_ROWS[row];
   if (key === 'controls') { openControls(); return; }
   const cur = settings.get();
-  const next = key === 'reduced' ? settings.set({ reduced: !cur.reduced }) : settings.set({ [key]: Math.round((cur[key] + dir * 0.1) * 10) / 10 });
+  const next = SWITCHES.includes(key) ? settings.set({ [key]: !cur[key] }) : settings.set({ [key]: Math.round((cur[key] + dir * 0.1) * 10) / 10 });
   setVolumes(next);
   sfx.uiMove();
 }
@@ -164,7 +165,7 @@ function handleKey(e) {
     else if (e.code === 'ArrowDown' || e.code === 'KeyS') { game.settingsRow = (game.settingsRow + 1) % SETTING_ROWS.length; sfx.uiMove(); }
     else if (e.code === 'ArrowLeft' || e.code === 'KeyA') adjustSetting(game.settingsRow, -1);
     else if (e.code === 'ArrowRight' || e.code === 'KeyD') adjustSetting(game.settingsRow, 1);
-    else if ((e.code === 'Space' || e.code === 'Enter') && ['reduced', 'controls'].includes(SETTING_ROWS[game.settingsRow][0])) adjustSetting(game.settingsRow, 0);
+    else if ((e.code === 'Space' || e.code === 'Enter') && [...SWITCHES, 'controls'].includes(SETTING_ROWS[game.settingsRow][0])) adjustSetting(game.settingsRow, 0);
     else if (e.code === 'Escape' || e.code === 'KeyO') setScreen(game.settingsFrom);
     return;
   }
@@ -294,7 +295,7 @@ canvas.addEventListener('pointerdown', (e) => {
 
 const TITLE_SELECT = { x: W / 2 - 250, y: 444, w: 240, h: 32 };
 const TITLE_SETTINGS = { x: W / 2 + 10, y: 444, w: 240, h: 32 };
-const settingRect = (row) => ({ x: W / 2 - 260, y: 150 + row * 58, w: 520, h: 46 });
+const settingRect = (row) => ({ x: W / 2 - 260, y: 124 + row * 54, w: 520, h: 46 });
 const SELECT_KEYS = {
   ArrowLeft: [-1, 0], KeyA: [-1, 0], ArrowRight: [1, 0], KeyD: [1, 0],
   ArrowUp: [0, -1], KeyW: [0, -1], ArrowDown: [0, 1], KeyS: [0, 1],
@@ -635,6 +636,7 @@ function drawNoteStrip(text) {
 function drawHud(lvl, s, layer) {
   const pal = PAL[layer];
   hud(`${game.index + 1}/${levels.length}  ${lvl.name.toUpperCase()}`, 14, 12, layer);
+  if (settings.get().timer) hud(`TIME ${s.time.toFixed(2)}`, 14, 40, layer); // the speedrun timer (SETTINGS)
   // shift indicator: icon + label (not colour alone), on one plate
   const label = layer === DAY ? 'DAY SHIFT' : 'NIGHT SHIFT';
   const lw = measureText(label, 2);
@@ -816,6 +818,10 @@ function drawEnd() {
   px(g, W / 2 - 220, y, 220, 1, 'rgba(59,45,31,0.4)');
   drawText(g, 'Total clock-ins', W / 2 - 220, y + 12, { scale: 2, color: ink });
   drawText(g, `${sum.shifts} / par ${sum.par}`, W / 2 + 220, y + 12, { scale: 2, color: ink, align: 'right' });
+  if (settings.get().timer) { // the speedrun timer's run total
+    drawText(g, 'Total time', W / 2 - 220, y + 36, { scale: 2, color: ink });
+    drawText(g, `${sum.time.toFixed(2)} s`, W / 2 + 220, y + 36, { scale: 2, color: ink, align: 'right' });
+  }
   CREDITS.forEach((line, k) => drawText(g, line, W / 2, bottom - 112 + k * 22, { scale: 2, color: 'rgba(59,45,31,0.8)', align: 'center' }));
   drawText(g, 'SPACE: clock in again', W / 2, bottom - 36, { scale: 2, color: ink, align: 'center' });
   drawEndingEyes(top, bottom);
@@ -918,8 +924,8 @@ function drawSettings() {
     drawPanel(g, r.x, r.y, r.w, r.h, false);
     if (sel) drawText(g, '>', r.x + 14, r.y + 16, { scale: 2, color: '#ffec5a' });
     drawText(g, label, r.x + 36, r.y + 16, { scale: 2, color: sel ? '#ffffff' : pal.hudSoft });
-    if (key === 'reduced') {
-      drawText(g, s.reduced ? 'ON' : 'OFF', r.x + r.w - 24, r.y + 16, { scale: 2, color: s.reduced ? '#9dffb8' : pal.hudSoft, align: 'right' });
+    if (SWITCHES.includes(key)) {
+      drawText(g, s[key] ? 'ON' : 'OFF', r.x + r.w - 24, r.y + 16, { scale: 2, color: s[key] ? '#9dffb8' : pal.hudSoft, align: 'right' });
     } else if (key === 'controls') {
       drawText(g, 'Enter >', r.x + r.w - 24, r.y + 16, { scale: 2, color: pal.hudSoft, align: 'right' });
     } else {

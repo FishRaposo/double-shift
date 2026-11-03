@@ -162,3 +162,11 @@ test('memos: the panel shows while the worker is within 2 tiles of the memo', ()
   assert.equal(memoNear(at(13, 12), m), false);
   assert.equal(memoNear(at(10, 15), m), false);
 });
+
+test('endSummary: the run time sums the levels played (the speedrun timer)', () => {
+  const results = [];
+  results[0] = { shifts: 2, par: 2, deaths: 0, time: 3.5 };
+  results[4] = { shifts: 3, par: 3, deaths: 1, time: 10.25 };
+  assert.equal(endSummary(LEVELS, results).time, 13.75);
+  assert.equal(endSummary(LEVELS, []).time, 0);
+});

@@ -148,3 +148,12 @@ test('settings: binds survive a reload; corrupt binds fall back', () => {
   assert.equal(repaired.master, 0.5);
   assert.deepEqual(repaired.binds, DEFAULT_BINDS, 'nothing usable: the defaults');
 });
+
+test('settings: the speedrun timer defaults off and survives a reload', () => {
+  const storage = memoryStorage();
+  assert.equal(createSettings(storage).get().timer, false);
+  createSettings(storage).set({ timer: true });
+  assert.equal(createSettings(storage).get().timer, true);
+  storage.setItem('double-shift.settings.v1', JSON.stringify({ timer: 'yes' }));
+  assert.equal(createSettings(storage).get().timer, false, 'junk reads as off');
+});

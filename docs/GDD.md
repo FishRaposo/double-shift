@@ -236,7 +236,7 @@ The player retains their position and movement state.
 | Bosses | Not planned |
 | Narrative | Minimal / environmental |
 | Leaderboards | Stretch goal |
-| Speedrun timer | Stretch goal |
+| Speedrun timer | Stretch goal; built Nov 3 (SETTINGS > SPEEDRUN TIMER: the level time on the HUD, the run total on the end screen) |
 | Gamepad support | Stretch goal |
 | Delivery | itch.io |
 | Repository | Public GitHub repository |

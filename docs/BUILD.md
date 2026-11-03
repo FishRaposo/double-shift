@@ -347,7 +347,7 @@ Seven milestone PRs (decided 2026-11-03). Each one passes every gate in §1.2 pl
 - **Per-act music layers** *(✅ built Nov 3; AUDIO.md §3.1)*: `layersFor(act)` = pulse from act 2, a second lead from act 3, faster organ stabs from act 4, the melody inverted (`2·MELODY[0] − n`) from act 5; the finale plays every layer.
 - **Rebindable controls** *(✅ built Nov 3)*: `src/keys.js` (`DEFAULT_BINDS`, reserved keys, `rebind`, `cleanBinds`, `keyLabel`); a CONTROLS screen under SETTINGS; title and tutorial text built from the bindings. Taking another action's only key swaps, never unbinds.
 - **Gamepad** *(✅ built Nov 3)*: `src/pad.js` turns the standard mapping into edge-triggered key codes (A jump; B, X or RB shift; Start pause; Back restart; d-pad or stick with 0.5/0.3 hysteresis). Fixed mapping.
-- **Speedrun timer:** a TIMER setting; the HUD shows the level time and the end screen the run total.
+- **Speedrun timer** *(✅ built Nov 3)*: a TIMER setting (SPEEDRUN TIMER); the HUD shows the level time and the end screen the run total.
 - **Cut order if late:** timer, then gamepad, then rebinding, then music layers.
 
 ### T25 · Demo GIF tool *(PR 7)*

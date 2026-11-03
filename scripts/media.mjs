@@ -265,10 +265,24 @@ async function fullRun() {
   await shot('09-level-select.png');
   if (sel !== 'select') { failed = true; console.error(`level select did not open: ${sel}`); }
 
-  // controls: SETTINGS > CONTROLS, rebind JUMP to J with real keys, then back to the defaults
+  // the speedrun timer: SETTINGS > SPEEDRUN TIMER on with real keys; a level's HUD shows TIME; then off again
   await open('');
   await press('KeyO');
   for (let i = 0; i < 4; i++) await press('ArrowDown');
+  await press('Enter'); // SPEEDRUN TIMER: ON
+  await sleep(150);
+  await shot('10-settings.png');
+  const timerOn = await evaluate("JSON.parse(localStorage.getItem('double-shift.settings.v1')).timer");
+  flow('SETTINGS turns the speedrun timer on', timerOn === true, timerOn);
+  await open('?level=clock&autostart');
+  await sleep(1200);
+  await shot('review/timer-hud.png');
+  await evaluate("(() => { const s = JSON.parse(localStorage.getItem('double-shift.settings.v1')); s.timer = false; localStorage.setItem('double-shift.settings.v1', JSON.stringify(s)); })()");
+
+  // controls: SETTINGS > CONTROLS, rebind JUMP to J with real keys, then back to the defaults
+  await open('');
+  await press('KeyO');
+  for (let i = 0; i < 5; i++) await press('ArrowDown');
   await press('Enter'); // CONTROLS
   await press('ArrowDown');
   await press('ArrowDown');

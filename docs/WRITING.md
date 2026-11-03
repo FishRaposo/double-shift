@@ -29,14 +29,14 @@ Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game l
 | Pause ✅ | ON BREAK · Esc: resume · R: restart · L: levels · O: settings |
 | Title buttons ✅ | LEVEL SELECT (L) · SETTINGS (O) |
 | Title gamepad line ✅ | Gamepad: stick or d-pad move · A jump · B, X or RB shift · Start pause · Back restart |
-| Settings ✅ | SETTINGS · MASTER · MUSIC · SOUND · REDUCED EFFECTS ON/OFF · CONTROLS Enter > · Up/Down: choose · Left/Right: change · Esc: back |
+| Settings ✅ | SETTINGS · MASTER · MUSIC · SOUND · REDUCED EFFECTS ON/OFF · SPEEDRUN TIMER ON/OFF · CONTROLS Enter > · Up/Down: choose · Left/Right: change · Esc: back |
 | Controls ✅ | CONTROLS · LEFT · RIGHT · JUMP · SHIFT, each with its keys ("Shift or K") · RESET TO DEFAULTS · PRESS A KEY · Press the new key · Esc: cancel · Up/Down: choose · Enter: change · Esc: back · Back to the defaults. · Not that one: use a letter, a digit, an arrow, Space or Shift (R, L, O and M are the menus'). |
 | Act cards ✅ | ACT n · NAME · the line from §2.1 |
 | Level select ✅ | TIMECARDS · act tabs: ACT n + the act name, or FINALE · each card: the number, the NAME, PAR p / NOT YET, stamps ON PAR / UNDER! / +n · detail bar: n. NAME · BEST n · PAR p (or NOT YET) · Arrows: choose · SPACE or click: clock in · Esc: back |
 | Timecard ✅ | NEW BEST (when a saved best is beaten) |
-| HUD ✅ | DAY SHIFT / NIGHT SHIFT · CLOCK-INS n · PAR p |
+| HUD ✅ | DAY SHIFT / NIGHT SHIFT · CLOCK-INS n · PAR p · TIME 12.34 (with SPEEDRUN TIMER on) |
 | Timecard ✅ | TIMECARD · Clock-ins · Par · Time · Incidents · stamps ON PAR / UNDER PAR! / +n OVERTIME |
-| End ✅ | SHIFT COMPLETE · Thanks for working overtime. · one row per act: ACT n · NAME (or FINALE) with clock-ins / par · Total clock-ins · the credits (§8) · SPACE: clock in again |
+| End ✅ | SHIFT COMPLETE · Thanks for working overtime. · one row per act: ACT n · NAME (or FINALE) with clock-ins / par · Total clock-ins · Total time n s (with SPEEDRUN TIMER on) · the credits (§8) · SPACE: clock in again |
 
 ### 2.1 Planned UI text *(drafts)*
 

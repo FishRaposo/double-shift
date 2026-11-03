@@ -40,7 +40,7 @@ URL options: `?level=offset` start at a level by id (or by position, `?level=3`)
 | Change shift | Shift (either), K | B, X or RB |
 | Restart level | R | Back |
 | Level select | L (title or pause), or click LEVEL SELECT | |
-| Settings (volumes, reduced effects, controls) | O (title or pause), or click SETTINGS | |
+| Settings (volumes, reduced effects, speedrun timer, controls) | O (title or pause), or click SETTINGS | |
 | Pause | Esc | Start |
 | Mute | M | |
 
@@ -75,7 +75,7 @@ scripts/        serve, check, zip for itch, media + headless checks
 
 ## Tests
 
-The suite has <!-- n:tests -->335<!-- /n --> tests.
+The suite has <!-- n:tests -->337<!-- /n --> tests.
 
 ```sh
 npm test         # GDD §13.7 shift/collision edge cases, pranks and freaks, wet floor, day/night
