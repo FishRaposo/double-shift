@@ -1,6 +1,7 @@
 // Local playtest server: serves the repo root with no caching, no dependencies.
 // Usage: node scripts/serve.mjs [--open] [--port N] [--root DIR]   (PORT env also works; default 8080, next
-// free port if busy; --root serves another folder, e.g. the unzipped itch build)
+// free port if busy; 0 takes any free port; --root serves another folder, e.g. the unzipped itch build).
+// It announces the port it got ("running at http://localhost:N/"): scripts/cdp.mjs reads that.
 import { createServer } from 'node:http';
 import { readFile } from 'node:fs/promises';
 import { extname, join, normalize, resolve, sep } from 'node:path';
@@ -14,7 +15,8 @@ if (rootArg >= 0 && (args[rootArg + 1] === undefined || args[rootArg + 1].starts
 }
 const root = rootArg >= 0 ? resolve(args[rootArg + 1]) : resolve(import.meta.dirname, '..');
 const portArg = args.indexOf('--port');
-const firstPort = Number(portArg >= 0 ? args[portArg + 1] : process.env.PORT) || 8080;
+const portText = portArg >= 0 ? args[portArg + 1] : process.env.PORT;
+const firstPort = /^\d+$/.test(portText ?? '') ? Number(portText) : 8080;
 const open = args.includes('--open');
 
 const TYPES = {
@@ -49,7 +51,7 @@ function listen(port, triesLeft) {
     else { console.error(e.message); process.exit(1); }
   });
   server.listen(port, '127.0.0.1', () => {
-    const url = `http://localhost:${port}/`;
+    const url = `http://localhost:${server.address().port}/`;
     console.log(`Double Shift is running at ${url}`);
     console.log(`  a level:  ${url}?level=offset&autostart   (an id, or a 1-based position like ?level=3)`);
     console.log(`  debug:    ${url}?debug   (toggle overlay with \`)`);

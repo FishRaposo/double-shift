@@ -29,7 +29,7 @@ mkdirSync(out, { recursive: true });
 
 let page;
 try {
-  page = await startBrowser({ port: 8095, debugPort: 9333, serveRoot, profilePrefix: 'ds-media-' });
+  page = await startBrowser({ serveRoot, profilePrefix: 'ds-media-' });
 } catch (e) {
   console.error(e.message);
   process.exit(1);
@@ -41,19 +41,28 @@ const key = (type, code) => send('Input.dispatchKeyEvent', { type, code, key: KE
 const press = async (code) => { await key('keyDown', code); await sleep(40); await key('keyUp', code); };
 
 // A moment from a level's scripted run (the run the tests prove: test/solutions.mjs), for shots real keys can't
-// time, like the frame after a prank. requestAnimationFrame is off while the game steps on a fixed clock.
-async function moment(id, seconds, name) {
+// time: `after` seconds past the run's first `event` (a prank, a shift), found by stepping one tick at a time,
+// so a tuning change can't move the shot off its moment. requestAnimationFrame is off meanwhile.
+async function moment(id, event, after, name) {
   const { identifier } = await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.requestAnimationFrame = () => 0;' });
   try {
     await open(`?level=${encodeURIComponent(id)}&autostart`);
-    await evaluate(`(async () => {
+    const found = await evaluate(`(async () => {
       const g = __doubleShift;
       const { SOLUTIONS } = await import('/test/solutions.mjs');
       const { inputsFrom } = await import('/test/helpers.mjs');
       const next = inputsFrom(SOLUTIONS[${JSON.stringify(id)}]);
-      for (let f = 0; f < Math.round(${seconds} / 0.02); f++) g.advance(0.02, next);
+      let seen = false;
+      for (let tick = 0; tick < 120 * 20 && !seen; tick++) {
+        g.advance(1 / 120, next); // exactly one tick
+        seen = g.state.events.some((e) => e.type === ${JSON.stringify(event)});
+      }
+      if (!seen) return false;
+      for (let tick = 0; tick < Math.round(${after} * 120); tick++) g.advance(1 / 120, next);
       g.render();
+      return true;
     })()`);
+    if (!found) throw new Error(`moment: ${id}'s scripted run has no ${event} in 20 s`);
     await shot(name);
   } finally {
     await send('Page.removeScriptToEvaluateOnNewDocument', { identifier });
@@ -265,10 +274,10 @@ async function fullRun() {
   // the tools and tests aren't in the itch build, so --root stops here
   if (serveRoot) return;
 
-  // the itch page's first shots: a prank as it lands (Inventory's plank moves on the 2nd night clock-in, at
-  // 1.76 s) and the flip (Mind Your Head's first clock-in turns the night over, at 0.59 s)
-  await moment('inventory', 1.9, '19-prank-inventory.png');
-  await moment('upside', 0.7, '20-flip-mind-your-head.png');
+  // the itch page's first shots: a prank as it lands (Inventory's plank moves on the 2nd night clock-in) and the
+  // flip (Mind Your Head's first clock-in turns the night over)
+  await moment('inventory', 'prank', 0.14, '19-prank-inventory.png');
+  await moment('upside', 'shift', 0.11, '20-flip-mind-your-head.png');
 
   // asset gallery + offline audio loudness check (peaks before the master gain; must not clip)
   await open('tools/gallery.html', 1280, 1500);

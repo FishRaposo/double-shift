@@ -381,6 +381,7 @@ let last = performance.now();
 // One frame of game time: the screens' timers, the fixed-step simulation (one input frame per tick from
 // `next`), effects decaying, the music following the level. frame() runs it on the real clock with the
 // player's input; the demo GIF (scripts/gif.mjs) runs it on a fixed clock with a level's scripted run.
+// At most 12 ticks (0.1 s) run per call, the most frame() ever passes; a longer `elapsed` falls behind.
 function advance(elapsed, next = () => input.consume()) {
   game.clock += elapsed;
   game.screenTime += elapsed;

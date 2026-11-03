@@ -16,10 +16,16 @@ test('a policy holding jump or shift makes one press until it lets go (play, the
   const next = inputsFrom((s, mem, f) => {
     mem.calls = (mem.calls ?? 0) + 1;
     seen.push([s, f, mem.calls]);
-    return f === 1 ? { shift: true } : undefined;
+    return f === 1 ? { shift: true } : {};
   });
   assert.deepEqual([next('a'), next('b'), next('c')].map((i) => i.shiftPressed), [false, true, false]);
   assert.deepEqual(seen, [['a', 0, 1], ['b', 1, 2], ['c', 2, 3]], 'the state, the tick and one memory object per run');
+});
+
+test("a policy that returns nothing is a bug in the policy, not 'no input'", () => {
+  const forgot = inputsFrom((s, mem, f) => { if (f < 1) return { right: true }; });
+  assert.equal(forgot(null).right, true);
+  assert.throws(() => forgot(null), /policy returned undefined at tick 1/);
 });
 
 test('every level has a scripted solution', () => {

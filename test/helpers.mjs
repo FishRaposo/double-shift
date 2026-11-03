@@ -19,7 +19,8 @@ export function place(s, tx, ty, opts = {}) {
 
 // A policy as an input source: policy(state, mem, tick) says what it wants held ({ left, right, jump, shift });
 // this turns that into one input frame per tick. Jump and shift press on their rising edge, so a held shift is
-// one press: a policy releases shift between two shifts. `mem` is one object for the whole run. Shared by
+// one press: a policy releases shift between two shifts. `mem` is one object for the whole run. A policy
+// returns {} for no input; returning nothing throws, so a branch that forgot its return fails loudly. Shared by
 // play(), recordInputs() and the demo GIF (scripts/gif.mjs), so all three run exactly the same inputs.
 export function inputsFrom(policy) {
   const mem = {};
@@ -27,7 +28,9 @@ export function inputsFrom(policy) {
   let prevJump = false;
   let prevShift = false;
   return (s) => {
-    const want = policy(s, mem, f++) || {};
+    const want = policy(s, mem, f);
+    if (want === null || typeof want !== 'object') throw new Error(`policy returned ${want} at tick ${f} (return {} for no input)`);
+    f++;
     const input = {
       left: !!want.left,
       right: !!want.right,

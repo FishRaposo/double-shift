@@ -78,7 +78,7 @@ scripts/        serve, check, zip for itch, media + headless checks, demo GIFs
 
 ## Tests
 
-The suite has <!-- n:tests -->347<!-- /n --> tests.
+The suite has <!-- n:tests -->348<!-- /n --> tests.
 
 ```sh
 npm test         # GDD §13.7 shift/collision edge cases, pranks and freaks, wet floor, day/night

@@ -49,7 +49,8 @@ async function record({ id, seconds, delayCs, hold, k }) {
   const rgb = [];
   let cardAt = null;
   for (let f = 0; f * dt < seconds; f++) {
-    if (f > 0) g.advance(dt, next);
+    // advance() runs at most 12 ticks (0.1 s) per call, so a long frame goes in pieces of 0.05 s
+    if (f > 0) for (let left = dt; left > 1e-9; left -= 0.05) g.advance(Math.min(0.05, left), next);
     g.render();
     rgb.push(downscale(ctx.getImageData(0, 0, width, height).data, width, height, k));
     if (cardAt === null && g.screen === 'card') cardAt = f;
@@ -82,17 +83,21 @@ async function record({ id, seconds, delayCs, hold, k }) {
   let bin = ''; // base64 in chunks: String.fromCharCode(...) on megabytes at once overflows the stack
   for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
   const s = g.state;
-  return { b64: btoa(bin), w, h, frames: rgb.length, colors: q.colors, decoded, run: { won: s.won, shifts: s.shifts, deaths: s.deaths, time: s.time } };
+  return { b64: btoa(bin), w, h, frames: rgb.length, cardAt, colors: q.colors, decoded, run: { won: s.won, shifts: s.shifts, deaths: s.deaths, time: s.time } };
 }
 
 const expected = play(L[id], SOLUTIONS[id]).state;
-const attempts = [{ fps, seconds }];
-if (fps > 20) attempts.push({ fps: 20, seconds });
-if (seconds > 6) attempts.push({ fps: Math.min(fps, 20), seconds: 6 });
+// what was asked, then 20 fps, then 6 s as well; an attempt that would make the same file is skipped
+const attempts = [];
+for (const a of [{ fps, seconds }, { fps: Math.min(fps, 20), seconds }, { fps: Math.min(fps, 20), seconds: Math.min(seconds, 6) }]) {
+  const delayCs = Math.max(2, Math.round(100 / a.fps)); // browsers slow anything under 2 cs down to 10
+  if (!attempts.some((b) => b.delayCs === delayCs && b.seconds === a.seconds)) attempts.push({ delayCs, seconds: a.seconds });
+}
+const describe = (a) => `${+(100 / a.delayCs).toFixed(2)} fps for ${a.seconds} s`;
 
 let page;
 try {
-  page = await startBrowser({ port: 8096, debugPort: 9334, profilePrefix: 'ds-gif-' });
+  page = await startBrowser({ profilePrefix: 'ds-gif-' });
 } catch (e) {
   console.error(e.message);
   process.exit(1);
@@ -104,15 +109,16 @@ const problems = [];
 const name = `demo-${id}${k === 1 ? '-full' : ''}.gif`;
 const file = join(root, 'media', name);
 let result = null;
+const tried = [];
 try {
   for (const a of attempts) {
-    const delayCs = Math.max(2, Math.round(100 / a.fps)); // browsers slow anything under 2 cs down to 10
     await page.open(`?level=${encodeURIComponent(id)}&autostart`);
-    const r = await page.evaluate(`(${record})(${JSON.stringify({ id, seconds: a.seconds, delayCs, hold: HOLD, k })})`);
+    const r = await page.evaluate(`(${record})(${JSON.stringify({ id, seconds: a.seconds, delayCs: a.delayCs, hold: HOLD, k })})`);
     const bytes = Buffer.from(r.b64, 'base64');
-    result = { ...r, bytes, delayCs };
+    result = { ...r, bytes, delayCs: a.delayCs, seconds: a.seconds };
+    tried.push(a);
     if (bytes.length <= MAX_BYTES) break;
-    console.log(`  ${(bytes.length / 1e6).toFixed(2)} MB at ${100 / delayCs} fps for ${a.seconds} s: over 3 MB`);
+    console.log(`  ${(bytes.length / 1e6).toFixed(2)} MB at ${describe(a)}: over 3 MB`);
   }
 } catch (e) {
   problems.push(e.message);
@@ -124,15 +130,25 @@ if (result) {
   mkdirSync(join(root, 'media'), { recursive: true });
   writeFileSync(file, result.bytes);
   const { run, decoded } = result;
+  const dt = result.delayCs / 100;
+  const tests = { won: expected.won, shifts: expected.shifts, deaths: expected.deaths, time: expected.time };
   if (run.won && (run.shifts !== expected.shifts || run.deaths !== expected.deaths || Math.abs(run.time - expected.time) > 1e-6)) {
-    problems.push(`the page's run differs from the tests' (page ${JSON.stringify(run)}, tests ${JSON.stringify({ shifts: expected.shifts, deaths: expected.deaths, time: expected.time })})`);
+    problems.push(`the page's run differs from the tests' (page ${JSON.stringify(run)}, tests ${JSON.stringify(tests)})`);
+  }
+  // a run the tests finish inside the recording must finish in the page too, and on the same clock: the
+  // timecard comes up on the first frame at or after the winning tick
+  if (!run.won && expected.won && expected.time < result.seconds - 2 * dt) {
+    problems.push(`the page's run never reached the exit in ${result.seconds} s; the tests' run does at ${expected.time.toFixed(2)} s (page ${JSON.stringify(run)})`);
+  }
+  if (run.won && (result.cardAt === null || Math.abs(result.cardAt * dt - expected.time) > dt + 1e-6)) {
+    problems.push(`the GIF's clock is off: the exit shows at ${result.cardAt === null ? 'no frame' : `${(result.cardAt * dt).toFixed(2)} s`}, the run reaches it at ${expected.time.toFixed(2)} s`);
   }
   if (!decoded) console.log('  (no ImageDecoder in this browser: the decode check was skipped)');
   else if (decoded.count !== result.frames || decoded.worst > 2) problems.push(`Chromium decoded ${decoded.count} of ${result.frames} frames, off by up to ${decoded.worst} per channel`);
-  if (result.bytes.length > MAX_BYTES) problems.push(`${(result.bytes.length / 1e6).toFixed(2)} MB: over the 3 MB target even at 20 fps and 6 s`);
+  if (result.bytes.length > MAX_BYTES) problems.push(`${(result.bytes.length / 1e6).toFixed(2)} MB: over the 3 MB target after ${tried.map(describe).join(', then ')}`);
   const secs = (result.frames * result.delayCs) / 100;
   console.log(`  ${file}: ${result.w}×${result.h}, ${result.frames} frames at ${100 / result.delayCs} fps (${secs.toFixed(2)} s), ${result.colors} colors${result.colors > 256 ? ' (the 256 most frequent kept)' : ''}, ${(result.bytes.length / 1e6).toFixed(2)} MB`);
-  console.log(`  run: ${run.won ? `the exit at ${run.time.toFixed(2)} s, ${run.shifts} clock-ins (par ${L[id].par}), ${run.deaths} deaths, as in the tests` : `stopped before the exit (${seconds} s)`}${decoded ? `; Chromium decodes all ${decoded.count} frames as encoded` : ''}`);
+  console.log(`  run: ${run.won ? `the exit at ${run.time.toFixed(2)} s, ${run.shifts} clock-ins (par ${L[id].par}), ${run.deaths} deaths` : `stopped before the exit (${result.seconds} s)`}${decoded ? `; Chromium decodes all ${decoded.count} frames as encoded` : ''}`);
 }
 if (page.errors.length) problems.push(`page errors: ${page.errors.join('; ')}`);
 if (problems.length) { for (const p of problems) console.error(p); console.log('FAILED'); process.exit(1); }

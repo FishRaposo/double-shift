@@ -355,7 +355,7 @@ The steps:
 
 ### T25 · Demo GIF tool *(✅ built Nov 3)*
 - `npm run gif -- <id>` writes `media/demo-<id>.gif` at 480×270 (`--full`: 960×540, `demo-<id>-full.gif`), the same bytes every time: the page imports the level's scripted policy from `test/solutions.mjs` and runs it through the game's own `advance()` and `render()` on a fixed clock, one frame per 1/25 s. It stops 1.5 s after the timecard comes up or at `--seconds` (8), loops forever, and keeps under 3 MB (else 20 fps, then 6 s). Measured: `upside` 0.09 MB, `doors` 0.50 MB (`--full` 1.12 MB).
-- Checks: the page's run matches the tests' (shifts, deaths, time), and Chromium's decoder reads every frame back as encoded. The dependency-free encoder (`scripts/gif-encode.mjs`) is tested in `test/gif.test.mjs` against a reference GIF reader. The browser helper is shared with `media.mjs` (`scripts/cdp.mjs`).
+- Checks: the page's run matches the tests' (shifts, deaths, time), the exit shows at the run's moment in the GIF (a long frame steps `advance()` in pieces: it runs at most 12 ticks a call), and Chromium's decoder reads every frame back as encoded. The dependency-free encoder (`scripts/gif-encode.mjs`) is tested in `test/gif.test.mjs` against a reference GIF reader. The browser helper is shared with `media.mjs` (`scripts/cdp.mjs`).
 
 ## 5. Known gotchas
 - **Offset and Upside Down levels generate their night grid:** don't also give `night`.

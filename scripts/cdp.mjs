@@ -2,7 +2,7 @@
 // starts the browser on a throwaway profile and drives its one page. Shared by media.mjs and gif.mjs.
 // BROWSER env overrides the browser path.
 import { spawn } from 'node:child_process';
-import { existsSync, mkdtempSync, rmSync } from 'node:fs';
+import { existsSync, mkdtempSync, readFileSync, rmSync } from 'node:fs';
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 
@@ -20,27 +20,51 @@ export const BROWSERS = [
 
 export const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 
-// Serve `serveRoot` (default: the repo) on `port`, start the browser with DevTools on `debugPort`, and connect.
-// Page exceptions and console errors collect in `errors`. close() stops both processes and deletes the profile.
-export async function startBrowser({ port, debugPort, serveRoot = null, profilePrefix = 'ds-cdp-' }) {
+// The port the game server announces ("running at http://localhost:N/"). It's started with --port 0, so the OS
+// hands out a free one: a stale server left on a fixed port can never answer in its place.
+function serverPort(server) {
+  return new Promise((resolve, reject) => {
+    let out = '';
+    const timer = setTimeout(() => reject(new Error('the game server did not start')), 10000);
+    server.stdout.on('data', (d) => {
+      out += d;
+      const m = out.match(/localhost:(\d+)\//);
+      if (m) { clearTimeout(timer); resolve(Number(m[1])); }
+    });
+    server.once('exit', (code) => { clearTimeout(timer); reject(new Error(`the game server exited (${code})`)); });
+  });
+}
+
+// The browser picks its own DevTools port too (--remote-debugging-port=0) and writes it into the profile.
+async function devtoolsPort(profile) {
+  for (let i = 0; i < 150; i++) { // up to 30 s: a cold Edge start can be slow
+    try {
+      const port = Number(readFileSync(join(profile, 'DevToolsActivePort'), 'utf8').split('\n')[0]);
+      if (port > 0) return port;
+    } catch { /* not written yet */ }
+    await sleep(200);
+  }
+  throw new Error('the browser did not open its DevTools port');
+}
+
+// Serve `serveRoot` (default: the repo), start the browser, and connect to its page, each on a free port the OS
+// picks. Page exceptions and console errors collect in `errors`. close() stops both processes and deletes the
+// profile.
+export async function startBrowser({ serveRoot = null, profilePrefix = 'ds-cdp-' } = {}) {
   const browserPath = BROWSERS.find((p) => existsSync(p));
   if (!browserPath) throw new Error('No Edge/Chrome found; set BROWSER to its path.');
-  const serveArgs = [join(root, 'scripts/serve.mjs'), '--port', String(port), ...(serveRoot ? ['--root', serveRoot] : [])];
-  const server = spawn(process.execPath, serveArgs, { stdio: 'ignore' });
+  const serveArgs = [join(root, 'scripts/serve.mjs'), '--port', '0', ...(serveRoot ? ['--root', serveRoot] : [])];
+  const server = spawn(process.execPath, serveArgs, { stdio: ['ignore', 'pipe', 'ignore'] });
   const profile = mkdtempSync(join(tmpdir(), profilePrefix));
-  const browser = spawn(browserPath, [
-    '--headless=new', `--remote-debugging-port=${debugPort}`, `--user-data-dir=${profile}`,
-    '--no-first-run', '--autoplay-policy=no-user-gesture-required',
-    ...(process.getuid?.() === 0 ? ['--no-sandbox'] : []), // Chromium refuses to sandbox as root (containers)
-    'about:blank',
-  ], { stdio: 'ignore' });
+  let browser = null;
+  let port;
 
   let ws;
   let seq = 0;
   const pending = new Map();
   const errors = [];
 
-  async function connect() {
+  async function connect(debugPort) {
     for (let i = 0; i < 150; i++) { // up to 30 s: a cold Edge start can be slow
       try {
         const targets = await (await fetch(`http://127.0.0.1:${debugPort}/json`)).json();
@@ -70,14 +94,21 @@ export async function startBrowser({ port, debugPort, serveRoot = null, profileP
 
   async function close() {
     ws?.close();
-    browser.kill();
+    browser?.kill();
     server.kill();
     await sleep(500);
     try { rmSync(profile, { recursive: true, force: true }); } catch { /* the browser may still hold files */ }
   }
 
   try {
-    await connect();
+    port = await serverPort(server);
+    browser = spawn(browserPath, [
+      '--headless=new', '--remote-debugging-port=0', `--user-data-dir=${profile}`,
+      '--no-first-run', '--autoplay-policy=no-user-gesture-required',
+      ...(process.getuid?.() === 0 ? ['--no-sandbox'] : []), // Chromium refuses to sandbox as root (containers)
+      'about:blank',
+    ], { stdio: 'ignore' });
+    await connect(await devtoolsPort(profile));
     await send('Page.enable');
     await send('Runtime.enable');
     await send('Page.bringToFront');
