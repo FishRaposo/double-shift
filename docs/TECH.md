@@ -4,7 +4,7 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-02 (a
 
 **At a glance**
 - **The one rule:** `src/rules.js` decides everything that matters; the screen only draws it (§2).
-- `npm start` to play, `npm test` (<!-- n:tests -->189<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
+- `npm start` to play, `npm test` (<!-- n:tests -->203<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
 - Add a level: grids in `src/levels.js` + a `SOLUTIONS` entry in `test/solutions.mjs` (§6; the full recipe is BUILD.md §2.1).
 - The tier-C mechanics (wet floor, day-walker, supervisor, offset layer) are built — §6.5 documents them.
 
@@ -51,14 +51,14 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-02 (a
 - `step()` clones the previous state (`structuredClone`), so states are immutable snapshots. That's what makes determinism tests trivial.
 
 ### 3.2 Order of operations inside `step()`
-1. **Shift** (new press sets a 80 ms buffer; try clean → nudge ≤4 px → keep buffering → reject). Validated against geometry *after* any due prank.
+1. **Shift** (new press sets a 80 ms buffer; try clean → nudge ≤4 px, against the destination's gravity first → keep buffering → reject). Validated against geometry *after* any due prank. A shift that turns gravity over (into or out of an Upside Down night) clears `rising`, and coyote time unless you're grounded after it.
 2. **Freak clock** advances by `dt` only if the player is on the night shift.
 3. **Horizontal** acceleration/deceleration (ground vs air values, turn-around boost).
-4. **Jump**: buffer (100 ms), coyote (80 ms, survives a shift), variable height (release while rising → `vy *= 0.45`).
-5. **Gravity**, clamp to max fall.
-6. **Move X then Y**, resolve against the active layer's tiles (with prank overrides). Recompute grounding with a 1 px probe.
-7. **Death checks**: hazard, freak contact (night only), fell below the level.
-8. **Shared objects**: checkpoints (store position, layer, prank state; a checkpoint saves in the shift you touched it in only if there's floor under its respawn point there, else in the other shift if that has floor, else not at all, so a respawn can never drop you into a pit forever), exit (sets `won`).
+4. **Jump**: buffer (100 ms), coyote (80 ms, survives a shift of the same gravity), variable height (release while rising → `vy *= 0.45`). From here on every vertical rule reads `sign = gravitySign(level, layer)`, taken after the shift: the jump is `vy = −sign·620`, rising means `sign·vy < 0`.
+5. **Gravity** `vy += sign·gravity·dt`, clamped to `sign·vy ≤ maxFall`.
+6. **Move X then Y**, resolve against the active layer's tiles (with prank overrides). Recompute grounding with a 1 px probe in the direction of gravity.
+7. **Death checks**: hazard, freak contact (on the freak's own shift), fell out of the level (below it; above it on a flipped layer).
+8. **Shared objects**: checkpoints (store position, layer, prank state; a checkpoint saves in the shift you touched it in only if `standableSpot` finds ground for its respawn point there under that shift's gravity, else in the other shift if that has ground, else not at all, so a respawn can never drop you into a pit forever), exit (sets `won`).
 
 Shift happens first so a shift and a jump on the same tick see the new world (GDD §13.7 case 10).
 
@@ -97,7 +97,7 @@ Shift happens first so a shift and a jump on the same tick see the new world (GD
 | `peek` | `id` | A peeker popped out (hidden last tick, out this tick) while you're on its shift; the boing |
 
 ### 3.5 Public API
-`TILE` (30), `DT`, `PARAMS`, `DAY`, `NIGHT`, `FREAK` ({w:20,h:22}), `SKIN_KINDS`, `parseLevel(def)`, `initState(level)`, `step(level, state, input)`, `NO_INPUT`, `tileAt(level, layer, tx, ty, overrides)`, `overlapsSolid(...)`, `overlapsHazard(...)`, `freakBoxes(level, state)`, `isSolidChar(ch)`, `supervisorFacing(f, t)`, `watchedClock(side, sup, t)`, `isEmbedded(level, state)`. Death events carry `cause`, `by` (freak kind) and `layer` (the shift you died in).
+`TILE` (30), `DT`, `PARAMS`, `DAY`, `NIGHT`, `FREAK` ({w:20,h:22}), `SKIN_KINDS`, `parseLevel(def)`, `initState(level)`, `step(level, state, input)`, `NO_INPUT`, `tileAt(level, layer, tx, ty, overrides)` (outside the grid: side walls, a solid ceiling and an open floor, the other way up on a flipped layer), `overlapsSolid(...)`, `overlapsHazard(...)` (the hazard band is on the floor side of the tile: the bottom 45 %, or the top 45 % on a flipped layer), `freakBoxes(level, state)` (each box has `hang`: true for a freak of a flipped shift, which hangs from the solid above its cell), `isSolidChar(ch)`, `supervisorFacing(f, t)`, `watchedClock(side, sup, t)`, `isEmbedded(level, state)`, `gravitySign(level, layer)` (−1 only on the night of an `upsideDown` level), `spawnPoint(tx, ty, sign = 1)` (standing on the cell's floor, or hanging under the cell above), `standableSpot(level, layer, tx, ty, ov)` (that spot when it's free and grounded under the layer's gravity, else null; checkpoints and the fairness test use it). Death events carry `cause`, `by` (freak kind) and `layer` (the shift you died in).
 
 Input frame: `{ left, right, jumpHeld, jumpPressed, shiftPressed }`.
 
@@ -185,7 +185,7 @@ The four tier-C mechanics from [CONTENT.md](CONTENT.md) §3 — all built, teste
 - **Tests:** a generated night grid equals a hand-written equivalent; `nightPatch` applies after the offset; shifting on the ground in an offset level is refused and leaves the player unchanged; shifting at the apex of a jump lands on the night copy (scripted with the real jump).
 - **Drawing:** nothing new beyond the floor-number signs (ART.md §6.1).
 
-#### Upside Down (SYS-16, act 5 and the finale rework) *(planned, cut Nov 18)*
+#### Upside Down (SYS-16, act 5 and the finale rework) *(rules built Nov 3; drawing and levels planned, cut Nov 18)*
 - **Format:** `upsideDown: true` on a level: `parseLevel` generates `night[y] = day[H − 1 − y]` (S, E, C stay shared and unmoved), then applies `nightPatch`. It can't be combined with `night` or `offset` (validation throws, like today's night/offset check).
 - **Gravity:** a per-shift sign `g = level.upsideDown && s.layer === NIGHT ? −1 : 1`. Gravity, jump velocity, the variable-jump cut (`rising` means moving against gravity), max fall, coyote and jump buffer all use it. Grounding probes 1 px in the gravity direction (the tile above the head at night). The horizontal step is unchanged.
 - **Shift:** unchanged transaction (S-08: clean, ≤ 4 px nudge, 80 ms buffer, reject), checked against the flipped geometry. Velocity is kept as-is in screen space (S-02), so a rise becomes a fall the other way; that is the mechanic.
@@ -198,14 +198,14 @@ The four tier-C mechanics from [CONTENT.md](CONTENT.md) §3 — all built, teste
   - **Coyote time:** a shift that changes the gravity sign clears coyote time (unless you're grounded after it) and `rising`: no mid-air jump right after a flip. Same-sign shifts are unchanged.
   - **Hazards:** a `^` cell's hitbox is the top 45 % of the tile on a flipped layer.
   - **Authoring:** night pranks, tells, freaks and props use night screen coordinates. Every prop in an upside-down level names its `layer`; props take an optional `flip: true`.
-- **Tests (first):** generated grid equals a hand-flipped one; gravity sign per layer; jumping and landing on the ceiling at night; a mid-air shift reverses the fall and keeps speed; a grounded shift into embedded flipped geometry is refused; the nudge direction; coyote time across a flip; falling out the top; ceiling checkpoint standable and the respawn grounded; hanging freak boxes; determinism and the no-embedding fuzz on a flipped level. The fairness test and `npm run audit` cover the levels, and the audit output of every existing level must not change.
+- **Tests** (written first, all passing since Nov 3: the `upside down:` tests in `test/rules.test.mjs`; the existing levels' audit output is byte-identical before and after): generated grid equals a hand-flipped one; gravity sign per layer; jumping and landing on the ceiling at night; a mid-air shift reverses the fall and keeps speed; a grounded shift into embedded flipped geometry is refused; the nudge direction; coyote time across a flip; falling out the top; ceiling checkpoint standable and the respawn grounded; hanging freak boxes; determinism and the no-embedding fuzz on a flipped level. The fairness test and `npm run audit` cover the levels, and the audit output of every existing level must not change.
 - **Drawing:** the worker sprite flips vertically when gravity is up (`spriteRect` keeps the hitbox in place); freak sprites and outlines flip on the night shift; lasers, hazard echoes, the checkpoint and the exit mirror on a flipped layer; tells hang under solids; the HUD, notes and signs stay upright.
 
 ## 7. Testing
 
 | Command | What it covers |
 |---|---|
-| `npm test` | <!-- n:tests -->189<!-- /n --> tests: GDD §13.7 cases 1–10, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
+| `npm test` | <!-- n:tests -->203<!-- /n --> tests: GDD §13.7 cases 1–10, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, Upside Down rules (flip, gravity sign, hanging, jump and cut, nudge order, coyote across a flip, hazard band, grid edges, checkpoints, fuzz), every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
 | `npm run check` | Every module parses; every level validates |
 | `npm run audit` | Per level: the slack of every required shift and jump (fails under the act floor), input-lag tolerance 0–150 ms, and a random search for wins below par or without shifting (`scripts/audit-levels.mjs`). |
 | `npm run media` | Real browser (headless Edge/Chrome, no dependencies): plays level 1 with key presses, fails on page errors, a wrong outcome, audio clipping or a slow frame; saves the cover, screenshots and gallery. |

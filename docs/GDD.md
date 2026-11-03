@@ -1425,7 +1425,7 @@ Special cases to test:
 9. Shift immediately before landing.
 10. Shift on the same update as a jump input.
 
-Upside Down levels add (decided 2026-11-03; every rule is the day rule mirrored):
+Upside Down levels add (decided 2026-11-03; every rule is the day rule mirrored; each case is an `upside down:` test in `test/rules.test.mjs` since Nov 3):
 
 11. Shift into the flipped night: you fall up and land hanging under the solid above.
 12. Jump on a flipped layer: the jump goes down the screen, and releasing early cuts it.

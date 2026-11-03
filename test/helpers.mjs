@@ -42,6 +42,7 @@ export function play(lvl, policy, maxFrames = 120 * 60) {
 }
 
 export const tx = (s) => s.player.x / TILE;
+export const ty = (s) => s.player.y / TILE;
 
 // ---------- fairness: how much timing slack each required input has ----------
 

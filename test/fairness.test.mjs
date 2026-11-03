@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { LEVELS } from '../src/levels.js';
-import { freakBoxes, initState, TILE, PARAMS } from '../src/rules.js';
+import { freakBoxes, initState, standableSpot, TILE, PARAMS, DAY, NIGHT } from '../src/rules.js';
 import { inputWindows } from './helpers.mjs';
 import { SOLUTIONS, L } from './solutions.mjs';
 
@@ -31,11 +31,13 @@ function patrolBoxes(lvl) {
 for (const def of LEVELS) {
   test(`${def.name}: no spawn or checkpoint lies inside a freak's patrol`, () => {
     const lvl = L[def.id];
-    const spots = [lvl.spawn, ...lvl.checkpoints].map(({ tx, ty }) => ({
-      x: tx * TILE + (TILE - PARAMS.playerW) / 2,
-      y: (ty + 1) * TILE - PARAMS.playerH,
-      at: `${tx},${ty}`,
-    }));
+    // every place you can respawn: the spawn and each checkpoint, standing (or hanging) wherever that shift's
+    // gravity gives it ground, the same standableSpot the rules save with
+    const spots = [lvl.spawn, ...lvl.checkpoints].flatMap(({ tx, ty }) => [DAY, NIGHT]
+      .map((layer) => standableSpot(lvl, layer, tx, ty))
+      .filter(Boolean)
+      .map((pos) => ({ ...pos, at: `${tx},${ty}` })));
+    assert.ok(spots.length > 0);
     const boxes = patrolBoxes(lvl);
     for (const p of spots) {
       const hit = boxes.find((b) => p.x < b.x + b.w && p.x + PARAMS.playerW > b.x && p.y < b.y + b.h && p.y + PARAMS.playerH > b.y);

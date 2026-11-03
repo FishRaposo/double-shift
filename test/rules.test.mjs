@@ -757,3 +757,223 @@ test('parseLevel rejects definitions that would misbehave', () => {
   assert.throws(() => level(day, night, { freaks: [{ kind: 'peeker', tx: 1, ty: 0, period: 0 }] }), /period/);
   assert.throws(() => level(day, night, { freaks: [{ kind: 'peeker', tx: 1, ty: 0, period: 1, duty: 0 }] }), /duty/);
 });
+
+// ---------- upside down (TECH.md §6.5, GDD §13.7 cases 11–15) ----------
+// The night is the day map turned over, with gravity turned over too: every rule is the day rule mirrored.
+// Namespace import, so a missing export fails these tests one by one instead of the whole file.
+import * as R from '../src/rules.js';
+import { ty } from './helpers.mjs';
+
+const UP_DAY = [
+  '........',
+  '........',
+  '........',
+  '........',
+  '........',
+  '........',
+  'S......E',
+  '###.####',
+];
+const upside = (day = UP_DAY, extra = {}) => level(day, undefined, { upsideDown: true, ...extra });
+const nightAt = (lvl, x, y, player = {}) => {
+  const s = initState(lvl);
+  s.layer = NIGHT;
+  Object.assign(s.player, { x, y, vx: 0, vy: 0, grounded: false, coyote: 0, rising: false }, player);
+  return s;
+};
+
+test('upside down: the night is the day grid flipped; S, E and C are not copied; nightPatch applies after the flip', () => {
+  const day = ['S..C', '.#..', '#^#E', '####'];
+  const lvl = level(day, undefined, { upsideDown: true, nightPatch: [{ x0: 1, y0: 0, ch: '~' }] });
+  assert.deepEqual(lvl.layers[NIGHT].map((r) => r.join('')), ['#~##', '#^#.', '.#..', '....']);
+  assert.equal(lvl.upsideDown, true);
+  assert.equal(lvl.nightGenerated, true);
+  assert.deepEqual([lvl.spawn, lvl.exit], [{ tx: 0, ty: 0 }, { tx: 3, ty: 2 }], 'S and E stay where the day put them');
+});
+
+test('upside down: cannot be combined with a night grid or an offset', () => {
+  assert.throws(() => level(UP_DAY, UP_DAY, { upsideDown: true }), /upside down/);
+  assert.throws(() => level(UP_DAY, undefined, { upsideDown: true, offset: { dx: 1, dy: 0 } }), /upside down/);
+});
+
+test('upside down: the gravity sign is -1 only on the flipped night', () => {
+  const lvl = upside();
+  assert.equal(R.gravitySign(lvl, DAY), 1);
+  assert.equal(R.gravitySign(lvl, NIGHT), -1);
+  assert.equal(R.gravitySign(twin, NIGHT), 1, 'an ordinary level');
+});
+
+test('upside down: at night you fall up and land hanging (grounded, a land event)', () => {
+  const lvl = upside();
+  let s = initState(lvl); // standing on the day floor at row 6
+  s = step(lvl, s, SHIFT);
+  assert.equal(s.layer, NIGHT);
+  const events = [];
+  for (let i = 0; i < 120 && !s.player.grounded; i++) { s = step(lvl, s); events.push(...s.events); }
+  assert.equal(s.player.y, TILE, 'hanging under the night ceiling (row 0), head at the top of row 1');
+  assert.equal(s.player.grounded, true);
+  assert.equal(s.player.vy, 0);
+  assert.ok(events.some((e) => e.type === 'land'));
+  assert.equal(isEmbedded(lvl, s), false);
+});
+
+test('upside down: a night jump goes down the screen, and releasing jump cuts it', () => {
+  const lvl = upside();
+  const hang = () => nightAt(lvl, 1 * TILE + 6, TILE, { grounded: true });
+  const deepest = (holdTicks) => {
+    let s = step(lvl, hang(), { ...NO_INPUT, jumpPressed: true, jumpHeld: true });
+    assert.ok(s.player.vy > 0, 'the jump pushes away from the ceiling, down the screen');
+    let max = s.player.y;
+    for (let i = 0; i < 120 && !(s.player.grounded && i > 2); i++) {
+      s = step(lvl, s, { ...NO_INPUT, jumpHeld: i < holdTicks });
+      max = Math.max(max, s.player.y);
+    }
+    return max - TILE;
+  };
+  const full = deepest(200);
+  const tap = deepest(1);
+  assert.ok(full > 90 && full < 100, `a full jump reaches about 96 px: ${full}`);
+  assert.ok(tap < full * 0.5, `a tap is a short hop: ${tap} vs ${full}`);
+});
+
+test('upside down: a mid-air shift keeps vx and vy and reverses the fall', () => {
+  const lvl = upside();
+  let s = initState(lvl);
+  Object.assign(s.player, { x: 3 * TILE, y: 3 * TILE, vx: PARAMS.maxSpeed, vy: 300, grounded: false, coyote: 0 });
+  s = step(lvl, s, { ...RIGHT, shiftPressed: true });
+  assert.equal(s.layer, NIGHT);
+  assert.equal(s.player.vx, PARAMS.maxSpeed, 'horizontal speed kept');
+  assert.ok(Math.abs(s.player.vy - (300 - PARAMS.gravity * DT)) < 1e-9, 'the fall kept, now slowed by gravity pulling up');
+  for (let i = 0; i < 30; i++) s = step(lvl, s, RIGHT);
+  assert.ok(s.player.vy < 0, 'the fall reversed: now moving up the screen');
+});
+
+test('upside down: a grounded shift into the mirrored floor is refused and changes nothing', () => {
+  const day = ['........', '########', ...UP_DAY.slice(2)]; // a day ceiling at row 1 is the night floor at row 6
+  const lvl = upside(day);
+  const s0 = initState(lvl);
+  let s = step(lvl, s0, SHIFT);
+  assert.equal(s.layer, DAY);
+  assert.deepEqual([s.player.x, s.player.y, s.shifts], [s0.player.x, s0.player.y, 0]);
+  const events = [];
+  for (let i = 0; i < 12; i++) { s = step(lvl, s); events.push(...s.events); }
+  assert.ok(events.some((e) => e.type === 'shiftFail'));
+});
+
+test('upside down: the nudge tries against the new gravity first (down the screen at night)', () => {
+  // night has a solid at (2,2); the player overlaps its bottom-left corner by 2 px both ways, so moving down
+  // or left by 2 px would both clear it. Night gravity pulls up, so the nudge goes down first.
+  const day = ['........', '........', '........', '........', '........', '..#.....', 'S......E', '########'];
+  const lvl = upside(day);
+  let s = initState(lvl);
+  Object.assign(s.player, { x: 2 * TILE - PARAMS.playerW + 2, y: 3 * TILE - 2, vx: -100, vy: 0, facing: -1, grounded: false, coyote: 0 });
+  s = step(lvl, s, SHIFT);
+  assert.equal(s.layer, NIGHT);
+  assert.ok(s.events.some((e) => e.type === 'shift' && e.nudged));
+  assert.ok(s.player.x > 2 * TILE - PARAMS.playerW + 1, `not nudged sideways: x ${s.player.x}`);
+  assert.ok(s.player.y >= 3 * TILE - 1e-9, `nudged down, clear of the solid: y ${s.player.y}`);
+});
+
+test('upside down: a flipping shift clears coyote time; a same-sign shift keeps it', () => {
+  const jumpShift = { ...NO_INPUT, shiftPressed: true, jumpPressed: true, jumpHeld: true };
+  const lvl = upside();
+  let s = initState(lvl);
+  Object.assign(s.player, { x: 1 * TILE + 6, y: 3 * TILE, vy: 50, grounded: false, coyote: 0.05 });
+  s = step(lvl, s, jumpShift);
+  assert.equal(s.layer, NIGHT);
+  assert.ok(!s.events.some((e) => e.type === 'jump'), 'no mid-air jump right after a flip');
+  assert.equal(s.player.coyote, 0);
+  assert.equal(s.player.rising, false);
+  // the same thing in an ordinary level: coyote carries across the shift
+  let o = initState(twin);
+  Object.assign(o.player, { x: 1 * TILE + 6, y: 3 * TILE, vy: 50, grounded: false, coyote: 0.05 });
+  o = step(twin, o, jumpShift);
+  assert.ok(o.events.some((e) => e.type === 'jump'));
+});
+
+test('upside down: night hazards hit in the top 45% of the tile', () => {
+  const day = ['........', '........', '........', '........', '........', '........', 'S..^...E', '########'];
+  const lvl = upside(day); // the day spike at (3,6) hangs at (3,1) at night
+  const x = 3 * TILE + 6;
+  const band = TILE * PARAMS.hazardHeight;
+  assert.equal(R.overlapsHazard(lvl, NIGHT, x, TILE), true, 'hanging into it');
+  assert.equal(R.overlapsHazard(lvl, NIGHT, x, TILE + band - 1), true);
+  assert.equal(R.overlapsHazard(lvl, NIGHT, x, TILE + band + 0.5), false, 'below the band');
+  assert.equal(R.overlapsHazard(lvl, DAY, x, 7 * TILE - PARAMS.playerH), true, 'the day spike still hits from below');
+  let s = nightAt(lvl, 2 * TILE + 6, TILE, { grounded: true });
+  for (let i = 0; i < 40 && s.deaths === 0; i++) s = step(lvl, s, RIGHT);
+  assert.equal(s.deaths, 1, 'walking along the ceiling into the hanging spike');
+});
+
+test('upside down: falling out the top at night is a fall death, and the respawn is clean', () => {
+  const lvl = upside(); // the day pit at column 3 is a hole in the night ceiling
+  let s = nightAt(lvl, 3 * TILE + 6, 3 * TILE);
+  const events = [];
+  for (let i = 0; i < 240 && s.deaths === 0; i++) { s = step(lvl, s); events.push(...s.events); }
+  assert.ok(events.some((e) => e.type === 'death' && e.cause === 'fall'));
+  assert.equal(s.layer, DAY);
+  assert.deepEqual([s.player.x, s.player.y], [initState(lvl).player.x, initState(lvl).player.y]);
+  assert.equal(s.player.grounded, true);
+  assert.equal(isEmbedded(lvl, s), false);
+  assert.equal(R.tileAt(lvl, NIGHT, 0, -1), '.', 'above the flipped night is open');
+  assert.equal(R.tileAt(lvl, NIGHT, 0, lvl.h), '#', 'below it is solid');
+  assert.deepEqual([R.tileAt(lvl, DAY, 0, -1), R.tileAt(lvl, DAY, 0, lvl.h)], ['#', '.'], 'the day is unchanged');
+});
+
+test('upside down: a night checkpoint saves hanging; the respawn is grounded and not embedded', () => {
+  const day = ['........', '........', '....#...', '........', '........', '........', 'S...C..E', '########'];
+  const lvl = upside(day); // at night (4,5) is solid: the checkpoint cell (4,6) has a ceiling to hang from
+  assert.deepEqual(R.standableSpot(lvl, NIGHT, 4, 6), { x: 4 * TILE + (TILE - PARAMS.playerW) / 2, y: 6 * TILE });
+  assert.deepEqual(R.standableSpot(lvl, DAY, 4, 6), R.spawnPoint(4, 6));
+  assert.equal(R.standableSpot(lvl, NIGHT, 2, 6), null, 'nothing to hang from');
+  let s = nightAt(lvl, 4 * TILE + 6, 6 * TILE, { grounded: true });
+  s = step(lvl, s);
+  assert.equal(s.checkpoint.layer, NIGHT);
+  assert.equal(s.checkpoint.y, 6 * TILE);
+  s.player.y = -200; // out the top
+  s = step(lvl, s);
+  assert.equal(s.deaths, 1);
+  assert.equal(s.layer, NIGHT);
+  assert.equal(ty(s), 6);
+  assert.equal(s.player.grounded, true);
+  assert.equal(isEmbedded(lvl, s), false);
+});
+
+test('upside down: night freaks hang and freeze by day; the day-walker stands', () => {
+  const lvl = upside(UP_DAY, {
+    freaks: [{ kind: 'lurker', tx: 2, ty: 1, range: 2, speed: 40 }, { kind: 'daywalker', tx: 5, ty: 6, range: 1, speed: 40 }],
+  });
+  let s = initState(lvl);
+  const [lurker, walker] = freakBoxes(lvl, s);
+  assert.deepEqual([lurker.y, lurker.hang], [TILE, true], 'hangs under the night ceiling');
+  assert.deepEqual([walker.y, !!walker.hang], [7 * TILE - 22, false]);
+  s = stepN(lvl, s, 60);
+  assert.equal(freakBoxes(lvl, s)[0].x, lurker.x, 'frozen by day');
+});
+
+test('upside down: determinism, and a valid shift never leaves the player inside solid geometry (fuzz)', () => {
+  const day = [
+    '..........',
+    '...##.....',
+    '.......#..',
+    '..#.......',
+    '.....##...',
+    '.#.....#..',
+    '.S..#...E.',
+    '###.######',
+  ];
+  const lvl = level(day, undefined, { upsideDown: true });
+  const run = () => {
+    let seed = 11;
+    const rnd = () => ((seed = (seed * 1103515245 + 12345) % 2147483648) / 2147483648);
+    let s = initState(lvl);
+    for (let i = 0; i < 6000; i++) {
+      const input = { left: rnd() < 0.3, right: rnd() < 0.5, jumpHeld: rnd() < 0.5, jumpPressed: rnd() < 0.05, shiftPressed: rnd() < 0.08 };
+      s = step(lvl, s, input);
+      if (s.won) s = initState(lvl);
+      assert.equal(isEmbedded(lvl, s), false, `embedded at tick ${i}`);
+    }
+    return s;
+  };
+  assert.deepEqual(run(), run());
+});

@@ -4,7 +4,7 @@
 // - a random search for wins with fewer clock-ins than par, or with no shifting at all
 // Usage: npm run audit [-- level-id]
 import { LEVELS } from '../src/levels.js';
-import { step, initState } from '../src/rules.js';
+import { step, initState, gravitySign } from '../src/rules.js';
 import { inputWindows, recordInputs } from '../test/helpers.mjs';
 import { SOLUTIONS, L } from '../test/solutions.mjs';
 
@@ -38,7 +38,7 @@ function randomSearch(lvl, par, tries = 2000) {
     const jumps = Array.from({ length: Math.floor(rnd() * 6) }, () => rnd() * 30);
     const policy = (s) => {
       const x = s.player.x / 30;
-      return { right: true, shift: shifts.some((a) => x > a && x < a + 0.35), jump: s.player.grounded ? jumps.some((a) => x > a && x < a + 0.4) : s.player.vy < 0 };
+      return { right: true, shift: shifts.some((a) => x > a && x < a + 0.35), jump: s.player.grounded ? jumps.some((a) => x > a && x < a + 0.4) : gravitySign(lvl, s.layer) * s.player.vy < 0 }; // hold while rising against gravity
     };
     let s = initState(lvl);
     let pj = false;
