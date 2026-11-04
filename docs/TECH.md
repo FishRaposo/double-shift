@@ -4,7 +4,7 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-02 (a
 
 **At a glance**
 - **The one rule:** `src/rules.js` decides everything that matters; the screen only draws it (§2).
-- `npm start` to play, `npm test` (<!-- n:tests -->350<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
+- `npm start` to play, `npm test` (<!-- n:tests -->351<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
 - Add a level: grids in `src/levels.js` + a `SOLUTIONS` entry in `test/solutions.mjs` (§6; the full recipe is BUILD.md §2.1).
 - The tier-C mechanics (wet floor, day-walker, supervisor, offset layer) are built — §6.5 documents them.
 
@@ -40,7 +40,7 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-02 (a
 | `test/helpers.mjs` | `level()`, `stepN()`, `place()`, `play(level, policy)`; `inputsFrom(policy)` turns a policy into input frames for `play()`, the audit and the demo GIF | No |
 | `scripts/serve.mjs` | Zero-dependency local server, no caching (`npm start` opens the browser; `npm run serve` doesn't). `--port 0` takes any free port and announces it. `play.bat` wraps it for double-click on Windows. | — |
 | `scripts/check.mjs` | Syntax-check modules, validate levels | — |
-| `scripts/counts.mjs` | `npm run counts`: every `<!-- n:KEY -->` count in the docs matches the code (`-- --write` rewrites them) | — |
+| `scripts/counts.mjs` | `npm run counts`: every `<!-- n:KEY -->` count in the docs matches the code (`-- --write` rewrites them; `-- --tap FILE` reads the test count from a saved TAP run, which is how CI runs the suite only once) | — |
 | `scripts/cdp.mjs` | Headless Edge/Chrome over the DevTools protocol (no dependencies): serves the game and starts the browser on a throwaway profile, each on a free port the OS picks (so a stale server can't answer in their place); `evaluate`/`open`; collects page errors. Shared by `media.mjs` and `gif.mjs`. | — |
 | `scripts/media.mjs` | `npm run media`: saves the cover, screenshots and gallery to `media/`; fails if level 1 can't be cleared with real keys, the page logs an error, the audio clips, or a frame takes > 8 ms to draw. | — |
 | `scripts/gif.mjs` | `npm run gif -- <id>`: a level's scripted run (`test/solutions.mjs`) played by the game on a fixed clock (`game.advance`, `game.render`; requestAnimationFrame off) → `media/demo-<id>.gif`, the same bytes every time. Checks the page's run against the tests' and decodes the file back in Chromium. | — |
@@ -212,7 +212,7 @@ The four tier-C mechanics from [CONTENT.md](CONTENT.md) §3 — all built, teste
 
 | Command | What it covers |
 |---|---|
-| `npm test` | <!-- n:tests -->350<!-- /n --> tests: GDD §13.7 cases 1–15, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, Upside Down rules (flip, gravity sign, hanging, jump and cut, nudge order, coyote across a flip, hazard band, grid edges, checkpoints, fuzz), every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
+| `npm test` | <!-- n:tests -->351<!-- /n --> tests: GDD §13.7 cases 1–15, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, Upside Down rules (flip, gravity sign, hanging, jump and cut, nudge order, coyote across a flip, hazard band, grid edges, checkpoints, fuzz), every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
 | `npm run check` | Every module parses; every level validates |
 | `npm run audit` | Per level: the slack of every required shift and jump (fails under the act floor), input-lag tolerance 0–150 ms, and a random search for wins below par or without shifting (`scripts/audit-levels.mjs`). |
 | `npm run media` | Real browser (headless Edge/Chrome, no dependencies): plays level 1 with key presses, fails on page errors, a wrong outcome, audio clipping or a slow frame; saves the cover, screenshots and gallery. |
@@ -237,7 +237,9 @@ jobs:
       - uses: actions/setup-node@v5
         with: { node-version: 22 }
       - run: npm run check
-      - run: npm test
+      # the suite runs once: its TAP output is kept, and the doc counts read the test count from it
+      - run: set -o pipefail; node --test --test-reporter=tap test/*.test.mjs | tee tap.txt
+      - run: npm run counts -- --tap tap.txt
 ```
 
 GitHub Pages serves `main` (root) at <https://fishraposo.github.io/double-shift/>; `.nojekyll` disables Jekyll processing. Every push to `main` updates the public build, so anything pushed must be playable.

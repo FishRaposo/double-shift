@@ -306,7 +306,7 @@ The steps:
 ### T17 · Tooling: levels by id, cloud-ready media, doc counts *(PR 1)*
 - **Levels by id:** `levelIndex(defs, param)` in `src/layout.js` (an id → its index; an integer N → N−1, clamped; anything else → 0). `?level=offset` and `?level=11` both work. `scripts/media.mjs` addresses every shot by id, so inserting a level never breaks a capture.
 - **Media flags:** `--review a,b` writes a day and a night PNG per level into `media/review/` (night is set directly, for review only); `--gray` and `--cvd` add grayscale and color-blind variants (deuteranopia, protanopia, tritanopia); `--root <dir>` smoke-tests an unzipped build. It finds `/opt/pw-browsers/chromium` and adds `--no-sandbox` when run as root (cloud sessions).
-- **Counts:** numbers that track the code are wrapped `<!-- n:KEY -->N<!-- /n -->` (keys `tests`, `levels`, `lines:src/<file>`). `npm run counts` checks them (it runs the suite) and `npm run counts -- --write` rewrites them; CI runs the check. Dated history sentences stay unmarked.
+- **Counts:** numbers that track the code are wrapped `<!-- n:KEY -->N<!-- /n -->` (keys `tests`, `levels`, `lines:src/<file>`). `npm run counts` checks them (it runs the suite, or reads a saved run with `--tap FILE`, as CI does) and `npm run counts -- --write` rewrites them; CI runs the check. Dated history sentences stay unmarked.
 
 ### T18 · Shell for 6 acts and 21 levels *(PR 1)*
 - **Pure layout:** `src/layout.js` holds the level select and end-screen math, tested in `test/layout.test.mjs`: everything inside 960×(60…510), nothing overlapping, every level name wrapped to ≤ 2 lines inside its card.

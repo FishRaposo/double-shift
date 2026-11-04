@@ -3,7 +3,7 @@
 ## Commands and verification
 
 - Use Node 22+; there are no package dependencies, install step, or build step. Run commands from the repo root.
-- CI runs `npm run check`, then `npm test`, then `npm run counts` (every `<!-- n:KEY -->N<!-- /n -->` count in the docs must match the code; `npm run counts -- --write` rewrites them, so run it before committing). `check` only syntax-checks `src/*.js` and parses all levels; it does not replace tests or browser verification. There is no lint/typecheck script.
+- CI runs `npm run check`, then the suite once with the TAP reporter, then `npm run counts -- --tap tap.txt`, which reads the test count from that run instead of running the suite again (every `<!-- n:KEY -->N<!-- /n -->` count in the docs must match the code; `npm run counts -- --write` rewrites them, so run it before committing). `check` only syntax-checks `src/*.js` and parses all levels; it does not replace tests or browser verification. There is no lint/typecheck script.
 - On this Windows PowerShell setup, `npm.ps1` is blocked by execution policy: use `npm.cmd` instead of `npm` (e.g. `npm.cmd test`).
 - Focused tests: `node --test test/rules.test.mjs`; filter with `node --test --test-name-pattern="peeker" test/rules.test.mjs` (options precede the file).
 - `npm run serve` starts the uncached server; `npm start` also opens the browser. Default port is 8080, but it tries subsequent ports if busy: use the printed URL. Override with `npm run serve -- --port 8090`. Do not open `index.html` via `file://` (ES modules).

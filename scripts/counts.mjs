@@ -7,6 +7,8 @@
 //
 // Usage: npm run counts            check: exits 1 listing every marker that doesn't match
 //        npm run counts -- --write  rewrite every marker to the current value
+//        npm run counts -- --tap FILE   take the test count from a saved TAP run instead of running the
+//                                       suite again (CI runs it once: node --test --test-reporter=tap > FILE)
 // Dated history sentences ("written against the build at 12 levels") are left unmarked on purpose, and a marker
 // written in inline code (`<!-- n:… -->`) is an example of the syntax, not a marker.
 import { execFileSync } from 'node:child_process';
@@ -40,31 +42,51 @@ export function syncMarkers(text, valueOf) {
   return { text: out + text.slice(last), markers, problems };
 }
 
+// The test count from a TAP run's summary; a run with failures is refused, so a red suite never sets the count.
+export function testsFromTap(tap) {
+  const m = tap.match(/^# tests (\d+)$/m);
+  if (!m) throw new Error('no "# tests N" line in the TAP output');
+  const fail = tap.match(/^# fail (\d+)$/m);
+  if (fail && Number(fail[1]) > 0) {
+    const failures = tap.split('\n').filter((l) => /^\s*not ok/.test(l));
+    throw new Error(`the test suite fails; fix it before syncing the counts\n  ${failures.join('\n  ')}`);
+  }
+  return Number(m[1]);
+}
+
 // ---------- CLI ----------
 
 const root = resolve(import.meta.dirname, '..');
 
-function countTests() {
-  const files = readdirSync(join(root, 'test')).filter((f) => f.endsWith('.test.mjs')).map((f) => `test/${f}`);
+function countTests(tapFile) {
+  let tap;
+  if (tapFile) tap = readFileSync(tapFile, 'utf8');
+  else {
+    const files = readdirSync(join(root, 'test')).filter((f) => f.endsWith('.test.mjs')).map((f) => `test/${f}`);
+    try {
+      tap = execFileSync(process.execPath, ['--test', '--test-reporter=tap', ...files], { cwd: root, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
+    } catch (e) {
+      tap = String(e.stdout ?? '') || e.message; // a failing run exits non-zero; its TAP still says why
+    }
+  }
   try {
-    const out = execFileSync(process.execPath, ['--test', '--test-reporter=tap', ...files], { cwd: root, encoding: 'utf8', maxBuffer: 64 * 1024 * 1024 });
-    const m = out.match(/^# tests (\d+)$/m);
-    if (!m) throw new Error('no "# tests N" line in the TAP output');
-    return Number(m[1]);
+    return testsFromTap(tap);
   } catch (e) {
-    const failures = String(e.stdout ?? '').split('\n').filter((l) => /^\s*not ok|^# (pass|fail)/.test(l));
-    console.error(`counts: the test suite fails; fix it before syncing the counts\n  ${failures.join('\n  ') || e.message}`);
+    console.error(`counts: ${e.message}`);
     process.exit(1);
   }
 }
 
 async function main() {
   const write = process.argv.includes('--write');
+  const tapAt = process.argv.indexOf('--tap');
+  const tapFile = tapAt >= 0 ? process.argv[tapAt + 1] : null;
+  if (tapAt >= 0 && !tapFile) { console.error('--tap needs a file: npm run counts -- --tap tap.txt'); process.exit(2); }
   const { LEVELS } = await import('../src/levels.js');
   const cache = {};
   const valueOf = (key) => {
     if (key in cache) return cache[key];
-    if (key === 'tests') cache[key] = countTests();
+    if (key === 'tests') cache[key] = countTests(tapFile);
     else if (key === 'levels') cache[key] = LEVELS.length;
     else if (key.startsWith('lines:')) {
       try { cache[key] = (readFileSync(join(root, key.slice(6)), 'utf8').match(/\n/g) ?? []).length; } catch { cache[key] = undefined; }

@@ -4,3 +4,4 @@ media/*.png
 media/*.gif
 media/review/
 .DS_Store
+tap.txt
