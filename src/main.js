@@ -25,7 +25,13 @@ const A = ART;
 const canvas = document.getElementById('game');
 const g = canvas.getContext('2d');
 g.imageSmoothingEnabled = false;
-const input = createInput(() => settings.binds()); // the player's key bindings (src/keys.js)
+const input = createInput(() => settings.binds());
+// The player's keyboard layout, where the browser shares it (Chromium; an embed may refuse), so key labels name what
+// the caps print: KeyQ reads 'A' on AZERTY. Until it answers, or if it never does, labels use the QWERTY names.
+let keyLayout = null;
+try {
+  navigator.keyboard?.getLayoutMap?.().then((m) => { keyLayout = m; }, () => {});
+} catch { /* not allowed here */ } // the player's key bindings (src/keys.js)
 const NIGHT_PAL = SPRITES.worker.nightPalette;
 const levels = LEVELS.map(parseLevel);
 const storage = (() => { try { return localStorage; } catch { return null; } })();
@@ -688,7 +694,7 @@ function drawHud(lvl, s, layer) {
   const note = LEVELS[game.index].note;
   if (game.levelTime < 5 && note) drawNoteStrip(note);
   if (game.index === 0 && s.shifts === 0) {
-    hud(`Press ${keysText(settings.binds().shift)} to change shifts`, W / 2, 140, layer, { align: 'center', scale: 3 });
+    hud(`Press ${keysText(settings.binds().shift, keyLayout)} to change shifts`, W / 2, 140, layer, { align: 'center', scale: 3 });
     hud('Dashed outlines show the other shift', W / 2, 172, layer, { align: 'center', color: pal.hudSoft });
   }
 }
@@ -774,8 +780,8 @@ function drawTitle() {
   drawPanel(g, W / 2 - 270, 250, 540, 176, false);
   drawText(g, 'One building. Two shifts. One worker.', W / 2, 270, { scale: 2, color: '#ffffff', align: 'center' });
   const b = settings.binds(); // the current bindings (SETTINGS > CONTROLS)
-  drawText(g, `Move  ${keysShort(b.left)}  ${keysShort(b.right)}      Jump  ${keysShort(b.jump)}`, W / 2, 310, { scale: 2, color: '#d9f6ff', align: 'center' });
-  drawText(g, `Change shift  ${keysText(b.shift)}      Restart  R`, W / 2, 334, { scale: 2, color: '#d9f6ff', align: 'center' });
+  drawText(g, `Move  ${keysShort(b.left, keyLayout)}  ${keysShort(b.right, keyLayout)}      Jump  ${keysShort(b.jump, keyLayout)}`, W / 2, 310, { scale: 2, color: '#d9f6ff', align: 'center' });
+  drawText(g, `Change shift  ${keysText(b.shift, keyLayout)}      Restart  R`, W / 2, 334, { scale: 2, color: '#d9f6ff', align: 'center' });
   drawText(g, 'Gamepad: stick move · A jump · B, X or RB shift · Start pause · X levels · Y settings', W / 2, 354, { scale: 1, color: '#9fd8e6', align: 'center' });
   const blink = Math.floor(game.clock * 2) % 2 === 0;
   drawText(g, 'Click or press SPACE to clock in', W / 2, 380, { scale: 2, color: blink ? '#ffec5a' : '#ffffff', align: 'center' });
@@ -787,7 +793,7 @@ function drawTitle() {
   drawSign(g, W / 2, H - 38, 'WE PRES SHIFT 5 TIMES. FOR FUN.', 'note', 1);
   if (b.shift.some((c) => c.startsWith('Shift'))) { // only while Shift changes shifts; the other keys come from the bindings
     const others = b.shift.filter((c) => !c.startsWith('Shift'));
-    const tip = others.length ? `use ${keysText(others)}` : 'rebind SHIFT in SETTINGS > CONTROLS';
+    const tip = others.length ? `use ${keysText(others, keyLayout)}` : 'rebind SHIFT in SETTINGS > CONTROLS';
     drawText(g, `Windows: hammering Shift can open Sticky Keys — ${tip}, or turn off the Sticky Keys shortcut.`, W / 2, H - 16, { scale: 1, color: 'rgba(255,255,255,0.8)', align: 'center' });
   }
 }
@@ -984,7 +990,7 @@ function drawControls() {
     drawText(g, CONTROL_LABELS[key], r.x + 36, r.y + 16, { scale: 2, color: sel ? '#ffffff' : pal.hudSoft });
     if (key === 'reset') return;
     const waiting = game.capturing === key;
-    const text = waiting ? (Math.floor(game.clock * 2) % 2 ? '' : 'PRESS A KEY') : keysText(binds[key]);
+    const text = waiting ? (Math.floor(game.clock * 2) % 2 ? '' : 'PRESS A KEY') : keysText(binds[key], keyLayout);
     drawText(g, text, r.x + r.w - 24, r.y + 16, { scale: 2, color: waiting ? '#ffec5a' : pal.hudSoft, align: 'right' });
   });
   if (game.controlsNote) drawText(g, game.controlsNote, W / 2, H - 70, { scale: 1, color: pal.hudSoft, align: 'center' });

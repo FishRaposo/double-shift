@@ -407,6 +407,14 @@ function withPranks(ov, pranks) {
   return next;
 }
 
+// The tile overrides after `entries` night clock-ins: each entry's due pranks applied in order, as tryShift does.
+// The fairness test uses it to check respawn spots that only a prank creates.
+export function overridesAfter(level, entries) {
+  let ov = {};
+  for (let e = 1; e <= entries; e++) ov = withPranks(ov, pranksFor(level, e));
+  return ov;
+}
+
 // Attempt the pending shift. Order: clean → corner nudge → keep buffering.
 // The destination is validated against the geometry as it will be after any due prank.
 function tryShift(level, s) {

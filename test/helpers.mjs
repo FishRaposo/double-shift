@@ -1,4 +1,4 @@
-import { step, initState, parseLevel, NO_INPUT, TILE } from '../src/rules.js';
+import { step, initState, parseLevel, NO_INPUT, TILE, freakBoxes, standableSpot, overridesAfter, PARAMS, DAY, NIGHT } from '../src/rules.js';
 
 // Build a level from compact ASCII for edge-case tests.
 export function level(day, night, extra = {}) {
@@ -113,3 +113,47 @@ export function inputWindows(lvl, policy) {
   }
   return out.sort((a, b) => a.at - b.at);
 }
+
+// ---------- fairness: respawn spots against patrols ----------
+
+// Every place a freak's active box can be over its whole cycle, sampled on both clocks (the supervisor watches,
+// it doesn't patrol).
+export function patrolBoxes(lvl) {
+  const s = initState(lvl);
+  const out = [];
+  for (let t = 0; t <= 20; t += 1 / 30) {
+    s.freakClock = t;
+    s.dayClock = t;
+    for (const b of freakBoxes(lvl, s)) if (b.active && b.kind !== 'supervisor') out.push(b);
+  }
+  return out;
+}
+
+// Every place you can respawn: the spawn, exactly where initState puts you, and each checkpoint standing (or
+// hanging) wherever a shift's gravity gives it ground, in every prank state the level reaches (night entries
+// 0 up to the last first-firing plus two rounds of any repeating prank), the same standableSpot the rules save with.
+export function respawnSpots(lvl) {
+  const start = initState(lvl).checkpoint;
+  const last = Math.max(0, ...lvl.pranks.map((pr) => pr.onNight + 2 * (pr.every ?? 0)));
+  const seen = new Set();
+  const spots = [{ x: start.x, y: start.y, at: 'spawn' }];
+  for (let entries = 0; entries <= last; entries++) {
+    const ov = overridesAfter(lvl, entries);
+    for (const { tx, ty } of lvl.checkpoints) {
+      for (const layer of [DAY, NIGHT]) {
+        const pos = standableSpot(lvl, layer, tx, ty, ov);
+        const key = pos && `${pos.x},${pos.y}`;
+        if (!pos || seen.has(key)) continue;
+        seen.add(key);
+        spots.push({ ...pos, at: `${tx},${ty}${entries ? ` after ${entries} night entries` : ''}` });
+      }
+    }
+  }
+  return spots;
+}
+
+// The first patrol box a respawn spot overlaps, if any.
+export function spotInPatrol(p, boxes) {
+  return boxes.find((b) => p.x < b.x + b.w && p.x + PARAMS.playerW > b.x && p.y < b.y + b.h && p.y + PARAMS.playerH > b.y);
+}
+

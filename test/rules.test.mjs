@@ -1033,3 +1033,20 @@ test('pranks: a prank with `every: n` fires on its entry and again every n entri
   assert.deepEqual(fired, [2, 5, 8, 11]);
   assert.throws(() => R.parseLevel({ name: 't', par: 0, day, night: day, pranks: [{ id: 'p', onNight: 1, every: 0, set: [] }] }), /every/);
 });
+
+test('overridesAfter: the tile overrides after N night clock-ins, pranks applied in order as step() does', () => {
+  const lvl = level(OPEN, OPEN.map((r) => r.replace(/[SE]/g, '.')), {
+    pranks: [
+      { id: 'a', onNight: 1, set: [{ layer: 'night', x0: 2, y0: 6, ch: '#' }] },
+      { id: 'b', onNight: 2, every: 2, set: [{ layer: 'day', x0: 4, y0: 6, ch: '#' }] },
+    ],
+  });
+  assert.deepEqual(R.overridesAfter(lvl, 0), {});
+  assert.deepEqual(R.overridesAfter(lvl, 1), { '1,2,6': '#' });
+  assert.deepEqual(R.overridesAfter(lvl, 4), { '1,2,6': '#', '0,4,6': '#' });
+  // the same overrides the rules reach by actually clocking in
+  let s = initState(lvl);
+  for (let i = 0; i < 4; i++) { s = step(lvl, s, SHIFT); s = step(lvl, s, NO_INPUT); s = step(lvl, s, SHIFT); s = step(lvl, s, NO_INPUT); }
+  assert.equal(s.nightEntries, 4);
+  assert.deepEqual(s.overrides, R.overridesAfter(lvl, 4));
+});

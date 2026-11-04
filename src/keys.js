@@ -71,8 +71,15 @@ export function cleanBinds(x) {
   return next;
 }
 
-// What a key is called on screen: 'A', '1', '←', 'Space', 'Shift'.
-export function keyLabel(code) {
+// What a key is called on screen: 'A', '1', '←', 'Space', 'Shift'. Codes name QWERTY positions, so with the
+// player's layout (navigator.keyboard.getLayoutMap(), a Map of code → character, where the browser shares it) a
+// letter or digit key is named by what its cap prints: KeyQ is 'A' on AZERTY. A character the pixel font can't
+// draw keeps the QWERTY name.
+export function keyLabel(code, layout = null) {
+  if (/^(Key[A-Z]|Digit\d)$/.test(code)) {
+    const ch = layout?.get?.(code)?.toUpperCase();
+    if (ch && /^[A-Z0-9]$/.test(ch)) return ch;
+  }
   if (/^Key[A-Z]$/.test(code)) return code.slice(3);
   if (/^Digit\d$/.test(code)) return code.slice(5);
   if (code in ARROWS) return ARROWS[code];
@@ -81,14 +88,14 @@ export function keyLabel(code) {
 }
 
 // An action's keys as words, each label once: "Shift or K", "Space, W or ↑".
-export function keysText(codes) {
-  const labels = [...new Set(codes.map(keyLabel))];
+export function keysText(codes, layout = null) {
+  const labels = [...new Set(codes.map((c) => keyLabel(c, layout)))];
   return labels.length <= 1 ? labels.join('') : `${labels.slice(0, -1).join(', ')} or ${labels.at(-1)}`;
 }
 
 // The same, compact: "Space/W/↑", "Shift/K" (the title's key list).
-export function keysShort(codes) {
-  return [...new Set(codes.map(keyLabel))].join('/');
+export function keysShort(codes, layout = null) {
+  return [...new Set(codes.map((c) => keyLabel(c, layout)))].join('/');
 }
 
 // Keys the game keeps from the page (preventDefault): everything it could bind, bound right now or not, plus

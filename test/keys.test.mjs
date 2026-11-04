@@ -96,3 +96,14 @@ test('keys: a press with Ctrl, Cmd or Alt held is a browser shortcut (reload, fi
   assert.equal(browserShortcut({ code: 'PadSelect' }), false, 'gamepad presses carry no modifiers');
 });
 
+
+test('keys: labels follow the keyboard layout when the browser shares it, else the QWERTY name', () => {
+  const azerty = new Map([['KeyQ', 'a'], ['KeyA', 'q'], ['KeyW', 'z'], ['KeyZ', 'w'], ['Digit2', 'é'], ['KeyM', ',']]);
+  assert.equal(keyLabel('KeyQ', azerty), 'A', 'the key that prints A on an AZERTY board');
+  assert.equal(keyLabel('KeyW', azerty), 'Z');
+  assert.equal(keyLabel('Digit2', azerty), '2', 'a character the pixel font has no glyph for keeps the QWERTY name');
+  assert.equal(keyLabel('ArrowUp', azerty), '↑', 'arrows, Space and Shift are named the same everywhere');
+  assert.equal(keyLabel('KeyQ'), 'Q', 'no layout: QWERTY names');
+  assert.equal(keysText(['Space', 'KeyW', 'ArrowUp'], azerty), 'Space, Z or ↑');
+  assert.equal(keysShort(['ArrowLeft', 'KeyA'], azerty), '←/Q');
+});
