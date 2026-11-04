@@ -157,3 +157,12 @@ test('settings: the speedrun timer defaults off and survives a reload', () => {
   storage.setItem('double-shift.settings.v1', JSON.stringify({ timer: 'yes' }));
   assert.equal(createSettings(storage).get().timer, false, 'junk reads as off');
 });
+
+test('settings: binds() reads the bindings without copying them, and follows set()', () => {
+  const st = createSettings(memoryStorage());
+  const a = st.binds();
+  assert.equal(st.binds(), a, 'the same object on every read: input reads it at 120 Hz');
+  assert.deepEqual(a, st.get().binds);
+  st.set({ binds: { ...a, jump: ['KeyJ'] } });
+  assert.deepEqual(st.binds().jump, ['KeyJ'], 'a rebind shows at once');
+});

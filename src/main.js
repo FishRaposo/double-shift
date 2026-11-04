@@ -25,7 +25,7 @@ const A = ART;
 const canvas = document.getElementById('game');
 const g = canvas.getContext('2d');
 g.imageSmoothingEnabled = false;
-const input = createInput(() => settings.get().binds); // the player's key bindings (src/keys.js)
+const input = createInput(() => settings.binds()); // the player's key bindings (src/keys.js)
 const NIGHT_PAL = SPRITES.worker.nightPalette;
 const levels = LEVELS.map(parseLevel);
 const storage = (() => { try { return localStorage; } catch { return null; } })();
@@ -127,7 +127,7 @@ function captureKey(code) {
   const action = game.capturing;
   game.capturing = null;
   if (code === 'Escape') return;
-  const r = rebind(settings.get().binds, action, code);
+  const r = rebind(settings.binds(), action, code);
   if (r.ok) {
     settings.set({ binds: r.binds });
     game.controlsNote = '';
@@ -475,12 +475,26 @@ function drawShiftCues(ctx, lvl, layer, ov, tx, ty) {
   if (tileAt(lvl, other, tx, ty, ov) === '^') drawHazardEcho(ctx, tx, ty, PAL[other].echo, { top: gravitySign(lvl, other) < 0 });
 }
 
+// A memo's panel layout, wrapped once per memo (the text and spot never change while a level runs).
+const memoPanels = new Map();
+function memoLayout(m) {
+  const key = `${m.tx},${m.ty},${m.w ?? ''},${m.text}`;
+  if (!memoPanels.has(key)) memoPanels.set(key, memoPanel(m.text, m.tx, m.ty, { maxW: m.w }));
+  return memoPanels.get(key);
+}
+
 // Everything that doesn't move, drawn once per level × shift × prank state:
-// the other shift's echo, solids, hatching, props and the exit. Returns { canvas, portraits }: portraits
-// blink, so drawPlay() draws them per frame from this list (same cache key, no per-frame tile scans).
+// the other shift's echo, solids, hatching, props and the exit. Returns { canvas, portraits, hangs }: portraits
+// blink, so drawPlay() draws them per frame from this list, and each checkpoint's pose (hanging or standing)
+// is worked out here once (same cache key, no per-frame tile scans). The key carries the level's revision
+// (CLOCKOUT_CLASSIC shares Clock Out's id) and the overrides as text, made once per overrides object: states
+// are immutable snapshots, so one object never changes its text.
 const staticCache = new Map();
+const overrideText = new WeakMap();
 function staticLayer(lvl, def, layer, ov) {
-  const key = `${def.id}:${layer}:${JSON.stringify(ov)}`;
+  let ovText = overrideText.get(ov);
+  if (ovText === undefined) { ovText = JSON.stringify(ov); overrideText.set(ov, ovText); }
+  const key = `${def.id}#${def.rev ?? 1}:${layer}:${ovText}`;
   const hit = staticCache.get(key);
   if (hit) return hit;
   const [c, ctx] = makeCanvas();
@@ -517,7 +531,8 @@ function staticLayer(lvl, def, layer, ov) {
   const exit = exitPose(lvl, layer, ov);
   if (exit) drawExit(ctx, lvl.exit.tx, lvl.exit.ty, layer, exit);
   if (staticCache.size > 24) staticCache.delete(staticCache.keys().next().value);
-  const out = { canvas: c, portraits: plan.filter((sp) => sp.draw === 'portrait') };
+  const hangs = lvl.checkpoints.map((cp) => checkpointHangs(lvl, layer, cp, ov));
+  const out = { canvas: c, portraits: plan.filter((sp) => sp.draw === 'portrait'), hangs };
   staticCache.set(key, out);
   return out;
 }
@@ -673,7 +688,7 @@ function drawHud(lvl, s, layer) {
   const note = LEVELS[game.index].note;
   if (game.levelTime < 5 && note) drawNoteStrip(note);
   if (game.index === 0 && s.shifts === 0) {
-    hud(`Press ${keysText(settings.get().binds.shift)} to change shifts`, W / 2, 140, layer, { align: 'center', scale: 3 });
+    hud(`Press ${keysText(settings.binds().shift)} to change shifts`, W / 2, 140, layer, { align: 'center', scale: 3 });
     hud('Dashed outlines show the other shift', W / 2, 172, layer, { align: 'center', color: pal.hudSoft });
   }
 }
@@ -708,10 +723,9 @@ function drawPlay() {
     // the shift cues on top of the per-frame portrait, like the static layer does for everything else
     for (let dy = 0; dy < sp.h; dy++) for (let dx = 0; dx < sp.w; dx++) drawShiftCues(g, lvl, layer, s.overrides, sp.tx + dx, sp.ty + dy);
   }
-  for (const c of lvl.checkpoints) {
-    const hang = checkpointHangs(lvl, layer, c, s.overrides);
-    drawCheckpoint(g, c.tx, c.ty, s.checkpoint.id === c.id, s.checkpoint.id === c.id ? game.fx.ping : 0, { hang });
-  }
+  lvl.checkpoints.forEach((c, i) => {
+    drawCheckpoint(g, c.tx, c.ty, s.checkpoint.id === c.id, s.checkpoint.id === c.id ? game.fx.ping : 0, { hang: still.hangs[i] });
+  });
   drawDecor(lvl, def, layer, t);
   drawTells(lvl, s, layer, t);
   freakBoxes(lvl, s).forEach((b, i) => {
@@ -727,7 +741,7 @@ function drawPlay() {
   drawFx(layer, reduced);
   // a memo's text, while you stand by it (in its shift)
   for (const m of def.props ?? []) {
-    if (m.kind === 'memo' && (!m.layer || (m.layer === 'night') === (layer === NIGHT)) && memoNear(s.player, m)) drawMemoPanel(g, memoPanel(m.text, m.tx, m.ty, { maxW: m.w }));
+    if (m.kind === 'memo' && (!m.layer || (m.layer === 'night') === (layer === NIGHT)) && memoNear(s.player, m)) drawMemoPanel(g, memoLayout(m));
   }
   drawHud(lvl, s, layer);
   if (game.debug) drawDebug(s);
@@ -759,7 +773,7 @@ function drawTitle() {
   drawEyes(g, 'lurker', 900, 16 * TILE - FREAK.h, { state: eyesOpen(game.clock, 4) ? 'open' : 'shut', look: -1 });
   drawPanel(g, W / 2 - 270, 250, 540, 176, false);
   drawText(g, 'One building. Two shifts. One worker.', W / 2, 270, { scale: 2, color: '#ffffff', align: 'center' });
-  const b = settings.get().binds; // the current bindings (SETTINGS > CONTROLS)
+  const b = settings.binds(); // the current bindings (SETTINGS > CONTROLS)
   drawText(g, `Move  ${keysShort(b.left)}  ${keysShort(b.right)}      Jump  ${keysShort(b.jump)}`, W / 2, 310, { scale: 2, color: '#d9f6ff', align: 'center' });
   drawText(g, `Change shift  ${keysText(b.shift)}      Restart  R`, W / 2, 334, { scale: 2, color: '#d9f6ff', align: 'center' });
   drawText(g, 'Gamepad: stick move · A jump · B, X or RB shift · Start pause · X levels · Y settings', W / 2, 354, { scale: 1, color: '#9fd8e6', align: 'center' });
@@ -961,7 +975,7 @@ function drawControls() {
   const pal = PAL[NIGHT];
   g.drawImage(background(NIGHT), 0, 0); // as SETTINGS does
   drawText(g, 'CONTROLS', W / 2, 60, { scale: 4, color: pal.hud, halo: pal.halo, align: 'center' });
-  const binds = settings.get().binds;
+  const binds = settings.binds();
   CONTROL_ROWS.forEach((key, row) => {
     const r = controlRect(row);
     const sel = row === game.controlsRow;

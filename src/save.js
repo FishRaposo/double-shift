@@ -88,6 +88,11 @@ export function createSettings(storage) {
     get() {
       return { ...data };
     },
+    // The key bindings as stored, without a copy: input reads them on every key event and three times a tick.
+    // Never mutated (set() builds new settings), so sharing the object is safe.
+    binds() {
+      return data.binds;
+    },
     set(patch) {
       data = cleanSettings({ ...data, ...patch });
       try {
