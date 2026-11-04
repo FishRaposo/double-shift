@@ -271,6 +271,13 @@ async function fullRun() {
   const padState = await evaluate('({ screen: __doubleShift.screen, layer: __doubleShift.state?.layer })');
   flow('gamepad: A clocks in from the title, B shifts', padState.screen === 'play' && padState.layer === 1, padState);
 
+  // an abandoned attempt doesn't count: clocking in from the title starts the run totals over
+  await evaluate('(() => { const g = __doubleShift; g.spent = [99]; g.results = [{ shifts: 9, par: 1, deaths: 0, time: 99, spent: 99 }]; g.screen = "title"; })()');
+  await press('Space');
+  await sleep(200);
+  const fresh = await evaluate('(() => { const g = __doubleShift; return { screen: g.screen, spent: g.spent.reduce((n, s) => n + (s ?? 0), 0), results: g.results.filter(Boolean).length }; })()');
+  flow('clocking in from the title starts a new run', fresh.screen !== 'title' && fresh.spent < 5 && fresh.results === 0, fresh);
+
   // browser shortcuts stay the browser's: Ctrl+R in a level is the page's reload, not the game's restart
   await open('?level=clock&autostart');
   await sleep(400);

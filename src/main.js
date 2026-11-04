@@ -67,6 +67,14 @@ function setScreen(s) {
   game.screenTime = 0;
 }
 
+// Clocking in from the title or the end screen is a new run: the totals start over, whatever came before.
+function startRun(i) {
+  game.results = [];
+  game.spent = [];
+  game.actShown = 0;
+  startLevel(i);
+}
+
 // Start a level. An act's first level gets its title card first, once per run through the act.
 function startLevel(i, { card = true } = {}) {
   game.index = i;
@@ -164,7 +172,7 @@ function handleKey(e) {
   if (e.code === 'KeyM') { toggleMute(); return; }
   if (e.code === 'Backquote') { game.debug = !game.debug; return; }
   if (game.screen === 'title') {
-    if (e.code === 'Space' || e.code === 'Enter') startLevel(game.index);
+    if (e.code === 'Space' || e.code === 'Enter') startRun(game.index);
     else if (e.code === 'KeyL') openSelect();
     else if (e.code === 'KeyO') openSettings();
     return;
@@ -205,7 +213,7 @@ function handleKey(e) {
     return;
   }
   if (game.screen === 'end') {
-    if (e.code === 'Space' || e.code === 'Enter') { game.results = []; game.spent = []; game.actShown = 0; startLevel(0); }
+    if (e.code === 'Space' || e.code === 'Enter') startRun(0);
     return;
   }
   if (game.screen === 'paused') {
@@ -275,7 +283,7 @@ canvas.addEventListener('pointerdown', (e) => {
   if (game.screen === 'title') {
     if (inside(TITLE_SELECT)) openSelect();
     else if (inside(TITLE_SETTINGS)) openSettings();
-    else startLevel(game.index);
+    else startRun(game.index);
   } else if (game.screen === 'settings') {
     const row = SETTING_ROWS.findIndex((_, k) => inside(settingRect(k)));
     if (row >= 0) { const r = settingRect(row); adjustSetting(row, x < r.x + r.w / 2 ? -1 : 1); }
@@ -299,7 +307,7 @@ canvas.addEventListener('pointerdown', (e) => {
     if (game.index + 1 < levels.length) startLevel(game.index + 1);
     else setScreen('end');
   } else if (game.screen === 'end') {
-    game.results = []; game.spent = []; game.actShown = 0; startLevel(0);
+    startRun(0);
   }
 });
 
