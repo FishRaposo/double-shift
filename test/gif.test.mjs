@@ -2,7 +2,7 @@
 // that follows the GIF89a spec, not the encoder. `npm run gif` also has Chromium decode what it writes.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { encodeGif, quantize, downscale } from '../scripts/gif-encode.mjs';
+import { encodeGif, quantize, downscale, createColorTable } from '../scripts/gif-encode.mjs';
 
 // The file's blocks in order: extensions with their sub-block data joined, images with their LZW data.
 function readGif(bytes) {
@@ -169,4 +169,19 @@ test('gif: halving averages each 2×2 block, so art on the 2-px grid keeps its c
   const rgba = Uint8ClampedArray.from([...red, ...red, ...white, ...black, ...red, ...red, ...black, ...white]);
   assert.deepEqual([...downscale(rgba, 4, 2, 2)], [0xff0000, 0x808080]);
   assert.deepEqual([...downscale(rgba, 4, 2, 1)], [0xff0000, 0xff0000, 0xffffff, 0x000000, 0xff0000, 0xff0000, 0x000000, 0xffffff]);
+});
+
+test('gif: frames kept as color ids (the recorder, to save memory) quantize exactly like packed frames', () => {
+  const packed = [
+    Uint32Array.from({ length: 600 }, () => (rand(300) * 0x010203) & 0xffffff),
+    Uint32Array.from({ length: 600 }, () => (rand(40) * 0x0a0b0c) & 0xffffff),
+  ];
+  const table = createColorTable();
+  const ids = packed.map((f) => table.add(f));
+  assert.ok(ids.every((f) => f instanceof Uint16Array), 'two bytes a pixel while there are fewer than 65,536 colors');
+  const fromIds = quantize(ids, table);
+  const direct = quantize(packed);
+  assert.deepEqual(fromIds.palette, direct.palette);
+  assert.deepEqual(fromIds.frames, direct.frames);
+  assert.equal(fromIds.colors, direct.colors);
 });

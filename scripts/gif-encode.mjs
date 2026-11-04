@@ -1,7 +1,8 @@
 // Double Shift — a GIF89a encoder for the demo GIFs (scripts/gif.mjs). Pure and dependency-free, so it runs in
 // Node (test/gif.test.mjs) and in the page, where gif.mjs records frames. Three steps:
 //   downscale(rgba, w, h, k)  canvas pixels → packed 0xRRGGBB, each k×k block averaged (2: 960×540 → 480×270)
-//   quantize(frames)          one palette for every frame: exact up to 256 colors, else the 256 most frequent
+//   createColorTable()        frames as small color ids while recording (2 bytes a pixel, not 4)
+//   quantize(frames[, table]) one palette for every frame: exact up to 256 colors, else the 256 most frequent
 //   encodeGif(frames, ...)    palette indices → GIF bytes: looping, one image per frame, each frame storing only
 //                             the rectangle that changed since the last
 
@@ -25,24 +26,59 @@ export function downscale(rgba, w, h, k = 2) {
           b += rgba[i + 2];
         }
       }
-      const avg = (v) => Math.floor((v + (n >> 1)) / n);
-      out[y * ow + x] = (avg(r) << 16) | (avg(g) << 8) | avg(b);
+      const half = n >> 1;
+      out[y * ow + x] = (Math.floor((r + half) / n) << 16) | (Math.floor((g + half) / n) << 8) | Math.floor((b + half) / n);
     }
   }
   return out;
 }
 
+// Every color seen gets an id, in order of first sight, with a pixel count. add(frame) turns a packed frame
+// into ids: a Uint16Array while there are fewer than 65,536 colors, a Uint32Array after that.
+export function createColorTable() {
+  const idOf = new Map();
+  const colors = [];
+  let counts = new Float64Array(1024);
+  return {
+    colors,
+    count: (id) => counts[id],
+    add(frame) {
+      const out = colors.length + frame.length < 65536 ? new Uint16Array(frame.length) : new Uint32Array(frame.length);
+      for (let i = 0; i < frame.length; i++) {
+        const c = frame[i];
+        let id = idOf.get(c);
+        if (id === undefined) {
+          id = colors.length;
+          idOf.set(c, id);
+          colors.push(c);
+          if (id >= counts.length) { const more = new Float64Array(counts.length * 2); more.set(counts); counts = more; }
+        }
+        counts[id]++;
+        out[i] = id;
+      }
+      return out;
+    },
+  };
+}
+
 // One palette for the whole GIF. Up to 256 colors it is exact. Past that it keeps the 256 colors that cover the
 // most pixels (ties to the lower value, so it's deterministic) and maps every other color to its nearest
-// (squared RGB distance). Returns { palette: [[r, g, b]], frames: [Uint8Array], colors: distinct colors seen }.
-export function quantize(frames) {
-  const count = new Map();
-  for (const f of frames) for (const c of f) count.set(c, (count.get(c) ?? 0) + 1);
-  const kept = [...count.keys()].sort((a, b) => count.get(b) - count.get(a) || a - b).slice(0, 256);
+// (squared RGB distance). Frames are packed 0xRRGGBB, or ids from `table` (createColorTable).
+// Returns { palette: [[r, g, b]], frames: [Uint8Array], colors: distinct colors seen }.
+export function quantize(frames, table = null) {
+  if (!table) {
+    table = createColorTable();
+    frames = frames.map((f) => table.add(f));
+  }
+  const ids = table.colors.map((_, id) => id);
+  const keptIds = ids.sort((a, b) => table.count(b) - table.count(a) || table.colors[a] - table.colors[b]).slice(0, 256);
+  const kept = keptIds.map((id) => table.colors[id]);
   const palette = kept.map((c) => [c >> 16, (c >> 8) & 255, c & 255]);
-  const index = new Map(kept.map((c, k) => [c, k]));
-  for (const c of count.keys()) {
-    if (index.has(c)) continue;
+  const slot = new Uint8Array(table.colors.length);
+  const isKept = new Uint8Array(table.colors.length);
+  keptIds.forEach((id, k) => { slot[id] = k; isKept[id] = 1; });
+  table.colors.forEach((c, id) => {
+    if (isKept[id]) return;
     const r = c >> 16;
     const g = (c >> 8) & 255;
     const b = c & 255;
@@ -52,30 +88,42 @@ export function quantize(frames) {
       const d = (r - pr) ** 2 + (g - pg) ** 2 + (b - pb) ** 2;
       if (d < bestD) { bestD = d; best = k; }
     });
-    index.set(c, best);
-  }
+    slot[id] = best;
+  });
   const indexed = frames.map((f) => {
     const out = new Uint8Array(f.length);
-    for (let i = 0; i < f.length; i++) out[i] = index.get(f[i]);
+    for (let i = 0; i < f.length; i++) out[i] = slot[f[i]];
     return out;
   });
-  return { palette, frames: indexed, colors: count.size };
+  return { palette, frames: indexed, colors: table.colors.length };
 }
 
-// A growing byte buffer.
+// A growing byte buffer: push() for a few header bytes, append() to copy a run of them in one go.
 function bytesOut() {
   let buf = new Uint8Array(1 << 16);
   let n = 0;
+  const room = (k) => {
+    if (n + k <= buf.length) return;
+    const bigger = new Uint8Array(Math.max(buf.length * 2, n + k));
+    bigger.set(buf);
+    buf = bigger;
+  };
   return {
     push(...bs) {
-      if (n + bs.length > buf.length) {
-        const bigger = new Uint8Array(Math.max(buf.length * 2, n + bs.length));
-        bigger.set(buf);
-        buf = bigger;
-      }
+      room(bs.length);
       for (const b of bs) buf[n++] = b;
     },
+    byte(b) {
+      room(1);
+      buf[n++] = b;
+    },
+    append(arr) {
+      room(arr.length);
+      buf.set(arr, n);
+      n += arr.length;
+    },
     u16(v) { this.push(v & 255, (v >> 8) & 255); },
+    view() { return buf.subarray(0, n); },
     bytes() { return buf.slice(0, n); },
   };
 }
@@ -97,11 +145,11 @@ function lzw(out, indices, minCodeSize) {
   let next = eoi + 1;
   let cur = 0;
   let bits = 0;
-  const data = [];
+  const data = bytesOut();
   const emit = (code) => {
     cur |= code << bits;
     bits += size;
-    while (bits >= 8) { data.push(cur & 255); cur >>>= 8; bits -= 8; }
+    while (bits >= 8) { data.byte(cur & 255); cur >>>= 8; bits -= 8; }
   };
   gen++;
   emit(clear);
@@ -128,13 +176,15 @@ function lzw(out, indices, minCodeSize) {
   next++;
   if (next > 1 << size && size < 12) size++;
   emit(eoi);
-  if (bits > 0) data.push(cur & 255);
-  out.push(minCodeSize);
-  for (let i = 0; i < data.length; i += 255) {
-    const chunk = data.slice(i, i + 255);
-    out.push(chunk.length, ...chunk);
+  if (bits > 0) data.byte(cur & 255);
+  const packed = data.view();
+  out.byte(minCodeSize);
+  for (let i = 0; i < packed.length; i += 255) {
+    const chunk = packed.subarray(i, i + 255);
+    out.byte(chunk.length);
+    out.append(chunk);
   }
-  out.push(0);
+  out.byte(0);
 }
 
 // The rectangle where `f` differs from `prev`; a frame that changed nothing still gets a 1×1 image, so every frame
