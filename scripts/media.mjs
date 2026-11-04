@@ -271,6 +271,18 @@ async function fullRun() {
   const padState = await evaluate('({ screen: __doubleShift.screen, layer: __doubleShift.state?.layer })');
   flow('gamepad: A clocks in from the title, B shifts', padState.screen === 'play' && padState.layer === 1, padState);
 
+  // browser shortcuts stay the browser's: Ctrl+R in a level is the page's reload, not the game's restart
+  await open('?level=clock&autostart');
+  await sleep(400);
+  const sc = await evaluate(`(() => {
+    const g = __doubleShift;
+    const before = g.state.time;
+    const e = new KeyboardEvent('keydown', { code: 'KeyR', key: 'r', ctrlKey: true, cancelable: true, bubbles: true });
+    dispatchEvent(e);
+    return { prevented: e.defaultPrevented, restarted: g.state.time < before, before };
+  })()`);
+  flow('Ctrl+R is left to the browser (no restart, not blocked)', !sc.prevented && !sc.restarted && sc.before > 0, sc);
+
   // the tools and tests aren't in the itch build, so --root stops here
   if (serveRoot) return;
 

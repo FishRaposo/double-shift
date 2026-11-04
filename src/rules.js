@@ -437,7 +437,9 @@ function tryShift(level, s) {
   s.shiftPending = 0;
   s.overrides = ov;
   if (entry) s.nightEntries = entry;
-  p.grounded = isGrounded(level, s.layer, p, s.overrides); // S-5.5: recompute contacts immediately
+  // S-5.5: recompute contacts immediately, by step 6's rule: touching a floor you're moving away from isn't
+  // standing on it (a flip can leave you flush against the new floor on your way off it)
+  p.grounded = gravitySign(level, s.layer) * p.vy >= 0 && isGrounded(level, s.layer, p, s.overrides);
   if (gravitySign(level, target) !== gravitySign(level, 1 - target)) {
     // gravity turned over: what you were rising against is now a fall, and no mid-air jump right after a flip
     p.rising = false;

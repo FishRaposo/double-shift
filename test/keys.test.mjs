@@ -2,7 +2,7 @@
 // and never takes the menu keys.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { ACTIONS, DEFAULT_BINDS, RESERVED, isBindable, rebind, cleanBinds, keyLabel, keysText, keysShort, actionOf, ownsKey } from '../src/keys.js';
+import { ACTIONS, DEFAULT_BINDS, RESERVED, isBindable, rebind, cleanBinds, keyLabel, keysText, keysShort, actionOf, ownsKey, browserShortcut } from '../src/keys.js';
 
 function valid(b) {
   const seen = new Set();
@@ -85,3 +85,14 @@ test('keys: the game keeps every key it could use from the page, bound or not (n
   }
   for (const code of ['Tab', 'F5', 'F12', 'ControlLeft', 'MetaLeft']) assert.equal(ownsKey(code), false, code);
 });
+
+test('keys: a press with Ctrl, Cmd or Alt held is a browser shortcut (reload, find, back), never a game key', () => {
+  assert.equal(browserShortcut({ code: 'KeyR', ctrlKey: true }), true, 'Ctrl+R reloads; it must not restart the level');
+  assert.equal(browserShortcut({ code: 'KeyR', metaKey: true }), true, 'Cmd+R');
+  assert.equal(browserShortcut({ code: 'ArrowLeft', altKey: true }), true, 'Alt+Left goes back');
+  assert.equal(browserShortcut({ code: 'KeyF', ctrlKey: true, shiftKey: true }), true);
+  assert.equal(browserShortcut({ code: 'KeyR' }), false, 'R alone restarts');
+  assert.equal(browserShortcut({ code: 'ShiftLeft', shiftKey: true }), false, 'Shift is a game key, not a modifier here');
+  assert.equal(browserShortcut({ code: 'PadSelect' }), false, 'gamepad presses carry no modifiers');
+});
+

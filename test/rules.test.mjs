@@ -891,6 +891,29 @@ test('upside down: a flipping shift clears coyote time; a same-sign shift keeps 
   assert.ok(o.events.some((e) => e.type === 'jump'));
 });
 
+test('upside down: a flip that leaves you touching the new floor while moving away from it is no landing (no jump, no coyote)', () => {
+  const day = [...UP_DAY];
+  day[5] = '...#....'; // hangs at (3,2) on the flipped night: its underside is a floor at y = 3 * TILE
+  const lvl = upside(day);
+  const start = (vy) => {
+    const s = initState(lvl);
+    Object.assign(s.player, { x: 3 * TILE + 6, y: 3 * TILE - 2.3, vx: 0, vy, grounded: false, coyote: 0, rising: false });
+    return s;
+  };
+  const jumpShift = { ...NO_INPUT, shiftPressed: true, jumpPressed: true, jumpHeld: true };
+  // falling down the screen by day is moving away from that underside at night, though the nudge leaves you touching it
+  let s = step(lvl, start(150), jumpShift);
+  assert.equal(s.layer, NIGHT);
+  assert.ok(!s.events.some((e) => e.type === 'jump'), 'no jump on the flip tick');
+  assert.equal(s.player.coyote, 0, 'no coyote time from a floor you are leaving');
+  for (let i = 0; i < 6; i++) s = step(lvl, s, NO_INPUT);
+  s = step(lvl, s, { ...NO_INPUT, jumpPressed: true, jumpHeld: true });
+  assert.ok(!s.events.some((e) => e.type === 'jump'), 'and no mid-air jump 50 ms later');
+  // rising by day is moving toward it at night: a real landing, so the shift-jump still fires (S-5.5)
+  const t = step(lvl, start(-150), jumpShift);
+  assert.ok(t.events.some((e) => e.type === 'jump'), 'moving toward the new floor: the shift-jump fires');
+});
+
 test('upside down: night hazards hit in the top 45% of the tile', () => {
   const day = ['........', '........', '........', '........', '........', '........', 'S..^...E', '########'];
   const lvl = upside(day); // the day spike at (3,6) hangs at (3,1) at night

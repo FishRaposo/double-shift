@@ -96,3 +96,9 @@ export function keysShort(codes) {
 export function ownsKey(code) {
   return isBindable(code) || RESERVED.includes(code) && code !== 'Tab';
 }
+
+// A press with Ctrl, Cmd or Alt held is the browser's (reload, find, bookmark, back): the game neither acts on it
+// nor stops it, so Ctrl+R reloads instead of restarting the level. Shift isn't a modifier here: it's a game key.
+export function browserShortcut(e) {
+  return Boolean(e?.ctrlKey || e?.metaKey || e?.altKey);
+}

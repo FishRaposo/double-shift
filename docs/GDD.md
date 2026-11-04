@@ -1429,7 +1429,7 @@ Upside Down levels add (decided 2026-11-03; every rule is the day rule mirrored;
 
 11. Shift into the flipped night: you fall up and land hanging under the solid above.
 12. Jump on a flipped layer: the jump goes down the screen, and releasing early cuts it.
-13. Mid-air flip: velocity is kept on screen, so a rise becomes a fall the other way; coyote time is cleared, so there's no mid-air jump right after a flip.
+13. Mid-air flip: velocity is kept on screen, so a rise becomes a fall the other way; coyote time is cleared, so there's no mid-air jump right after a flip. That holds even when the nudge leaves you touching the new floor while you move away from it: touching isn't landing.
 14. Grounded flip into the mirrored floor: refused like any blocked shift (nudge against the new gravity first, then buffer, then fail).
 15. Fall out the top on a flipped layer: a fall death, exactly like falling out the bottom by day.
 

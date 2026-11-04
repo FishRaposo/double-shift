@@ -5,7 +5,7 @@ import { step, initState, parseLevel, tileAt, isSolidChar, freakBoxes, gravitySi
 import { LEVELS, ACTS, FINALE_ACT } from './levels.js';
 import { createInput } from './input.js';
 import { createPad, readPads, padMenuKey } from './pad.js';
-import { ACTIONS, DEFAULT_BINDS, ownsKey, rebind, keysText, keysShort } from './keys.js';
+import { ACTIONS, DEFAULT_BINDS, ownsKey, rebind, keysText, keysShort, browserShortcut } from './keys.js';
 import { sfx, playSound, unlockAudio, toggleMute, setVolumes, setMusicShift, setMusicAct, setMenu } from './audio.js';
 import { skinPlan, checkpointHangs, exitPose } from './skins.js';
 import { createSave, createSettings, isUnlocked } from './save.js';
@@ -149,6 +149,7 @@ function openSelect() {
 // One handler for the keyboard and the gamepad (padDown below turns pad presses into these): e is a KeyboardEvent
 // or { code, repeat? }.
 function handleKey(e) {
+  if (browserShortcut(e)) return; // Ctrl, Cmd or Alt held: reload, find, back stay the browser's
   unlockAudio();
   if (game.capturing || ownsKey(e.code)) e.preventDefault?.(); // every key the game could use, bound or not: no page scrolling
   if (e.repeat) { input.keyDown(e); return; }
