@@ -22,6 +22,11 @@ export function timecardComment(r) {
   return 'Clocked in a lot. The freaks noticed.';
 }
 
+// under a prank's tell: how many night clock-ins until it happens
+export function prankCountdown(nights) {
+  return nights === 1 ? 'NEXT NIGHT' : `IN ${nights} NIGHTS`;
+}
+
 // The rubber stamp for a result (diff = clock-ins − par). `short` is the level select's small card stamp.
 export function stampText(diff, { short = false } = {}) {
   if (diff < 0) return short ? 'UNDER!' : 'UNDER PAR!';

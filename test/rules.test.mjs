@@ -1,7 +1,7 @@
 // GDD §13.7 collision/shift edge cases, plus S-rules. Each runs headless against src/rules.js.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { step, initState, NO_INPUT, DAY, NIGHT, TILE, DT, PARAMS, isEmbedded, isSolidChar, overlapsSolid, freakBoxes, tileAt, supervisorFacing, watchedClock } from '../src/rules.js';
+import { step, initState, NO_INPUT, DAY, NIGHT, TILE, DT, PARAMS, isEmbedded, isSolidChar, overlapsSolid, freakBoxes, pendingPranks, tileAt, supervisorFacing, watchedClock } from '../src/rules.js';
 import { level, stepN, place, play } from './helpers.mjs';
 
 const OPEN = [
@@ -411,6 +411,60 @@ test('a peeker popping out on your shift emits one peek event per cycle (and non
   assert.equal(dayPeeks, 0);
 });
 
+test('a patrolling lurker reports the way it is walking', () => {
+  const lvl = level(OPEN, BLANK, { freaks: [{ kind: 'lurker', tx: 2, ty: 6, range: 1, speed: 60 }] });
+  let s = step(lvl, initState(lvl), SHIFT);
+  s = stepN(lvl, s, 30); // ~0.25 s: heading out
+  assert.equal(freakBoxes(lvl, s)[0].dir, 1);
+  s = stepN(lvl, s, 60); // ~0.75 s: past the end of its range, heading back
+  assert.equal(freakBoxes(lvl, s)[0].dir, -1);
+});
+
+test('a ducked peeker reports how long until it pops out', () => {
+  const lvl = level(OPEN, BLANK, { freaks: [{ kind: 'peeker', tx: 5, ty: 6, period: 1, duty: 0.5, phase: 0.6 }] });
+  const s = initState(lvl);
+  const b = freakBoxes(lvl, s)[0];
+  assert.equal(b.active, false);
+  assert.ok(Math.abs(b.popIn - 0.4) < 1e-9);
+  const up = { ...s, freakClock: 0.5 }; // (0.5 + 0.6) % 1 = 0.1: out
+  assert.equal(freakBoxes(lvl, up)[0].popIn, 0);
+});
+
+test('pending pranks: a repeating prank stays pending, and a lap that changes nothing hides its tell', () => {
+  const lvl = level(OPEN, BLANK, {
+    pranks: [
+      { id: 'a', onNight: 1, every: 2, tell: { tx: 2, ty: 3 }, set: [{ layer: 'night', x0: 4, x1: 4, y0: 5, ch: '#' }, { layer: 'night', x0: 6, x1: 6, y0: 5, ch: '.' }] },
+      { id: 'b', onNight: 2, every: 2, tell: { tx: 3, ty: 3 }, set: [{ layer: 'night', x0: 4, x1: 4, y0: 5, ch: '.' }, { layer: 'night', x0: 6, x1: 6, y0: 5, ch: '#' }] },
+    ],
+  });
+  let s = step(lvl, initState(lvl), SHIFT); // entry 1: `a` fires
+  assert.deepEqual(pendingPranks(lvl, s).map((p) => [p.id, p.nights]), [['b', 1], ['a', 2]]);
+  assert.equal(pendingPranks(lvl, s)[1].tell, null, 'its tiles are spoken for by the next lap');
+  s = step(lvl, stepN(lvl, s, 2), SHIFT); // to day
+  s = step(lvl, stepN(lvl, s, 2), SHIFT); // entry 2: `b` fires
+  assert.equal(s.nightEntries, 2);
+  assert.deepEqual(pendingPranks(lvl, s).map((p) => [p.id, p.nights]), [['a', 1], ['b', 2]]);
+  assert.ok(pendingPranks(lvl, s)[0].tell, 'the coming lap keeps its tell');
+});
+
+test('pending pranks: count down in night entries and list only the tiles that will change', () => {
+  const lvl = level(OPEN, BLANK, {
+    pranks: [
+      { id: 'back', onNight: 2, tell: { tx: 3, ty: 3 }, set: [{ layer: 'night', x0: 4, x1: 4, y0: 5, ch: '.' }] },
+      { id: 'put', onNight: 1, tell: { tx: 2, ty: 3 }, set: [{ layer: 'night', x0: 4, x1: 5, y0: 5, ch: '#' }] },
+    ],
+  });
+  let s = initState(lvl);
+  let list = pendingPranks(lvl, s);
+  assert.deepEqual(list.map((p) => [p.id, p.nights]), [['put', 1], ['back', 2]]);
+  assert.equal(list[0].cells.length, 2);
+  assert.equal(list[1].cells.length, 0, 'a tile already spoken for shows its next change only');
+  s = step(lvl, s, SHIFT); // entry 1: `put` fires
+  list = pendingPranks(lvl, s);
+  assert.deepEqual(list.map((p) => [p.id, p.nights]), [['back', 1]]);
+  assert.deepEqual(list[0].cells.map((c) => [c.tx, c.ty, c.ch]), [[4, 5, '.']]);
+});
+
 // ---------- wet floor `~` (SYS-1) ----------
 // Exit sits in the sky: these tests run right at floor level and must never win.
 const WIDE = [
@@ -607,6 +661,8 @@ test('supervisor: the watched lurker works; the other slacks off frozen and harm
   s = stepN(SUP_LVL, s, 60); // ~0.5 s: left watched, right slack
   const [, left, right] = freakBoxes(SUP_LVL, s);
   assert.ok(left.active, 'watched side works');
+  assert.ok(left.supervised && left.watched);
+  assert.ok(right.supervised && !right.watched);
   assert.equal(right.active, false, 'slack side is frozen and harmless');
   s = place(s, 8, 6, { dx: 5 }); // stand on the slack lurker's outline
   s = stepN(SUP_LVL, s, 5);

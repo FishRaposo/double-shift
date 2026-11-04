@@ -102,11 +102,12 @@ Behind everything, one motif per act (§6). Every color stays ≤ 1.35:1 against
 | Current shift | HUD label DAY SHIFT / NIGHT SHIFT + sun/moon icon + background | Text + icon + background pattern (panes vs stars) |
 | Freak (night, active) | Black lumpy silhouette + eyes | Silhouette |
 | Freak (day, frozen) | Dashed silhouette outline in the night echo blue, dim eyes | Dashed |
-| Peeker hidden | Dark slot + small eyes | Shape |
-| Pending prank | Night: two pairs of eyes near the target. Day: yellow MINE note | Eyes / note shape |
+| Peeker hidden | Dark slot + small eyes; for the last 0.35 s before it pops, the slot rattles, the eyes open and a "!" shows | Shape + mark |
+| Patrol route | Dashed red-orange track on the floor with end stops, on both shifts; a slacking freak's track is faint. Eyes look the way it's walking | Dashes + end stops |
+| Pending prank | Night: two pairs of eyes near the target. Day: yellow MINE note. Both: a countdown under it (NEXT NIGHT, IN 2 NIGHTS) and the tiles it will change outlined (yellow by night, rust by day): tinted = something will be here, crossed = it will be gone. A tile shows only its next change; a repeating prank keeps its tell while its next lap changes something | Eyes / note shape, text, dashes + crosses |
 | Wet floor `~` | Solid fill + sheen lines; a WET FLOOR sign nearby | **Wavy top edge** instead of a straight one |
-| Supervisor facing | Head and clipboard turned to the watched side; eyes only on that side | Shape (head offset, clipboard side) |
-| Watched vs. slacking freak | Watched: normal. Slacking: eyes closed to lines, silhouette still | Closed eyes, no jitter |
+| Supervisor facing | Head and clipboard turned to the watched side; eyes only on that side; a scanline wedge from its eyes to the far end of the watched patrols; over its head, on a dark plate, an arrow for the watched side and four pips running out until it turns (white for the last 0.35 s) | Shape, wedge, arrow, pip count |
+| Watched vs. slacking freak | Watched: normal, with a bobbing yellow "!" (dangerous). Slacking: eyes closed to lines, silhouette still and dimmed, a drifting "z" (harmless). Both marks also show by day | "!" vs. "z", closed eyes, no jitter |
 | Day-walker | Day: dark silhouette with a cream rim, an orange hard hat and shades. Night: dashed outline in the day echo orange | Silhouette (hard hat) / dashed |
 | Moved object ✅ (doors, pillar, portrait) | Ordinary solids drawn as the object (skins); its future spots carry the usual prank tells, and an empty spot shows a door frame or a crack | Tell shapes (eyes / notes) |
 | Offset layer | No new marks: the echo of the other shift shows the floors half a storey off. Floor signs read 3 and 3.5 | Echo dashes + sign text |
@@ -160,7 +161,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 - **Never fully shown.** No faces beyond eyes, no full-light view, no close-up.
 - ✅ Sprites (12×13 art px, body `#05060f`, rim `#5ff2ff`), one silhouette per kind so a frozen outline still says which kind it is (`test/art.test.mjs`: every pair ≥ 12 art px apart; every silhouette fills ≥ 75 % of its hitbox, so a touch looks like a touch): **lurker** (pointed ears, wide body, 2-frame walk), **peeker** (narrow, fingers gripping above its head), **squatter** (wide and smug, low on its hoard: a plank end and a hard hat), **supervisor** (a green visor `#2bdc6a` and its clipboard), **day-walker** (a hard hat, since it clocked in for the day shift, in orange `#ff8a1c`, never the worker's yellow; shades `#3a4048` with white glints instead of eyes). Jitter ±1 art px while active.
 - ✅ Eyes: two 1×2 art-px eyes in `#ffec5a`, blink (shut ~0.12 s every ~3.1 s, offset per freak); lurker eyes glance; eyes **squint** smugly for 0.8 s after a prank.
-- ✅ Peeker hidden: a dark slot with eyes.
+- ✅ Peeker hidden: a dark slot with eyes that rattles just before it pops.
 - ✅ By day: dotted outline of the silhouette in the night echo blue, eyes at 60%. On every shift to day the outlines **flash** white once (freeze cue, 0.15 s).
 - ✅ Prank sparkle: plus-shaped twinkles in the freak-eye yellow over the changed tiles (0.5 s). Off with reduced effects.
 - ✅ Upside Down (Nov 3): a freak of a flipped shift hangs from the solid above its cell (`hang` on its box, rules.js) and draws upside down (`vflip`), outline and eyes included; a ducked peeker's slot sits on the ceiling side. The day-walker belongs to the day, which never flips.

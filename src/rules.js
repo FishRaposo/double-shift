@@ -323,6 +323,10 @@ export function freakBoxes(level, s) {
     let active = true;
     let face = 0;
     let turnIn = Infinity;
+    let dir = 0; // which way a patroller is walking
+    let popIn = 0; // seconds until a ducked peeker pops out, on its own clock
+    let supervised = false;
+    let watched = false;
     if (f.kind === 'supervisor') {
       face = facing;
       turnIn = (Math.floor(s.freakClock / f.period) + 1) * f.period - s.freakClock;
@@ -332,11 +336,23 @@ export function freakBoxes(level, s) {
         const side = Math.sign(f.tx - sup.tx) || 0;
         active = side !== 0 && facing === side; // only works while the clipboard points its way
         t = watchedClock(side, sup, s.freakClock);
+        supervised = true;
+        watched = active;
       }
-      if (f.kind === 'lurker' || f.kind === 'daywalker') x = baseX + pingpong(f.phase + t * f.speed, f.range * TILE);
-      if (f.kind === 'peeker') active = active && ((t + f.phase) % f.period) < f.duty * f.period;
+      if (f.kind === 'lurker' || f.kind === 'daywalker') {
+        const len = f.range * TILE;
+        const d = f.phase + t * f.speed;
+        x = baseX + pingpong(d, len);
+        dir = len <= 0 ? 0 : pingpong(d + 1e-6, len) >= pingpong(d, len) ? 1 : -1;
+      }
+      if (f.kind === 'peeker') {
+        const m = (t + f.phase) % f.period;
+        const up = m < f.duty * f.period;
+        active = active && up;
+        popIn = up ? 0 : f.period - m;
+      }
     }
-    return { id: f.id, kind: f.kind, shift: f.shift, x, y, w: FREAK.w, h: FREAK.h, active, facing: face, turnIn, hang };
+    return { id: f.id, kind: f.kind, shift: f.shift, x, y, w: FREAK.w, h: FREAK.h, active, facing: face, turnIn, hang, dir, popIn, supervised, watched };
   });
 }
 
@@ -396,6 +412,34 @@ export const NO_INPUT = Object.freeze({ left: false, right: false, jumpHeld: fal
 
 // Pranks due on the next entry into night. The freaks act in the moment of transition,
 // the one moment the player can't see.
+// The next night entry a prank fires on, or null when it's done: a prank with `every` never is.
+function nextFiring(pr, entries) {
+  if (pr.onNight > entries) return pr.onNight;
+  return pr.every > 0 ? pr.onNight + Math.ceil((entries + 1 - pr.onNight) / pr.every) * pr.every : null;
+}
+
+// What the freaks still have planned, soonest first, for the tells: `nights` is how many night
+// entries away it is; `cells` are the tiles it will really change. A cell shows only its next change,
+// and a lap of a repeating prank that changes nothing yet keeps its tell to itself.
+export function pendingPranks(level, s) {
+  const seen = new Set();
+  return level.pranks
+    .map((pr) => ({ pr, next: nextFiring(pr, s.nightEntries) }))
+    .filter(({ next }) => next !== null)
+    .sort((a, b) => a.next - b.next)
+    .map(({ pr, next }) => {
+      const cells = [];
+      for (const [layer, tx, ty, ch] of pr.cells) {
+        const key = `${layer},${tx},${ty}`;
+        if (seen.has(key) || tileAt(level, layer, tx, ty, s.overrides) === ch) continue;
+        seen.add(key);
+        cells.push({ layer, tx, ty, ch });
+      }
+      const lap = pr.onNight <= s.nightEntries;
+      return { id: pr.id, nights: next - s.nightEntries, tell: lap && cells.length === 0 ? null : pr.tell, cells };
+    });
+}
+
 function pranksFor(level, entry) {
   return level.pranks.filter((pr) => pr.onNight === entry || (pr.every > 0 && entry > pr.onNight && (entry - pr.onNight) % pr.every === 0));
 }

@@ -1,7 +1,7 @@
 // Double Shift — browser shell: input capture, fixed-step loop, rendering.
 // Draws only what src/rules.js decided. Art lives in sprites.js (characters) and art.js (everything else).
 
-import { step, initState, parseLevel, tileAt, isSolidChar, freakBoxes, gravitySign, TILE, DT, DAY, NIGHT, PARAMS, FREAK } from './rules.js';
+import { step, initState, parseLevel, tileAt, isSolidChar, freakBoxes, pendingPranks, gravitySign, TILE, DT, DAY, NIGHT, PARAMS, FREAK } from './rules.js';
 import { LEVELS, ACTS, FINALE_ACT } from './levels.js';
 import { createInput } from './input.js';
 import { createPad, readPads, padMenuKey } from './pad.js';
@@ -13,10 +13,11 @@ import { drawText, measureText, wrapText } from './font.js';
 import { drawSprite, drawEyes, eyesOpen, workerFrame, spriteRect, ART, SPRITES, C } from './sprites.js';
 import {
   PAL, PROPS, drawBackground, drawSolidTile, drawHatch, drawEchoEdges, drawRebar, drawLaser, drawHazardEcho,
-  drawExit, drawCheckpoint, drawSign, drawFreak, drawShiftRing, drawDust, drawPuff, drawSparkle, drawPanel,
+  drawExit, drawCheckpoint, drawSign, drawFreak, drawStatusMark, drawPatrol, drawGaze, drawTurnTimer, drawPrankCells,
+  drawShiftRing, drawDust, drawPuff, drawSparkle, drawPanel,
   drawStamp, drawLogo, drawWetTile, drawSkin, shouldHatch, withCellMirror, PLATE, NOTE_STRIP, px, drawMemoPanel,
 } from './art.js';
-import { SPOOK_LINES, ACT_LINES, CREDITS, timecardComment, stampText } from './copy.js';
+import { SPOOK_LINES, ACT_LINES, CREDITS, timecardComment, stampText, prankCountdown } from './copy.js';
 import { levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, endSummary, selectClick, canvasScale, CARD, memoPanel, memoNear } from './layout.js';
 
 const W = 960;
@@ -570,8 +571,17 @@ function drawHazards(lvl, layer, t, ov) {
 }
 
 function drawTells(lvl, s, layer, t) {
-  for (const pr of lvl.pranks) {
-    if (!pr.tell || s.nightEntries >= pr.onNight) continue;
+  const pending = pendingPranks(lvl, s);
+  for (const pr of pending) {
+    // tiles on the shift you're looking at read strongest; the other shift's stay faint under the echo
+    for (const l of [DAY, NIGHT]) {
+      const cells = pr.cells.filter((c) => c.layer === l);
+      if (cells.length) drawPrankCells(g, cells, (ch) => !isSolidChar(ch) && ch !== '^', { alpha: l === layer ? 1 : 0.7, color: layer === NIGHT ? '#ffd23f' : '#b3430f' });
+    }
+  }
+  const labels = [];
+  for (const pr of pending) {
+    if (!pr.tell) continue;
     const x = pr.tell.tx * TILE + TILE / 2;
     const y = pr.tell.ty * TILE + TILE / 2;
     if (layer === NIGHT) {
@@ -582,7 +592,47 @@ function drawTells(lvl, s, layer, t) {
     } else {
       drawSign(g, x, y - 36, pr.tell.text ?? 'MINE', 'note', 2); // the freaks' sticky note (WRITING.md §5)
     }
+    const text = prankCountdown(pr.nights);
+    const spot = countdownSpot(lvl, labels, x, y, measureText(text, 2), gravitySign(lvl, layer) < 0);
+    hud(text, spot.x, spot.y, layer, { align: 'center', color: layer === NIGHT ? '#ffd23f' : '#5a3d10' });
   }
+}
+
+// Where a tell's countdown goes: on the tell's side of its target, clear of the screen edge and the exit's
+// column; a label that would land on a sooner one (they're placed soonest first) moves past the note.
+function countdownSpot(lvl, labels, tellX, tellY, w, flipped) {
+  const exitLeft = lvl.exit.tx * TILE - 6;
+  let x = Math.min(W - w / 2 - 6, Math.max(w / 2 + 6, tellX));
+  if (x + w / 2 > exitLeft && x - w / 2 < exitLeft + TILE) x = exitLeft - w / 2;
+  const hits = (y) => labels.some((l) => Math.abs(l.x - x) < (l.w + w) / 2 + 4 && Math.abs(l.y - y) < 16);
+  const near = flipped ? tellY + 2 : tellY - 16;
+  const y = hits(near) ? (flipped ? tellY + 52 : tellY - 66) : near;
+  labels.push({ x, y, w });
+  return { x, y };
+}
+
+// what each freak is up to, drawn under the freaks themselves
+function drawFreakPlans(lvl, boxes, layer) {
+  boxes.forEach((b, i) => {
+    const f = lvl.freaks[i];
+    const live = layer === b.shift;
+    if ((b.kind === 'lurker' || b.kind === 'daywalker') && f.range > 0) {
+      const x0 = f.tx * TILE + (TILE - b.w) / 2;
+      const quiet = b.supervised && !b.watched;
+      drawPatrol(g, x0, x0 + f.range * TILE + b.w, b.hang ? b.y : b.y + b.h, (live ? 0.9 : 0.5) * (quiet ? 0.45 : 1), b.hang);
+    }
+    if (b.kind === 'supervisor') {
+      // the wedge reaches the far end of the watched side's patrols
+      const edges = boxes.flatMap((w, j) => {
+        const wf = lvl.freaks[j];
+        if (!w.supervised || Math.sign(wf.tx - f.tx) !== b.facing) return [];
+        const x0 = wf.tx * TILE + (TILE - w.w) / 2;
+        return [b.facing > 0 ? x0 + (wf.range ?? 0) * TILE + w.w : x0];
+      });
+      const worker = boxes.find((w) => w.supervised);
+      if (edges.length) drawGaze(g, b, b.facing > 0 ? Math.max(...edges) : Math.min(...edges), worker.hang ? worker.y : worker.y + worker.h, live ? 1 : 0.5);
+    }
+  });
 }
 
 function drawDecor(lvl, def, layer, t) {
@@ -734,13 +784,18 @@ function drawPlay() {
   });
   drawDecor(lvl, def, layer, t);
   drawTells(lvl, s, layer, t);
-  freakBoxes(lvl, s).forEach((b, i) => {
-    const clock = b.shift === DAY ? s.dayClock : s.freakClock;
-    let look = b.kind === 'lurker' || b.kind === 'daywalker' ? Math.sign(Math.sin(clock * 0.9 + i)) : 0;
-    if (b.kind === 'supervisor') look = b.facing; // the clipboard's gaze is the tell
+  const boxes = freakBoxes(lvl, s);
+  drawFreakPlans(lvl, boxes, layer);
+  boxes.forEach((b, i) => {
+    // eyes point where it's going; the clipboard's gaze is the tell
+    const look = b.kind === 'supervisor' ? b.facing : b.dir;
     // supervisors squint just before they turn: the readable anticipation cue
     const squint = Math.max(game.fx.squint, b.kind === 'supervisor' && b.turnIn < 0.35 ? 1 : 0);
     drawFreak(g, b, i, t, { layer, freakShift: b.shift, frozenFlash: game.fx.freeze, prankSquint: squint, look });
+    const alpha = layer === b.shift ? 1 : 0.85;
+    // under a supervisor, workers wear their status: "!" while watched (dangerous), "z" while slacking (harmless)
+    if (b.supervised) drawStatusMark(g, b.x + b.w / 2, b.hang ? b.y + b.h : b.y, b.watched ? 'alert' : 'slack', t, alpha, b.hang);
+    if (b.kind === 'supervisor') drawTurnTimer(g, b, lvl.freaks[i].period, alpha);
   });
   if (game.fx.spook) drawSpookGag();
   else drawWorker(s, layer);

@@ -93,6 +93,7 @@ SPOOKED! · AAAGH! · NOPE! · EEP! · NOT PAID ENOUGH
 |---|---|
 | Prank fires ✅ | hee hee hee |
 | Sticky note tell (day) ✅ | MINE |
+| Prank countdown (both shifts) ✅ | NEXT NIGHT · IN 2 NIGHTS |
 | More tells ✅ (Nov 3: MINE NOW on Inventory's and Stacked's planks, DO NOT TUCH on Stacked's gate, FINDERS KEEPERS on the finale's door) | MINE NOW · DO NOT TUCH · FINDERS KEEPERS · (a drawing of eyes) |
 | Hex-flavored tells *(candidates; HEXED. NO TUCH is on Night Audit's plank)* | MINE BY ANSHENT LAW · HEXED. NO TUCH · THE PLANK IS OURS NOW · WE SEE YOU (WE R SHINY) |
 | The freaks' proud sign over the staircase (`stairs`) *(draft)* | OUR STARES! |

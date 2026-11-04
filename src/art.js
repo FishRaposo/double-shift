@@ -557,14 +557,19 @@ export function drawFreak(g, b, i, t, { layer, freakShift = NIGHT, frozenFlash =
   const vflip = !!b.hang; // a freak of a flipped shift hangs from the solid above (rules.js freakBoxes)
   if (live) {
     if (kind === 'peeker' && !b.active) {
-      // ducked in: a dark slot with eyes, on the floor side (the ceiling side when it hangs)
-      px(g, b.x - A, vflip ? b.y : b.y + b.h - 3 * A, 12, 3, 'rgba(0,0,0,0.6)');
-      drawEyes(g, 'peeker', b.x, vflip ? b.y + 13 * A - b.h - 2 : b.y + b.h - 13 * A + 2, { state: eyesOpen(t, i) ? 'open' : 'shut', vflip });
+      // ducked in: a dark slot with eyes, on the floor side (the ceiling side when it hangs);
+      // about to pop, it rattles and the eyes go wide
+      const warn = b.popIn > 0 && b.popIn < PEEK_WARN && (!b.supervised || b.watched);
+      const shake = warn ? (Math.floor(t * 30) % 2 ? A : -A) : 0;
+      px(g, b.x - A + shake, vflip ? b.y : b.y + b.h - 3 * A, 12, 3, 'rgba(0,0,0,0.6)');
+      drawEyes(g, 'peeker', b.x + shake, vflip ? b.y + 13 * A - b.h - 2 : b.y + b.h - 13 * A + 2, { state: warn || eyesOpen(t, i) ? 'open' : 'shut', vflip });
+      if (warn) drawStatusMark(g, b.x + b.w / 2, vflip ? b.y + 13 * A : b.y + b.h - 13 * A, 'alert', t, 1, vflip);
       return;
     }
     const jitter = b.active ? Math.round(Math.sin(t * 14 + i) * 0.6) * A : 0;
     const frame = (kind === 'lurker' || kind === 'daywalker') && b.active ? (Math.floor(t * 6 + i) % 2 ? 'b' : 'a') : 'a';
-    drawSprite(g, kind, frame, b.x + jitter, b.y, { flip, vflip });
+    const slacking = b.supervised && !b.watched;
+    drawSprite(g, kind, frame, b.x + jitter, b.y, { flip, vflip, alpha: slacking ? 0.55 : 1 });
     if (kind === 'daywalker') { drawShades(g, b.x + jitter, b.y, look); return; }
     const state = !b.active ? 'shut' : prankSquint > 0 ? 'squint' : eyesOpen(t, i) ? 'open' : 'shut';
     drawEyes(g, kind, b.x + jitter, b.y, { state, look, flip, vflip });
@@ -573,8 +578,8 @@ export function drawFreak(g, b, i, t, { layer, freakShift = NIGHT, frozenFlash =
     const color = PAL[freakShift].echo;
     drawSprite(g, kind, 'a', b.x, b.y, { outline: color, alpha: frozenFlash > 0 ? 1 : 0.85, flip, vflip });
     if (frozenFlash > 0) drawSprite(g, kind, 'a', b.x, b.y, { outline: '#ffffff', alpha: frozenFlash, flip, vflip });
-    if (kind === 'daywalker') drawShades(g, b.x, b.y, 0, 0.6);
-    else if (b.active || kind === 'supervisor') drawEyes(g, kind, b.x, b.y, { state: 'open', alpha: 0.6, flip, vflip });
+    if (kind === 'daywalker') drawShades(g, b.x, b.y, look, 0.6);
+    else if (b.active || kind === 'supervisor') drawEyes(g, kind, b.x, b.y, { state: 'open', look, alpha: 0.6, flip, vflip });
   }
 }
 
@@ -602,6 +607,91 @@ export function drawGlowEyes(g, cx, y, { t = 0, seed = 0 } = {}) {
       px(g, ex, y, 2, 4, C.freakEye);
     } else px(g, ex, y + 2 * A, 2, 1, C.freakEye);
   }
+}
+
+// ---------- telegraphs: what a freak or prank is about to do (docs/ART.md §3) ----------
+
+const PEEK_WARN = 0.35; // seconds of rattle before a peeker pops out
+const DANGER = '#ff6a4d';
+const TELL = '#ffd23f';
+
+// by a freak's head (y = that edge; `hang`: it hangs, so the mark sits below it, upright):
+// 'alert' = dangerous now, 'slack' = harmless for the moment
+export function drawStatusMark(g, cx, y, kind, t, alpha = 1, hang = false) {
+  if (kind === 'alert') {
+    const top = hang ? y + 6 : y - 20;
+    drawText(g, '!', cx, top + Math.round(Math.sin(t * 8)) * A, { scale: 2, color: '#ffec5a', halo: '#1b1209', align: 'center', alpha });
+  } else {
+    const k = (t * 0.8) % 1; // a z drifts away from the surface and off to the side
+    drawText(g, 'z', cx + 4 + k * 8, hang ? y + 2 + k * 10 : y - 16 - k * 10, { scale: 2, color: '#9fb4d8', halo: '#1b1209', align: 'center', alpha });
+  }
+}
+
+// the stretch of floor a patroller covers, end stops included (`hang`: of ceiling, marked from y downwards)
+export function drawPatrol(g, x0, x1, floorY, alpha = 1, hang = false) {
+  const prev = g.globalAlpha;
+  g.globalAlpha = prev * alpha;
+  g.fillStyle = DANGER;
+  for (let x = x0; x < x1; x += 4 * A) g.fillRect(Math.round(x), hang ? floorY : floorY - 2 * A, 2 * A, 2 * A);
+  g.fillRect(Math.round(x0), hang ? floorY : floorY - 4 * A, A, 4 * A);
+  g.fillRect(Math.round(x1) - A, hang ? floorY : floorY - 4 * A, A, 4 * A);
+  g.globalAlpha = prev;
+}
+
+// the supervisor's gaze: a scanline wedge from its eyes to the floor of the side it's watching (up, on a flipped night)
+export function drawGaze(g, b, reachX, floorY, alpha = 1) {
+  const cx = b.x + b.w / 2;
+  const top = b.hang ? b.y + b.h - 4 * A : b.y + 4 * A;
+  const rows = Math.abs(floorY - top) / (2 * A);
+  g.fillStyle = `rgba(255,236,90,${0.2 * alpha})`;
+  for (let i = 0; i < rows; i++) {
+    const w = (reachX - cx) * (i / rows);
+    g.fillRect(Math.round(Math.min(cx, cx + w)), Math.round(top + Math.sign(floorY - top) * i * 2 * A), Math.round(Math.abs(w)), A);
+  }
+}
+
+// over the supervisor's head: an arrow for the side it's watching, and pips running out until it turns
+export function drawTurnTimer(g, b, period, alpha = 1) {
+  const prev = g.globalAlpha;
+  g.globalAlpha = prev * alpha;
+  const cx = Math.round(b.x + b.w / 2);
+  const y = b.hang ? Math.round(b.y + b.h) + 4 * A : Math.round(b.y) - 10 * A;
+  px(g, cx - 7 * A, y - 2 * A, 14, 10, 'rgba(27,18,9,0.8)'); // a plate, so it reads on both shifts
+  const soon = b.turnIn < 0.35;
+  const color = soon ? '#ffffff' : '#ffec5a';
+  for (let i = 0; i < 3; i++) px(g, cx + b.facing * (i - 1) * 2 * A - A, y + i * A, 2, 5 - 2 * i, color);
+  const lit = Math.ceil((b.turnIn / period) * 4);
+  for (let i = 0; i < 4; i++) px(g, cx + (i * 3 - 5) * A, y + 5 * A, 2, 1, i < lit ? color : 'rgba(255,255,255,0.25)');
+  g.globalAlpha = prev;
+}
+
+// tiles a pending prank will change: filled = something will be here, crossed = it will be gone
+export function drawPrankCells(g, cells, isEmpty, { alpha = 1, color = TELL } = {}) {
+  const prev = g.globalAlpha;
+  const has = new Set(cells.map((c) => `${c.tx},${c.ty}`));
+  for (const c of cells) {
+    const x = c.tx * TILE;
+    const y = c.ty * TILE;
+    g.globalAlpha = prev * alpha;
+    if (isEmpty(c.ch)) {
+      for (let i = 2; i < 13; i += 2) {
+        px(g, x + i * A, y + i * A, 1, 1, color);
+        px(g, x + (14 - i) * A, y + i * A, 1, 1, color);
+      }
+    } else {
+      g.globalAlpha = prev * alpha * 0.16;
+      g.fillStyle = color;
+      g.fillRect(x, y, TILE, TILE);
+    }
+    g.fillStyle = color;
+    for (let i = 0; i < TILE; i += 3 * A) {
+      if (!has.has(`${c.tx},${c.ty - 1}`)) g.fillRect(x + i, y, 2 * A, A);
+      if (!has.has(`${c.tx},${c.ty + 1}`)) g.fillRect(x + i, y + TILE - A, 2 * A, A);
+      if (!has.has(`${c.tx - 1},${c.ty}`)) g.fillRect(x, y + i, A, 2 * A);
+      if (!has.has(`${c.tx + 1},${c.ty}`)) g.fillRect(x + TILE - A, y + i, A, 2 * A);
+    }
+  }
+  g.globalAlpha = prev;
 }
 
 // ---------- props (cosmetic, docs/ART.md §6.2) ----------

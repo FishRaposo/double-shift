@@ -102,6 +102,7 @@ function draw(t) {
   label('supervisor facing left', 470, y + 112);
   drawSprite(g, 'lurker', 'a', 620, y + 54, { scale: 3 });
   drawEyes(g, 'lurker', 620, y + 54, { state: 'shut', scale: 3 });
+  art.drawStatusMark(g, 650, y + 54, 'slack', 0.4);
   label('slacking', 618, y + 112);
   drawSprite(g, 'lurker', 'a', 720, y + 54, { scale: 3 });
   drawEyes(g, 'lurker', 720, y + 54, { state: 'squint', scale: 3 });
@@ -109,6 +110,7 @@ function draw(t) {
   // peeker hidden
   art.px(g, 820, y + 90, 12, 3, 'rgba(0,0,0,0.6)');
   drawEyes(g, 'peeker', 820, y + 66, { state: 'open' });
+  art.drawStatusMark(g, 832, y + 66, 'alert', 0);
   label('peeker hidden', 806, y + 112);
   ['lurker', 'peeker', 'squatter', 'supervisor'].forEach((k, i) => {
     drawSprite(g, k, 'a', 940 + i * 80, y + 54, { outline: PAL[NIGHT].echo, scale: 3 });

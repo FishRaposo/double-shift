@@ -364,4 +364,5 @@ The steps:
 - **`play()` merges a held shift into one press:** policies must alternate `shift: true/false`.
 - **HUD placement:** the HUD sits on rows 0–1; the level note is low on the screen for 5 s. Keep exits and tells out from under the HUD (rows 0–1, top corners).
 - **Static cache:** the static layer is cached per level × shift × prank state. Anything animated (portrait eyes, lasers, freaks, tells, checkpoints) must be drawn per frame in `drawPlay()`.
+- **Telegraphs come for free:** any prank with a `tell` gets the countdown and tile outlines; any lurker or day-walker gets a patrol track; supervised freaks get "!" and "z" (ART.md §3). All of them flip with the night on upside-down levels. The countdown sits just under the note and moves past it if it would land on a sooner one, so check crowded tells in the screenshot.
 - **Headless timing:** `npm run media` uses real keys; a cold Edge start can take 30 s. Draw-cost and audio checks fail the run if exceeded.
