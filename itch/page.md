@@ -74,7 +74,7 @@ npm run gif -- doors      # media/demo-doors.gif (480×270): Lost & Found's scri
 > **What's in this build:** 21 levels in five acts and a finale, from your first clock-in to the last, including an act where the night shift is upside down. Gamepad support, rebindable controls and a speedrun timer. Made for GitHub Game Off 2026 (theme: SHIFT).
 >
 > **How it was made**
-> Designed by Vinícius Raposo for GitHub Game Off 2026. Built with AI assistance (Claude) to his design document, then tested like production software: the gameplay rules are a pure module, the game has 350 automated tests, and every level is proven solvable at par by a scripted run. No engine, no assets: the pixel art, the pixel font and the music are all drawn and synthesized by code. Source: https://github.com/FishRaposo/double-shift
+> Designed by Vinícius Raposo for GitHub Game Off 2026. Built with AI assistance (Claude) to his design document, then tested like production software: the gameplay rules are a pure module, the game has 356 automated tests, and every level is proven solvable at par by a scripted run. No engine, no assets: the pixel art, the pixel font and the music are all drawn and synthesized by code. Source: https://github.com/FishRaposo/double-shift
 >
 > If you enjoyed it, a follow or a small donation helps.
 
