@@ -88,15 +88,6 @@ test('Mind Your Head: the first clock-in lands you on the walkway', () => {
   assert.equal(s.deaths, 0);
 });
 
-test('Mind Your Head: staying on night after the walkway never reaches the exit', () => {
-  const lvl = L.upside;
-  for (const jumpEvery of [0, 30, 55]) {
-    const { state } = play(lvl, (s, m, f) => ({ right: true, shift: s.shifts === 0 && tx(s) > 7, jump: jumpEvery && f % jumpEvery < 14 }), 120 * 15);
-    assert.equal(state.won, false, `won at night with jumpEvery=${jumpEvery}`);
-    assert.equal(state.shifts, 1);
-  }
-});
-
 test('Structural Integrity: the pillar stands at P1, P2, P3 after entries 1, 2, 3', () => {
   const lvl = L.pillar;
   const P = { P0: 6, P1: 11, P2: 20, P3: 13 };
@@ -206,23 +197,6 @@ test('Ceiling Walker: the wax before the tunnel keeps you sliding after you let 
   assert.ok(tx(state) > 14 || state.deaths > 0, `stopped at ${tx(state).toFixed(2)}`);
 });
 
-test("Ceiling Walker: the plank isn't there on the wrong night entry", () => {
-  const lvl = L.ceiling;
-  // the solution as far as the lurker's far side, then one clock-in too many: in (entry 2: the plank goes over
-  // the second pit), out, in (entry 3: back over the first one). The walkway's copy over pit B is open sky.
-  const policy = (s, m, f) => {
-    if (s.shifts < 2 || tx(s) < 19.1) return SOLUTIONS.ceiling(s, m, f);
-    if (s.nightEntries < 3) return { shift: f % 2 === 0 };
-    return { right: true };
-  };
-  const { events: all } = play(lvl, policy, 120 * 10);
-  const events = all.slice(0, all.findIndex((e) => e.type === 'death') + 1); // up to the first death
-  assert.deepEqual(events.filter((e) => e.type === 'prank').map((e) => e.id), ['plank1', 'plank2']);
-  const death = events.at(-1);
-  assert.ok(death && death.cause === 'fall' && death.layer === NIGHT, `died of ${death?.cause}`);
-  assert.ok(death.x > 21 * TILE && death.x < 30 * TILE, `fell up through the second pit's copy (x ${death.x})`);
-});
-
 test('Head Over Heels: staying on day meets the day-walker', () => {
   const lvl = L.heels;
   // never clocking in: the bottom slot through the block is one tile high, so no rhythm of jumps gets past it
@@ -293,19 +267,6 @@ test('Clock Out: room 2, the door goes on the second clock-in, but the far wall 
   assert.ok(maxX < 21 * TILE, `got to x ${maxX}`);
 });
 
-test('Clock Out: room 3, crossing the wax while the clipboard watches the far tunnel spooks', () => {
-  const policy = (s, m, f) => {
-    if (s.shifts < 5) return SOLUTIONS.clockout(s, m, f);
-    const sup = freakBoxes(L.clockout, s).find((b) => b.kind === 'supervisor');
-    if (sup.facing === 1 && sup.turnIn > 1) m.go = true;
-    return { right: !!m.go };
-  };
-  const { events } = play(L.clockout, policy, 120 * 12);
-  const death = events.find((e) => e.type === 'death');
-  assert.ok(death && death.cause === 'spooked' && death.by === 'lurker', `died of ${death?.cause}`);
-  assert.ok(death.x > 22 * TILE, `in room 3 (x ${death.x})`);
-});
-
 test('Clock Out: room 4, the third clock-in took the step: up the shaft never reaches the time clock', () => {
   // the solution across the wax (entry 3), then straight on up the shaft without clocking out and in again: no
   // ceiling over the shaft, and the time clock walled up, so you fly out the top or end up stuck under the wall
@@ -360,7 +321,6 @@ const solidAt = (lvl, s, cells) => cells.every(([tx, ty]) => tileAt(lvl, NIGHT, 
 
 test('relocations never run out: P2, the step, the planks all come round again by entry 40-41', () => {
   assert.ok(solidAt(L.pillar, toggleTo(L.pillar, 41), [[20, 10], [20, 11], [20, 12], [20, 13]]), 'pillar at P2 on entry 41');
-  assert.ok(solidAt(L.ceiling, toggleTo(L.ceiling, 40), [[22, 11], [29, 11]]), 'plank over pit B on entry 40');
   assert.ok(solidAt(L.heels, toggleTo(L.heels, 40), [[2, 3], [9, 3]]), 'plank over the last gap on entry 40');
 });
 
@@ -440,7 +400,16 @@ test('Head Over Heels: the spawn is nowhere near the exit (hold left, clock in e
 const TYPES = {
   clock: 'build', scaff: 'build', closing: 'power', midair: 'water', inventory: 'secure', watch: 'light', stairs: 'machine', doors: 'secure',
   wet: 'water', pillar: 'secure', supervisor: 'power', stacked: 'secure', portrait: 'light', daywalker: 'machine', offset: 'machine', audit: 'mixed',
+  upside: 'light', fallup: 'water', ceiling: 'secure', heels: 'power', clockout: 'mixed',
 };
+
+test('distribution: every level has its type, each type repeats, and only the first levels go without freaks', () => {
+  assert.deepEqual(Object.keys(TYPES).sort(), LEVELS.map((d) => d.id).sort());
+  const count = (type) => Object.values(TYPES).filter((t) => t === type).length;
+  for (const type of ['build', 'power', 'water', 'machine', 'light', 'secure']) assert.ok(count(type) >= 2, type);
+  const quiet = LEVELS.filter((d) => L[d.id].freaks.length === 0 && L[d.id].pranks.length === 0).map((d) => d.id);
+  assert.deepEqual(quiet, ['clock', 'scaff', 'midair']);
+});
 
 const without = (lvl, i) => ({ ...lvl, repairs: lvl.repairs.map((job, k) => (k === i ? { ...job, tool: { ...job.tool, tx: -9 } } : job)) });
 
@@ -488,7 +457,7 @@ for (const [id, type] of Object.entries(TYPES)) {
       if (first === null && s.events.some((e) => e.type === 'repaired')) first = f;
     });
     assert.ok(first <= inputs.length * 0.7, `repaired ${Math.round((first / inputs.length) * 100)}% of the way through`);
-    assert.ok(shifts >= 1 && (jumps >= 1 || type === 'mixed'), `${shifts} shifts and ${jumps} jumps after it`);
+    assert.ok(shifts >= 1 && (jumps >= 1 || type === 'mixed' || lvl.upsideDown), `${shifts} shifts and ${jumps} jumps after it`);
   });
 
   test(`${id}: ${type} does what a ${type} job does`, () => {

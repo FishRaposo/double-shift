@@ -223,6 +223,12 @@ export const SOLUTIONS = {
   // 4th clock-in brings it over the last gap).
   heels: (s, m) => {
     const x = tx(s);
+    const job = s.repairs[0];
+    if (job.at === 0 && !m.pulled) { // past the shutter, back to the box in the wall: the fuse comes along
+      if (x > 28.2) m.back = true;
+      return m.back ? { left: true } : { right: true };
+    }
+    if (m.back) m.pulled = true;
     if (s.player.y > 9 * TILE && !m.top) {
       const plan = [[11.2, 12.2, NIGHT], [15.6, 16.6, DAY], [21, 30, NIGHT]];
       const due = plan.find(([a, b]) => x >= a && x <= b);
@@ -234,8 +240,6 @@ export const SOLUTIONS = {
     const due = plan.find(([a, b]) => x >= a && x <= b);
     return { left: true, shift: !!due && s.layer !== due[2] };
   },
-  // in under the walkway (entry 1: the plank's over pit A); out past the pit, walk under the lurker's outline; in
-  // past its tunnel (entry 2: they move the plank over pit B); out over the exit
   ceiling: (s) => {
     const x = tx(s);
     const plan = [[2, 4, NIGHT], [13.9, 14.9, DAY], [20, 21, NIGHT], [31, 32, DAY]];
@@ -243,7 +247,10 @@ export const SOLUTIONS = {
     return { right: true, shift: !!due && s.layer !== due[2] };
   },
   // under the walkway, clock in and fall up onto it; past the pit, clock out and drop to the floor
-  upside: (s) => ({ right: true, shift: (tx(s) > 7 && tx(s) < 16 && want(s, NIGHT)) || (tx(s) > 19 && want(s, DAY)) }),
+  upside: (s) => {
+    const x = tx(s);
+    return { right: x < 30, left: x > 30.6, shift: (x > 7 && x < 28.4 && want(s, NIGHT)) || (x >= 28.4 && want(s, DAY)) };
+  },
   offset: (s, m) => {
     // four hops up the tower: walk into place, jump, shift at the apex onto the floor's copy
     const hops = [[7.5, NIGHT], [9.5, DAY], [11, NIGHT], [12, DAY]];
