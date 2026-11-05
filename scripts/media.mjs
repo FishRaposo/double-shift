@@ -193,8 +193,9 @@ async function fullRun() {
   flow('Space in the first 0.6 s keeps the timecard up', (await evaluate('__doubleShift.screen')) === 'card');
   // 3. settings opened from pause keep the night music
   await open('?level=watch&autostart');
+  await sleep(300); // the page's first frames
   await press('KeyK');
-  await sleep(200);
+  await sleep(300);
   await press('Escape');
   await press('KeyO');
   await sleep(100);
