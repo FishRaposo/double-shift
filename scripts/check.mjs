@@ -1,9 +1,10 @@
 // Syntax-check every module by importing it (browser-only main.js is checked with node --check).
 import { readdirSync } from 'node:fs';
 import { execFileSync } from 'node:child_process';
-for (const f of readdirSync('src')) {
-  if (!f.endsWith('.js')) continue;
-  execFileSync(process.execPath, ['--check', `src/${f}`], { stdio: 'inherit' });
+for (const [dir, ext] of [['src', '.js'], ['scripts', '.mjs']]) {
+  for (const f of readdirSync(dir)) {
+    if (f.endsWith(ext)) execFileSync(process.execPath, ['--check', `${dir}/${f}`], { stdio: 'inherit' });
+  }
 }
 await import('../src/rules.js');
 const { LEVELS } = await import('../src/levels.js');

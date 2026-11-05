@@ -1,5 +1,8 @@
 import { step, initState, parseLevel, NO_INPUT, TILE, freakBoxes, standableSpot, overridesAfter, PARAMS, DAY, NIGHT } from '../src/rules.js';
 
+// The slack every required input must have, by act (Fish, 2026-11-02; docs/LEVELS.md §1).
+export const WINDOW_FLOOR = (act) => (act <= 2 ? 200 : 100);
+
 // Build a level from compact ASCII for edge-case tests.
 export function level(day, night, extra = {}) {
   return parseLevel({ name: 'test', par: 0, day, night, ...extra });
@@ -112,6 +115,44 @@ export function inputWindows(lvl, policy) {
     });
   }
   return out.sort((a, b) => a.at - b.at);
+}
+
+// ---------- random search: is there a route the level didn't mean to allow? ----------
+
+export function rng(seed = 7) {
+  return () => (seed = (Math.imul(seed, 1103515245) + 12345) & 0x7fffffff) / 0x7fffffff;
+}
+
+// One random attempt with fewer than `par` clock-ins: walks left, right or stands in random stretches, jumps at
+// random, and clocks in at a random moment or a random column. Early presses are likelier, since a shortcut is
+// usually near the spawn. The clock-ins it took if it won without dying, else Infinity.
+export function randomAttempt(lvl, par, rnd, seconds = 9) {
+  const end = seconds * 120;
+  const moves = [];
+  for (let t = 0; t < end;) {
+    const n = 30 + Math.floor(rnd() * 300);
+    moves.push({ to: (t += n), dir: rnd() < 0.45 ? 1 : rnd() < 0.8 ? -1 : 0 });
+  }
+  const when = () => Math.floor(rnd() ** 2 * end);
+  const jumps = Array.from({ length: Math.floor(rnd() * 8) }, () => ({ at: when(), hold: 8 + Math.floor(rnd() * 60) }));
+  const shifts = Array.from({ length: Math.floor(rnd() * par) }, () => (rnd() < 0.5 ? { at: when() } : { col: rnd() * lvl.w, done: false }));
+  let s = initState(lvl);
+  const next = inputsFrom((st, mem, f) => {
+    const dir = (moves.find((m) => f < m.to) ?? { dir: 0 }).dir;
+    const col = st.player.x / TILE;
+    const shift = shifts.some((p) => (p.col === undefined ? f === p.at : !p.done && Math.abs(col - p.col) < 0.4 && (p.done = true)));
+    return { left: dir < 0, right: dir > 0, jump: jumps.some((j) => f >= j.at && f < j.at + j.hold), shift };
+  });
+  for (let f = 0; f < end && !s.won && s.deaths === 0; f++) s = step(lvl, s, next(s));
+  return s.won && s.deaths === 0 ? s.shifts : Infinity;
+}
+
+// The fewest clock-ins any of `tries` random attempts won with (Infinity: none won).
+export function searchBelowPar(lvl, par, tries, seed = 7) {
+  const rnd = rng(seed);
+  let fewest = Infinity;
+  for (let i = 0; i < tries; i++) fewest = Math.min(fewest, randomAttempt(lvl, par, rnd));
+  return fewest;
 }
 
 // ---------- fairness: respawn spots against patrols ----------

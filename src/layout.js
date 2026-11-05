@@ -87,10 +87,10 @@ export function actLabel(act) {
 // ---------- end screen ----------
 // One row per act (clock-ins and par over the levels played this run), then the totals. Twenty-one level
 // rows don't fit a 540-px screen at a readable size; six act rows do.
-export function endSummary(defs, results) {
+export function endSummary(defs, results, spent = []) {
   let shifts = 0;
   let par = 0;
-  let time = 0; // seconds spent in the levels played, every attempt (spent; else the clearing one): the run total
+  let time = 0; // the run total: `spent` is every second played this run, abandoned attempts included
   const rows = actRows(defs).map((idx) => {
     const act = defs[idx[0]].act;
     const played = idx.map((i) => results[i]).filter(Boolean);
@@ -103,9 +103,10 @@ export function endSummary(defs, results) {
     };
     shifts += row.shifts;
     par += row.par;
-    time += played.reduce((t, r) => t + (r.spent ?? r.time ?? 0), 0);
+    if (spent.length === 0) time += played.reduce((t, r) => t + (r.time ?? 0), 0);
     return row;
   });
+  for (const s of spent) time += s ?? 0;
   return { rows, shifts, par, time };
 }
 

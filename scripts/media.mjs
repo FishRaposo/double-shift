@@ -231,7 +231,7 @@ async function fullRun() {
   // the speedrun timer: SETTINGS > SPEEDRUN TIMER on with real keys; a level's HUD shows TIME; then off again
   await open('');
   await press('KeyO');
-  for (let i = 0; i < 4; i++) await press('ArrowDown');
+  for (let i = 0; i < 5; i++) await press('ArrowDown');
   await press('Enter'); // SPEEDRUN TIMER: ON
   await sleep(150);
   await shot('18-settings.png');
@@ -245,7 +245,7 @@ async function fullRun() {
   // controls: SETTINGS > CONTROLS, rebind JUMP to J with real keys, then back to the defaults
   await open('');
   await press('KeyO');
-  for (let i = 0; i < 5; i++) await press('ArrowDown');
+  for (let i = 0; i < 6; i++) await press('ArrowDown');
   await press('Enter'); // CONTROLS
   await press('ArrowDown');
   await press('ArrowDown');
@@ -299,7 +299,7 @@ async function fullRun() {
   await moment('upside', 'shift', 0.11, '20-flip-mind-your-head.png');
 
   // asset gallery + offline audio loudness check (peaks before the master gain; must not clip)
-  await open('tools/gallery.html', 1280, 1500);
+  await open('tools/gallery.html', 1280, 2100);
   await sleep(500);
   await shot('11-gallery.png');
   const audio = await evaluate('window.__audioCheck()');

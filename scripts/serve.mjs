@@ -32,7 +32,13 @@ const TYPES = {
 };
 
 const server = createServer(async (req, res) => {
-  const path = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+  let path;
+  try {
+    path = decodeURIComponent(new URL(req.url, 'http://x').pathname);
+  } catch {
+    res.writeHead(400).end();
+    return;
+  }
   const file = normalize(join(root, path.endsWith('/') ? path + 'index.html' : path));
   if (!file.startsWith(root + sep)) { res.writeHead(403).end(); return; }
   try {

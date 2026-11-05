@@ -1,7 +1,7 @@
 // Double Shift — a GIF89a encoder for the demo GIFs (scripts/gif.mjs). Pure and dependency-free, so it runs in
-// Node (test/gif.test.mjs) and in the page, where gif.mjs records frames. Three steps:
+// Node (test/gif.test.mjs) and in the page, where gif.mjs records frames. Four steps:
 //   downscale(rgba, w, h, k)  canvas pixels → packed 0xRRGGBB, each k×k block averaged (2: 960×540 → 480×270)
-//   createColorTable()        frames as small color ids while recording (2 bytes a pixel, not 4)
+//   createColorTable()        frames as color ids while recording (2 bytes a pixel, not 4, up to 65,536 colors)
 //   quantize(frames[, table]) one palette for every frame: exact up to 256 colors, else the 256 most frequent
 //   encodeGif(frames, ...)    palette indices → GIF bytes: looping, one image per frame, each frame storing only
 //                             the rectangle that changed since the last
@@ -34,7 +34,7 @@ export function downscale(rgba, w, h, k = 2) {
 }
 
 // Every color seen gets an id, in order of first sight, with a pixel count. add(frame) turns a packed frame
-// into ids: a Uint16Array while there are fewer than 65,536 colors, a Uint32Array after that.
+// into ids: a Uint16Array, or a Uint32Array once a frame needs an id past 65,535.
 export function createColorTable() {
   const idOf = new Map();
   const colors = [];
@@ -43,7 +43,7 @@ export function createColorTable() {
     colors,
     count: (id) => counts[id],
     add(frame) {
-      const out = colors.length + frame.length < 65536 ? new Uint16Array(frame.length) : new Uint32Array(frame.length);
+      let out = colors.length <= 65536 ? new Uint16Array(frame.length) : new Uint32Array(frame.length);
       for (let i = 0; i < frame.length; i++) {
         const c = frame[i];
         let id = idOf.get(c);
@@ -54,6 +54,7 @@ export function createColorTable() {
           if (id >= counts.length) { const more = new Float64Array(counts.length * 2); more.set(counts); counts = more; }
         }
         counts[id]++;
+        if (id > 0xffff && out.BYTES_PER_ELEMENT === 2) out = Uint32Array.from(out);
         out[i] = id;
       }
       return out;

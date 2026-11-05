@@ -391,7 +391,7 @@ export function drawRebar(g, tx, ty) {
 
 // Turning things over inside their cell, for a flipped layer: the one formula every hanging object uses.
 // mirrorInCell maps a span (y, height h in px) of row ty to its mirror; withCellMirror draws upside down.
-export function mirrorInCell(ty, y, h) {
+function mirrorInCell(ty, y, h) {
   return (2 * ty + 1) * TILE - y - h;
 }
 export function withCellMirror(g, ty, draw) {
@@ -550,7 +550,7 @@ export function drawSign(g, cx, cy, text, style = 'note', scale = 1) {
 // ---------- the freaks (sprites + eyes) ----------
 
 // b: freak box from rules.freakBoxes. layer: shift being drawn. freakShift: the shift it lives on.
-export function drawFreak(g, b, i, t, { layer, freakShift = NIGHT, frozenFlash = 0, prankSquint = 0, look = 0 }) {
+export function drawFreak(g, b, i, t, { layer, freakShift = NIGHT, frozenFlash = 0, prankSquint = 0, look = 0, reduced = false }) {
   const kind = b.kind;
   const live = layer === freakShift;
   const flip = kind === 'supervisor' && b.facing < 0; // its facing is the planning tell, frozen or not
@@ -560,13 +560,13 @@ export function drawFreak(g, b, i, t, { layer, freakShift = NIGHT, frozenFlash =
       // ducked in: a dark slot with eyes, on the floor side (the ceiling side when it hangs);
       // about to pop, it rattles and the eyes go wide
       const warn = b.popIn > 0 && b.popIn < PEEK_WARN && (!b.supervised || b.watched);
-      const shake = warn ? (Math.floor(t * 30) % 2 ? A : -A) : 0;
+      const shake = warn && !reduced ? (Math.floor(t * 30) % 2 ? A : -A) : 0;
       px(g, b.x - A + shake, vflip ? b.y : b.y + b.h - 3 * A, 12, 3, 'rgba(0,0,0,0.6)');
       drawEyes(g, 'peeker', b.x + shake, vflip ? b.y + 13 * A - b.h - 2 : b.y + b.h - 13 * A + 2, { state: warn || eyesOpen(t, i) ? 'open' : 'shut', vflip });
-      if (warn) drawStatusMark(g, b.x + b.w / 2, vflip ? b.y + 13 * A : b.y + b.h - 13 * A, 'alert', t, 1, vflip);
+      if (warn && !b.supervised) drawStatusMark(g, b.x + b.w / 2, vflip ? b.y + 13 * A : b.y + b.h - 13 * A, 'alert', reduced ? 0 : t, 1, vflip); // a worker wears its own mark
       return;
     }
-    const jitter = b.active ? Math.round(Math.sin(t * 14 + i) * 0.6) * A : 0;
+    const jitter = b.active && !reduced ? Math.round(Math.sin(t * 14 + i) * 0.6) * A : 0;
     const frame = (kind === 'lurker' || kind === 'daywalker') && b.active ? (Math.floor(t * 6 + i) % 2 ? 'b' : 'a') : 'a';
     const slacking = b.supervised && !b.watched;
     drawSprite(g, kind, frame, b.x + jitter, b.y, { flip, vflip, alpha: slacking ? 0.55 : 1 });
@@ -599,7 +599,7 @@ function drawShades(g, x, y, look = 0, alpha = 1) {
 }
 
 // Eyes in the dark (decor and prank tells): twice the freaks' eye size, with a soft glow, blinking.
-export function drawGlowEyes(g, cx, y, { t = 0, seed = 0 } = {}) {
+function drawGlowEyes(g, cx, y, { t = 0, seed = 0 } = {}) {
   const open = eyesOpen(t, seed);
   for (const ex of [cx - 4 * A, cx + 2 * A]) {
     if (open) {
@@ -682,6 +682,7 @@ export function drawPrankCells(g, cells, isEmpty, { alpha = 1, color = TELL } = 
       g.globalAlpha = prev * alpha * 0.16;
       g.fillStyle = color;
       g.fillRect(x, y, TILE, TILE);
+      g.globalAlpha = prev * alpha;
     }
     g.fillStyle = color;
     for (let i = 0; i < TILE; i += 3 * A) {
@@ -839,11 +840,20 @@ export const PROPS = {
   eyes(g, x, y, opt = {}) {
     drawGlowEyes(g, x + TILE / 2, y + 4 * A, { t: opt.t ?? 0, seed: opt.seed ?? 0 });
   },
+  // just watching: small and dim, with no glow, so the big glowing pair always means a prank is coming
+  watchers(g, x, y, opt = {}) {
+    const open = eyesOpen(opt.t ?? 0, opt.seed ?? 0);
+    const cx = x + TILE / 2;
+    for (const ex of [cx - 3 * A, cx + 2 * A]) {
+      if (open) px(g, ex, y + 4 * A, 1, 2, 'rgba(255,236,90,0.45)');
+      else px(g, ex, y + 5 * A, 1, 1, 'rgba(255,236,90,0.3)');
+    }
+  },
 };
 
 // ---------- planned-level objects (built now, used when their levels are built) ----------
 
-export function drawWetTile(g, tx, ty, layer, open, t = 0) {
+export function drawWetTile(g, tx, ty, layer, open) {
   drawSolidTile(g, tx, ty, layer, { ...open, up: false });
   const pal = PAL[layer];
   const x = tx * TILE;
@@ -919,6 +929,10 @@ export function drawPortrait(g, x, y, t, w = 3, h = 2) {
 
 // One entry of skinPlan() (src/skins.js): the object art over solid tiles. Portraits blink, so they need t.
 export function drawSkin(g, sp, layer, t = 0) {
+  if (sp.hang) { // turned over about its middle row: on a flipped night its floor end is the top
+    withCellMirror(g, sp.ty - (sp.h - 1) / 2, () => drawSkin(g, { ...sp, hang: false }, layer, t));
+    return;
+  }
   if (sp.draw === 'door') drawDoor(g, sp.tx, sp.ty, layer, sp.h);
   else if (sp.draw === 'emptyFrame') drawEmptyFrame(g, sp.tx, sp.ty, layer, sp.h);
   else if (sp.draw === 'pillar') drawPillar(g, sp.tx, sp.ty - sp.h + 1, sp.ty, layer);

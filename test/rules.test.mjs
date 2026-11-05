@@ -447,6 +447,16 @@ test('pending pranks: a repeating prank stays pending, and a lap that changes no
   assert.ok(pendingPranks(lvl, s)[0].tell, 'the coming lap keeps its tell');
 });
 
+test('pending pranks: two pranks telling from one spot show only the soonest', () => {
+  const lvl = level(OPEN, BLANK, {
+    pranks: [
+      { id: 'later', onNight: 2, tell: { tx: 3, ty: 3 }, set: [{ layer: 'night', x0: 6, x1: 6, y0: 5, ch: '#' }] },
+      { id: 'soon', onNight: 1, tell: { tx: 3, ty: 3 }, set: [{ layer: 'night', x0: 4, x1: 4, y0: 5, ch: '#' }] },
+    ],
+  });
+  assert.deepEqual(pendingPranks(lvl, initState(lvl)).map((p) => [p.id, !!p.tell]), [['soon', true], ['later', false]]);
+});
+
 test('pending pranks: count down in night entries and list only the tiles that will change', () => {
   const lvl = level(OPEN, BLANK, {
     pranks: [
@@ -459,6 +469,7 @@ test('pending pranks: count down in night entries and list only the tiles that w
   assert.deepEqual(list.map((p) => [p.id, p.nights]), [['put', 1], ['back', 2]]);
   assert.equal(list[0].cells.length, 2);
   assert.equal(list[1].cells.length, 0, 'a tile already spoken for shows its next change only');
+  assert.equal(list[1].tell, null, 'and a prank with nothing to change yet keeps its tell to itself');
   s = step(lvl, s, SHIFT); // entry 1: `put` fires
   list = pendingPranks(lvl, s);
   assert.deepEqual(list.map((p) => [p.id, p.nights]), [['back', 1]]);

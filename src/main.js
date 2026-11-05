@@ -5,8 +5,8 @@ import { step, initState, parseLevel, tileAt, isSolidChar, freakBoxes, pendingPr
 import { LEVELS, ACTS, FINALE_ACT } from './levels.js';
 import { createInput } from './input.js';
 import { createPad, readPads, padMenuKey } from './pad.js';
-import { ACTIONS, DEFAULT_BINDS, ownsKey, rebind, keysText, keysShort, browserShortcut } from './keys.js';
-import { sfx, playSound, unlockAudio, toggleMute, setVolumes, setMusicShift, setMusicAct, setMenu } from './audio.js';
+import { ACTIONS, DEFAULT_BINDS, ownsKey, rebind, keyLabel, keysText, keysShort, browserShortcut } from './keys.js';
+import { sfx, playSound, unlockAudio, setVolumes, setMusicShift, setMusicAct, setMenu } from './audio.js';
 import { skinPlan, checkpointHangs, exitPose } from './skins.js';
 import { createSave, createSettings, isUnlocked } from './save.js';
 import { drawText, measureText, wrapText } from './font.js';
@@ -32,7 +32,7 @@ const input = createInput(() => settings.binds());
 let keyLayout = null;
 try {
   navigator.keyboard?.getLayoutMap?.().then((m) => { keyLayout = m; }, () => {});
-} catch { /* not allowed here */ } // the player's key bindings (src/keys.js)
+} catch { /* not allowed here */ }
 const NIGHT_PAL = SPRITES.worker.nightPalette;
 const levels = LEVELS.map(parseLevel);
 const storage = (() => { try { return localStorage; } catch { return null; } })();
@@ -43,8 +43,10 @@ setVolumes(settings.get());
 const params = new URLSearchParams(location.search);
 const freshFx = () => ({ flash: 0, flashLayer: DAY, fail: 0, death: 0, land: 0, rings: [], pops: [], dust: [], puffs: [], sparkles: [], spook: null, freeze: 0, squint: 0, ping: 0 });
 const game = {
-  screen: 'title', // title | select | settings | act | play | card | end | paused
+  screen: 'title', // title | select | settings | controls | act | play | card | end | paused
   settingsFrom: 'title', // where Esc returns to from settings
+  selectFrom: 'title', // where Esc returns to from level select
+  padLast: false, // the pad was used last: on-screen hints name its buttons
   settingsRow: 0,
   selected: 0, // highlighted card on the level select screen
   newBest: false, // the last clear beat a saved best
@@ -75,7 +77,7 @@ function startRun(i) {
   startLevel(i);
 }
 
-// Start a level. An act's first level gets its title card first, once per run through the act.
+// Start a level. Entering a new act shows its title card first, once per run through the act.
 function startLevel(i, { card = true } = {}) {
   game.index = i;
   game.state = initState(levels[i]);
@@ -85,7 +87,7 @@ function startLevel(i, { card = true } = {}) {
   const act = LEVELS[i].act;
   if (card && act !== game.actShown) {
     game.actShown = act;
-    sfx.sting?.();
+    sfx.sting();
     setScreen('act');
   } else setScreen('play');
 }
@@ -97,9 +99,9 @@ function openSettings() {
   input.clear();
 }
 
-// Settings rows: three volumes, two switches, then the controls screen.
-const SETTING_ROWS = [['master', 'MASTER'], ['music', 'MUSIC'], ['sfx', 'SOUND'], ['reduced', 'REDUCED EFFECTS'], ['timer', 'SPEEDRUN TIMER'], ['controls', 'CONTROLS']];
-const SWITCHES = ['reduced', 'timer'];
+// Settings rows: three volumes, three switches, then the controls screen.
+const SETTING_ROWS = [['master', 'MASTER'], ['music', 'MUSIC'], ['sfx', 'SOUND'], ['mute', 'MUTE'], ['reduced', 'REDUCED EFFECTS'], ['timer', 'SPEEDRUN TIMER'], ['controls', 'CONTROLS']];
+const SWITCHES = ['mute', 'reduced', 'timer'];
 
 function adjustSetting(row, dir) {
   const [key] = SETTING_ROWS[row];
@@ -130,7 +132,7 @@ function chooseControl(row) {
   if (key === 'reset') {
     settings.set({ binds: DEFAULT_BINDS });
     game.controlsNote = 'Back to the defaults.';
-    sfx.uiSelect?.();
+    sfx.uiSelect();
   } else {
     game.capturing = key; // the next key pressed becomes this action's key
     game.controlsNote = '';
@@ -146,14 +148,15 @@ function captureKey(code) {
   if (r.ok) {
     settings.set({ binds: r.binds });
     game.controlsNote = '';
-    sfx.uiSelect?.();
+    sfx.uiSelect();
   } else {
-    game.controlsNote = "Not that one: use a letter, a digit, an arrow, Space or Shift (R, L, O and M are the menus').";
+    game.controlsNote = `Not that one: use a letter, a digit, an arrow, Space or Shift (${['KeyR', 'KeyL', 'KeyO'].map(keyName).join(', ')} and ${keyName('KeyM')} are the menus').`;
     sfx.shiftFail();
   }
 }
 
 function openSelect() {
+  game.selectFrom = game.screen;
   game.selected = game.index;
   setScreen('select');
   input.clear();
@@ -169,7 +172,7 @@ function handleKey(e) {
   if (game.capturing || ownsKey(e.code)) e.preventDefault?.(); // every key the game could use, bound or not: no page scrolling
   if (e.repeat) { input.keyDown(e); return; }
   if (game.screen === 'controls' && game.capturing) { captureKey(e.code); return; } // before mute (M) and debug (the backquote) take theirs
-  if (e.code === 'KeyM') { toggleMute(); return; }
+  if (e.code === 'KeyM') { setVolumes(settings.set({ mute: !settings.get().mute })); return; }
   if (e.code === 'Backquote') { game.debug = !game.debug; return; }
   if (game.screen === 'title') {
     if (e.code === 'Space' || e.code === 'Enter') startRun(game.index);
@@ -193,15 +196,15 @@ function handleKey(e) {
     else if (e.code === 'Escape') setScreen('settings');
     return;
   }
-  if (game.screen === 'act') { setScreen('play'); input.keyDown(e); return; }
+  if (game.screen === 'act') { setScreen('play'); input.keyDown({ code: e.code, repeat: true }); return; } // holds, never a press: skipping the card spends no clock-in
   if (game.screen === 'select') {
     const dir = SELECT_KEYS[e.code];
-    if (dir) { game.selected = moveSelect(LEVELS, game.selected, dir[0], dir[1]); sfx.uiMove?.(); }
+    if (dir) { game.selected = moveSelect(LEVELS, game.selected, dir[0], dir[1]); sfx.uiMove(); }
     else if (e.code === 'Space' || e.code === 'Enter') {
-      if (isUnlocked(LEVELS, game.selected, save)) { sfx.uiSelect?.(); startLevel(game.selected); }
+      if (isUnlocked(LEVELS, game.selected, save)) startFromSelect(game.selected);
       else sfx.shiftFail(); // NOT YET
     }
-    else if (e.code === 'Escape' || e.code === 'KeyL') setScreen('title');
+    else if (e.code === 'Escape' || e.code === 'KeyL') setScreen(game.selectFrom);
     return;
   }
   if (game.screen === 'card') {
@@ -210,14 +213,17 @@ function handleKey(e) {
       if (game.index + 1 < levels.length) startLevel(game.index + 1);
       else setScreen('end');
     } else if (e.code === 'KeyR') startLevel(game.index, { card: false });
+    else if (e.code === 'KeyL') openSelect();
     return;
   }
   if (game.screen === 'end') {
+    if (game.screenTime < 0.6) return; // mashing past the last timecard mustn't skip the ending
     if (e.code === 'Space' || e.code === 'Enter') startRun(0);
+    else if (e.code === 'Escape') setScreen('title');
     return;
   }
   if (game.screen === 'paused') {
-    if (e.code === 'Escape' || e.code === 'Space') setScreen('play');
+    if (e.code === 'Escape' || e.code === 'Space' || e.code === 'Enter') setScreen('play');
     else if (e.code === 'KeyR') startLevel(game.index, { card: false });
     else if (e.code === 'KeyL') openSelect();
     else if (e.code === 'KeyO') openSettings();
@@ -228,7 +234,7 @@ function handleKey(e) {
   if (e.code === 'KeyR') { startLevel(game.index, { card: false }); return; }
   input.keyDown(e);
 }
-addEventListener('keydown', handleKey);
+addEventListener('keydown', (e) => { game.padLast = false; handleKey(e); });
 addEventListener('keyup', (e) => { input.keyUp(e); });
 
 // ---------- gamepad (src/pad.js: a fixed mapping on the standard layout) ----------
@@ -240,6 +246,7 @@ const pad = createPad();
 let padOff = false; // the browser won't share gamepads (an embed's permissions): keyboard only from then on
 
 function padDown(code) {
+  game.padLast = true;
   if (game.capturing) { if (code === 'PadB' || code === 'PadStart') handleKey({ code: 'Escape' }); return; }
   if (game.screen === 'play' || game.screen === 'act') {
     if (code === 'PadStart') handleKey({ code: 'Escape' });
@@ -261,7 +268,11 @@ function pollPad() {
   }
   for (const code of pad.held()) input.keyDown({ code, repeat: true }); // a hold survives input.clear(), as key-repeat does
 }
-addEventListener('blur', () => input.clear());
+// Clicking outside an itch embed mustn't leave the level running.
+addEventListener('blur', () => {
+  input.clear();
+  if (game.screen === 'play') setScreen('paused');
+});
 // Size the canvas to a whole number of device pixels per canvas pixel unless that wastes > 15% of the window
 // (src/layout.js canvasScale); the CSS in index.html is the fallback before this runs.
 function fitCanvas() {
@@ -274,8 +285,10 @@ fitCanvas();
 
 // In an itch.io embed the first click is what gives the game keyboard focus, so let it clock in too.
 canvas.addEventListener('pointerdown', (e) => {
+  if (e.button !== 0) return;
   canvas.focus();
   unlockAudio();
+  game.padLast = false;
   const r = canvas.getBoundingClientRect();
   const x = ((e.clientX - r.left) * W) / r.width;
   const y = ((e.clientY - r.top) * H) / r.height;
@@ -286,7 +299,7 @@ canvas.addEventListener('pointerdown', (e) => {
     else startRun(game.index);
   } else if (game.screen === 'settings') {
     const row = SETTING_ROWS.findIndex((_, k) => inside(settingRect(k)));
-    if (row >= 0) { const r = settingRect(row); adjustSetting(row, x < r.x + r.w / 2 ? -1 : 1); }
+    if (row >= 0) { const r = settingRect(row); game.settingsRow = row; adjustSetting(row, x < r.x + r.w / 2 ? -1 : 1); }
     else setScreen(game.settingsFrom); // click outside the rows: back
   } else if (game.screen === 'controls') {
     const row = CONTROL_ROWS.findIndex((_, k) => inside(controlRect(k)));
@@ -297,17 +310,19 @@ canvas.addEventListener('pointerdown', (e) => {
     setScreen('play');
   } else if (game.screen === 'select') {
     const hit = selectClick(LEVELS, x, y); // src/layout.js: tabs and gaps do nothing; header and hints go back
-    if (hit.kind === 'back') setScreen('title');
+    if (hit.kind === 'back') setScreen(game.selectFrom);
     else if (hit.kind !== 'none') {
       const i = hit.kind === 'card' ? hit.index : game.selected; // the detail bar clocks into the selection
-      if (isUnlocked(LEVELS, i, save)) startLevel(i);
+      if (isUnlocked(LEVELS, i, save)) startFromSelect(i);
       else { game.selected = i; sfx.shiftFail(); } // NOT YET
     }
-  } else if (game.screen === 'card' && game.screenTime >= 0.6) {
-    if (game.index + 1 < levels.length) startLevel(game.index + 1);
-    else setScreen('end');
+  } else if (game.screen === 'paused') {
+    const hit = actionAt(PAUSE_ACTIONS, PAUSE_ROW, x, y);
+    if (hit) handleKey({ code: hit.code });
+  } else if (game.screen === 'card') {
+    handleKey({ code: actionAt(CARD_ACTIONS, CARD_ROW, x, y)?.code ?? 'Space' }); // anywhere else: next
   } else if (game.screen === 'end') {
-    startRun(0);
+    handleKey({ code: actionAt(END_ACTIONS, END_ROW, x, y)?.code ?? 'Space' });
   }
 });
 
@@ -316,7 +331,40 @@ canvas.addEventListener('pointerdown', (e) => {
 
 const TITLE_SELECT = { x: W / 2 - 250, y: 444, w: 240, h: 32 };
 const TITLE_SETTINGS = { x: W / 2 + 10, y: 444, w: 240, h: 32 };
-const settingRect = (row) => ({ x: W / 2 - 260, y: 124 + row * 54, w: 520, h: 46 });
+const settingRect = (row) => ({ x: W / 2 - 260, y: 110 + row * 50, w: 520, h: 44 });
+
+// On-screen key names: the layout's for letters, and the pad's button when the pad was used last.
+const KEY_WORDS = { Space: 'SPACE', Escape: 'Esc', Enter: 'Enter' };
+const keyName = (code) => KEY_WORDS[code] ?? keyLabel(code, keyLayout);
+const PAD_WORDS = { Space: 'A', Escape: 'B', KeyR: 'Back', KeyL: 'X', KeyO: 'Y' };
+const btnName = (code) => (game.padLast ? PAD_WORDS[code] : keyName(code));
+
+// A centred row of actions ("Esc: resume   R: restart"), the same on every device: each is also a click target.
+const PAUSE_ACTIONS = [['Escape', 'resume'], ['KeyR', 'restart'], ['KeyL', 'levels'], ['KeyO', 'settings']];
+const CARD_ACTIONS = [['Space', 'next'], ['KeyR', 'retry'], ['KeyL', 'levels']];
+const END_ACTIONS = [['Space', 'clock in again'], ['Escape', 'title']];
+const PAUSE_ROW = { y: H / 2 + 12 };
+const CARD_ROW = { y: 402 };
+const END_ROW = { y: H - 60 };
+function actionRects(actions, row) {
+  const items = actions.map(([code, what]) => ({ code, text: `${btnName(code)}: ${what}`, w: 0 }));
+  for (const it of items) it.w = measureText(it.text, 2);
+  const gap = 28;
+  let x = W / 2 - (items.reduce((n, it) => n + it.w, 0) + gap * (items.length - 1)) / 2;
+  for (const it of items) { it.x = Math.round(x); it.y = row.y; x += it.w + gap; }
+  return items;
+}
+const actionAt = (actions, row, x, y) => actionRects(actions, row).find((a) => x >= a.x - 8 && x <= a.x + a.w + 8 && y >= a.y - 8 && y <= a.y + 22);
+function drawActions(actions, row, color) {
+  for (const a of actionRects(actions, row)) drawText(g, a.text, a.x, a.y, { scale: 2, color });
+}
+
+// Level select from the title starts a run; from a level, it carries on the one in progress.
+function startFromSelect(i) {
+  sfx.uiSelect();
+  if (game.selectFrom === 'title') startRun(i);
+  else startLevel(i);
+}
 const SELECT_KEYS = {
   ArrowLeft: [-1, 0], KeyA: [-1, 0], ArrowRight: [1, 0], KeyD: [1, 0],
   ArrowUp: [0, -1], KeyW: [0, -1], ArrowDown: [0, 1], KeyS: [0, 1],
@@ -333,9 +381,7 @@ function feetDust(ev) {
 }
 
 function handleEvents(events) {
-  const p = game.state.player;
   const fx = game.fx;
-  const cx = p.x + PARAMS.playerW / 2;
   for (const ev of events) {
     switch (ev.type) {
       case 'shift':
@@ -344,8 +390,8 @@ function handleEvents(events) {
         if (level().upsideDown) sfx.flip(); // gravity just turned over
         fx.flash = 1;
         fx.flashLayer = ev.layer;
-        fx.rings.push({ x: cx, y: p.y + PARAMS.playerH / 2, t: 0, layer: ev.layer });
-        if (level().freaks.some((f) => f.shift !== ev.layer)) { fx.freeze = 1; sfx.freeze?.(); } // someone just froze
+        fx.rings.push({ x: ev.x + PARAMS.playerW / 2, y: ev.y + PARAMS.playerH / 2, t: 0, layer: ev.layer });
+        if (level().freaks.some((f) => f.shift !== ev.layer)) { fx.freeze = 1; sfx.freeze(); } // someone just froze
         break;
       case 'shiftFail': sfx.shiftFail(); fx.fail = 1; break;
       case 'jump': sfx.jump(); fx.dust.push(feetDust(ev)); break;
@@ -359,7 +405,7 @@ function handleEvents(events) {
           // the line goes over the worker's head: above it, or under it while hanging on a flipped night
           const hanging = gravitySign(level(), ev.layer) < 0;
           fx.pops.push({ x: ev.x + PARAMS.playerW / 2, y: hanging ? ev.y + PARAMS.playerH + 50 : ev.y - 20, t: 0, text: SPOOK_LINES[spookIx++ % SPOOK_LINES.length] });
-          fx.spook = { x: ev.x, y: ev.y, t: 0, layer: ev.layer ?? game.state.layer };
+          fx.spook = { x: ev.x, y: ev.y, t: 0, layer: ev.layer, flip: game.state.player.facing < 0 };
         } else {
           sfx.death();
           fx.puffs.push({ x: ev.x + PARAMS.playerW / 2, y: ev.y + PARAMS.playerH / 2, t: 0 });
@@ -368,7 +414,7 @@ function handleEvents(events) {
         break;
       case 'prank': {
         sfx.giggle();
-        sfx.shimmer?.();
+        sfx.shimmer();
         fx.squint = 1;
         fx.pops.push({ x: W / 2, y: 86, t: 0, text: 'hee hee hee', big: true });
         const pr = level().pranks.find((q) => q.id === ev.id);
@@ -380,7 +426,7 @@ function handleEvents(events) {
       case 'win':
         sfx.win();
         setTimeout(() => sfx.stamp(), 450);
-        game.results[game.index] = { shifts: ev.shifts, par: ev.par, deaths: game.state.deaths, time: game.state.time, spent: game.spent[game.index] ?? game.state.time };
+        game.results[game.index] = { shifts: ev.shifts, par: ev.par, deaths: game.state.deaths, time: game.state.time };
         {
           const { id, rev } = LEVELS[game.index]; // rev: undefined is revision 1 (save.js)
           const hadBest = save.best(id, rev) !== null;
@@ -464,7 +510,7 @@ function solidEdges(lvl, layer, ov) {
       if (!solidAt(lvl, layer, tx, ty, ov)) continue;
       const x = tx * TILE;
       const y = ty * TILE;
-      if (!solidAt(lvl, layer, tx, ty - 1, ov)) segs.push([x, y, x + TILE, y, 'top']);
+      if (!solidAt(lvl, layer, tx, ty - 1, ov) && ty > 0) segs.push([x, y, x + TILE, y, 'top']);
       if (!solidAt(lvl, layer, tx, ty + 1, ov) && ty + 1 < lvl.h) segs.push([x, y + TILE, x + TILE, y + TILE, 'bot']);
       if (!solidAt(lvl, layer, tx - 1, ty, ov) && tx > 0) segs.push([x, y, x, y + TILE, 'left']);
       if (!solidAt(lvl, layer, tx + 1, ty, ov) && tx + 1 < lvl.w) segs.push([x + TILE, y, x + TILE, y + TILE, 'right']);
@@ -533,8 +579,10 @@ function staticLayer(lvl, def, layer, ov) {
           left: !solidAt(lvl, layer, tx - 1, ty, ov) && tx > 0,
           right: !solidAt(lvl, layer, tx + 1, ty, ov) && tx + 1 < lvl.w,
         };
-        if (ch === '~') drawWetTile(ctx, tx, ty, layer, open);
-        else drawSolidTile(ctx, tx, ty, layer, open);
+        const draw = ch === '~' ? drawWetTile : drawSolidTile;
+        // on a flipped layer the side you stand on is the underside, so that's where the lip goes
+        if (gravitySign(lvl, layer) < 0) withCellMirror(ctx, ty, () => draw(ctx, tx, ty, layer, { ...open, up: open.down, down: open.up }));
+        else draw(ctx, tx, ty, layer, open);
       }
     }
   }
@@ -595,8 +643,8 @@ function drawTells(lvl, s, layer, t) {
     if (layer === NIGHT) {
       // eyes over the target, or under it when the night hangs upside down (the eyes are 8 px tall)
       const up = gravitySign(lvl, layer) < 0;
-      PROPS.eyes(g, x - 30, up ? y + 42 : y - 50, { t, seed: 7 });
-      PROPS.eyes(g, x + 4, up ? y + 56 : y - 64, { t, seed: 3 });
+      PROPS.eyes(g, x - 30, up ? y + 26 : y - 50, { t, seed: 7 });
+      PROPS.eyes(g, x + 4, up ? y + 40 : y - 64, { t, seed: 3 });
     } else {
       drawSign(g, x, y - 36, pr.tell.text ?? 'MINE', 'note', 2); // the freaks' sticky note (WRITING.md §5)
     }
@@ -606,6 +654,8 @@ function drawTells(lvl, s, layer, t) {
   }
 }
 
+const HUD_BOTTOM = 62;
+
 // Where a tell's countdown goes: on the tell's side of its target, clear of the screen edge and the exit's
 // column; a label that would land on a sooner one (they're placed soonest first) moves past the note.
 function countdownSpot(lvl, labels, tellX, tellY, w, flipped) {
@@ -614,7 +664,7 @@ function countdownSpot(lvl, labels, tellX, tellY, w, flipped) {
   if (x + w / 2 > exitLeft && x - w / 2 < exitLeft + TILE) x = exitLeft - w / 2;
   const hits = (y) => labels.some((l) => Math.abs(l.x - x) < (l.w + w) / 2 + 4 && Math.abs(l.y - y) < 16);
   const near = flipped ? tellY + 2 : tellY - 16;
-  const y = hits(near) ? (flipped ? tellY + 52 : tellY - 66) : near;
+  const y = Math.max(HUD_BOTTOM, hits(near) ? (flipped ? tellY + 60 : tellY - 82) : near);
   labels.push({ x, y, w });
   return { x, y };
 }
@@ -631,22 +681,22 @@ function drawFreakPlans(lvl, boxes, layer) {
     }
     if (b.kind === 'supervisor') {
       // the wedge reaches the far end of the watched side's patrols
+      const side = (w, j) => w.supervised && Math.sign(lvl.freaks[j].tx - f.tx) === b.facing;
       const edges = boxes.flatMap((w, j) => {
-        const wf = lvl.freaks[j];
-        if (!w.supervised || Math.sign(wf.tx - f.tx) !== b.facing) return [];
-        const x0 = wf.tx * TILE + (TILE - w.w) / 2;
-        return [b.facing > 0 ? x0 + (wf.range ?? 0) * TILE + w.w : x0];
+        if (!side(w, j)) return [];
+        const x0 = lvl.freaks[j].tx * TILE + (TILE - w.w) / 2;
+        return [b.facing > 0 ? x0 + lvl.freaks[j].range * TILE + w.w : x0];
       });
-      const worker = boxes.find((w) => w.supervised);
+      const worker = boxes.find(side);
       if (edges.length) drawGaze(g, b, b.facing > 0 ? Math.max(...edges) : Math.min(...edges), worker.hang ? worker.y : worker.y + worker.h, live ? 1 : 0.5);
     }
   });
 }
 
-function drawDecor(lvl, def, layer, t) {
+function drawDecor(def, layer, t) {
   if (layer !== NIGHT) return;
   (def.decor ?? []).forEach((d, i) => {
-    if (d.kind === 'eyes') PROPS.eyes(g, d.tx * TILE, d.ty * TILE, { t, seed: 11 + i * 5 });
+    if (d.kind === 'eyes') PROPS.watchers(g, d.tx * TILE, d.ty * TILE, { t, seed: 11 + i * 5 });
   });
 }
 
@@ -677,11 +727,11 @@ function drawSpookGag() {
   const vflip = gravitySign(level(), sp.layer) < 0;
   const pop = Math.sin(Math.min(1, sp.t / 0.35) * Math.PI) * 26;
   const palette = sp.layer === NIGHT ? NIGHT_PAL : null;
-  drawSprite(g, 'worker', 'boots', sp.x, sp.y, { palette, vflip });
-  drawSprite(g, 'worker', 'spookBody', sp.x, sp.y + (vflip ? pop : -pop), { palette, vflip });
+  drawSprite(g, 'worker', 'boots', sp.x, sp.y, { palette, vflip, flip: sp.flip });
+  drawSprite(g, 'worker', 'spookBody', sp.x, sp.y + (vflip ? pop : -pop), { palette, vflip, flip: sp.flip });
 }
 
-function drawFx(layer, reduced) {
+function drawFx(reduced) {
   const fx = game.fx;
   for (const d of fx.dust) drawDust(g, d.x, d.y, d.t / 0.3, { up: d.up });
   for (const q of fx.puffs) drawPuff(g, q.x, q.y, q.t / 0.4);
@@ -699,7 +749,9 @@ function drawFx(layer, reduced) {
   }
   for (const q of fx.pops) {
     const a = Math.min(1, (0.9 - q.t) / 0.3);
-    drawText(g, q.text, q.x, q.y - q.t * 30, { scale: 2, color: q.big ? '#ffec5a' : '#ffffff', halo: '#1b1209', align: 'center', alpha: a });
+    const half = measureText(q.text, 2) / 2 + 8; // on screen and clear of the HUD
+    const x = Math.min(W - half, Math.max(half, q.x));
+    drawText(g, q.text, x, Math.max(HUD_BOTTOM, q.y - q.t * 30), { scale: 2, color: q.big ? '#ffec5a' : '#ffffff', halo: '#1b1209', align: 'center', alpha: a });
   }
 }
 
@@ -781,7 +833,7 @@ function drawPlay() {
   g.drawImage(background(layer, def.act), 0, 0);
   const still = staticLayer(lvl, def, layer, s.overrides);
   g.drawImage(still.canvas, 0, 0);
-  drawHazards(lvl, layer, t, s.overrides);
+  drawHazards(lvl, layer, reduced ? 0 : t, s.overrides);
   for (const sp of still.portraits) {
     drawSkin(g, sp, layer, t);
     // the shift cues on top of the per-frame portrait, like the static layer does for everything else
@@ -790,7 +842,7 @@ function drawPlay() {
   lvl.checkpoints.forEach((c, i) => {
     drawCheckpoint(g, c.tx, c.ty, s.checkpoint.id === c.id, s.checkpoint.id === c.id ? game.fx.ping : 0, { hang: still.hangs[i] });
   });
-  drawDecor(lvl, def, layer, t);
+  drawDecor(def, layer, t);
   drawTells(lvl, s, layer, t);
   const boxes = freakBoxes(lvl, s);
   drawFreakPlans(lvl, boxes, layer);
@@ -799,15 +851,15 @@ function drawPlay() {
     const look = b.kind === 'supervisor' ? b.facing : b.dir;
     // supervisors squint just before they turn: the readable anticipation cue
     const squint = Math.max(game.fx.squint, b.kind === 'supervisor' && b.turnIn < 0.35 ? 1 : 0);
-    drawFreak(g, b, i, t, { layer, freakShift: b.shift, frozenFlash: game.fx.freeze, prankSquint: squint, look });
+    drawFreak(g, b, i, t, { layer, freakShift: b.shift, frozenFlash: reduced ? 0 : game.fx.freeze, prankSquint: squint, look, reduced });
     const alpha = layer === b.shift ? 1 : 0.85;
     // under a supervisor, workers wear their status: "!" while watched (dangerous), "z" while slacking (harmless)
-    if (b.supervised) drawStatusMark(g, b.x + b.w / 2, b.hang ? b.y + b.h : b.y, b.watched ? 'alert' : 'slack', t, alpha, b.hang);
+    if (b.supervised) drawStatusMark(g, b.x + b.w / 2, b.hang ? b.y + b.h : b.y, b.watched ? 'alert' : 'slack', reduced ? 0 : s.freakClock, alpha, b.hang); // on its clock: a frozen mark stays put
     if (b.kind === 'supervisor') drawTurnTimer(g, b, lvl.freaks[i].period, alpha);
   });
   if (game.fx.spook) drawSpookGag();
   else drawWorker(s, layer);
-  drawFx(layer, reduced);
+  drawFx(reduced);
   // a memo's text, while you stand by it (in its shift)
   for (const m of def.props ?? []) {
     if (m.kind === 'memo' && (!m.layer || (m.layer === 'night') === (layer === NIGHT)) && memoNear(s.player, m)) drawMemoPanel(g, memoLayout(m));
@@ -844,11 +896,11 @@ function drawTitle() {
   drawText(g, 'One building. Two shifts. One worker.', W / 2, 270, { scale: 2, color: '#ffffff', align: 'center' });
   const b = settings.binds(); // the current bindings (SETTINGS > CONTROLS)
   drawText(g, `Move  ${keysShort(b.left, keyLayout)}  ${keysShort(b.right, keyLayout)}      Jump  ${keysShort(b.jump, keyLayout)}`, W / 2, 310, { scale: 2, color: '#d9f6ff', align: 'center' });
-  drawText(g, `Change shift  ${keysText(b.shift, keyLayout)}      Restart  R`, W / 2, 334, { scale: 2, color: '#d9f6ff', align: 'center' });
+  drawText(g, `Change shift  ${keysText(b.shift, keyLayout)}      Restart  ${keyName('KeyR')}`, W / 2, 334, { scale: 2, color: '#d9f6ff', align: 'center' });
   drawText(g, 'Gamepad: stick move · A jump · B, X or RB shift · Start pause · X levels · Y settings', W / 2, 354, { scale: 1, color: '#9fd8e6', align: 'center' });
   const blink = Math.floor(game.clock * 2) % 2 === 0;
-  drawText(g, 'Click or press SPACE to clock in', W / 2, 380, { scale: 2, color: blink ? '#ffec5a' : '#ffffff', align: 'center' });
-  for (const [b, label] of [[TITLE_SELECT, 'LEVEL SELECT (L)'], [TITLE_SETTINGS, 'SETTINGS (O)']]) {
+  drawText(g, game.padLast ? 'Press A to clock in' : 'Click or press SPACE to clock in', W / 2, 380, { scale: 2, color: blink ? '#ffec5a' : '#ffffff', align: 'center' });
+  for (const [b, label] of [[TITLE_SELECT, `LEVEL SELECT (${btnName('KeyL')})`], [TITLE_SETTINGS, `SETTINGS (${btnName('KeyO')})`]]) {
     drawPanel(g, b.x, b.y, b.w, b.h, false);
     drawText(g, label, b.x + b.w / 2, b.y + 9, { scale: 2, color: '#ffffff', align: 'center' });
   }
@@ -895,7 +947,7 @@ function drawCard() {
   if (game.screenTime > 0.45) drawStamp(g, cx + 70, 330, stampText(diff), diff <= 0 ? '#c0392b' : '#7f6a50', 3, k);
   const comment = timecardComment(r);
   drawText(g, comment, cx, 372, { scale: measureText(comment, 2) > 440 ? 1 : 2, color: ink, align: 'center' });
-  drawText(g, 'SPACE: next    R: retry', cx - 210, 402, { scale: 2, color: ink });
+  drawActions(CARD_ACTIONS, CARD_ROW, ink);
   if (game.newBest) drawText(g, 'NEW BEST', cx + 226, 112, { scale: 2, color: '#c0392b', align: 'right' });
 }
 
@@ -908,7 +960,7 @@ function drawEnd() {
   drawText(g, 'SHIFT COMPLETE', W / 2, top + 18, { scale: 3, color: ink, align: 'center' });
   drawText(g, 'Thanks for working overtime.', W / 2, top + 48, { scale: 2, color: ink, align: 'center' });
   // one row per act (src/layout.js endSummary), then the totals and the credits
-  const sum = endSummary(LEVELS, game.results);
+  const sum = endSummary(LEVELS, game.results, game.spent);
   const rowsTop = top + 84;
   const rowH = 26;
   sum.rows.forEach((r, k) => {
@@ -924,8 +976,8 @@ function drawEnd() {
     drawText(g, 'Total time', W / 2 - 220, y + 36, { scale: 2, color: ink });
     drawText(g, `${sum.time.toFixed(2)} s`, W / 2 + 220, y + 36, { scale: 2, color: ink, align: 'right' });
   }
-  CREDITS.forEach((line, k) => drawText(g, line, W / 2, bottom - 112 + k * 22, { scale: 2, color: 'rgba(59,45,31,0.8)', align: 'center' }));
-  drawText(g, 'SPACE: clock in again', W / 2, bottom - 36, { scale: 2, color: ink, align: 'center' });
+  CREDITS.forEach((line, k) => drawText(g, line, W / 2, bottom - 116 + k * 20, { scale: 2, color: 'rgba(59,45,31,0.8)', align: 'center' }));
+  drawActions(END_ACTIONS, END_ROW, ink);
   drawEndingEyes(top, bottom);
 }
 
@@ -1006,18 +1058,18 @@ function drawSelect() {
   drawText(g, `${game.selected + 1}. ${sel.name.toUpperCase()}`, d.x + 12, d.y + 11, { scale: 2, color: C.paperInk });
   const status = !selOpen ? 'NOT YET' : selBest ? `BEST ${selBest.shifts} · PAR ${sel.par}` : `PAR ${sel.par}`;
   drawText(g, status, d.x + d.w - 12, d.y + 11, { scale: 2, color: C.paperInk, align: 'right' });
-  drawText(g, 'Arrows: choose · SPACE or click: clock in · Esc: back', W / 2, H - 22, { scale: 2, color: pal.hudSoft, halo: pal.halo, align: 'center' });
+  drawText(g, game.padLast ? 'D-pad: choose · A: clock in · B: back' : 'Arrows: choose · SPACE or click: clock in · Esc: back', W / 2, H - 22, { scale: 2, color: pal.hudSoft, halo: pal.halo, align: 'center' });
 }
 
 function drawPause() {
   drawPanel(g, W / 2 - 300, H / 2 - 64, 600, 128, false);
   drawText(g, 'ON BREAK', W / 2, H / 2 - 40, { scale: 3, color: '#d9f6ff', align: 'center' });
-  drawText(g, 'Esc: resume   R: restart   L: levels   O: settings', W / 2, H / 2 + 12, { scale: 2, color: '#d9f6ff', align: 'center' });
+  drawActions(PAUSE_ACTIONS, PAUSE_ROW, '#d9f6ff');
 }
 
 function drawSettings() {
   const pal = PAL[NIGHT];
-  g.drawImage(background(NIGHT), 0, 0);
+  if (game.settingsFrom !== 'paused') g.drawImage(background(NIGHT), 0, 0); // from a break, the level stays behind it
   drawText(g, 'SETTINGS', W / 2, 60, { scale: 4, color: pal.hud, halo: pal.halo, align: 'center' });
   const s = settings.get();
   SETTING_ROWS.forEach(([key, label], row) => {
@@ -1036,13 +1088,13 @@ function drawSettings() {
       drawText(g, `${v * 10}%`, r.x + r.w - 24, r.y + 16, { scale: 2, color: pal.hudSoft, align: 'right' });
     }
   });
-  drawText(g, 'Up/Down: choose · Left/Right: change · Esc: back', W / 2, H - 40, { scale: 2, color: pal.hudSoft, halo: pal.halo, align: 'center' });
-  drawText(g, 'Reduced effects turns off screen flashes, rings and sparkles.', W / 2, H - 70, { scale: 1, color: pal.hudSoft, align: 'center' });
+  drawText(g, game.padLast ? 'D-pad: choose and change · A: switch · B: back' : 'Up/Down: choose · Left/Right: change · Esc: back', W / 2, H - 40, { scale: 2, color: pal.hudSoft, halo: pal.halo, align: 'center' });
+  drawText(g, 'Reduced effects turns off screen flashes, rings, sparkles, shaking and flicker.', W / 2, H - 70, { scale: 1, color: pal.hudSoft, align: 'center' });
 }
 
 function drawControls() {
   const pal = PAL[NIGHT];
-  g.drawImage(background(NIGHT), 0, 0); // as SETTINGS does
+  if (game.settingsFrom !== 'paused') g.drawImage(background(NIGHT), 0, 0); // as SETTINGS does
   drawText(g, 'CONTROLS', W / 2, 60, { scale: 4, color: pal.hud, halo: pal.halo, align: 'center' });
   const binds = settings.binds();
   CONTROL_ROWS.forEach((key, row) => {
@@ -1057,13 +1109,22 @@ function drawControls() {
     drawText(g, text, r.x + r.w - 24, r.y + 16, { scale: 2, color: waiting ? '#ffec5a' : pal.hudSoft, align: 'right' });
   });
   if (game.controlsNote) drawText(g, game.controlsNote, W / 2, H - 70, { scale: 1, color: pal.hudSoft, align: 'center' });
-  const hint = game.capturing ? 'Press the new key · Esc: cancel' : 'Up/Down: choose · Enter: change · Esc: back';
+  const hint = game.capturing ? `Press the new key · ${btnName('Escape')}: cancel` : game.padLast ? 'D-pad: choose · A: change · B: back' : 'Up/Down: choose · Enter: change · Esc: back';
   drawText(g, hint, W / 2, H - 40, { scale: 2, color: pal.hudSoft, halo: pal.halo, align: 'center' });
 }
 
 function render() {
   g.imageSmoothingEnabled = false;
   g.clearRect(0, 0, W, H);
+  drawScreen();
+  if (settings.get().mute) { // nothing else says why it's silent
+    const text = `MUTED (${keyName('KeyM')})`;
+    plate(10, H - 30, measureText(text, 2) + 12, 22, NIGHT);
+    drawText(g, text, 16, H - 26, { scale: 2, color: PAL[NIGHT].hud });
+  }
+}
+
+function drawScreen() {
   if (game.screen === 'title') { drawTitle(); return; }
   if (game.screen === 'select') { drawSelect(); return; }
   if (game.screen === 'settings' || game.screen === 'controls') {
@@ -1080,7 +1141,10 @@ function render() {
 }
 
 
-if (params.has('autostart')) startLevel(game.index, { card: false });
+if (params.has('autostart')) {
+  startLevel(game.index, { card: false });
+  game.actShown = LEVELS[game.index].act;
+}
 requestAnimationFrame(frame);
 
 // expose for smoke tests (render: for timing the draw cost)

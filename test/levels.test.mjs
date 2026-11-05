@@ -2,10 +2,10 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { LEVELS, CLOCKOUT_CLASSIC } from '../src/levels.js';
-import { DAY, NIGHT, TILE, NO_INPUT, initState, step, tileAt, supervisorFacing, parseLevel, freakBoxes, gravitySign } from '../src/rules.js';
-import { play, tx, inputsFrom } from './helpers.mjs';
+import { DAY, NIGHT, TILE, NO_INPUT, PARAMS, initState, step, tileAt, supervisorFacing, parseLevel, freakBoxes, gravitySign } from '../src/rules.js';
+import { play, tx, inputsFrom, recordInputs, searchBelowPar } from './helpers.mjs';
 import { skinPlan } from '../src/skins.js';
-import { memoNear } from '../src/layout.js';
+import { memoNear, memoPanel } from '../src/layout.js';
 import { SOLUTIONS, SOLUTIONS_EXTRA, L } from './solutions.mjs';
 
 test('a policy holding jump or shift makes one press until it lets go (play, the audit and the demo GIF)', () => {
@@ -281,13 +281,13 @@ test('Night Audit: day past the day-walker spooks', () => {
   assert.ok(events.some((e) => e.type === 'death' && e.cause === 'spooked' && e.by === 'daywalker'));
 });
 
-test('Night Audit: night past the lurker spooks', () => {
+test('Night Audit: night past the squatter spooks', () => {
   const lvl = L.audit;
   const sup = lvl.freaks.find((f) => f.kind === 'supervisor');
   let t = 0;
-  while (supervisorFacing(sup, t) !== 1) t += 0.05; // facing right: the far lurker works too
+  while (supervisorFacing(sup, t) !== 1) t += 0.05; // facing right: the far squatter works too
   const { events } = run(lvl, auditAt(27.1, NIGHT, { freakClock: t + 0.05, nightEntries: 3 }), () => ({ ...NO_INPUT, right: true }), 120 * 2);
-  assert.ok(events.some((e) => e.type === 'death' && e.cause === 'spooked' && e.by === 'lurker'));
+  assert.ok(events.some((e) => e.type === 'death' && e.cause === 'spooked' && e.by === 'squatter'));
 });
 
 test('Night Audit: the last pit on the wrong night entry is a fall; on entry 3 the plank is there', () => {
@@ -357,18 +357,27 @@ test('Falling Up: skipping the brake flip falls into the pit', () => {
   assert.ok(events.some((e) => e.type === 'death' && e.cause === 'fall'));
 });
 
-test('Ceiling Walker: staying on night under the lurker spooks', () => {
+test('Ceiling Walker: walking on through the tunnel while the clipboard watches it spooks, and night alone never wins', () => {
   const lvl = L.ceiling;
   // the solution's first clock-in, then never out: the lurker's tunnel is one tile high and solid to the grid's
-  // edge below, so no rhythm of jumps gets past it (period 0: no jumping)
+  // edge below, so jumps don't get over it; a rhythm that arrives while it slacks falls at the second pit instead
   for (const period of [0, 18, 24, 30, 36, 48, 60, 90]) {
     const jump = (s, f) => s.layer === NIGHT && period > 0 && f % period < period / 2;
     const policy = (s, m, f) => ({ right: true, shift: s.shifts === 0 && SOLUTIONS.ceiling(s, m, f).shift, jump: jump(s, f) });
-    const { events } = play(lvl, policy, 120 * 8);
+    const { events, state: { won } } = play(lvl, policy, 120 * 8);
     assert.equal(events.filter((e) => e.type === 'shift').length, 1);
     const death = events.find((e) => e.type === 'death');
-    assert.ok(death && death.cause === 'spooked' && death.by === 'lurker', `jump period ${period}: died of ${death?.cause}`);
+    assert.ok(!won, `jump period ${period}: won on one clock-in`);
+    if (period === 0) assert.ok(death?.cause === 'spooked' && death.by === 'lurker', `died of ${death?.cause}`);
   }
+});
+
+test('Ceiling Walker: the wax before the tunnel keeps you sliding after you let go', () => {
+  const lvl = L.ceiling;
+  assert.equal(tileAt(lvl, NIGHT, 13, 11), '~');
+  const policy = (s, m, f) => ({ right: tx(s) < 13.2, shift: s.shifts === 0 && SOLUTIONS.ceiling(s, m, f).shift });
+  const { state } = play(lvl, policy, 120 * 3);
+  assert.ok(tx(state) > 14 || state.deaths > 0, `stopped at ${tx(state).toFixed(2)}`);
 });
 
 test("Ceiling Walker: the plank isn't there on the wrong night entry", () => {
@@ -434,11 +443,31 @@ test('Head Over Heels: the final plank needs the right night entry', () => {
 });
 
 // The finale (rev 2): one lesson test per room.
+test('Clock Out: room 1, crossing while the clipboard watches this room meets the peeker', () => {
+  const policy = (s, m, f) => {
+    const out = SOLUTIONS.clockout(s, m, f);
+    return s.shifts === 1 ? { right: true } : out; // no waiting
+  };
+  const { events } = play(L.clockout, policy, 120 * 3);
+  assert.ok(events.some((e) => e.type === 'death' && e.by === 'peeker'));
+});
+
+test('Clock Out: one of every freak, and the supervisor perched out of the corridor', () => {
+  const kinds = new Set(L.clockout.freaks.map((f) => f.kind));
+  assert.deepEqual([...kinds].sort(), ['daywalker', 'lurker', 'peeker', 'squatter', 'supervisor']);
+  assert.equal(L.clockout.freaks.find((f) => f.kind === 'supervisor').ty, 4);
+});
+
 test('Clock Out: room 1, staying on night after the gap stops at the locked gate', () => {
   let maxX = 0;
-  const policy = (s, m, f) => { maxX = Math.max(maxX, s.player.x); return { right: true, shift: s.shifts === 0 && SOLUTIONS.clockout(s, m, f).shift }; };
+  const policy = (s, m, f) => { // as the solution, past the peeker, then never out
+    maxX = Math.max(maxX, s.player.x);
+    const out = SOLUTIONS.clockout(s, m, f);
+    return s.shifts === 1 ? { right: out.right } : out;
+  };
   const { state } = play(L.clockout, policy, 120 * 6);
   assert.equal(state.won, false);
+  assert.equal(state.deaths, 0);
   assert.equal(state.layer, NIGHT);
   assert.ok(maxX < 11 * TILE, `got to x ${maxX}`);
 });
@@ -501,10 +530,10 @@ test('Clock Out: every prank is telegraphed, the step coming back included', () 
 
 test('Clock Out: the stolen door leaves its empty frame', () => {
   const lvl = L.clockout;
-  assert.deepEqual(skinPlan(lvl, NIGHT, {}), [{ draw: 'door', tx: 16, ty: 14, h: 2 }]);
+  assert.deepEqual(skinPlan(lvl, NIGHT, {}), [{ draw: 'door', tx: 16, ty: 14, h: 2, hang: true }]);
   const { state } = play(lvl, (s, m, f) => (s.shifts >= 3 ? {} : SOLUTIONS.clockout(s, m, f)), 120 * 4); // to the 2nd clock-in
   assert.equal(state.nightEntries, 2);
-  assert.deepEqual(skinPlan(lvl, NIGHT, state.overrides), [{ draw: 'emptyFrame', tx: 16, ty: 14, h: 2 }]);
+  assert.deepEqual(skinPlan(lvl, NIGHT, state.overrides), [{ draw: 'emptyFrame', tx: 16, ty: 14, h: 2, hang: true }]);
 });
 
 // A relocated object goes round its places forever: however many clock-ins, its useful place comes back.
@@ -535,4 +564,61 @@ test('memos: the solution passes close enough to read every memo, in its shift',
     });
     assert.ok(read, `${def.id}: the memo at ${m.tx},${m.ty} is never in reach`);
   }
+});
+
+// ---------- cohesion: what every level has to hold to ----------
+
+test('every prank has a tell (LEVELS.md §3 rule 6)', () => {
+  for (const def of LEVELS) {
+    for (const pr of L[def.id].pranks) assert.ok(pr.tell, `${def.id}: prank ${pr.id}`);
+  }
+});
+
+test('no prop hides inside a solid on a shift it shows on', () => {
+  for (const def of LEVELS) {
+    const lvl = L[def.id];
+    for (const p of (def.props ?? []).filter((q) => q.kind !== 'nail')) { // a nail waits behind what hangs on it
+      for (const layer of p.layer ? [p.layer === 'night' ? NIGHT : DAY] : [DAY, NIGHT]) {
+        assert.notEqual(tileAt(lvl, layer, p.tx, p.ty, {}), '#', `${def.id}: ${p.kind} at ${p.tx},${p.ty} on layer ${layer}`);
+      }
+    }
+  }
+});
+
+for (const def of LEVELS) {
+  const memo = (def.props ?? []).find((p) => p.kind === 'memo');
+  const open = (s) => (!memo.layer || (memo.layer === 'night') === (s.layer === NIGHT)) && memoNear(s.player, memo);
+
+  test(`${def.name}: the memo stays open long enough to read and never hides the worker at a required press`, () => {
+    const lvl = L[def.id];
+    const panel = memoPanel(memo.text, memo.tx, memo.ty, { maxW: memo.w });
+    const { inputs } = recordInputs(lvl, SOLUTIONS[def.id]);
+    let s = initState(lvl);
+    let openTicks = 0;
+    for (const input of inputs) {
+      if (open(s)) {
+        openTicks++;
+        const p = s.player;
+        const covered = p.x < panel.x + panel.w && p.x + PARAMS.playerW > panel.x && p.y < panel.y + panel.h && p.y + PARAMS.playerH > panel.y;
+        assert.ok(!(covered && (input.jumpPressed || input.shiftPressed)), `worker hidden at a press, tick ${Math.round(s.time * 120)}`);
+      }
+      s = step(lvl, s, input);
+    }
+    assert.ok(openTicks >= 36, `open ${(openTicks / 120).toFixed(2)} s on the par route`);
+  });
+}
+
+for (const def of LEVELS) {
+  test(`${def.name}: a random search both ways finds no win below par`, () => {
+    assert.ok(searchBelowPar(L[def.id], def.par, 120) >= def.par);
+  });
+}
+
+test('Head Over Heels: the spawn is nowhere near the exit (hold left, clock in early)', () => {
+  for (let jumpAt = 0; jumpAt < 60; jumpAt += 3) {
+    const { state } = play(L.heels, (s, m, f) => ({ left: true, shift: f === 0, jump: f >= jumpAt && f < jumpAt + 40 }), 120 * 4);
+    assert.equal(state.won, false, `won jumping at tick ${jumpAt}`);
+  }
+  const { state } = play(L.heels, (s, m, f) => ({ left: true, shift: s.player.vy > 0 && s.layer === DAY }), 120 * 4);
+  assert.equal(state.won, false, 'won by clocking in on the way down');
 });

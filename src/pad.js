@@ -4,13 +4,13 @@
 // standard layout (not rebindable): A jumps; B, X or RB shift; Start pauses; Back restarts; the d-pad or the
 // left stick moves.
 
-export const PAD_BUTTONS = Object.freeze({
+const PAD_BUTTONS = Object.freeze({
   0: 'PadA', 1: 'PadB', 2: 'PadX', 3: 'PadY', 5: 'PadRB', 8: 'PadSelect', 9: 'PadStart',
   12: 'PadUp', 13: 'PadDown', 14: 'PadLeft', 15: 'PadRight',
 });
 
 // The stick latches a direction past 0.5 and lets go below 0.3, so resting near a threshold never chatters.
-export const STICK = Object.freeze({ press: 0.5, release: 0.3 });
+const STICK = Object.freeze({ press: 0.5, release: 0.3 });
 
 // navigator.getGamepads(), or null when the browser won't share pads: inside an embed whose iframe doesn't allow
 // gamepads, getGamepads() throws a SecurityError, and the game must carry on with the keyboard.

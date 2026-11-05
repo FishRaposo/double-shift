@@ -1,6 +1,6 @@
 // Synthesized sound (WebAudio). No audio files.
-// One mix bus: music and SFX gains → master gain → compressor → speakers. Every SFX is ≤ 0.25 s,
-// so rapid shifting never stacks into noise (GDD §11.2). Music lives in music.js.
+// One mix bus: music and SFX gains → master gain → compressor → speakers. Each voice is ≤ 0.25 s (the win
+// jingle chains a few), so rapid shifting never stacks into noise (GDD §11.2). Music lives in music.js.
 
 import { createMusic } from './music.js';
 
@@ -49,7 +49,7 @@ export function makeNoise(c) {
   const d = buf.getChannelData(0);
   let seed = 12345;
   for (let i = 0; i < d.length; i++) {
-    seed = (seed * 1103515245 + 12345) & 0x7fffffff;
+    seed = (Math.imul(seed, 1103515245) + 12345) & 0x7fffffff;
     d[i] = (seed / 0x7fffffff) * 2 - 1;
   }
   return buf;
@@ -63,15 +63,11 @@ function applyVolumes() {
   musicBus.gain.setTargetAtTime(vol.music * (menu ? 0.6 : 1), t, 0.1);
 }
 
-export function setVolumes(v) {
-  Object.assign(vol, v);
+// { master, music, sfx, mute } from the settings
+export function setVolumes({ master: m, music: mu, sfx: fx, mute }) {
+  Object.assign(vol, { master: m, music: mu, sfx: fx });
+  muted = !!mute;
   applyVolumes();
-}
-
-export function toggleMute() {
-  muted = !muted;
-  applyVolumes();
-  return muted;
 }
 
 // Music follows the shift; menus play the day arrangement a little quieter.
@@ -161,7 +157,7 @@ export const SOUNDS = {
   uiMove: [{ type: 'square', f0: 660, dur: 0.03, vol: 0.05, filter: { type: 'lowpass', freq: 2500 } }],
   uiSelect: [{ type: 'square', f0: 660, f1: 990, dur: 0.06, vol: 0.07, filter: { type: 'lowpass', freq: 3000 } }],
   sting: [392, 494].map((f) => ({ type: 'triangle', f0: f, dur: 0.12, vol: 0.12 })).concat([523, 659].map((f) => ({ type: 'triangle', f0: f, dur: 0.18, vol: 0.12, delay: 0.13 }))),
-  // planned levels (built now)
+  // level mechanics
   peekerBoing: [{ type: 'sine', f0: 300, f1: 600, dur: 0.05, vol: 0.08 }],
   flip: [{ type: 'sine', f0: 300, f1: 120, dur: 0.12, vol: 0.12 }], // under every shift in an Upside Down level: gravity turns over
   lurkerStep: [{ type: 'noise', dur: 0.02, vol: 0.04, filter: { type: 'lowpass', freq: 300 } }],

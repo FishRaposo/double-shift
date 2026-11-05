@@ -26,8 +26,8 @@ export const FINALE_ACT = 6;
 // One object moved by every night entry around a loop of places (the pillar, the portrait, a plank): entry `first`
 // (default 1) takes it from `start` to loop[0], each later entry to the next place, round the loop for good (the
 // lap's moves repeat with `every`). So a clock-in too many costs a lap, never the level (pillar and portrait have
-// no death to reset them). The first `tells` moves (default: the first lap) get a tell at their destination.
-function relocations(id, { start, loop, rect, sound, first = 1, tells = loop.length }) {
+// no death to reset them). Every move has a tell at its destination.
+function relocations(id, { start, loop, rect, sound, first = 1 }) {
   return Array.from({ length: loop.length + 1 }, (_, i) => {
     const from = i === 0 ? start : loop[(i - 1) % loop.length];
     const to = loop[i % loop.length];
@@ -36,16 +36,16 @@ function relocations(id, { start, loop, rect, sound, first = 1, tells = loop.len
       id: `${id}${i + 1}`,
       onNight: first + i,
       ...(i > 0 ? { every: loop.length } : {}),
-      ...(i < tells ? { tell: { tx: Math.floor((r.x0 + (r.x1 ?? r.x0)) / 2), ty: r.y0 } } : {}),
+      tell: { tx: Math.floor((r.x0 + (r.x1 ?? r.x0)) / 2), ty: r.y0 },
       ...(sound ? { sound } : {}),
       set: [{ layer: 'night', ...rect(from), ch: '.' }, { layer: 'night', ...r, ch: '#' }],
     };
   });
 }
 
-// Today's Clock Out before the rework: three rooms, no Upside Down. Not in LEVELS; the rework replaces it in the
-// same slot with the same id. If act 5 has to go post-jam, shipping this again is swapping that one entry
-// (LEVELS.md §5.3); test/levels.test.mjs keeps proving it at par 7.
+// The classic Clock Out from before the rework: three rooms, no Upside Down. Not in LEVELS; the rework took its slot
+// and id. Kept for the record and proven at par 7 by test/levels.test.mjs. Bringing it back would also need a memo
+// and new room tests (LEVELS.md §5.3).
 export const CLOCKOUT_CLASSIC = {
   id: 'clockout',
   name: 'Clock Out',
@@ -140,7 +140,7 @@ export const LEVELS = [
     decor: [{ kind: 'eyes', tx: 29, ty: 4 }],
     // the night crew is here from level 1: a peeker blinks behind the locked gate — sealed
     // off by the wall at col 24, so it is evidence, not danger
-    freaks: [{ kind: 'peeker', tx: 26, ty: 12, period: 1.6, duty: 0.5 }],
+    freaks: [{ kind: 'peeker', tx: 26, ty: 8, period: 1.6, duty: 0.5 }], // on a stack too tall to reach: a look, not a threat yet
     note: 'Gap in the floor by day. The night crew laid planks, and locked the gate.',
     par: 2,
     day: [
@@ -173,10 +173,10 @@ export const LEVELS = [
       '........................#.......',
       '........................#.......',
       '........................#.......',
-      '........................#.......',
-      '........................#.......',
-      '........................#.......',
-      '........................#.......',
+      '........................#.#.....',
+      '........................#.#.....',
+      '........................#.#.....',
+      '........................#.#.....',
       '........................#.#.....',
       '################################',
       '################################',
@@ -189,7 +189,7 @@ export const LEVELS = [
     name: 'Scaffolding',
     act: 1,
     props: [
-      { kind: 'memo', tx: 12, ty: 11, text: "Deliveries go on the ledge. Not on the scaffolding. Not on the ledge either. — Receiving" },
+      { kind: 'memo', tx: 20, ty: 6, text: "Deliveries go on the ledge. Not on the scaffolding. Not on the ledge either. — Receiving" },
       { kind: 'pallet', tx: 18, ty: 7, layer: 'day' },
       { kind: 'crate', tx: 20, ty: 7, layer: 'day' },
       { kind: 'sign', tx: 5, ty: 9, text: 'DELIVERIES', style: 'paper' },
@@ -251,7 +251,7 @@ export const LEVELS = [
     decor: [{ kind: 'eyes', tx: 24, ty: 4 }],
     // a peeker sealed past the far night gate: it blinks at night, and by day its frozen
     // outline stands beside the exit — the first freak a new player walks through
-    freaks: [{ kind: 'peeker', tx: 28, ty: 13, period: 1.3, duty: 0.4 }],
+    freaks: [{ kind: 'peeker', tx: 29, ty: 7, period: 1.3, duty: 0.4 }], // up on a shelf, out of reach
     note: 'Rebar by day, lasers by night. Gates go down at closing.',
     par: 2,
     day: [
@@ -283,7 +283,7 @@ export const LEVELS = [
       '.........#.................#....',
       '.........#.................#....',
       '.........#.................#....',
-      '.........#.................#....',
+      '.........#.................####.',
       '.........#.................#....',
       '.........#.................#....',
       '.........#.................#....',
@@ -605,7 +605,7 @@ export const LEVELS = [
       { kind: 'footprints', tx: 6, ty: 13, layer: 'night' },
       { kind: 'footprints', tx: 7, ty: 13, layer: 'night' },
     ],
-    decor: [{ kind: 'eyes', tx: 16, ty: 13 }, { kind: 'eyes', tx: 18, ty: 13 }],
+    decor: [{ kind: 'eyes', tx: 3, ty: 8 }, { kind: 'eyes', tx: 6, ty: 5 }],
     // One long night tunnel of `~` (cols 5–31, roofed rows 0–12 cols 8–30): inside a 1-tile
     // tunnel you can't jump, so neither the lasers nor the lurker can be cleared by air.
     // The only brake is shifting to the dry day floor. Day walls at 4 and 13–14 force both
@@ -731,7 +731,7 @@ export const LEVELS = [
       { kind: 'vent', tx: 16, ty: 13 },
       { kind: 'footprints', tx: 15, ty: 13 },
     ],
-    decor: [{ kind: 'eyes', tx: 9, ty: 13 }, { kind: 'eyes', tx: 23, ty: 13 }],
+    decor: [{ kind: 'eyes', tx: 4, ty: 7 }, { kind: 'eyes', tx: 27, ty: 6 }],
     // The supervisor sits on a perch mid-screen (the ledge off the left roof) and turns every
     // 2 s: the lurker on the watched side works, the other slacks off frozen. Both crossings
     // are 1-tile night tunnels, so a watched lurker can't be jumped — cross on the slack side.
@@ -848,10 +848,13 @@ export const LEVELS = [
         id: 'bridgeA',
         onNight: 1,
         tell: { tx: 10, ty: 12 },
-        set: [
-          { layer: 'night', x0: 6, x1: 13, y0: 14, ch: '#' },
-          { layer: 'night', x0: 18, x1: 18, y0: 0, y1: 13, ch: '#' },
-        ],
+        set: [{ layer: 'night', x0: 6, x1: 13, y0: 14, ch: '#' }],
+      },
+      {
+        id: 'gateDown',
+        onNight: 1,
+        tell: { tx: 18, ty: 9, text: 'DO NOT TUCH' },
+        set: [{ layer: 'night', x0: 18, x1: 18, y0: 0, y1: 13, ch: '#' }],
       },
       {
         id: 'gateC',
@@ -948,7 +951,7 @@ export const LEVELS = [
       { kind: 'footprints', tx: 12, ty: 13, layer: 'day' },
       { kind: 'mug', tx: 4, ty: 13, layer: 'day' },
     ],
-    decor: [{ kind: 'eyes', tx: 24, ty: 13 }],
+    decor: [{ kind: 'eyes', tx: 17, ty: 6 }],
     // Two tunnels, mirror images. First, a day tunnel under a building (cols 7-15, rows 0-12) with the
     // day-walker in it: night gates at cols 6 and 16 only let the day shift in and out, the building
     // above means you can't jump it, and its patrol fills the tunnel. So go night inside: it freezes,
@@ -1013,9 +1016,9 @@ export const LEVELS = [
     // lasers trace where the day floor continues at night: the copy ends, don't wander off
     nightPatch: [{ x0: 11, x1: 18, y0: 11, ch: '^' }],
     props: [
-      { kind: 'memo', tx: 11, ty: 11, text: "The elevator now stops at 3.5. Do not press 3.5." },
-      { kind: 'sign', tx: 3, ty: 12, text: '3', style: 'paper' },
-      { kind: 'sign', tx: 12, ty: 6, text: '3.5', style: 'note', layer: 'night' },
+      { kind: 'memo', tx: 9, ty: 10, text: "The elevator now stops at 3.5. Do not press 3.5." },
+      { kind: 'sign', tx: 3, ty: 12, text: '3', style: 'paper', layer: 'day' },
+      { kind: 'sign', tx: 12, ty: 4, text: '3.5', style: 'note', layer: 'night' },
     ],
     decor: [{ kind: 'eyes', tx: 21, ty: 15 }],
     day: [
@@ -1055,13 +1058,13 @@ export const LEVELS = [
     //   when they lay the plank over the last pit (a low roof, so no jumping it). Then the lurker under the roof:
     //   it works nights, but it answers to the clipboard too, so clock out or wait until it slacks. Their tell
     //   shows from the spawn, just before the roof.
-    pranks: [{ id: 'plank', onNight: 3, tell: { tx: 23, ty: 13, text: 'HEXED. NO TUCH' }, set: [{ layer: 'night', x0: 25, x1: 26, y0: 14, ch: '#' }] }],
+    pranks: [{ id: 'plank', onNight: 3, tell: { tx: 23, ty: 11, text: 'HEXED. NO TUCH' }, set: [{ layer: 'night', x0: 25, x1: 26, y0: 14, ch: '#' }] }],
     freaks: [
       { kind: 'supervisor', tx: 15, ty: 8, period: 1.6, startFacing: 'right' },
       { kind: 'lurker', tx: 13, ty: 13, range: 1, speed: 40 },
-      { kind: 'lurker', tx: 17, ty: 13, range: 1, speed: 40 },
+      { kind: 'peeker', tx: 17, ty: 13, period: 1, duty: 0.7 },
       { kind: 'daywalker', tx: 21, ty: 13, range: 1, speed: 50 },
-      { kind: 'lurker', tx: 29, ty: 13 },
+      { kind: 'squatter', tx: 29, ty: 13 },
     ],
     props: [
       { kind: 'memo', tx: 11, ty: 11, text: "Pest control visit cancelled. Pest control would like to not talk about it." },
@@ -1124,7 +1127,7 @@ export const LEVELS = [
     // floor. The checkpoint hangs from the walkway at night and sits on a shelf by day.
     upsideDown: true,
     props: [
-      { kind: 'memo', tx: 17, ty: 13, text: "Ceiling inspection passed. The ceiling is now the floor. — Facilities", layer: 'day' },
+      { kind: 'memo', tx: 24, ty: 13, text: "Ceiling inspection passed. The ceiling is now the floor. — Facilities", layer: 'day' },
       { kind: 'sign', tx: 4, ty: 12, text: 'MIND YOUR HEAD', style: 'note', layer: 'day' },
       { kind: 'noticeBoard', tx: 26, ty: 12, layer: 'day' },
       { kind: 'mug', tx: 13, ty: 12, layer: 'night', flip: true }, // someone's coffee, upside down under the walkway
@@ -1170,7 +1173,7 @@ export const LEVELS = [
     // floor in two clock-ins (found by the full audit's random search).
     nightPatch: [{ x0: 12, x1: 17, y0: 12, ch: '^' }, { x0: 31, y0: 13, ch: '#' }, { x0: 17, y0: 13, y1: 17, ch: '#' }],
     props: [
-      { kind: 'memo', tx: 4, ty: 11, text: "Gravity will be restored after the renovation. — Facilities", layer: 'day' },
+      { kind: 'memo', tx: 16, ty: 5, text: "Gravity will be restored after the renovation. — Facilities", layer: 'day' },
       { kind: 'sign', tx: 3, ty: 11, text: 'THIS WAY UP', style: 'note', layer: 'day' },
       { kind: 'noticeBoard', tx: 7, ty: 10, layer: 'day' },
       { kind: 'vent', tx: 6, ty: 4, layer: 'night', flip: true }, // under the floor's copy, where you hang
@@ -1207,22 +1210,29 @@ export const LEVELS = [
     // clock-in, moved over pit B on the second, back on the third, and so on. Clock in to cross pit A; a lurker
     // hangs in a 1-tile tunnel on the night route (solid down to the grid's edge, so no jumping past it): clock
     // out, walk under its outline, clock in past it (entry 2: the plank's over pit B now), cross, and clock out
-    // over the exit, which is bricked up by night.
+    // over the exit, which is bricked up by night. Two things the finale asks for start here: the walkway's copy is
+    // waxed just before the tunnel, and a clipboard hangs over it, so the lurker slacks whenever it looks away.
+    // A day wall (col 29) closes the exit's pocket, so the only way in is hanging from the plank on entry 2.
     upsideDown: true,
     nightPatch: [
       { x0: 5, x1: 12, y0: 11, ch: '#' }, // the plank, over pit A until they move it
+      { x0: 13, x1: 14, y0: 11, ch: '~' }, // wax on the walkway's copy: you slide towards the tunnel
+      { x0: 29, y0: 4, y1: 11, ch: '.' }, // the exit's day wall isn't there at night: you hang in past it
       { x0: 30, x1: 31, y0: 13, y1: 17, ch: '#' },
     ],
-    pranks: relocations('plank', { start: 5, loop: [22, 5], rect: (x0) => ({ x0, x1: x0 + 7, y0: 11 }), first: 2, tells: 1 }),
-    freaks: [{ kind: 'lurker', tx: 16, ty: 12, range: 1, speed: 40 }],
+    pranks: relocations('plank', { start: 5, loop: [22, 5], rect: (x0) => ({ x0, x1: x0 + 7, y0: 11 }), first: 2 }),
+    freaks: [
+      { kind: 'supervisor', tx: 18, ty: 4, period: 2, startFacing: 'left' }, // perched under the floor's copy, well out of the way
+      { kind: 'lurker', tx: 16, ty: 12, range: 1, speed: 40 },
+    ],
     props: [
-      { kind: 'memo', tx: 12, ty: 11, text: "To the night crew: please stop moving the planks. — Management", layer: 'day' },
+      { kind: 'memo', tx: 17, ty: 12, text: "To the night crew: please stop moving the planks. — Management", layer: 'day' },
       { kind: 'sign', tx: 2, ty: 10, text: "IT'S FINE", style: 'note', layer: 'day' },
       { kind: 'noticeBoard', tx: 21, ty: 10, layer: 'day' },
       { kind: 'footprints', tx: 13, ty: 12, layer: 'night', flip: true }, // on the walkway's copy, not the plank
       { kind: 'footprints', tx: 14, ty: 12, layer: 'night', flip: true },
     ],
-    decor: [{ kind: 'eyes', tx: 9, ty: 6 }],
+    decor: [{ kind: 'eyes', tx: 16, ty: 7 }],
     day: [
       '...............####.............',
       '...............####.............',
@@ -1230,14 +1240,14 @@ export const LEVELS = [
       '...............####.............',
       '...............####.............',
       '................................',
-      '#####........#########........##',
-      '................................',
-      '................................',
-      '................................',
-      '................................',
-      '................................',
-      '................................',
-      '.S.................C...........E',
+      '#####........#########.......###',
+      '.............................#..',
+      '.............................#..',
+      '.............................#..',
+      '.............................#..',
+      '.............................#..',
+      '.............................#..',
+      '.S.................C.........#.E',
       '#####........#########........##',
       '#####........#########........##',
       '#####........#########........##',
@@ -1258,10 +1268,15 @@ export const LEVELS = [
     // each in turn, never on top of the one waking up. Bottom: the pit (cols 20-27) is crossed hanging, and at the
     // walkway's gap (col 31) you fall up the shaft. Top: the last gap (cols 2-9, no floor, no walkway) has a
     // ceiling only while their plank is in it. It starts over the pit's copy and moves over the gap on the 4th
-    // clock-in, back on the 5th, and so on: arrive with a clock-in to spare and it isn't there yet.
+    // clock-in, back on the 5th, and so on: arrive with a clock-in to spare and it isn't there yet. A wall (col 9)
+    // cuts the spawn off from the last gap, and a low roof (row 12) keeps a jump from clearing the walkway's copy,
+    // so the only way to the top corridor is round the loop.
     upsideDown: true,
-    nightPatch: [{ x0: 20, x1: 27, y0: 3, ch: '#' }], // the plank, over the pit's copy until they move it
-    pranks: relocations('plank', { start: 20, loop: [2, 20], rect: (x0) => ({ x0, x1: x0 + 7, y0: 3 }), first: 4, tells: 1 }),
+    nightPatch: [
+      { x0: 20, x1: 27, y0: 3, ch: '#' }, // the plank, over the pit's copy until they move it
+      { x0: 9, y0: 4, ch: '.' }, // the wall stops at the top corridor: that's the way to the exit
+    ],
+    pranks: relocations('plank', { start: 20, loop: [2, 20], rect: (x0) => ({ x0, x1: x0 + 7, y0: 3 }), first: 4 }),
     freaks: [
       { kind: 'daywalker', tx: 13, ty: 13, range: 1, speed: 45 },
       { kind: 'lurker', tx: 18, ty: 13, range: 1, speed: 45 },
@@ -1276,20 +1291,20 @@ export const LEVELS = [
     ],
     decor: [{ kind: 'eyes', tx: 5, ty: 9 }],
     day: [
-      '.............#######............',
-      '.............#######............',
-      '.............#######............',
-      '.............#######............',
-      '.E.........C.................C..',
-      '##........#####################.',
-      '.............#######............',
-      '.............#######............',
-      '.............#######............',
-      '.............#######............',
-      '.............#######............',
-      '.............#######............',
-      '.............#######............',
-      '..........S.....................',
+      '.........#...#######............',
+      '.........#...#######............',
+      '.........#...#######............',
+      '.........#...#######............',
+      '.E.......#.C.................C..',
+      '##.......######################.',
+      '.........#...#######............',
+      '.........#...#######............',
+      '.........#...#######............',
+      '.........#...#######............',
+      '.........#...#######............',
+      '.........#...#######............',
+      '.........###########............',
+      '.........#S.....................',
       '##........##########........####',
       '##........##########........####',
       '##........##########........####',
@@ -1303,11 +1318,11 @@ export const LEVELS = [
     rev: 2, // the rework: bests from today's Clock Out (CLOCKOUT_CLASSIC, rev 1) don't carry over
     note: "Almost done. Don't look at the vents.",
     par: 7,
-    // One room per act, on the flipped map: the walkway (row 5) is the night's ceiling, one step above the floor,
-    // so a shift flips you in place. Room 1 (act 1, cols 0-11): no ceiling over the spawn, so walk off the ledge
-    // and clock in as you fall; cross the gap hanging; clock out before the locked gate (night only). Room 2 (act
-    // 2, cols 12-21): a day wall; they take the door on the 2nd clock-in; clock out before the lurker, since the far
-    // wall is night-only too. Room 3 (act 3, cols 22-26): stop on the dry floor and clock in; the supervisor
+    // One room per act, on the flipped map, with one of every freak: the walkway (row 5) is the night's ceiling, one
+    // step above the floor, so a shift flips you in place. Room 1 (act 1, cols 0-11): no ceiling over the spawn, so
+    // walk off the ledge and clock in as you fall; cross the gap hanging, past a peeker the clipboard has to be
+    // looking away from; clock out before the locked gate (night only). Room 2 (act 2, cols 12-21): a day wall; they
+    // take the door on the 2nd clock-in; clock out before the squatter, since the far wall is night-only too. Room 3 (act 3, cols 22-26): stop on the dry floor and clock in; the supervisor
     // watches one tunnel at a time, so wait, hanging, until it looks away from this one and slide over the wax
     // past its lurker. Room 4 (acts 4-5, cols 27-31): the 3rd clock-in took the last step at the top of the shaft:
     // clock out short of the day-walker, in again (the 4th puts it back), and fall up to the time clock.
@@ -1329,20 +1344,22 @@ export const LEVELS = [
     ],
     skins: [{ kind: 'door', tx: 16, ty: 14, layer: 'night' }], // Lost & Found's door, in the tunnel's mouth
     freaks: [
-      { kind: 'lurker', tx: 19, ty: 13, range: 1, speed: 45 },
-      { kind: 'supervisor', tx: 23, ty: 13, period: 1.6, startFacing: 'right' },
+      { kind: 'peeker', tx: 6, ty: 13, period: 1.2, duty: 0.6 },
+      { kind: 'squatter', tx: 19, ty: 13 },
+      { kind: 'supervisor', tx: 23, ty: 4, period: 2, startFacing: 'left' }, // perched under the floor's copy, over its room
       { kind: 'lurker', tx: 25, ty: 13, range: 1, speed: 45 },
       { kind: 'daywalker', tx: 30, ty: 13, range: 1, speed: 45 },
     ],
     props: [
-      { kind: 'memo', tx: 7, ty: 12, text: "Overtime is mandatory. So are the freaks, apparently.", layer: 'day' },
+      { kind: 'memo', tx: 10, ty: 12, w: 160, text: "Overtime is mandatory. So are the freaks, apparently.", layer: 'day' },
       { kind: 'sign', tx: 4, ty: 9, text: 'LAST SHIFT', style: 'paper', layer: 'day' },
       { kind: 'coatRack', tx: 12, ty: 13, layer: 'day' },
       { kind: 'vent', tx: 20, ty: 8, layer: 'day' },
-      { kind: 'timeClock', tx: 31, ty: 4, layer: 'day' },
+      { kind: 'vent', tx: 19, ty: 4, layer: 'night', flip: true }, // the note's warning, with eyes in it
+      { kind: 'timeClock', tx: 29, ty: 4, layer: 'day' },
       { kind: 'timeClock', tx: 28, ty: 4, layer: 'night', flip: true }, // under the ceiling they leave alone
     ],
-    decor: [{ kind: 'eyes', tx: 5, ty: 7 }, { kind: 'eyes', tx: 13, ty: 6 }, { kind: 'eyes', tx: 19, ty: 8 }, { kind: 'eyes', tx: 27, ty: 7 }],
+    decor: [{ kind: 'eyes', tx: 5, ty: 7 }, { kind: 'eyes', tx: 13, ty: 6 }, { kind: 'eyes', tx: 19, ty: 4 }, { kind: 'eyes', tx: 27, ty: 7 }],
     day: [
       '...........#....######..###.....',
       '...........#....######..###.....',

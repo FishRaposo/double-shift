@@ -59,10 +59,11 @@ export function isUnlocked(defs, i, save) {
 }
 
 // ---------- settings ----------
-// Volumes (0–1) and reduced effects, under their own key, with the same blocked/corrupt-storage fallback.
+// Volumes (0–1), mute, reduced effects, the speedrun timer and the key bindings, under their own key, with the same
+// blocked/corrupt-storage fallback.
 
 const SETTINGS_KEY = 'double-shift.settings.v1';
-export const DEFAULT_SETTINGS = Object.freeze({ master: 0.8, music: 0.6, sfx: 0.8, reduced: false, timer: false, binds: DEFAULT_BINDS });
+export const DEFAULT_SETTINGS = Object.freeze({ master: 0.8, music: 0.6, sfx: 0.8, mute: false, reduced: false, timer: false, binds: DEFAULT_BINDS });
 
 const clamp01 = (v, d) => (Number.isFinite(v) ? Math.min(1, Math.max(0, v)) : d);
 
@@ -71,6 +72,7 @@ function cleanSettings(s) {
     master: clamp01(s?.master, DEFAULT_SETTINGS.master),
     music: clamp01(s?.music, DEFAULT_SETTINGS.music),
     sfx: clamp01(s?.sfx, DEFAULT_SETTINGS.sfx),
+    mute: typeof s?.mute === 'boolean' ? s.mute : DEFAULT_SETTINGS.mute,
     reduced: typeof s?.reduced === 'boolean' ? s.reduced : DEFAULT_SETTINGS.reduced,
     timer: typeof s?.timer === 'boolean' ? s.timer : DEFAULT_SETTINGS.timer, // the speedrun timer on the HUD
     binds: cleanBinds(s?.binds), // the key bindings (src/keys.js), repaired if corrupt

@@ -4,10 +4,10 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { GLYPHS, ROWS, CAP, measureArt, hasGlyph, measureText } from '../src/font.js';
 import { SPRITES, workerFrame, ART } from '../src/sprites.js';
-import { PARAMS, FREAK } from '../src/rules.js';
+import { PARAMS, FREAK, TILE } from '../src/rules.js';
 import { LEVELS, ACTS } from '../src/levels.js';
 import { CREDITS } from '../src/copy.js';
-import { exitRects, checkpointRect, shouldHatch, DAY, NIGHT } from '../src/art.js';
+import { exitRects, checkpointRect, shouldHatch, drawPrankCells, DAY, NIGHT } from '../src/art.js';
 import { parseLevel, tileAt, isSolidChar } from '../src/rules.js';
 import { memoPanel } from '../src/layout.js';
 import { keyLabel, isBindable } from '../src/keys.js';
@@ -264,4 +264,16 @@ test('font: every key label has glyphs', () => {
   for (const code of codes.filter(isBindable)) { // R, L, O and M are the menus' (RESERVED)
     for (const ch of keyLabel(code)) assert.ok(hasGlyph(ch), `${code}: ${ch}`);
   }
+});
+
+test('prank tiles that will appear keep a full-strength dashed outline over their faint fill', () => {
+  const calls = [];
+  const g = { globalAlpha: 1, fillStyle: '', fillRect(x, y, w, h) { calls.push({ alpha: this.globalAlpha, w, h }); } };
+  drawPrankCells(g, [{ tx: 2, ty: 2, ch: '#' }], () => false);
+  const fill = calls.filter((c) => c.w === TILE && c.h === TILE);
+  const dashes = calls.filter((c) => c.w !== TILE || c.h !== TILE);
+  assert.equal(fill.length, 1);
+  assert.ok(fill[0].alpha < 0.3);
+  assert.ok(dashes.length > 0 && dashes.every((c) => c.alpha === 1));
+  assert.equal(g.globalAlpha, 1, 'the caller gets its alpha back');
 });

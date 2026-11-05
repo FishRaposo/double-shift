@@ -142,7 +142,6 @@ export function parseLevel(def) {
     pranks,
     freaks,
     skins,
-    decor: def.decor ?? [],
     offset: def.offset ?? null,
     upsideDown: !!def.upsideDown, // the night is the day turned over, gravity included (gravitySign)
     nightGenerated: !def.night, // the night grid was generated from the day one (offset, upside down)
@@ -420,9 +419,10 @@ function nextFiring(pr, entries) {
 
 // What the freaks still have planned, soonest first, for the tells: `nights` is how many night
 // entries away it is; `cells` are the tiles it will really change. A cell shows only its next change,
-// and a lap of a repeating prank that changes nothing yet keeps its tell to itself.
+// and a tell shows only while its prank has something to change and no sooner prank is telling from that spot.
 export function pendingPranks(level, s) {
   const seen = new Set();
+  const told = new Set();
   return level.pranks
     .map((pr) => ({ pr, next: nextFiring(pr, s.nightEntries) }))
     .filter(({ next }) => next !== null)
@@ -435,8 +435,10 @@ export function pendingPranks(level, s) {
         seen.add(key);
         cells.push({ layer, tx, ty, ch });
       }
-      const lap = pr.onNight <= s.nightEntries;
-      return { id: pr.id, nights: next - s.nightEntries, tell: lap && cells.length === 0 ? null : pr.tell, cells };
+      const spot = pr.tell && `${pr.tell.tx},${pr.tell.ty}`;
+      const tell = pr.tell && cells.length > 0 && !told.has(spot) ? pr.tell : null;
+      if (tell) told.add(spot);
+      return { id: pr.id, nights: next - s.nightEntries, tell, cells };
     });
 }
 
@@ -497,7 +499,7 @@ function tryShift(level, s) {
     p.rising = false;
     if (!p.grounded) p.coyote = 0;
   }
-  s.events.push({ type: 'shift', layer: target, nudged: dx !== 0 || dy !== 0 });
+  s.events.push({ type: 'shift', layer: target, nudged: dx !== 0 || dy !== 0, x: p.x, y: p.y }); // where it happened: a death later this tick moves the player
   for (const pr of due) s.events.push({ type: 'prank', id: pr.id });
   return true;
 }

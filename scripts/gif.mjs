@@ -47,17 +47,17 @@ async function record({ id, seconds, delayCs, hold, k }) {
   const next = inputsFrom(SOLUTIONS[id]);
   const dt = delayCs / 100;
   const table = createColorTable(); // frames kept as color ids (2 bytes a pixel), not 32-bit pixels
-  const rgb = [];
+  const ids = [];
   let cardAt = null;
   for (let f = 0; f * dt < seconds; f++) {
     // advance() runs at most 12 ticks (0.1 s) per call, so a long frame goes in pieces of 0.05 s
     if (f > 0) for (let left = dt; left > 1e-9; left -= 0.05) g.advance(Math.min(0.05, left), next);
     g.render();
-    rgb.push(table.add(downscale(ctx.getImageData(0, 0, width, height).data, width, height, k)));
+    ids.push(table.add(downscale(ctx.getImageData(0, 0, width, height).data, width, height, k)));
     if (cardAt === null && g.screen === 'card') cardAt = f;
     if (cardAt !== null && (f - cardAt) * dt >= hold) break;
   }
-  const q = quantize(rgb, table);
+  const q = quantize(ids, table);
   const bytes = encodeGif(q.frames, w, h, { delayCs, palette: q.palette });
   // Chromium's decoder reads the file back; `worst` is the largest channel difference from what was encoded.
   let decoded = null;
@@ -84,7 +84,7 @@ async function record({ id, seconds, delayCs, hold, k }) {
   let bin = ''; // base64 in chunks: String.fromCharCode(...) on megabytes at once overflows the stack
   for (let i = 0; i < bytes.length; i += 0x8000) bin += String.fromCharCode(...bytes.subarray(i, i + 0x8000));
   const s = g.state;
-  return { b64: btoa(bin), w, h, frames: rgb.length, cardAt, colors: q.colors, decoded, run: { won: s.won, shifts: s.shifts, deaths: s.deaths, time: s.time } };
+  return { b64: btoa(bin), w, h, frames: ids.length, cardAt, colors: q.colors, decoded, run: { won: s.won, shifts: s.shifts, deaths: s.deaths, time: s.time } };
 }
 
 const expected = play(L[id], SOLUTIONS[id]).state;

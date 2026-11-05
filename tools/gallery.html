@@ -221,17 +221,39 @@ function draw(t) {
   y += 140;
 
   // ---- props ----
-  section(y, 130, 'PROPS', DAY);
+  section(y, 230, 'PROPS', DAY);
   const kinds = Object.keys(PROPS).filter((k) => !['sign', 'eyes'].includes(k));
   kinds.forEach((k, i) => {
-    const x = 20 + i * 76;
+    const x = 20 + (i % 12) * 100;
     g.save();
-    g.translate(0, y + 50);
+    g.translate(0, y + 50 + Math.floor(i / 12) * 100);
     PROPS[k](g, x + 8, 30, k === 'barrierTape' ? 2 : {}, {});
     g.restore();
-    label(k, x, y + 118, DAY);
+    label(k, x, y + 118 + Math.floor(i / 12) * 100, DAY);
   });
-  y += 130;
+  y += 230;
+
+  // ---- telegraphs: what a freak or prank is about to do ----
+  section(y, 170, 'TELEGRAPHS');
+  const sup = { x: 70, y: y + 50, w: 20, h: 22, facing: 1, turnIn: 1.1, hang: false };
+  art.drawGaze(g, sup, 220, y + 130);
+  art.drawTurnTimer(g, sup, 2);
+  label('gaze, side arrow, turn pips', 40, y + 150);
+  art.drawPatrol(g, 300, 420, y + 130);
+  art.drawPatrol(g, 300, 420, y + 100, 0.45);
+  art.drawPatrol(g, 300, 420, y + 50, 1, true);
+  label('patrol: live, slacking, hanging', 280, y + 150);
+  art.drawStatusMark(g, 500, y + 80, 'alert', t);
+  art.drawStatusMark(g, 560, y + 80, 'slack', t);
+  label('"!" watched, "z" slacking', 470, y + 150);
+  const cellsAt = (tx0, ty) => [0, 1, 2].map((d) => ({ tx: tx0 + d, ty, ch: '#' }));
+  g.save();
+  g.translate(0, y % 30);
+  art.drawPrankCells(g, cellsAt(22, Math.floor(y / 30) + 2), (ch) => ch === '.');
+  art.drawPrankCells(g, cellsAt(27, Math.floor(y / 30) + 2).map((c) => ({ ...c, ch: '.' })), (ch) => ch === '.');
+  g.restore();
+  label('prank tiles: will appear, will go', 660, y + 150);
+  y += 170;
 
   // ---- effects and UI ----
   section(y, 170, 'EFFECTS AND UI');

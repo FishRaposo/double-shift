@@ -185,3 +185,12 @@ test('gif: frames kept as color ids (the recorder, to save memory) quantize exac
   assert.deepEqual(fromIds.frames, direct.frames);
   assert.equal(fromIds.colors, direct.colors);
 });
+
+test('color ids stay 16-bit at real frame sizes, and go 32-bit exactly when an id needs it', () => {
+  const table = createColorTable();
+  assert.equal(table.add(new Uint32Array(480 * 270)).BYTES_PER_ELEMENT, 2, 'one flat 480×270 frame');
+  const many = Uint32Array.from({ length: 70000 }, (_, i) => i + 1);
+  const ids = table.add(many);
+  assert.equal(ids.BYTES_PER_ELEMENT, 4);
+  assert.deepEqual([ids[0], ids[65534], ids[65535], ids[69999]], [1, 65535, 65536, 70000], 'every id exact across the upgrade');
+});

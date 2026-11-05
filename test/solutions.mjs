@@ -75,7 +75,12 @@ export const SOLUTIONS = {
     const x = tx(s);
     switch (s.shifts) {
       case 0: return { right: true, shift: x >= 2.5 };
-      case 1: return { right: true, shift: x >= 9.6 };
+      case 1: {
+        // hanging at the peeker: wait until the clipboard looks away from this room, then cross without stopping
+        const sup = freakBoxes(L.clockout, s).find((b) => b.kind === 'supervisor');
+        if (sup.facing === 1 && sup.turnIn >= 0.9) m.past = true;
+        return { right: x < 4.4 || !!m.past, shift: x >= 9.6 };
+      }
       case 2: return { right: true, shift: x >= 13 };
       case 3: return { right: true, shift: x >= 16.4 };
       case 4: return { right: x < 22.4, shift: x >= 22.4 };

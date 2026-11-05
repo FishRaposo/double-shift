@@ -26,14 +26,15 @@ function stoodThere(level, layer, ov, tx, ty0, ty1) {
 
 export function skinPlan(level, layer, ov = {}) {
   const out = [];
+  const hang = gravitySign(level, layer) < 0 ? { hang: true } : {}; // on a flipped layer a door's floor end is its top
   for (const sk of level.skins ?? []) {
     if (sk.layer !== null && sk.layer !== layer) continue;
     if (sk.kind === 'door' || sk.kind === 'pillar') {
       const top = sk.ty - sk.h + 1;
       const state = column(level, layer, ov, sk.tx, top, sk.ty);
-      if (state === 'solid') out.push({ draw: sk.kind, tx: sk.tx, ty: sk.ty, h: sk.h });
+      if (state === 'solid') out.push({ draw: sk.kind, tx: sk.tx, ty: sk.ty, h: sk.h, ...hang });
       else if (state === 'empty' && stoodThere(level, layer, ov, sk.tx, top, sk.ty)) {
-        out.push(sk.kind === 'door' ? { draw: 'emptyFrame', tx: sk.tx, ty: sk.ty, h: sk.h } : { draw: 'crack', tx: sk.tx, ty: top });
+        out.push(sk.kind === 'door' ? { draw: 'emptyFrame', tx: sk.tx, ty: sk.ty, h: sk.h, ...hang } : { draw: 'crack', tx: sk.tx, ty: top });
       }
     } else if (sk.kind === 'portrait') {
       let all = true;

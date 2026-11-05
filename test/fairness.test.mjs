@@ -4,10 +4,8 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { LEVELS } from '../src/levels.js';
 import { initState, standableSpot, TILE, PARAMS, DAY, NIGHT, freakBoxes } from '../src/rules.js';
-import { inputWindows, level, patrolBoxes, respawnSpots, spotInPatrol } from './helpers.mjs';
+import { inputWindows, level, patrolBoxes, respawnSpots, spotInPatrol, WINDOW_FLOOR } from './helpers.mjs';
 import { SOLUTIONS, L } from './solutions.mjs';
-
-export const WINDOW_FLOOR = (act) => (act <= 2 ? 200 : 100);
 
 for (const def of LEVELS) {
   test(`${def.name}: every required shift and jump has ≥ ${WINDOW_FLOOR(def.act)} ms of slack`, () => {

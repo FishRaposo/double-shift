@@ -171,9 +171,8 @@ test('endSummary: the run time sums the levels played (the speedrun timer)', () 
   assert.equal(endSummary(LEVELS, []).time, 0);
 });
 
-test('endSummary: the run time counts every attempt (restarts and deaths too), not just the clearing one', () => {
-  const results = [];
-  results[0] = { shifts: 2, par: 2, deaths: 0, time: 3.5, spent: 21 };
-  results[1] = { shifts: 1, par: 1, deaths: 0, time: 4 }; // no spent recorded: its own time
-  assert.equal(endSummary(LEVELS, results).time, 25);
+test('endSummary: the run total counts every second played, abandoned attempts and levels included', () => {
+  const results = [{ shifts: 2, par: 2, time: 3 }];
+  assert.equal(endSummary(LEVELS, results, [10, 60]).time, 70);
+  assert.equal(endSummary(LEVELS, results).time, 3, 'no timing kept: the clearing runs');
 });
