@@ -429,6 +429,19 @@ export function drawHazardEcho(g, tx, ty, color, { top: flipped = false } = {}) 
   for (let j = 0; j < HZ; j += 2) { g.fillRect(x + A, top + j * A, A, A); g.fillRect(x + 13 * A, top + j * A, A, A); }
 }
 
+// the other shift's water: a dotted box the size of the tile, because all of it is deadly
+export function drawWaterEcho(g, tx, ty, color) {
+  const x = tx * TILE;
+  const y = ty * TILE;
+  g.fillStyle = color;
+  for (let i = 1; i < 14; i += 2) {
+    g.fillRect(x + i * A, y + A, A, A);
+    g.fillRect(x + i * A, y + 13 * A, A, A);
+    g.fillRect(x + A, y + i * A, A, A);
+    g.fillRect(x + 13 * A, y + i * A, A, A);
+  }
+}
+
 // ---------- shared objects ----------
 
 const SCREEN_W = 32 * TILE;

@@ -1442,10 +1442,10 @@ export const LEVELS = [
       fix: { tx: 18, ty: 13, layer: 'day', name: 'LOOSE CABLE', kind: 'cable', goal: 'OPEN THE SHUTTER', target: 'SHUTTER', link: [[18, 12], [18, 9], [20, 9]], set: [{ layer: 'day', x0: 20, y0: 10, y1: 13, ch: '.' }] },
     }, {
       tool: { tx: 26, ty: 13, layer: 'night', name: 'WRENCH', kind: 'wrench' },
-      fix: { tx: 28, ty: 13, layer: 'day', name: 'LEAKING PIPE', kind: 'pipe', goal: 'OPEN THE HATCH', target: 'HATCH', link: [[28, 12], [29, 9]], set: [{ layer: 'night', x0: 28, x1: 31, y0: 8, ch: '.' }] },
+      fix: { tx: 28, ty: 13, layer: 'day', name: 'LEAKING PIPE', kind: 'pipe', goal: 'OPEN THE HATCH', target: 'HATCH', link: [[28, 12], [28, 9], [29, 9]], set: [{ layer: 'night', x0: 28, x1: 31, y0: 8, ch: '.' }] },
     }, {
       tool: { tx: 31, ty: 10, layer: 'night', name: 'TIMECARD', kind: 'card' },
-      fix: { tx: 31, ty: 7, layer: 'night', name: 'TIME CLOCK', kind: 'clock', goal: 'FIX THE TIME CLOCK', target: 'WAY OUT', link: [[30, 7], [29, 6]], set: [{ layer: 'night', x0: 28, x1: 31, y0: 6, ch: '.' }] },
+      fix: { tx: 31, ty: 7, layer: 'night', name: 'TIME CLOCK', kind: 'clock', goal: 'FIX THE TIME CLOCK', target: 'WAY OUT', link: [[30, 7], [30, 6], [29, 6]], set: [{ layer: 'night', x0: 28, x1: 31, y0: 6, ch: '.' }] },
     }],
     par: 7,
     // One room per act, on the flipped map, with one of every freak: the walkway (row 5) is the night's ceiling, one

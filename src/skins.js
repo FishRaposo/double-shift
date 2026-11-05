@@ -24,6 +24,8 @@ function stoodThere(level, layer, ov, tx, ty0, ty1) {
   return false;
 }
 
+const columns = (sk) => Array.from({ length: sk.w }, (_, dx) => sk.tx + dx);
+
 export function skinPlan(level, layer, ov = {}) {
   const out = [];
   const hang = gravitySign(level, layer) < 0 ? { hang: true } : {}; // on a flipped layer a door's floor end is its top
@@ -35,10 +37,9 @@ export function skinPlan(level, layer, ov = {}) {
       if (state === 'solid') out.push({ draw: 'shutter', tx: sk.tx, ty: sk.ty, h: sk.h });
       else if (state === 'empty') out.push({ draw: 'shutterOpen', tx: sk.tx, ty: top });
     } else if (sk.kind === 'deck') {
-      const cells = Array.from({ length: sk.w }, (_, dx) => sk.tx + dx);
       let floorRow = sk.ty + 1;
       while (floorRow < level.h && !solid(level, layer, ov, sk.tx, floorRow)) floorRow++;
-      if (cells.every((tx) => solid(level, layer, ov, tx, sk.ty))) out.push({ draw: 'deck', tx: sk.tx, ty: sk.ty, w: sk.w, sag: sk.sag, floorRow });
+      if (columns(sk).every((tx) => solid(level, layer, ov, tx, sk.ty))) out.push({ draw: 'deck', tx: sk.tx, ty: sk.ty, w: sk.w, sag: sk.sag, floorRow });
     } else if (sk.kind === 'door' || sk.kind === 'pillar') {
       const top = sk.ty - sk.h + 1;
       const state = column(level, layer, ov, sk.tx, top, sk.ty);
@@ -52,12 +53,11 @@ export function skinPlan(level, layer, ov = {}) {
       if (all) out.push({ draw: 'portrait', tx: sk.tx, ty: sk.ty, w: sk.w, h: sk.h });
       else {
         const bottom = sk.ty + sk.h - 1; // dropped flat: only the bottom row is left
-        const row = Array.from({ length: sk.w }, (_, dx) => sk.tx + dx);
-        if (row.every((tx) => solid(level, layer, ov, tx, bottom)) && row.every((tx) => !solid(level, layer, ov, tx, bottom - 1))) out.push({ draw: 'portraitFlat', tx: sk.tx, ty: bottom, w: sk.w });
+        if (columns(sk).every((tx) => solid(level, layer, ov, tx, bottom) && !solid(level, layer, ov, tx, bottom - 1))) out.push({ draw: 'portraitFlat', tx: sk.tx, ty: bottom, w: sk.w });
       }
     } else if (sk.kind === 'doorPile') {
       let count = 0;
-      const full = (ty) => Array.from({ length: sk.w }, (_, dx) => sk.tx + dx).every((tx) => solid(level, layer, ov, tx, ty));
+      const full = (ty) => columns(sk).every((tx) => solid(level, layer, ov, tx, ty));
       while (count < sk.h && sk.ty - count >= 0 && full(sk.ty - count)) count++; // never the platform above it
       if (count > 0) out.push({ draw: 'doorPile', tx: sk.tx, ty: sk.ty, count });
     }

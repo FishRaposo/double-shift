@@ -595,6 +595,9 @@ for (const id of REDESIGNED) {
   test(`${id}: the repair changes the map, and the level can't be won without it`, () => {
     const lvl = L[id];
     assert.ok(lvl.repairs.every((job) => job.fix.cells.length > 0 && job.fix.link.length >= 2));
+    const fixed = new Set(lvl.repairs.flatMap((job) => job.fix.cells.map(([layer, tx, ty]) => `${layer},${tx},${ty}`)));
+    for (const pr of lvl.pranks) for (const [layer, tx, ty] of pr.cells) assert.equal(fixed.has(`${layer},${tx},${ty}`), false, `${pr.id} would undo a repair at ${tx},${ty}`);
+    for (const job of lvl.repairs) job.fix.link.slice(1).forEach(([x, y], k) => assert.ok(x === job.fix.link[k][0] || y === job.fix.link[k][1], 'a link runs straight, on the art grid'));
     const noTool = { ...lvl, repairs: lvl.repairs.map((job) => ({ ...job, tool: { ...job.tool, tx: -9 } })) };
     assert.equal(searchBelowPar(noTool, 8, 200), Infinity);
   });

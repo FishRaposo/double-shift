@@ -1,7 +1,7 @@
 // Double Shift — browser shell: input capture, fixed-step loop, rendering.
 // Draws only what src/rules.js decided. Art lives in sprites.js (characters) and art.js (everything else).
 
-import { step, initState, parseLevel, tileAt, isSolidChar, freakBoxes, pendingPranks, gravitySign, TILE, DT, DAY, NIGHT, PARAMS, FREAK } from './rules.js';
+import { step, initState, parseLevel, tileAt, isSolidChar, isHazardChar, freakBoxes, pendingPranks, gravitySign, TILE, DT, DAY, NIGHT, PARAMS, FREAK } from './rules.js';
 import { LEVELS, ACTS, FINALE_ACT } from './levels.js';
 import { createInput } from './input.js';
 import { createPad, readPads, padMenuKey } from './pad.js';
@@ -13,12 +13,12 @@ import { drawText, measureText, wrapText } from './font.js';
 import { drawSprite, drawEyes, eyesOpen, workerFrame, spriteRect, ART, SPRITES, C, JOB_NIGHT_PAL } from './sprites.js';
 import {
   PAL, PROPS, drawBackground, drawSolidTile, drawHatch, drawEchoEdges, drawRebar, drawLaser, drawHazardEcho,
-  drawExit, drawCheckpoint, drawSign, drawFreak, drawTool, drawCarriedTool, drawFixture, drawJobLink, drawFixBrackets, drawWater, drawStatusMark, drawPatrol, drawGaze, drawTurnTimer, drawPrankCells,
+  drawWaterEcho, drawExit, drawCheckpoint, drawSign, drawFreak, drawTool, drawCarriedTool, drawFixture, drawJobLink, drawFixBrackets, drawWater, drawStatusMark, drawPatrol, drawGaze, drawTurnTimer, drawPrankCells,
   drawShiftRing, drawDust, drawPuff, drawSparkle, drawPanel,
   drawStamp, drawLogo, drawWetTile, drawSkin, shouldHatch, withCellMirror, PLATE, NOTE_STRIP, px, drawMemoPanel,
 } from './art.js';
 import { SPOOK_LINES, ACT_LINES, CREDITS, timecardComment, stampText, prankCountdown } from './copy.js';
-import { levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, endSummary, selectClick, canvasScale, CARD, memoPanel, memoNear } from './layout.js';
+import { levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, endSummary, selectClick, canvasScale, CARD, memoPanel, memoNear, HUD_BOTTOM, hudFloor, placeTag } from './layout.js';
 
 const W = 960;
 const H = 540;
@@ -547,7 +547,9 @@ function makeCanvas() {
 function drawShiftCues(ctx, lvl, layer, ov, tx, ty) {
   const other = 1 - layer;
   if (shouldHatch(lvl, layer, ov, tx, ty)) drawHatch(ctx, tx, ty, layer); // the rim of a one-shift region (art.js)
-  if (tileAt(lvl, other, tx, ty, ov) === '^') drawHazardEcho(ctx, tx, ty, PAL[other].echo, { top: gravitySign(lvl, other) < 0 });
+  const there = tileAt(lvl, other, tx, ty, ov);
+  if (there === '^') drawHazardEcho(ctx, tx, ty, PAL[other].echo, { top: gravitySign(lvl, other) < 0 });
+  else if (there === 'w' && tileAt(lvl, layer, tx, ty, ov) !== 'w') drawWaterEcho(ctx, tx, ty, PAL[other].echo);
 }
 
 // A memo's panel layout, wrapped once per memo (the text and spot never change while a level runs).
@@ -635,7 +637,13 @@ function drawHazards(lvl, layer, t, ov) {
   for (let ty = 0; ty < lvl.h; ty++) {
     for (let tx = 0; tx < lvl.w; tx++) {
       const ch = tileAt(lvl, layer, tx, ty, ov);
-      if (ch === 'w') drawWater(g, tx, ty, t, tileAt(lvl, layer, tx, ty - 1, ov) !== 'w', layer);
+      if (ch === 'w') { // a flipped night turns the water over: it pours and pools upward
+        const flipped = gravitySign(lvl, layer) < 0;
+        const surface = tileAt(lvl, layer, tx, ty + (flipped ? 1 : -1), ov) !== 'w';
+        const draw = () => drawWater(g, tx, ty, t, surface, layer);
+        if (flipped) withCellMirror(g, ty, draw);
+        else draw();
+      }
       if (ch !== '^') continue;
       if (layer === DAY) drawRebar(g, tx, ty);
       else drawLaser(g, tx, ty, t, tx === 0 || tileAt(lvl, layer, tx - 1, ty, ov) !== '^', tx === lvl.w - 1 || tileAt(lvl, layer, tx + 1, ty, ov) !== '^', { top: gravitySign(lvl, layer) < 0 });
@@ -643,13 +651,13 @@ function drawHazards(lvl, layer, t, ov) {
   }
 }
 
-function drawTells(lvl, s, layer, t) {
+function drawTells(lvl, s, layer, t, box) {
   const pending = pendingPranks(lvl, s);
   for (const pr of pending) {
     // tiles on the shift you're looking at read strongest; the other shift's stay faint under the echo
     for (const l of [DAY, NIGHT]) {
       const cells = pr.cells.filter((c) => c.layer === l);
-      if (cells.length) drawPrankCells(g, cells, (ch) => !isSolidChar(ch) && ch !== '^', { alpha: l === layer ? 1 : 0.7, color: layer === NIGHT ? '#ffd23f' : '#b3430f' });
+      if (cells.length) drawPrankCells(g, cells, (ch) => !isSolidChar(ch) && !isHazardChar(ch), { alpha: l === layer ? 1 : 0.7, color: layer === NIGHT ? '#ffd23f' : '#b3430f' });
     }
   }
   const labels = [];
@@ -663,25 +671,25 @@ function drawTells(lvl, s, layer, t) {
       PROPS.eyes(g, x - 30, up ? y + 26 : y - 50, { t, seed: 7 });
       PROPS.eyes(g, x + 4, up ? y + 40 : y - 64, { t, seed: 3 });
     } else {
-      drawSign(g, x, Math.max(y - 36, x < 340 ? 122 : HUD_BOTTOM), NOTEXT ? '    ' : pr.tell.text ?? 'MINE', 'note', 2); // the sticky note (WRITING.md §5), below the work order
+      const note = NOTEXT ? '    ' : pr.tell.text ?? 'MINE';
+      drawSign(g, x, Math.max(y - 36, hudFloor(box, x - measureText(note, 2) / 2 - 8) + 14), note, 'note', 2); // the sticky note (WRITING.md §5), below the work order
     }
     const text = prankCountdown(pr.nights);
-    const spot = countdownSpot(lvl, labels, x, y, measureText(text, 2), gravitySign(lvl, layer) < 0);
+    const spot = countdownSpot(lvl, labels, x, y, measureText(text, 2), gravitySign(lvl, layer) < 0, box);
     hud(text, spot.x, spot.y, layer, { align: 'center', color: layer === NIGHT ? '#ffd23f' : '#5a3d10' });
   }
 }
 
-const HUD_BOTTOM = 62;
 
 // Where a tell's countdown goes: on the tell's side of its target, clear of the screen edge and the exit's
 // column; a label that would land on a sooner one (they're placed soonest first) moves past the note.
-function countdownSpot(lvl, labels, tellX, tellY, w, flipped) {
+function countdownSpot(lvl, labels, tellX, tellY, w, flipped, box) {
   const exitLeft = lvl.exit.tx * TILE - 6;
   let x = Math.min(W - w / 2 - 6, Math.max(w / 2 + 6, tellX));
   if (x + w / 2 > exitLeft && x - w / 2 < exitLeft + TILE) x = exitLeft < W / 2 ? exitLeft + TILE + 6 + w / 2 : exitLeft - w / 2;
   const hits = (y) => labels.some((l) => Math.abs(l.x - x) < (l.w + w) / 2 + 4 && Math.abs(l.y - y) < 16);
   const near = flipped ? tellY + 2 : tellY - 16;
-  const y = Math.max(x < 340 ? 142 : HUD_BOTTOM, hits(near) ? (flipped ? tellY + 60 : tellY - 82) : near);
+  const y = Math.max(hudFloor(box, x - w / 2) + 34, hits(near) ? (flipped ? tellY + 60 : tellY - 82) : near);
   labels.push({ x, y, w });
   return { x, y };
 }
@@ -710,32 +718,31 @@ function drawFreakPlans(lvl, boxes, layer) {
   });
 }
 
-// a paper tag over something in the level; tags that would land on each other stack upwards
-function jobLabel(text, tx, ty, placed) {
-  const half = measureText(text, 2) / 2 + 10;
-  const x = Math.min(W - half, Math.max(half, tx * TILE + TILE / 2));
-  let y = Math.max(x < 340 ? 122 : HUD_BOTTOM + 14, ty * TILE - 14); // clear of the HUD's work order
-  while (placed.some((p) => Math.abs(p.x - x) < p.half + half && Math.abs(p.y - y) < 26)) y -= 28;
-  placed.push({ x, y, half });
-  drawSign(g, x, y, text, 'paper', 2);
-}
-
 // the level's repairs: the cable or pipe to what they drive, the tool until it's picked up, the broken thing
 function drawWorkOrder(lvl, s, layer, t) {
-  const placed = [];
   lvl.repairs.forEach((job, i) => {
     const { tool, done } = s.repairs[i];
     drawJobLink(g, job.fix.link, t, done, layer);
     if (!tool) drawTool(g, job.tool, t, layer);
     const cordFrom = job.fix.kind === 'light' ? lightCordFrom(lvl, layer, job.fix.tx, job.fix.ty, s.overrides) : null;
     drawFixture(g, job.fix, t, layer, done, { cordFrom });
-    if (NOTEXT || i !== s.repairs.findIndex((r) => !r.done)) return;
-    // everything in the job in hand says what it is
-    if (!tool) jobLabel(job.tool.name, job.tool.tx, job.tool.ty, placed);
-    jobLabel(job.fix.name, job.fix.tx, job.fix.ty, placed);
-    const end = job.fix.link.at(-1);
-    if (end && job.fix.target) jobLabel(job.fix.target, end[0], end[1], placed);
   });
+}
+
+// everything in the job in hand says what it is, on top of the level so that nothing can hide the words
+function drawJobTags(lvl, s, box) {
+  const i = s.repairs.findIndex((r) => !r.done);
+  if (NOTEXT || i === -1) return;
+  const { tool, fix } = lvl.repairs[i];
+  const placed = [];
+  const tag = (text, tx, ty) => {
+    const { x, y } = placeTag(placed, box, measureText(text, 2), tx * TILE + TILE / 2, ty * TILE - 14, W);
+    drawSign(g, x, y, text, 'paper', 2);
+  };
+  if (!s.repairs[i].tool) tag(tool.name, tool.tx, tool.ty);
+  tag(fix.name, fix.tx, fix.ty);
+  const end = fix.link.at(-1);
+  if (end && fix.target) tag(fix.target, end[0], end[1]);
 }
 
 // a room with its light out: nothing to see until the repair but the exit's glow
@@ -840,18 +847,32 @@ function drawNoteStrip(text) {
   drawText(g, text, W / 2, top + 7, { scale: 2, color: NOTE_STRIP.ink, align: 'center' });
 }
 
+// the work order in words: the job in hand and the next step
+function jobWords(lvl, s) {
+  const next = s.repairs.findIndex((r) => !r.done);
+  const job = lvl.repairs[next === -1 ? lvl.repairs.length - 1 : next];
+  const step = next === -1 ? 'DONE' : s.repairs[next].tool ? `FIX THE ${job.fix.name}` : `GET THE ${job.tool.name}`;
+  const goal = job.fix.goal ?? `FIX THE ${job.fix.name}`;
+  return { goal: `WORK ORDER: ${goal}`, step };
+}
+
+const jobHudTop = () => (settings.get().timer ? 62 : 38);
+const jobStepX = (lvl) => 14 + lvl.repairs.length * 70;
+
+// what the work order takes up on the HUD, words and icons (src/layout.js keeps the rest of the screen out of it)
+function jobHudBox(lvl, s) {
+  if (!lvl.repairs.length) return { right: 0, bottom: HUD_BOTTOM };
+  const { goal, step } = jobWords(lvl, s);
+  return { right: Math.max(14 + measureText(goal, 2), jobStepX(lvl) + measureText(step, 2)) + 8, bottom: jobHudTop() + 52 };
+}
+
 // the work order at a glance: for each job, the tool, then what it's for, ticked off as they're done
-function drawJobIcons(lvl, s, layer, y) {
-  // in words first: the job in hand and the next step
-  const next = lvl.repairs.findIndex((_, i) => !s.repairs[i].done);
-  if (lvl.repairs.length) {
-    const job = lvl.repairs[next === -1 ? lvl.repairs.length - 1 : next];
-    const goal = job.fix.goal ?? `FIX THE ${job.fix.name}`;
-    hud(`WORK ORDER: ${goal}`, 14, y, layer);
-    y += 24;
-    const step = next === -1 ? 'DONE' : s.repairs[next].tool ? `FIX THE ${job.fix.name}` : `GET THE ${job.tool.name}`;
-    hud(step, 14 + lvl.repairs.length * 70, y + 4, layer);
-  }
+function drawJobIcons(lvl, s, layer) {
+  if (!lvl.repairs.length) return;
+  const { goal, step } = jobWords(lvl, s);
+  const y = jobHudTop() + 24;
+  hud(goal, 14, y - 24, layer);
+  hud(step, jobStepX(lvl), y + 4, layer);
   let x = 14;
   lvl.repairs.forEach((job, i) => {
     const { tool, done } = s.repairs[i];
@@ -867,7 +888,7 @@ function drawHud(lvl, s, layer) {
   const pal = PAL[layer];
   hud(`${game.index + 1}/${levels.length}  ${lvl.name.toUpperCase()}`, 14, 12, layer);
   if (settings.get().timer) hud(`TIME ${s.time.toFixed(2)}`, 14, 40, layer); // the speedrun timer (SETTINGS)
-  drawJobIcons(lvl, s, layer, settings.get().timer ? 62 : 38);
+  drawJobIcons(lvl, s, layer);
   // shift indicator: icon + label (not colour alone), on one plate
   const label = layer === DAY ? 'DAY SHIFT' : 'NIGHT SHIFT';
   const lw = measureText(label, 2);
@@ -929,7 +950,8 @@ function drawPlay() {
   });
   drawDecor(def, layer, t);
   drawWorkOrder(lvl, s, layer, t);
-  drawTells(lvl, s, layer, t);
+  const box = jobHudBox(lvl, s);
+  drawTells(lvl, s, layer, t, box);
   const boxes = freakBoxes(lvl, s);
   drawFreakPlans(lvl, boxes, layer);
   boxes.forEach((b, i) => {
@@ -944,6 +966,7 @@ function drawPlay() {
     if (b.kind === 'supervisor') drawTurnTimer(g, b, lvl.freaks[i].period, alpha);
   });
   drawDarkRooms(lvl, s, layer);
+  drawJobTags(lvl, s, box);
   if (game.fx.spook) drawSpookGag();
   else drawWorker(s, layer);
   drawFx(reduced);

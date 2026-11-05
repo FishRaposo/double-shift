@@ -357,6 +357,7 @@ async function fullRun() {
   // flip (Mind Your Head's first clock-in turns the night over)
   await moment('inventory', 'prank', 0.14, '19-prank-inventory.png');
   await moment('upside', 'shift', 0.11, '20-flip-mind-your-head.png');
+  await moment('midair', 'repaired', 0.2, '21-repair-mid-air.png');
 
   // asset gallery + offline audio loudness check (peaks before the master gain; must not clip)
   await open('tools/gallery.html', 1280, 2100);

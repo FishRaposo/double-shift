@@ -1,7 +1,7 @@
 // GDD §13.7 collision/shift edge cases, plus S-rules. Each runs headless against src/rules.js.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { step, initState, NO_INPUT, DAY, NIGHT, TILE, DT, PARAMS, isEmbedded, isSolidChar, overlapsSolid, freakBoxes, pendingPranks, tileAt, supervisorFacing, watchedClock } from '../src/rules.js';
+import { step, initState, NO_INPUT, DAY, NIGHT, TILE, DT, PARAMS, isEmbedded, isSolidChar, overlapsHazard, overlapsSolid, freakBoxes, pendingPranks, tileAt, supervisorFacing, watchedClock } from '../src/rules.js';
 import { level, stepN, place, play } from './helpers.mjs';
 
 const OPEN = [
@@ -1129,7 +1129,7 @@ const JOB_DAY = [
   '##########',
 ];
 const JOB_NIGHT = JOB_DAY.map((r) => r.replace(/[SE]/g, '.'));
-const JOB = (tool = 'day', fix = 'day') => level(JOB_DAY, JOB_NIGHT, { repair: { tool: { tx: 3, ty: 5, layer: tool, name: 'FUSE', kind: 'fuse' }, fix: { tx: 6, ty: 5, layer: fix, name: 'FUSE BOX', kind: 'fuse' } } });
+const JOB = (tool = 'day', fix = 'day') => level(JOB_DAY, JOB_NIGHT, { repairs: [{ tool: { tx: 3, ty: 5, layer: tool, name: 'FUSE', kind: 'fuse' }, fix: { tx: 6, ty: 5, layer: fix, name: 'FUSE BOX', kind: 'fuse' } }] });
 const walkTo = (lvl, s, tile) => { for (let i = 0; i < 600 && s.player.x / TILE < tile && !s.won; i++) s = step(lvl, s, RIGHT); return s; };
 
 test('work order: the tool, then the fix, then the exit opens', () => {
@@ -1166,7 +1166,7 @@ test('work order: the broken thing needs the tool first', () => {
 });
 
 test('work order: a death returns to what the checkpoint saved, tool included', () => {
-  const job = { repair: { tool: { tx: 2, ty: 1, layer: 'day', name: 'A', kind: 'fuse' }, fix: { tx: 9, ty: 1, layer: 'day', name: 'B', kind: 'fuse' } } };
+  const job = { repairs: [{ tool: { tx: 2, ty: 1, layer: 'day', name: 'A', kind: 'fuse' }, fix: { tx: 9, ty: 1, layer: 'day', name: 'B', kind: 'fuse' } }] };
   const stopAfterDying = (s) => ({ right: s.deaths === 0 });
   const saved = level(['..........', '.S.C.....E', '####....##'], ['..........', '..........', '####....##'], job);
   const a = play(saved, stopAfterDying, 120 * 4).state;
@@ -1184,6 +1184,17 @@ test('a level without a work order is unchanged: the exit just works', () => {
   assert.equal(play(lvl, () => ({ right: true }), 120 * 4).state.won, true);
 });
 
+test('water: deadly across its tile, less a lip at the surface, and the lip turns over on a flipped night', () => {
+  const day = ['....', '.ww.', '....'];
+  const flat = level(['S..E', ...day], ['S..E', ...day]);
+  const flip = level(['S..E', '....', '....', '####'], undefined, { upsideDown: true, nightPatch: [{ x0: 1, y0: 1, ch: 'w' }] });
+  const [x, w, h] = [TILE + 6, 10, 10];
+  assert.equal(overlapsHazard(flat, DAY, x, 2 * TILE - h + 4, w, h), false, 'in the lip above the surface');
+  assert.equal(overlapsHazard(flat, DAY, x, 2 * TILE - h + 12, w, h), true);
+  assert.equal(overlapsHazard(flip, NIGHT, x, 2 * TILE - 4, w, h), false, 'in the lip below it, on a flipped night');
+  assert.equal(overlapsHazard(flip, NIGHT, x, 2 * TILE - 12, w, h), true);
+});
+
 test("work order: a position needs a layer", () => {
-  assert.throws(() => level(JOB_DAY, JOB_NIGHT, { repair: { tool: { tx: 1, ty: 1 }, fix: { tx: 2, ty: 1, layer: 'day' } } }), /needs a layer/);
+  assert.throws(() => level(JOB_DAY, JOB_NIGHT, { repairs: [{ tool: { tx: 1, ty: 1 }, fix: { tx: 2, ty: 1, layer: 'day' } }] }), /needs a layer/);
 });

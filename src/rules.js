@@ -48,15 +48,10 @@ function skinCells(sk) {
 
 // A level is { name, par, day: string[], night: string[] } — or `offset` or `upsideDown: true`, plus an optional
 // `nightPatch`, instead of `night`: those generate the night grid from the day one.
-// A level's work orders (`repairs`, or one `repair`): pick up the tool on its shift, then fix the broken thing on its
+// A level's work orders (`repairs`): pick up the tool on its shift, then fix the broken thing on its
 // shift. Both are touched, like a checkpoint: no extra button. `fix.set` is what the repair changes, in the prank
 // format: the shutter rises, the water drains. `fix.link` is the run of cable or pipe the art draws from the broken
 // thing to what it drives; `goal` and `target` are its words on the HUD and the tag.
-function parseRepairs(def) {
-  const jobs = def.repairs ?? (def.repair ? [def.repair] : []);
-  return jobs.map((job) => parseRepair(def, job));
-}
-
 function parseRepair(def, job) {
   const at = ({ layer, ...rest }, what) => {
     if (layer !== 'day' && layer !== 'night') throw new Error(`${def.name}: the repair's ${what} needs a layer, 'day' or 'night'`);
@@ -160,7 +155,7 @@ export function parseLevel(def) {
     pranks,
     freaks,
     skins,
-    repairs: parseRepairs(def),
+    repairs: (def.repairs ?? []).map((job) => parseRepair(def, job)),
     offset: def.offset ?? null,
     upsideDown: !!def.upsideDown, // the night is the day turned over, gravity included (gravitySign)
     nightGenerated: !def.night, // the night grid was generated from the day one (offset, upside down)
@@ -234,6 +229,8 @@ const EPS = 1e-6;
 
 // '#' is ordinary solid, '~' is wet floor (solid but low friction). Rules and
 // renderer share this so they can't disagree about what counts as ground.
+export const isHazardChar = (ch) => ch === '^' || ch === 'w';
+
 export function isSolidChar(ch) {
   return ch === '#' || ch === '~';
 }
@@ -262,7 +259,11 @@ export function overlapsHazard(level, layer, x, y, w = PARAMS.playerW, h = PARAM
   for (let ty = y0; ty <= y1; ty++) {
     for (let tx = x0; tx <= x1; tx++) {
       const ch = tileAt(level, layer, tx, ty, ov);
-      if (ch === 'w' && y + h > ty * TILE + 8 + EPS && y < (ty + 1) * TILE) return true; // water: the whole tile
+      if (ch === 'w') { // water: the whole tile, less a lip at the surface, which a flipped night turns over
+        const lip = 8 + EPS;
+        if (y + h > ty * TILE + (up ? 0 : lip) && y < (ty + 1) * TILE - (up ? lip : 0)) return true;
+        continue;
+      }
       if (ch !== '^') continue;
       if (up) {
         const bottom = ty * TILE + hz;
@@ -534,6 +535,11 @@ function approach(v, target, amount) {
   return v;
 }
 
+// A new list, never an edit in place: the checkpoint can be holding this one.
+function setJob(s, i, change) {
+  s.repairs = s.repairs.map((job, k) => (k === i ? { ...job, ...change } : job));
+}
+
 function die(level, s, cause, by) {
   s.deaths += 1;
   s.events.push({ type: 'death', cause, by, x: s.player.x, y: s.player.y, layer: s.layer });
@@ -671,13 +677,13 @@ export function step(level, prev, input = NO_INPUT, dt = DT) {
   level.repairs.forEach((job, i) => {
     const state = s.repairs[i];
     if (!state.tool && s.layer === job.tool.layer && overlapsTile(p, job.tool.tx, job.tool.ty)) {
-      s.repairs = s.repairs.with(i, { ...state, tool: true });
+      setJob(s, i, { tool: true });
       s.events.push({ type: 'tool', job: i });
     } else if (state.tool && !state.done && s.layer === job.fix.layer && overlapsTile(p, job.fix.tx, job.fix.ty)) {
       const next = withPranks(s.overrides, [job.fix]);
       if (overlapsSolid(level, s.layer, p.x, p.y, undefined, undefined, next)) return; // never close on the worker: it waits until you step clear
       s.overrides = next;
-      s.repairs = s.repairs.with(i, { ...state, done: true });
+      setJob(s, i, { done: true });
       s.events.push({ type: 'repaired', job: i });
     }
   });

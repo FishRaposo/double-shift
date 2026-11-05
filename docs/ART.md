@@ -182,7 +182,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 - **Tools** are 11×11 sprites (`tool-*` in `src/sprites.js`): fuse, wrench, bulb, oil, tape, card. On the other shift they're dashed outlines. The worker carries the tool in hand.
 - **Fixtures** (`fix-*`) have a `broken` and a `fixed` frame that differ in silhouette: fuse box, pipe, light, bolt, hinge, cable, clock. A test enforces it.
 - **The link:** a broken dead line from the fixture to what it drives, a live moving line once repaired (`drawJobLink`).
-- **Machines** are skins over solid tiles: roller shutter, scaffold deck, the big portrait and its flat fallen form. Water is the tile `w`. A dark room is `fix.dark`.
+- **Machines** are skins over solid tiles: roller shutter, scaffold deck, the big portrait and its flat fallen form. Water is the tile `w`; the other shift shows it as a dotted box the size of the tile, and a flipped night turns it over, so it pours upward. A dark room is `fix.dark`.
 - **Words:** the HUD says the job and the next step, with icons; paper tags name the tool, the broken thing and what it drives for the job in hand.
 - **Feedback:** corner brackets, puffs on what changed, and a FIXED pop.
 
@@ -285,7 +285,7 @@ Effects must stay readable under rapid shifting: no stacking full-screen flashes
 | Asset | Size | Content |
 |---|---|---|
 | Cover image ✅ | **1260×1000** (630×500 ratio) | `tools/cover.html`, drawn with the game's own sprites, tiles and font at 2×: split day/night, the worker mid-jump on the seam (day colours left, night right) inside shift rings, a night-only plank and its echo, a smug lurker and eyes on the night side, a lurker hanging under the plank (act 5's flipped night), a MINE note on the day side, the logo, the tagline |
-| Screenshots ✅ | 960×540 (native) | `npm run media`: 19 shots. Two come from the scripted runs, for moments real keys can't time: a prank as it lands (Inventory, 0.14 s after the plank moves) and the flip (Mind Your Head). The rest: title, level 1 day/night, timecard, act card, Inventory day/night, Night Watch night/day, level select, end, Stacked night, Clock Out day/night, Mind Your Head night, settings, controls. Upload order: itch/page.md §3 |
+| Screenshots ✅ | 960×540 (native) | `npm run media`: 20 shots. Three come from the scripted runs, for moments real keys can't time: a repair as it lands (Mid-Air, 0.2 s after it), a prank as it lands (Inventory, 0.14 s after the plank moves) and the flip (Mind Your Head). The rest: title, level 1 day/night, timecard, act card, Inventory day/night, Night Watch night/day, level select, end, Stacked night, Clock Out day/night, Mind Your Head night, settings, controls. Upload order: itch/page.md §3 |
 | Demo GIF (tool ✅) | 480×270 (`--full` 960×540), the run plus 1.5 s of timecard, ≤ 3 MB; first in the screenshot list | `npm run gif -- <id>`: one level's scripted run, played by the game. Candidates (`doors` is provisional on the itch page): `doors` (a prank every clock-in), `upside` (the flip), `watch` (frozen freaks). The brief was a mid-air shift chain, then a frozen-lurker pass; Fish picks. |
 | Page theme | Background `#0b1029`, text `#d9f6ff`, links `#5ff2ff` | Matches the night palette; embed background `#0b1029` (same as `index.html`) |
 

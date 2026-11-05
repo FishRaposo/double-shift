@@ -1,12 +1,12 @@
 # itch.io page kit
 
-Everything needed to create the *Double Shift* page on itch.io, in the order the itch dashboard asks for it. Settings come from [RELEASE.md](../docs/RELEASE.md) §2. **Fish writes the final description words**; the draft below is checked against the current build (<!-- n:levels -->21<!-- /n --> levels, <!-- n:tests -->463<!-- /n --> tests, level select, pixel art and music). The paste-ready description in §4 carries no markers, so check its numbers by hand before pasting (the release refresh does).
+Everything needed to create the *Double Shift* page on itch.io, in the order the itch dashboard asks for it. Settings come from [RELEASE.md](../docs/RELEASE.md) §2. **Fish writes the final description words**; the draft below is checked against the current build (<!-- n:levels -->21<!-- /n --> levels, <!-- n:tests -->465<!-- /n --> tests, level select, pixel art and music). The paste-ready description in §4 carries no markers, so check its numbers by hand before pasting (the release refresh does).
 
 ## 1. Build the files
 
 ```bash
 npm run zip      # double-shift-web.zip: index.html + src/ at the archive root
-npm run media    # media/cover.png (1260×1000) + 19 screenshots (960×540) + the asset gallery, via headless Edge/Chrome
+npm run media    # media/cover.png (1260×1000) + 20 screenshots (960×540) + the asset gallery, via headless Edge/Chrome
 npm run gif -- doors      # media/demo-doors.gif (480×270): Lost & Found's scripted run, a prank on every clock-in
 ```
 
@@ -41,7 +41,7 @@ npm run gif -- doors      # media/demo-doors.gif (480×270): Lost & Found's scri
 | Slot | File |
 |---|---|
 | Cover image | `media/cover.png` |
-| Screenshots (in this order) | `demo-doors.gif` (provisional; Fish picks. The GIF goes first: itch plays a GIF screenshot in place), `19-prank-inventory.png` (a prank as it lands), `20-flip-mind-your-head.png` (the flip), `15-clock-out-night.png`, `07-night-watch-night.png`, `08-night-watch-day.png` (the freaks frozen by day), `03-clock-in-night.png`, `04-timecard.png`, `09-level-select.png`, `01-title.png` |
+| Screenshots (in this order) | `demo-doors.gif` (provisional; Fish picks. The GIF goes first: itch plays a GIF screenshot in place), `19-prank-inventory.png` (a prank as it lands), `20-flip-mind-your-head.png` (the flip), `21-repair-mid-air.png` (a repair changing the room), `15-clock-out-night.png`, `07-night-watch-night.png`, `08-night-watch-day.png` (the freaks frozen by day), `03-clock-in-night.png`, `04-timecard.png`, `09-level-select.png`, `01-title.png` |
 | Gameplay video or trailer | Leave empty: the field takes a YouTube or Vimeo link, and the GIF already leads the screenshots. Other GIF candidates: `npm run gif -- upside` (the flip), `inventory` (the plank prank), `watch` (frozen freaks); ART.md §8. |
 
 ## 4. Description (paste into the editor; Fish edits the words)
@@ -74,7 +74,7 @@ npm run gif -- doors      # media/demo-doors.gif (480×270): Lost & Found's scri
 > **What's in this build:** 21 levels in five acts and a finale, from your first clock-in to the last, including an act where the night shift is upside down. Every level has a job to do: fetch the tool, fix the broken thing, and the building changes. Every prank and patrol shows what it's about to do. Gamepad support, rebindable controls and a speedrun timer. Made for GitHub Game Off 2026 (theme: SHIFT).
 >
 > **How it was made**
-> Designed by Vinícius Raposo for GitHub Game Off 2026. Built with AI assistance (Claude) to his design document, with draft text from the same place, then tested like production software: the gameplay rules are a pure module, the game has 463 automated tests, and every level is proven solvable at par by a scripted run. No engine, no assets: the pixel art, the pixel font and the music are all drawn and synthesized by code, code that was also written with AI assistance. No generated images or audio were used. Source: https://github.com/FishRaposo/double-shift
+> Designed by Vinícius Raposo for GitHub Game Off 2026. Built with AI assistance (Claude) to his design document, with draft text from the same place, then tested like production software: the gameplay rules are a pure module, the game has 465 automated tests, and every level is proven solvable at par by a scripted run. No engine, no assets: the pixel art, the pixel font and the music are all drawn and synthesized by code, code that was also written with AI assistance. No generated images or audio were used. Source: https://github.com/FishRaposo/double-shift
 >
 > If you enjoyed it, a follow or a small donation helps.
 
