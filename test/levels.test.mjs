@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { LEVELS, CLOCKOUT_CLASSIC } from '../src/levels.js';
-import { DAY, NIGHT, TILE, NO_INPUT, PARAMS, initState, step, tileAt, supervisorFacing, parseLevel, freakBoxes, gravitySign } from '../src/rules.js';
+import { DAY, NIGHT, TILE, NO_INPUT, PARAMS, overridesAfter, initState, step, tileAt, supervisorFacing, parseLevel, freakBoxes, gravitySign } from '../src/rules.js';
 import { play, tx, inputsFrom, recordInputs, searchBelowPar } from './helpers.mjs';
 import { skinPlan } from '../src/skins.js';
 import { memoNear, memoPanel } from '../src/layout.js';
@@ -388,23 +388,9 @@ test('Head Over Heels: staying on night meets the lurker', () => {
 
 test('Head Over Heels: the final plank needs the right night entry', () => {
   const lvl = L.heels;
-  // the solution, except that it stays on night along the top under their plank over the pit (no clock-out and
-  // in): it reaches the last gap with a clock-in to spare, so the clock-in there is entry 3, and the plank only
-  // comes over on the 4th
-  const policy = (s, m, f) => {
-    const want = SOLUTIONS.heels(s, m, f);
-    return m.top && tx(s) > 16.8 ? { ...want, shift: s.layer === DAY } : want;
-  };
-  const { events: all } = play(lvl, policy, 120 * 20);
-  const events = all.slice(0, all.findIndex((e) => e.type === 'death') + 1); // up to the first death
-  assert.equal(events.filter((e) => e.type === 'shift' && e.layer === NIGHT).length, 3);
-  assert.deepEqual(events.filter((e) => e.type === 'prank').map((e) => e.id), []);
-  const death = events.at(-1);
-  assert.ok(death?.type === 'death' && death.cause === 'fall' && death.layer === NIGHT, `ended on ${death?.type} ${death?.cause}`);
-  assert.ok(death.x < 10 * TILE, `fell up through the last gap (x ${death.x})`);
-  // the solution gets there on the 4th clock-in, and the plank is over the gap
-  const { events: won } = play(lvl, SOLUTIONS.heels, 120 * 20);
-  assert.deepEqual(won.filter((e) => e.type === 'prank').map((e) => e.id), ['plank1']);
+  const over = (entries) => tileAt(lvl, NIGHT, 5, 3, overridesAfter(lvl, entries));
+  assert.equal(over(3), '.', 'on the 3rd clock-in the last gap has no ceiling');
+  assert.equal(over(4), '#', 'the 4th lays the plank over it');
 });
 
 // The finale (rev 2): one lesson test per room.
@@ -602,7 +588,7 @@ for (const { id } of LEVELS) {
 
 // ---------- repairs that change the level ----------
 
-const REDESIGNED = ['clock', 'scaff', 'closing', 'midair', 'inventory', 'watch', 'stairs', 'doors', 'wet', 'pillar', 'supervisor', 'stacked', 'portrait', 'daywalker', 'offset', 'audit'];
+const REDESIGNED = ['clock', 'scaff', 'closing', 'midair', 'inventory', 'watch', 'stairs', 'doors', 'wet', 'pillar', 'supervisor', 'stacked', 'portrait', 'daywalker', 'offset', 'audit', 'upside', 'fallup', 'ceiling', 'heels'];
 
 for (const id of REDESIGNED) {
   test(`${id}: the repair changes the map, and the level can't be won without it`, () => {

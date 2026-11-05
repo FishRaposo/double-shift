@@ -1207,7 +1207,12 @@ export const LEVELS = [
     name: 'Mind Your Head',
     act: 5,
     note: 'They flipped the night shift. Mind your head.',
-    repair: { tool: { tx: 10, ty: 12, layer: 'night', name: 'BULB', kind: 'bulb' }, fix: { tx: 24, ty: 15, layer: 'day', name: 'DEAD LIGHT', kind: 'light' } },
+    rev: 2,
+    repairs: [{
+      tool: { tx: 5, ty: 15, layer: 'day', name: 'BULB', kind: 'bulb' },
+      fix: { tx: 16, ty: 12, layer: 'night', name: 'CEILING LIGHT', kind: 'light', goal: 'CHANGE THE CEILING LIGHT', target: 'DARK ROOM', link: [[17, 12], [23, 12]], dark: { x0: 27, x1: 31, y0: 7, y1: 15 }, set: [{ layer: 'day', x0: 26, y0: 12, y1: 15, ch: '.' }] },
+    }],
+    skins: [{ kind: 'shutter', tx: 26, ty: 15, layer: 'day' }],
     par: 2,
     // The night is this map turned over, gravity included (upsideDown). By day the pit (cols 10-17) is too
     // wide to jump and the walkway (row 6) too high to reach. Clock in under the walkway and you fall up
@@ -1218,27 +1223,27 @@ export const LEVELS = [
     props: [
       { kind: 'memo', tx: 24, ty: 13, text: "Ceiling inspection passed. The ceiling is now the floor. — Facilities", layer: 'day' },
       { kind: 'sign', tx: 4, ty: 12, text: 'MIND YOUR HEAD', style: 'note', layer: 'day' },
-      { kind: 'noticeBoard', tx: 26, ty: 12, layer: 'day' },
+      { kind: 'noticeBoard', tx: 22, ty: 12, layer: 'day' },
       { kind: 'mug', tx: 13, ty: 12, layer: 'night', flip: true }, // someone's coffee, upside down under the walkway
     ],
     decor: [{ kind: 'eyes', tx: 14, ty: 8 }],
     day: [
       '................................',
       '................................',
-      '........................#.......',
-      '........................#...####',
-      '........................#.......',
-      '........................#.......',
-      '......####################......',
-      '................................',
-      '................................',
-      '................................',
-      '................................',
-      '................................',
-      '....................C...........',
-      '....................#...........',
-      '................................',
-      '..S...........................E.',
+      '........................#.#.....',
+      '........................#.#.####',
+      '........................#.#.....',
+      '........................#.#.....',
+      '......#####################.....',
+      '..........................#.....',
+      '..........................#.....',
+      '..........................#.....',
+      '..........................#.....',
+      '..........................#.....',
+      '....................C.....#.....',
+      '....................#.....#.....',
+      '..........................#.....',
+      '..S.......................#...E.',
       '##########........##############',
       '##########........##############',
     ],
@@ -1248,7 +1253,11 @@ export const LEVELS = [
     name: 'Falling Up',
     act: 5,
     note: 'The floor is up there now.',
-    repair: { tool: { tx: 17, ty: 5, layer: 'day', name: 'WRENCH', kind: 'wrench' }, fix: { tx: 26, ty: 15, layer: 'night', name: 'LEAKING PIPE', kind: 'pipe' } },
+    rev: 2,
+    repairs: [{
+      tool: { tx: 17, ty: 5, layer: 'day', name: 'WRENCH', kind: 'wrench' },
+      fix: { tx: 26, ty: 15, layer: 'night', name: 'LEAKING PIPE', kind: 'pipe', goal: 'STOP THE LEAK', target: 'LEAK', link: [[27, 15], [29, 15], [29, 13]], set: [{ layer: 'day', x0: 29, y0: 4, y1: 13, ch: '.' }, { layer: 'night', x0: 29, y0: 4, y1: 13, ch: '.' }] },
+    }],
     par: 4,
     // At night the floor's copy is the ceiling (rows 0-3): clock in anywhere and you fall up to it. Walk over the
     // high ledge (row 6, 8 up, out of reach by day) and clock out: you drop onto it. Run off its end into the pit
@@ -1275,16 +1284,16 @@ export const LEVELS = [
       '................................',
       '................................',
       '................................',
-      '................................',
-      '..............C.................',
-      '............######..............',
-      '.................#..............',
-      '.................#..............',
-      '.................#..............',
-      '.................#..............',
-      '.................#..............',
-      '.................#..............',
-      '.S...............#.............E',
+      '.............................w..',
+      '..............C..............w..',
+      '............######...........w..',
+      '.................#...........w..',
+      '.................#...........w..',
+      '.................#...........w..',
+      '.................#...........w..',
+      '.................#...........w..',
+      '.................#...........w..',
+      '.S...............#...........w.E',
       '##################..........####',
       '##################..........####',
       '##################..........####',
@@ -1296,7 +1305,12 @@ export const LEVELS = [
     name: 'Ceiling Walker',
     act: 5,
     note: "Something is walking on the ceiling. It's fine.",
-    repair: { tool: { tx: 16, ty: 13, layer: 'day', name: 'TAPE', kind: 'tape' }, fix: { tx: 29, ty: 12, layer: 'night', name: 'LOOSE CABLE', kind: 'cable' } },
+    rev: 2,
+    repairs: [{
+      tool: { tx: 16, ty: 13, layer: 'day', name: 'TAPE', kind: 'tape' },
+      fix: { tx: 29, ty: 12, layer: 'night', name: 'LOOSE CABLE', kind: 'cable', goal: 'OPEN THE SHUTTER', target: 'SHUTTER', link: [[29, 12], [30, 12]], set: [{ layer: 'night', x0: 30, y0: 12, ch: '.' }] },
+    }],
+    skins: [{ kind: 'shutter', tx: 30, ty: 12, h: 1, layer: 'night' }],
     par: 4,
     // Two 8-tile pits stop the day. By night you hang under the walkway's copy (row 11, one step above the
     // floor), where their plank bridges one of the walkway's two gaps, also 8 tiles: over pit A on the first
@@ -1312,6 +1326,7 @@ export const LEVELS = [
       { x0: 13, x1: 14, y0: 11, ch: '~' }, // wax on the walkway's copy: you slide towards the tunnel
       { x0: 29, y0: 4, y1: 11, ch: '.' }, // the exit's day wall isn't there at night: you hang in past it
       { x0: 30, x1: 31, y0: 13, y1: 17, ch: '#' },
+      { x0: 30, y0: 12, ch: '#' }, // the shutter on the way into the exit's pocket
     ],
     pranks: relocations('plank', { start: 5, loop: [22, 5], rect: (x0) => ({ x0, x1: x0 + 7, y0: 11 }), first: 2 }),
     freaks: [
@@ -1352,7 +1367,15 @@ export const LEVELS = [
     name: 'Head Over Heels',
     act: 5,
     note: 'Up is a matter of opinion now.',
-    repair: { tool: { tx: 27, ty: 4, layer: 'day', name: 'OIL CAN', kind: 'oil' }, fix: { tx: 9, ty: 4, layer: 'night', name: 'SQUEAKY HINGE', kind: 'hinge' } },
+    rev: 2,
+    repairs: [{
+      tool: { tx: 12, ty: 13, layer: 'night', name: 'FUSE', kind: 'fuse' },
+      fix: { tx: 17, ty: 13, layer: 'day', name: 'FUSE BOX', kind: 'fuse', goal: 'OPEN THE SHUTTER', target: 'SHUTTER', link: [[20, 13], [26, 13]], set: [{ layer: 'night', x0: 26, y0: 13, ch: '.' }] },
+    }, {
+      tool: { tx: 27, ty: 4, layer: 'day', name: 'OIL CAN', kind: 'oil' },
+      fix: { tx: 10, ty: 4, layer: 'night', name: 'SQUEAKY HINGE', kind: 'hinge', goal: 'FREE THE DOOR', target: 'DOOR', link: [[10, 4], [9, 4]], set: [{ layer: 'night', x0: 9, y0: 4, ch: '.' }] },
+    }],
+    skins: [{ kind: 'shutter', tx: 26, ty: 13, h: 1, layer: 'night' }, { kind: 'shutter', tx: 9, ty: 4, h: 1, layer: 'night' }],
     par: 7,
     // A loop: right along the bottom, up a shaft, back left along the top. The floor (rows 14-17) and the walkway
     // (row 5) each carry one corridor by day and the other by night: by day you stand on the floor (bottom) or the
@@ -1368,7 +1391,7 @@ export const LEVELS = [
     upsideDown: true,
     nightPatch: [
       { x0: 20, x1: 27, y0: 3, ch: '#' }, // the plank, over the pit's copy until they move it
-      { x0: 9, y0: 4, ch: '.' }, // the wall stops at the top corridor: that's the way to the exit
+      { x0: 26, y0: 13, ch: '#' }, // the shutter across the floor corridor
     ],
     pranks: relocations('plank', { start: 20, loop: [2, 20], rect: (x0) => ({ x0, x1: x0 + 7, y0: 3 }), first: 4 }),
     freaks: [

@@ -720,7 +720,7 @@ function drawFreakPlans(lvl, boxes, layer) {
 function jobLabel(text, tx, ty, placed) {
   const half = measureText(text, 2) / 2 + 10;
   const x = Math.min(W - half, Math.max(half, tx * TILE + TILE / 2));
-  let y = Math.max(HUD_BOTTOM + 14, ty * TILE - 14);
+  let y = Math.max(x < 340 ? 122 : HUD_BOTTOM + 14, ty * TILE - 14); // clear of the HUD's work order
   while (placed.some((p) => Math.abs(p.x - x) < p.half + half && Math.abs(p.y - y) < 26)) y -= 28;
   placed.push({ x, y, half });
   drawSign(g, x, y, text, 'paper', 2);
@@ -735,8 +735,8 @@ function drawWorkOrder(lvl, s, layer, t) {
     if (!tool) drawTool(g, job.tool, t, layer);
     const cordFrom = job.fix.kind === 'light' ? lightCordFrom(lvl, layer, job.fix.tx, job.fix.ty, s.overrides) : null;
     drawFixture(g, job.fix, t, layer, done, { cordFrom });
-    if (NOTEXT || done) return;
-    // everything in the job says what it is
+    if (NOTEXT || i !== s.repairs.findIndex((r) => !r.done)) return;
+    // everything in the job in hand says what it is
     if (!tool) jobLabel(job.tool.name, job.tool.tx, job.tool.ty, placed);
     jobLabel(job.fix.name, job.fix.tx, job.fix.ty, placed);
     const end = job.fix.link.at(-1);
