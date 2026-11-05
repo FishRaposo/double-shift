@@ -623,9 +623,9 @@ test('Head Over Heels: the spawn is nowhere near the exit (hold left, clock in e
   assert.equal(state.won, false, 'won by clocking in on the way down');
 });
 
-// ---------- work orders (repair prototype): Clock In, Inventory, Night Watch ----------
+// ---------- work orders: every level has one ----------
 
-for (const id of ['clock', 'inventory', 'watch']) {
+for (const { id } of LEVELS) {
   test(`${id}: the work order sits on the par route, on the two shifts`, () => {
     const { events, state } = play(L[id], SOLUTIONS[id], 120 * 30);
     assert.equal(state.won, true);

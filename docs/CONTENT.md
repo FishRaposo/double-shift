@@ -64,6 +64,7 @@ Specs: [TECH.md](TECH.md) §6 (mechanics), [GDD.md](GDD.md) §12 (UI).
 | SYS-3 | Supervisor freak (facing decides which freaks work) | `supervisor` | C | G15 | ✅ built |
 | SYS-4 | Offset layer (`offset` field generates the night grid) | `offset` | C | G9 | ✅ built |
 | SYS-16 | Upside Down: `upsideDown: true` generates the night as the day grid flipped vertically (+ `nightPatch`); gravity, jump, coyote, grounding and max fall follow a per-shift gravity sign | act 5, finale rework | C | G16 | ✅ built Nov 3 |
+| SYS-18b | Work orders: one repair per level (tool on one shift, fix on the other, exit locked until done) | Every level | Added Nov 5 | — | ✅ |
 | SYS-17 | Finale act card (FINALE · CLOCK OUT) before #21 | finale | C | A10 | ✅ built Nov 3 |
 | SYS-5 | Level select + save progress (localStorage, try/catch) | Raters reaching act 2+ | P0 | A7 | ✅ (act starts always open) |
 | SYS-6 | Music engine (step sequencer, two synced arrangements, crossfade on shift) | Audio score | P0 | A5 | ✅ |

@@ -528,6 +528,7 @@ The freaks act **when the player shifts, not over time**: in the moment of trans
 - Each level may define pranks. A prank fires on the **Nth successful entry into the night shift** and overrides tiles in either layer (remove a plank, add a crate, move a gate).
 - The destination of a shift is validated against the geometry *as it will be after the prank*. If the prank would bury the player, the shift is buffered/rejected per S-08 and the prank waits.
 - Pranks are permanent for the run (a repeating prank fires again every n night entries, so a moved object comes back round), except that **death restores the prank state of the active checkpoint** (§9.3).
+- **Work orders are separate:** every level also has one repair: fetch the tool on one shift, fix the broken thing on the other, and the exit unlocks. It's the worker's own boring job. The freaks have nothing to do with it.
 - **Tells:** before a prank fires, its target is marked: big glowing eyes at night, a sticky note (MINE) by day, with a countdown under it (NEXT NIGHT, IN 2 NIGHTS) and the tiles it will change outlined. When it fires, the player hears a giggle.
 - Consequence: shift count is a resource. Players plan *when* to clock in and how many times, because each entry changes the night.
 

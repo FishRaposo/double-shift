@@ -18,7 +18,7 @@
 // props:  cosmetic scenery from PROPS in src/art.js: { kind, tx, ty, layer?: 'day'|'night', w?, text?, style?,
 //         flip? } (flip hangs it upside down in its cell, for a flipped night; signs stay upright). One `memo`
 //         per level: its text shows on a panel while the worker is near.
-// repair: a work order (prototype): { tool: { tx, ty, layer, name, kind }, fix: { tx, ty, layer, name, kind } }. Touch the
+// repair: the level's work order: { tool: { tx, ty, layer, name, kind }, fix: { tx, ty, layer, name, kind } }. Touch the
 //         tool on its shift, then the broken thing on its shift; the exit stays locked until then.
 // act:    which act the level belongs to (the first level of each act is always open in level select).
 // rev:    the level's revision: saved bests from an older one don't carry over.
@@ -205,6 +205,7 @@ export const LEVELS = [
     ],
     decor: [{ kind: 'eyes', tx: 8, ty: 4 }, { kind: 'eyes', tx: 13, ty: 6 }],
     note: 'The day crew put up scaffolding. Deliveries came in.',
+    repair: { tool: { tx: 13, ty: 9, layer: 'day', name: 'TAPE', kind: 'tape' }, fix: { tx: 23, ty: 7, layer: 'night', name: 'LOOSE CABLE', kind: 'cable' } },
     par: 1,
     day: [
       '.......................##.......',
@@ -260,6 +261,7 @@ export const LEVELS = [
     // outline hangs over the exit — the first freak a new player sees frozen
     freaks: [{ kind: 'peeker', tx: 29, ty: 7, period: 1.3, duty: 0.4 }], // up on a shelf, out of reach
     note: 'Rebar by day, lasers by night. Gates go down at closing.',
+    repair: { tool: { tx: 13, ty: 13, layer: 'night', name: 'OIL CAN', kind: 'oil' }, fix: { tx: 22, ty: 13, layer: 'day', name: 'SQUEAKY HINGE', kind: 'hinge' } },
     par: 2,
     day: [
       '..................#.............',
@@ -311,6 +313,7 @@ export const LEVELS = [
       { kind: 'vent', tx: 24, ty: 4 }, { kind: 'barrierTape', tx: 4, ty: 13, w: 2, layer: 'day' },
     ],
     note: 'Something up there blinked.',
+    repair: { tool: { tx: 10, ty: 12, layer: 'night', name: 'BULB', kind: 'bulb' }, fix: { tx: 18, ty: 8, layer: 'day', name: 'DEAD LIGHT', kind: 'light' } },
     par: 3,
     day: [
       '................................',
@@ -480,6 +483,7 @@ export const LEVELS = [
     name: 'Under Renovation',
     act: 2,
     note: "They built a staircase. It leads nowhere. They're very proud.",
+    repair: { tool: { tx: 6, ty: 11, layer: 'night', name: 'FUSE', kind: 'fuse' }, fix: { tx: 28, ty: 8, layer: 'day', name: 'FUSE BOX', kind: 'fuse' } },
     par: 2,
     // By day a tower blocks the floor; its top (row 9) is five tiles up, out of reach. At night the tower is
     // missing (renovation) and the freaks' staircase rises in 1-tile steps (4 wide, so every hop has room) to the
@@ -538,6 +542,7 @@ export const LEVELS = [
     name: 'Lost & Found',
     act: 2,
     note: 'The freaks have stolen every door. Not the keys. The doors.',
+    repair: { tool: { tx: 9, ty: 13, layer: 'day', name: 'OIL CAN', kind: 'oil' }, fix: { tx: 24, ty: 13, layer: 'night', name: 'SQUEAKY HINGE', kind: 'hinge' } },
     par: 5,
     // Three doors (cols 4, 15, 24; 4 tall) cut the floor into rooms, and the exit ledge is 6 up. Night entry n
     // steals door n from the night and lays it on the pile at the ledge's foot: three doors make two 3-tile
@@ -608,6 +613,7 @@ export const LEVELS = [
     name: 'Wet Floor',
     act: 3,
     note: 'Someone waxed the floors. Nobody on the payroll waxes floors.',
+    repair: { tool: { tx: 10, ty: 13, layer: 'day', name: 'WRENCH', kind: 'wrench' }, fix: { tx: 22, ty: 13, layer: 'night', name: 'LEAKING PIPE', kind: 'pipe' } },
     par: 4,
     props: [
       { kind: 'memo', tx: 6, ty: 11, text: "Floors were waxed at 3 AM. We do not employ anyone at 3 AM." },
@@ -668,6 +674,7 @@ export const LEVELS = [
     name: 'Structural Integrity',
     act: 3,
     note: 'They moved a load-bearing pillar. The building is somehow fine.',
+    repair: { tool: { tx: 6, ty: 13, layer: 'night', name: 'TAPE', kind: 'tape' }, fix: { tx: 17, ty: 10, layer: 'day', name: 'LOOSE CABLE', kind: 'cable' } },
     par: 3,
     // One pillar, 4 tall: by day it stays at P0 (col 6) and blocks the floor; by night each entry moves it, to
     // P1 (col 11, a wall on the night floor), P2 (col 20, against the mezzanine: the step between the day crate
@@ -734,6 +741,7 @@ export const LEVELS = [
     name: 'Night Management',
     act: 3,
     note: 'One of them has a clipboard now. It supervises the others.',
+    repair: { tool: { tx: 14, ty: 13, layer: 'night', name: 'FUSE', kind: 'fuse' }, fix: { tx: 26, ty: 13, layer: 'day', name: 'FUSE BOX', kind: 'fuse' } },
     par: 2,
     props: [
       { kind: 'memo', tx: 6, ty: 12, text: "We did not hire a night supervisor. — HR" },
@@ -799,6 +807,7 @@ export const LEVELS = [
     name: 'Stacked',
     act: 3,
     note: "They've been busy.",
+    repair: { tool: { tx: 14, ty: 13, layer: 'day', name: 'BULB', kind: 'bulb' }, fix: { tx: 25, ty: 13, layer: 'night', name: 'DEAD LIGHT', kind: 'light' } },
     par: 5,
     props: [
       { kind: 'memo', tx: 4, ty: 11, text: "Whoever keeps drawing circles in chalk on the loading dock: stop.", w: 300 },
@@ -888,6 +897,7 @@ export const LEVELS = [
     name: 'Employee of the Month',
     act: 4,
     note: 'They installed a portrait of themselves. It blocks the exit.',
+    repair: { tool: { tx: 9, ty: 13, layer: 'day', name: 'WRENCH', kind: 'wrench' }, fix: { tx: 18, ty: 11, layer: 'night', name: 'LEAKING PIPE', kind: 'pipe' } },
     par: 3,
     // The exit is in a doorway past a ledge 5 up (cols 19-24). At night their portrait (3x2, solid) hangs in the
     // doorway; by day the doorway is clear but you can't get over the ledge. Each night entry rehangs it: high on
@@ -954,6 +964,7 @@ export const LEVELS = [
     name: 'Broad Daylight',
     act: 4,
     note: 'One of them clocked in for the day shift.',
+    repair: { tool: { tx: 6, ty: 13, layer: 'day', name: 'OIL CAN', kind: 'oil' }, fix: { tx: 19, ty: 13, layer: 'night', name: 'SQUEAKY HINGE', kind: 'hinge' } },
     par: 5,
     props: [
       { kind: 'memo', tx: 17, ty: 11, text: "Day crew: if you see eyes, no you didn't." },
@@ -1018,6 +1029,7 @@ export const LEVELS = [
     name: 'Floor 3.5',
     act: 4,
     note: "There is no Floor 3 anymore. It's now Floor 3.5.",
+    repair: { tool: { tx: 7, ty: 13, layer: 'day', name: 'TAPE', kind: 'tape' }, fix: { tx: 11, ty: 4, layer: 'night', name: 'LOOSE CABLE', kind: 'cable' } },
     par: 4,
     // The night grid is generated: the day building moved 3 tiles up. Each hop is the same
     // move — jump, and at the apex shift, stepping onto the floor's other-shift copy. The
@@ -1057,6 +1069,7 @@ export const LEVELS = [
     name: 'Night Audit',
     act: 4,
     note: 'Management is doing a walkthrough tonight. So are they.',
+    repair: { tool: { tx: 8, ty: 13, layer: 'day', name: 'FUSE', kind: 'fuse' }, fix: { tx: 25, ty: 13, layer: 'night', name: 'FUSE BOX', kind: 'fuse' } },
     par: 5,
     // Acts 1-4 on one screen, no new rules, a checkpoint after each beat. Every beat is a 1-tile tunnel under
     // a 4-thick roof (its top 5 up, out of reach), so no beat can be jumped or walked over.
@@ -1129,6 +1142,7 @@ export const LEVELS = [
     name: 'Mind Your Head',
     act: 5,
     note: 'They flipped the night shift. Mind your head.',
+    repair: { tool: { tx: 10, ty: 12, layer: 'night', name: 'BULB', kind: 'bulb' }, fix: { tx: 24, ty: 15, layer: 'day', name: 'DEAD LIGHT', kind: 'light' } },
     par: 2,
     // The night is this map turned over, gravity included (upsideDown). By day the pit (cols 10-17) is too
     // wide to jump and the walkway (row 6) too high to reach. Clock in under the walkway and you fall up
@@ -1169,6 +1183,7 @@ export const LEVELS = [
     name: 'Falling Up',
     act: 5,
     note: 'The floor is up there now.',
+    repair: { tool: { tx: 17, ty: 5, layer: 'day', name: 'WRENCH', kind: 'wrench' }, fix: { tx: 26, ty: 15, layer: 'night', name: 'LEAKING PIPE', kind: 'pipe' } },
     par: 4,
     // At night the floor's copy is the ceiling (rows 0-3): clock in anywhere and you fall up to it. Walk over the
     // high ledge (row 6, 8 up, out of reach by day) and clock out: you drop onto it. Run off its end into the pit
@@ -1216,6 +1231,7 @@ export const LEVELS = [
     name: 'Ceiling Walker',
     act: 5,
     note: "Something is walking on the ceiling. It's fine.",
+    repair: { tool: { tx: 16, ty: 13, layer: 'day', name: 'TAPE', kind: 'tape' }, fix: { tx: 29, ty: 12, layer: 'night', name: 'LOOSE CABLE', kind: 'cable' } },
     par: 4,
     // Two 8-tile pits stop the day. By night you hang under the walkway's copy (row 11, one step above the
     // floor), where their plank bridges one of the walkway's two gaps, also 8 tiles: over pit A on the first
@@ -1271,6 +1287,7 @@ export const LEVELS = [
     name: 'Head Over Heels',
     act: 5,
     note: 'Up is a matter of opinion now.',
+    repair: { tool: { tx: 27, ty: 4, layer: 'day', name: 'OIL CAN', kind: 'oil' }, fix: { tx: 9, ty: 4, layer: 'night', name: 'SQUEAKY HINGE', kind: 'hinge' } },
     par: 7,
     // A loop: right along the bottom, up a shaft, back left along the top. The floor (rows 14-17) and the walkway
     // (row 5) each carry one corridor by day and the other by night: by day you stand on the floor (bottom) or the
@@ -1329,6 +1346,7 @@ export const LEVELS = [
     act: FINALE_ACT,
     rev: 2, // the rework: bests from the classic Clock Out (CLOCKOUT_CLASSIC, rev 1) don't carry over
     note: "Almost done. Don't look at the vents.",
+    repair: { tool: { tx: 10, ty: 13, layer: 'day', name: 'FUSE', kind: 'fuse' }, fix: { tx: 15, ty: 13, layer: 'night', name: 'FUSE BOX', kind: 'fuse' } },
     par: 7,
     // One room per act, on the flipped map, with one of every freak: the walkway (row 5) is the night's ceiling, one
     // step above the floor, so a shift flips you in place. Room 1 (act 1, cols 0-11): no ceiling over the spawn, so

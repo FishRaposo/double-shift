@@ -155,6 +155,8 @@ export const SOUNDS = {
   stamp: [{ type: 'square', f0: 90, f1: 50, dur: 0.09, vol: 0.24, filter: { type: 'lowpass', freq: 600 } }, { type: 'noise', dur: 0.05, vol: 0.12, filter: { type: 'lowpass', freq: 1200 } }],
   freeze: [{ type: 'noise', dur: 0.08, vol: 0.05, filter: { type: 'bandpass', f0: 1400, f1: 350 }, q: 4 }],
   uiMove: [{ type: 'square', f0: 660, dur: 0.03, vol: 0.05, filter: { type: 'lowpass', freq: 2500 } }],
+  toolPickup: [{ type: 'triangle', f0: 392, dur: 0.05, vol: 0.18 }, { type: 'triangle', f0: 587, dur: 0.07, vol: 0.18, delay: 0.05 }],
+  repaired: [{ type: 'square', f0: 180, dur: 0.04, vol: 0.12, filter: { type: 'lowpass', freq: 1800 } }, { type: 'triangle', f0: 659, dur: 0.08, vol: 0.2, delay: 0.06 }, { type: 'triangle', f0: 880, dur: 0.12, vol: 0.2, delay: 0.13 }],
   uiSelect: [{ type: 'square', f0: 660, f1: 990, dur: 0.06, vol: 0.07, filter: { type: 'lowpass', freq: 3000 } }],
   sting: [392, 494].map((f) => ({ type: 'triangle', f0: f, dur: 0.12, vol: 0.12 })).concat([523, 659].map((f) => ({ type: 'triangle', f0: f, dur: 0.18, vol: 0.12, delay: 0.13 }))),
   // level mechanics
@@ -181,6 +183,8 @@ export const sfx = {
   land: () => playSound('land'),
   death: () => playSound('death'),
   checkpoint: () => playSound('checkpoint'),
+  toolPickup: () => playSound('toolPickup'),
+  repaired: () => playSound('repaired'),
   win: () => playSound('win'),
   spooked: () => playSound('spooked'),
   giggle: () => playSound('giggle'),

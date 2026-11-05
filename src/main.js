@@ -13,7 +13,7 @@ import { drawText, measureText, wrapText } from './font.js';
 import { drawSprite, drawEyes, eyesOpen, workerFrame, spriteRect, ART, SPRITES, C } from './sprites.js';
 import {
   PAL, PROPS, drawBackground, drawSolidTile, drawHatch, drawEchoEdges, drawRebar, drawLaser, drawHazardEcho,
-  drawExit, drawCheckpoint, drawSign, drawFreak, drawTool, drawRepairSpot, drawStatusMark, drawPatrol, drawGaze, drawTurnTimer, drawPrankCells,
+  drawExit, drawExitLock, drawCheckpoint, drawSign, drawFreak, drawTool, drawRepairSpot, drawStatusMark, drawPatrol, drawGaze, drawTurnTimer, drawPrankCells,
   drawShiftRing, drawDust, drawPuff, drawSparkle, drawPanel,
   drawStamp, drawLogo, drawWetTile, drawSkin, shouldHatch, withCellMirror, PLATE, NOTE_STRIP, px, drawMemoPanel,
 } from './art.js';
@@ -426,10 +426,10 @@ function handleEvents(events) {
         break;
       }
       case 'checkpoint': sfx.checkpoint(); fx.ping = 1; break;
-      case 'tool': sfx.uiSelect(); break;
+      case 'tool': sfx.toolPickup(); break;
       case 'repaired': {
         const { fix } = level().repair;
-        sfx.checkpoint();
+        sfx.repaired();
         fx.pops.push({ x: fix.tx * TILE + TILE / 2, y: fix.ty * TILE - 16, t: 0, text: 'FIXED' });
         break;
       }
@@ -715,7 +715,8 @@ function drawWorkOrder(lvl, s, layer, t) {
   if (!job) return;
   if (!s.repair.tool) drawTool(g, job.tool, t, layer === job.tool.layer);
   drawRepairSpot(g, job.fix, t, layer === job.fix.layer, s.repair.done);
-  if (!s.repair.done) drawSign(g, lvl.exit.tx * TILE + TILE / 2, lvl.exit.ty * TILE - 40, 'LOCKED', 'red', 1);
+  const pose = exitPose(lvl, layer, s.overrides);
+  if (!s.repair.done && pose) drawExitLock(g, lvl.exit.tx, lvl.exit.ty, pose); // none on a shift that walls the exit up
 }
 
 function drawDecor(def, layer, t) {

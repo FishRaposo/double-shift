@@ -619,7 +619,21 @@ const TOOL_ART = {
     px(g, x + 12 * A, y, 1, 3, '#c9d3dc');
   },
   bulb(g, x, y) { px(g, x + 5 * A, y, 5, 5, '#ffec5a'); px(g, x + 6 * A, y + 5 * A, 3, 3, '#9a9a9a'); },
+  oil(g, x, y) { px(g, x + 4 * A, y + 3 * A, 6, 5, '#c0392b'); px(g, x + 9 * A, y + A, 1, 3, '#c9d3dc'); px(g, x + 10 * A, y, 2, 1, '#c9d3dc'); },
+  tape(g, x, y) { px(g, x + 4 * A, y + A, 7, 7, '#c9d3dc'); px(g, x + 6 * A, y + 3 * A, 3, 3, '#262c38'); },
 };
+
+// the exit before the work is done: a chain across the door and a padlock, on the door itself so nothing crowds it
+export function drawExitLock(g, tx, ty, { hang = false } = {}) {
+  const { door: d } = exitRects(tx, ty, { hang });
+  const cy = d.y + d.h / 2;
+  px(g, d.x - A, cy - A, 15, 2, '#c0392b');
+  px(g, d.x + 3 * A, cy - 2 * A, 7, 6, '#e0473c');
+  px(g, d.x + 4 * A, cy - 5 * A, 1, 3, '#c9d3dc');
+  px(g, d.x + 8 * A, cy - 5 * A, 1, 3, '#c9d3dc');
+  px(g, d.x + 4 * A, cy - 5 * A, 5, 1, '#c9d3dc');
+  px(g, d.x + 6 * A, cy, 1, 2, '#1b1209');
+}
 
 // the tool, floating on its tile. `live`: this is its shift; on the other one it's a faint promise
 export function drawTool(g, job, t, live) {
@@ -648,6 +662,16 @@ export function drawRepairSpot(g, job, t, live, done) {
     px(g, x, y + 2 * A, 15, 4, '#7d8a99');
     px(g, x + 6 * A, y + A, 3, 6, '#5c6775');
     if (!done) px(g, x + 7 * A, y + (7 + Math.floor(t * 6) % 6) * A, 1, 2, '#5ff2ff');
+  } else if (job.kind === 'hinge') {
+    px(g, x + 3 * A, y + 2 * A, 9, 3, '#7d8a99');
+    px(g, x + 3 * A, y + 9 * A, 9, 3, '#7d8a99');
+    px(g, x + 6 * A, y + A, 3, 12, done ? '#c9d3dc' : '#a0522d');
+    if (!done && blink) px(g, x + 12 * A, y, 2, 2, '#ffec5a');
+  } else if (job.kind === 'cable') {
+    px(g, x, y + 3 * A, 6, 2, '#262c38');
+    px(g, x + 9 * A, y + (done ? 3 : 6) * A, 6, 2, '#262c38');
+    if (done) px(g, x + 5 * A, y + 2 * A, 5, 4, '#c9d3dc');
+    else if (blink) px(g, x + 7 * A, y + 4 * A, 2, 2, '#ffec5a');
   } else {
     px(g, x + 7 * A, y, 1, 4, '#4a3b2c');
     px(g, x + 4 * A, y + 4 * A, 7, 2, '#6b5a48');

@@ -94,8 +94,9 @@ SPOOKED! · AAAGH! · NOPE! · EEP! · NOT PAID ENOUGH
 | Prank fires ✅ | hee hee hee |
 | Sticky note tell (day) ✅ | MINE |
 | Prank countdown (both shifts) ✅ | NEXT NIGHT · IN 2 NIGHTS |
-| Work order HUD *(prototype, drafts)* | WORK ORDER: GET THE FUSE · WORK ORDER: FIX THE FUSE BOX · WORK ORDER: DONE |
-| Work order feedback *(prototype, drafts)* | LOCKED (on the exit) · WORK ORDER FIRST · FIXED |
+| Work order HUD ✅ *(drafts)* | WORK ORDER: GET THE FUSE · WORK ORDER: FIX THE FUSE BOX · WORK ORDER: DONE |
+| Work order jobs ✅ *(drafts)* | FUSE / FUSE BOX · WRENCH / LEAKING PIPE · BULB / DEAD LIGHT · OIL CAN / SQUEAKY HINGE · TAPE / LOOSE CABLE |
+| Work order feedback ✅ *(drafts)* | WORK ORDER FIRST (at the locked exit) · FIXED |
 | More tells ✅ (Nov 3: MINE NOW on Inventory's and Stacked's planks, DO NOT TUCH on Stacked's gate, FINDERS KEEPERS on the finale's door) | MINE NOW · DO NOT TUCH · FINDERS KEEPERS · (a drawing of eyes) |
 | Hex-flavored tells *(candidates; HEXED. NO TUCH is on Night Audit's plank)* | MINE BY ANSHENT LAW · HEXED. NO TUCH · THE PLANK IS OURS NOW · WE SEE YOU (WE R SHINY) |
 | The freaks' proud sign over the staircase (`stairs`) ✅ | OUR STARES! |

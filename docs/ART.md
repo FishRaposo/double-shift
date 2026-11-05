@@ -102,6 +102,7 @@ Behind everything, one motif per act (§6). Every color stays ≤ 1.35:1 against
 | Current shift | HUD label DAY SHIFT / NIGHT SHIFT + sun/moon icon + background | Text + icon + background pattern (panes vs stars) |
 | Freak (night, active) | Black lumpy silhouette + eyes | Silhouette |
 | Freak (day, frozen) | Dashed silhouette outline in the night echo blue, dim eyes | Dashed |
+| Work order | The tool floats on a yellow halo, full strength on its shift and faint on the other; the broken thing sits in the level the same way, and looks fixed once done; a chain and red padlock on the exit until then; the job on the HUD under the level name | Halo, padlock, text |
 | Decor eyes | Small and dim, no glow: they're just watching. The big glowing pair always means a prank with a countdown | Size, glow |
 | Peeker hidden | Dark slot + small eyes; for the last 0.35 s before it pops, the slot rattles, the eyes open and a "!" shows | Shape + mark |
 | Patrol route | Dashed red-orange track on the floor with end stops, on both shifts; a slacking freak's track is faint. Eyes look the way it's walking | Dashes + end stops |

@@ -1118,7 +1118,7 @@ test('overridesAfter: the tile overrides after N night clock-ins, pranks applied
   assert.deepEqual(s.overrides, R.overridesAfter(lvl, 4));
 });
 
-// ---------- work orders (repair prototype) ----------
+// ---------- work orders ----------
 const JOB_DAY = [
   '..........',
   '..........',
