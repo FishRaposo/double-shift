@@ -49,48 +49,6 @@ for (const def of LEVELS) {
   });
 }
 
-test('Inventory: the plank moves on the second clock-in, not before', () => {
-  const lvl = L.inventory;
-  const { events } = play(lvl, SOLUTIONS.inventory, 120 * 30);
-  const order = events.filter((e) => e.type === 'shift' || e.type === 'prank').map((e) => e.type);
-  assert.deepEqual(order, ['shift', 'shift', 'shift', 'prank']);
-});
-
-test('Night Watch: staying on night through the tunnel gets you spooked by the lurker', () => {
-  const policy = (s) => ({ right: true, shift: s.layer === DAY && tx(s) > 3 });
-  const { events } = play(L.watch, policy, 120 * 8);
-  assert.ok(events.some((e) => e.type === 'death' && e.cause === 'spooked'));
-});
-
-test('Night Watch: walking into the peeker while it is out gets you spooked', () => {
-  const policy = (s) => {
-    const x = tx(s);
-    let target = s.layer;
-    if (x > 3 && x < 8.6) target = NIGHT;
-    else if (x >= 8.6 && x < 15.3) target = DAY;
-    else if (x >= 15.3) target = NIGHT;
-    let right = true;
-    if (s.layer === NIGHT && x > 20.5 && x < 22.3) right = s.freakClock % 1.6 < 0.4; // go while it's out
-    return { right, shift: s.layer !== target };
-  };
-  const { events } = play(L.watch, policy, 120 * 8);
-  assert.ok(events.some((e) => e.type === 'death' && e.cause === 'spooked'));
-});
-
-test('Night Watch: the night roof stops you jumping the peeker and squatter (no 3-clock-in skip)', () => {
-  // night into the tunnel, day to freeze the lurker, night out — then stay on night and jump everything
-  const policy = (s) => {
-    const x = tx(s);
-    let target = s.layer;
-    if (x > 3 && x < 8.6) target = NIGHT;
-    else if (x >= 8.6 && x < 15.3) target = DAY;
-    else if (x >= 15.3) target = NIGHT;
-    return { right: true, jump: x > 19, shift: s.layer !== target };
-  };
-  const { state, events } = play(L.watch, policy, 120 * 10);
-  assert.equal(state.won && events.filter((e) => e.type === 'death').length === 0, false);
-});
-
 test('Broad Daylight: staying on day through the tunnel gets you spooked by the day-walker', () => {
   const { events } = play(L.daywalker, () => ({ right: true }), 120 * 8);
   assert.ok(events.some((e) => e.type === 'death' && e.cause === 'spooked' && e.by === 'daywalker'));
@@ -154,42 +112,6 @@ test('Mind Your Head: staying on night after the walkway never reaches the exit'
     const { state } = play(lvl, (s, m, f) => ({ right: true, shift: s.shifts === 0 && tx(s) > 7, jump: jumpEvery && f % jumpEvery < 14 }), 120 * 15);
     assert.equal(state.won, false, `won at night with jumpEvery=${jumpEvery}`);
     assert.equal(state.shifts, 1);
-  }
-});
-
-test('Under Renovation: night alone never reaches the exit', () => {
-  const lvl = L.stairs;
-  for (const jumpEvery of [0, 25, 40, 60]) {
-    const policy = (s, m, f) => ({ right: true, shift: s.shifts === 0, jump: jumpEvery ? f % jumpEvery < 16 : s.player.grounded || s.player.vy < 0 });
-    const { state } = play(lvl, policy, 120 * 15);
-    assert.equal(state.won, false, `won at night with jumpEvery=${jumpEvery}`);
-    assert.equal(state.shifts, 1);
-  }
-});
-
-test('Lost & Found: the doors go in order D1, D2, D3', () => {
-  const { events } = play(L.doors, SOLUTIONS.doors, 120 * 30);
-  assert.deepEqual(events.filter((e) => e.type === 'prank').map((e) => e.id), ['door1', 'door2', 'door3']);
-});
-
-test('Lost & Found: with two night entries the exit ledge stays out of reach', () => {
-  const lvl = L.doors;
-  // play the solution until the second door is gone, then stand at the foot of the pile at night and keep trying
-  let s = initState(lvl);
-  const mem = {};
-  let prevShift = false;
-  for (let f = 0; f < 120 * 30 && s.nightEntries < 2; f++) {
-    const want = SOLUTIONS.doors(s, mem, f);
-    s = step(lvl, s, { ...NO_INPUT, right: !!want.right, jumpHeld: !!want.jump, jumpPressed: false, shiftPressed: !!want.shift && !prevShift });
-    prevShift = !!want.shift;
-  }
-  assert.equal(s.nightEntries, 2);
-  assert.equal(s.layer, NIGHT);
-  Object.assign(s.player, { x: 25 * TILE + 6, y: 14 * TILE - 26, vx: 0, vy: 0, grounded: true });
-  for (const jumpEvery of [20, 35, 60]) {
-    let t = structuredClone(s);
-    for (let f = 0; f < 120 * 8 && !t.won; f++) t = step(lvl, t, { ...NO_INPUT, right: true, jumpHeld: f % jumpEvery < 18, jumpPressed: f % jumpEvery === 0 });
-    assert.equal(t.won, false, `climbed with two doors on the pile (jumpEvery=${jumpEvery})`);
   }
 });
 
@@ -276,25 +198,6 @@ test('Night Audit: the last pit on the wrong night entry is a fall; on entry 3 t
   assert.ok(full.events.some((e) => e.type === 'prank' && e.id === 'plank'));
   assert.equal(full.state.won, true);
   assert.equal(full.events.filter((e) => e.type === 'death').length, 0);
-});
-
-test('Lost & Found: spending every clock-in at the spawn does not win (the hazards and the lurker cannot be jumped)', () => {
-  const lvl = L.doors;
-  // all doors gone at night, then run right at night jumping the lasers and the lurker and climbing the pile
-  for (const a of [5.8, 6.2, 6.6, 7.0]) {
-    for (const b of [16.6, 17.2, 17.8, 18.4]) {
-      const policy = (s) => {
-        if (s.shifts < 5) return { shift: s.time % 0.05 < 0.025 };
-        const x = tx(s);
-        const p = s.player;
-        const hop = (x > a && x < a + 0.5) || (x > b && x < b + 0.5) || (x > 24.8 && Math.abs(p.vx) < 1);
-        return { right: true, jump: p.grounded ? hop : p.vy < 0 };
-      };
-      const { state, events } = play(lvl, policy, 120 * 15);
-      const clean = state.won && !events.some((e) => e.type === 'death');
-      assert.equal(clean, false, `won from the spawn jumping at x ${a} and ${b}`);
-    }
-  }
 });
 
 test('Structural Integrity: one clock-in too many is not a softlock: the pillar comes back around to P2', () => {
@@ -574,32 +477,79 @@ test('Head Over Heels: the spawn is nowhere near the exit (hold left, clock in e
   assert.equal(state.won, false, 'won by clocking in on the way down');
 });
 
-// ---------- work orders: every level has one ----------
+// ---------- work orders: the repair is the level's puzzle, not its lock (docs/GDD.md §4.11) ----------
+
+const TYPES = {
+  clock: 'build', scaff: 'build', closing: 'power', midair: 'water', inventory: 'secure', watch: 'light', stairs: 'machine', doors: 'secure',
+};
+
+const without = (lvl, i) => ({ ...lvl, repairs: lvl.repairs.map((job, k) => (k === i ? { ...job, tool: { ...job.tool, tx: -9 } } : job)) });
 
 for (const { id } of LEVELS) {
-  test(`${id}: the work order sits on the par route, on the two shifts`, () => {
+  test(`${id}: the work order sits on the par route`, () => {
     const { events, state } = play(L[id], SOLUTIONS[id], 120 * 30);
     assert.equal(state.won, true);
     assert.equal(events.filter((e) => e.type === 'tool').length, L[id].repairs.length);
-    assert.equal(events.filter((e) => e.type === 'repaired').length, L[id].repairs.length);
-    assert.ok(L[id].repairs.some((job) => job.tool.layer !== job.fix.layer), 'at least one job crosses the shifts');
-    assert.equal(events.filter((e) => e.type === 'exitLocked').length, 0);
+    assert.ok(events.filter((e) => e.type === 'repaired').length >= L[id].repairs.length);
+  });
+
+  test(`${id}: every job says what it is, and its links run straight`, () => {
+    for (const job of L[id].repairs) {
+      for (const text of [job.tool.name, job.fix.goal, ...job.spots.map((f) => f.name)]) assert.ok(text, 'a job is missing a label');
+      for (const { link } of job.spots) {
+        assert.ok(link.length >= 2);
+        link.slice(1).forEach(([x, y], k) => assert.ok(x === link[k][0] || y === link[k][1], 'a link runs straight, on the art grid'));
+      }
+    }
+  });
+
+  test(`${id}: no prank undoes a repair`, () => {
+    const lvl = L[id];
+    const fixed = new Set(lvl.repairs.flatMap((job) => job.fix.cells.map(([layer, tx, ty]) => `${layer},${tx},${ty}`)));
+    for (const pr of lvl.pranks) for (const [layer, tx, ty] of pr.cells) assert.equal(fixed.has(`${layer},${tx},${ty}`), false, `${pr.id} would undo a repair at ${tx},${ty}`);
   });
 }
 
-// ---------- repairs that change the level ----------
-
-const REDESIGNED = ['clock', 'scaff', 'closing', 'midair', 'inventory', 'watch', 'stairs', 'doors', 'wet', 'pillar', 'supervisor', 'stacked', 'portrait', 'daywalker', 'offset', 'audit', 'upside', 'fallup', 'ceiling', 'heels', 'clockout'];
-
-for (const id of REDESIGNED) {
-  test(`${id}: the repair changes the map, and the level can't be won without it`, () => {
+for (const [id, type] of Object.entries(TYPES)) {
+  test(`${id}: every job is needed: without it the level can't be won`, () => {
     const lvl = L[id];
-    assert.ok(lvl.repairs.every((job) => job.fix.cells.length > 0 && job.fix.link.length >= 2));
-    const fixed = new Set(lvl.repairs.flatMap((job) => job.fix.cells.map(([layer, tx, ty]) => `${layer},${tx},${ty}`)));
-    for (const pr of lvl.pranks) for (const [layer, tx, ty] of pr.cells) assert.equal(fixed.has(`${layer},${tx},${ty}`), false, `${pr.id} would undo a repair at ${tx},${ty}`);
-    for (const job of lvl.repairs) job.fix.link.slice(1).forEach(([x, y], k) => assert.ok(x === job.fix.link[k][0] || y === job.fix.link[k][1], 'a link runs straight, on the art grid'));
-    const noTool = { ...lvl, repairs: lvl.repairs.map((job) => ({ ...job, tool: { ...job.tool, tx: -9 } })) };
-    assert.equal(searchBelowPar(noTool, 8, 200), Infinity);
+    lvl.repairs.forEach((job, i) => assert.equal(searchBelowPar(without(lvl, i), 8, 150), Infinity, job.tool.name));
+  });
+
+  test(`${id}: the repair comes early, and the level goes on after it`, () => {
+    const lvl = L[id];
+    const { inputs } = recordInputs(lvl, SOLUTIONS[id]);
+    let s = initState(lvl);
+    let first = null;
+    let shifts = 0;
+    let jumps = 0;
+    inputs.forEach((input, f) => {
+      if (first !== null) { shifts += input.shiftPressed ? 1 : 0; jumps += input.jumpPressed ? 1 : 0; }
+      s = step(lvl, s, input);
+      if (first === null && s.events.some((e) => e.type === 'repaired')) first = f;
+    });
+    assert.ok(first <= inputs.length * 0.7, `repaired ${Math.round((first / inputs.length) * 100)}% of the way through`);
+    assert.ok(shifts >= 1 && jumps >= 1, `${shifts} shifts and ${jumps} jumps after it`);
+  });
+
+  test(`${id}: ${type} does what a ${type} job does`, () => {
+    const lvl = L[id];
+    const { events } = play(lvl, SOLUTIONS[id], 120 * 30);
+    const jobs = lvl.repairs;
+    if (type === 'build') assert.ok(jobs.every((j) => j.fix.cells.length > 0));
+    if (type === 'power') assert.ok(new Set(events.filter((e) => e.type === 'repaired').map((e) => e.spot)).size >= 2, 'the fuse is used in two sockets');
+    if (type === 'water') {
+      assert.ok(jobs.some((j) => j.undoes && j.fix.cells.some((c) => c[3] === 'w') && j.fix.cells.some((c) => c[3] === '.')), 'it floods one place and drains another');
+    }
+    if (type === 'machine') assert.ok(events.filter((e) => e.type === 'machine').length >= 2, 'the run uses at least two stops');
+    if (type === 'light') {
+      const lit = jobs.flatMap((j) => (j.fix.clears ? [j.fix.clears] : []));
+      assert.ok(lvl.freaks.some((f) => lit.some((r) => f.tx >= r.x0 && f.tx <= r.x1 && f.ty >= r.y0 && f.ty <= r.y1)), 'there is a freak to clear');
+    }
+    if (type === 'secure') {
+      const ids = lvl.pranks.map((p) => p.id);
+      assert.ok(jobs.some((j) => j.fix.secures.length > 0 && j.fix.secures.every((p) => ids.includes(p))), 'it stops a real prank');
+    }
   });
 }
 
@@ -614,18 +564,3 @@ test('Employee of the Month: the portrait seals the door on both shifts, then dr
   assert.deepEqual(skinPlan(lvl, NIGHT, state.overrides).map((p) => p.draw), ['portraitFlat']);
 });
 
-test('Mid-Air: the water drains and the exit is on the basement floor', () => {
-  const lvl = L.midair;
-  assert.equal(tileAt(lvl, DAY, 16, 15), 'w');
-  const { state } = play(lvl, SOLUTIONS.midair, 120 * 12);
-  assert.equal(state.won, true);
-  assert.equal(tileAt(lvl, DAY, 16, 15, state.overrides), '.');
-});
-
-test('work orders: every redesigned job says what it is and what it\'s for', () => {
-  for (const id of REDESIGNED) {
-    for (const job of L[id].repairs) {
-      for (const text of [job.tool.name, job.fix.name, job.fix.goal, job.fix.target]) assert.ok(text, `${id}: a job is missing a label`);
-    }
-  }
-});

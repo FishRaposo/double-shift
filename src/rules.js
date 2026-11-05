@@ -53,6 +53,8 @@ function skinCells(sk) {
 // format: the shutter rises, the water drains. `fix.link` is the run of cable or pipe the art draws from the broken
 // thing to what it drives; `goal` and `target` are its words on the HUD and the tag. What the repair does after that
 // is the level's puzzle (docs/GDD.md §4.11):
+// `area` { x0, x1, y0, y1 }, on any spot: where it can be touched from, when that isn't just its own tile. A box in a
+// wall can be reached from both sides of it.
 //   build    `set` alone: the change stays.
 //   power    `spots`: one tool, several sockets, each with its own `set`. Touching the filled one pulls the tool and
 //            undoes its `set`; touching an empty one with the tool fills it.
@@ -635,6 +637,11 @@ function setJob(s, i, change) {
   s.repairs = s.repairs.map((job, k) => (k === i ? { ...job, ...change } : job));
 }
 
+function touches(p, { tx, ty, area: a = { x0: tx, x1: tx, y0: ty, y1: ty } }) {
+  for (let y = a.y0; y <= a.y1; y++) for (let x = a.x0; x <= a.x1; x++) if (overlapsTile(p, x, y)) return true;
+  return false;
+}
+
 // The tool, then its spots. Any change waits rather than close on the worker, until they step clear.
 function touchJob(level, s, job, i) {
   const p = s.player;
@@ -646,7 +653,7 @@ function touchJob(level, s, job, i) {
     }
     return;
   }
-  const spot = job.spots.findIndex((f) => s.layer === f.layer && overlapsTile(p, f.tx, f.ty));
+  const spot = job.spots.findIndex((f) => s.layer === f.layer && touches(p, f));
   if (spot === -1) {
     if (!state.armed) setJob(s, i, { armed: true });
     return;

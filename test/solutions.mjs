@@ -8,48 +8,57 @@ export const L = Object.fromEntries(LEVELS.map((l) => [l.id, parseLevel(l)]));
 const want = (s, layer) => s.layer !== layer;
 
 export const SOLUTIONS = {
-  clock: (s) => ({ right: true, shift: (tx(s) > 4 && tx(s) < 20 && want(s, NIGHT)) || (tx(s) > 20.5 && want(s, DAY)) }),
+  clock: (s) => {
+    const x = tx(s);
+    const target = x > 7 && x < 19.2 ? NIGHT : x > 26 ? NIGHT : DAY;
+    const jump = s.player.grounded ? (x > 20.9 && x < 21.6) || (x > 23 && x < 24.2) : s.player.vy < 0;
+    return { right: true, jump, shift: want(s, target) };
+  },
   scaff: (s) => {
     const x = tx(s);
+    const flying = !s.player.grounded && x > 15.2;
     let target = DAY;
-    if (x > 2.6 && x < 4.6) target = NIGHT; // the wrench is on the night shift
-    else if (x > 19) target = NIGHT; // past the day tower
-    return { right: true, jump: s.player.grounded ? (x > 7 && x < 7.8) || (x > 11.2 && x < 11.9) || (x > 14.4 && x < 16) : s.player.vy < 0, shift: want(s, target) };
+    if (x > 3.6 && x < 6.4) target = NIGHT; // the wrench is on the night shift
+    else if (flying && x < 25) target = NIGHT; // off the deck and through where the wall was
+    else if (x > 16 && x < 25) target = NIGHT;
+    else if (x >= 25) target = DAY; // past the night wall
+    const jump = s.player.grounded ? (x > 9.2 && x < 9.9) || (x > 13.2 && x < 14) : s.player.vy < 0;
+    return { right: true, jump, shift: want(s, target) };
   },
-  closing: (s) => ({ right: true, shift: (tx(s) > 10.4 && tx(s) < 26 && want(s, NIGHT)) || (tx(s) >= 26.15 && want(s, DAY)) }),
+  closing: (s, m) => {
+    const x = tx(s);
+    const job = s.repairs[0];
+    if (!job.done && job.at === null && !m.pulled && !job.tool) return { right: true };
+    if (job.at === 0 && !m.through) { if (x > 14.2) m.through = true; return { right: true }; }
+    if (job.at === 0) return { left: true }; // back to the box in the wall: take the fuse
+    m.pulled = true;
+    const target = x > 26.8 ? DAY : x > 14.4 ? NIGHT : s.layer;
+    const peek = freakBoxes(L.closing, s)[0];
+    if (s.layer === NIGHT && x > 22.5 && x < 25.4 && (peek.active || peek.popIn < 0.4)) return { shift: false };
+    const jump = s.player.grounded ? job.at === 1 && x > 16 && x < 16.7 : s.player.vy < 0;
+    return { right: true, jump, shift: want(s, target) };
+  },
   midair: (s) => {
     const x = tx(s);
-    const jump = s.player.grounded ? [5.0, 10.4, 16.4, 22.4].some((a) => x > a && x < a + 0.5) : s.player.vy < 0;
     let target = DAY;
-    if (x > 6 && x < 13) target = NIGHT;
-    else if (x >= 13 && x < 19) target = DAY;
-    else if (x >= 19 && x < 25) target = NIGHT;
-    else if (x >= 25) target = s.layer;
-    if (s.repairs[0].done) return { left: true, shift: false }; // drained: back down to the exit
+    if (x > 10.2 && x < 15.2) target = NIGHT; // off the day stone and onto the night one, mid-air
+    if (x > 21.5) target = NIGHT; // past the day wall
+    const jump = s.player.grounded ? (x > 3.6 && x < 4.3) || (x > 7.6 && x < 8.3) || (x > 13.2 && x < 13.8) || (x > 24 && x < 24.8) : s.player.vy < 0;
     return { right: true, jump, shift: want(s, target) };
   },
   inventory: (s) => {
     const x = tx(s);
-    let target = s.layer;
-    if (s.nightEntries === 0 && x > 4) target = NIGHT;
-    else if (s.nightEntries === 1 && x > 16.5 && x < 17.5) target = DAY; // step out between the pits...
-    else if (s.nightEntries === 1 && x >= 17.5) target = NIGHT; // ...and back in: the plank has moved
-    return { right: true, shift: want(s, target) };
+    const target = x > 5 && x < 15.4 ? NIGHT : x >= 15.4 && x < 18.3 ? DAY : x >= 18.3 ? NIGHT : DAY;
+    const jump = s.player.grounded ? x > 26.2 && x < 26.9 : s.player.vy < 0;
+    return { right: x < 30, left: x > 30.6, jump, shift: want(s, target) };
   },
   watch: (s) => {
     const x = tx(s);
-    let target = s.layer;
-    if (x > 3 && x < 8.6) target = NIGHT; // through the day crates
-    else if (x >= 8.6 && x < 15.3) target = DAY; // freeze the lurker, walk past it
-    else if (x >= 15.3 && x < 25.9) target = NIGHT; // out of the tunnel, past the day rebar
-    else if (x >= 25.9) target = DAY; // up the steps, past the squatter
-    let right = true;
-    if (s.layer === NIGHT && x > 20.5 && x < 22.3) {
-      const t = s.freakClock % 1.6; // peeker is out for the first 0.8 s of each 1.6 s cycle
-      right = t > 0.8 && t < 1.0;
-    }
-    const jump = s.layer === DAY && (s.player.grounded ? (x > 27.1 && x < 27.7) || (x > 28.8 && x < 29.5) : s.player.vy < 0);
-    return { right, jump, shift: want(s, target) };
+    let target = DAY;
+    if (x > 3.8 && x < 6.9) target = NIGHT;
+    else if (x >= 13.2 && x < 26.2) target = NIGHT;
+    const jump = s.player.grounded ? (x > 26.9 && x < 28) : s.player.vy < 0;
+    return { right: x < 30, left: x > 30.6, jump, shift: want(s, target) };
   },
   wet: (s) => {
     const x = tx(s);
@@ -124,29 +133,31 @@ export const SOLUTIONS = {
     return { right, shift: want(s, target) };
   },
   // night at the start; hop up the stairs; jump off the top step; past the stairs, mid-air, day onto the tower
-  stairs: (s) => {
-    const p = s.player;
+  stairs: (s, m) => {
     const x = tx(s);
-    // hop each riser as it comes (a step face about a tile ahead at foot height), and off the end of the top step
-    const ground = Math.round((p.y + PARAMS.playerH) / TILE);
-    const riser = isSolidChar(tileAt(L.stairs, s.layer, Math.floor((p.x + PARAMS.playerW) / TILE + 0.9), ground - 1));
-    const shift = (x > 2.2 && x < 3.2 && want(s, NIGHT)) || (!p.grounded && x > 23.8 && want(s, DAY));
-    // a short hop onto the top step, to land by the cable; then a full jump off the end
-    const hold = p.vy < 0 && !(x < 20.6 && p.y < 8.3 * TILE);
-    return { right: true, shift, jump: p.grounded ? s.layer === NIGHT && (riser || (x > 22.6 && x < 23.4)) : hold };
+    const job = s.repairs[0];
+    if (!job.done) return { right: true, shift: want(s, x > 7.4 ? NIGHT : DAY) };
+    if (x < 16.4) return { right: true, shift: want(s, x > 10 && x < 15 ? DAY : NIGHT) }; // the tunnel by day: its lurker stops
+    const stop = s.nightEntries - job.since;
+    if (stop < 1) return { shift: (m.p = !m.p), right: true };
+    if (stop === 1 && x < 19.4) return { right: true, jump: s.player.grounded ? x > 16.8 : s.player.vy < 0 };
+    if (stop === 1) return s.player.grounded ? { shift: (m.p = !m.p) } : {};
+    return { right: true, shift: want(s, x > 25.4 ? NIGHT : s.layer) };
   },
-  // one clock-in per room, where the room allows it; then climb the pile of doors (jump at each wall)
-  doors: (s) => {
-    const p = s.player;
+  doors: (s, m) => {
     const x = tx(s);
-    const plan = [[1.5, 3.4, NIGHT], [5, 7.2, DAY], [10, 12.2, NIGHT], [16, 18.6, DAY], [22, 23.4, NIGHT]];
-    const due = plan.find(([a, b]) => x >= a && x <= b);
-    const shift = !!due && s.layer !== due[2];
-    const climb = p.grounded && ((x > 24.8 && Math.abs(p.vx) < 1) || (x > 26.6 && x < 27.6) || x > 28.5); // up the pile, then onto the door
-    return { right: true, shift, jump: p.grounded ? climb : p.vy < 0 };
+    const job = s.repairs[0];
+    if (!job.tool) return { right: true };
+    m.t = (m.t ?? 0) + 1;
+    if (m.t === 60 || m.t === 120) return { shift: true };
+    if (m.t < 180) return {};
+    if (!job.done) return { right: x < 4.2, jump: s.player.grounded ? x > 1.6 : s.player.vy < 0 };
+    let target = NIGHT;
+    if (x >= 13.4 && x < 16.2) target = DAY;
+    else if (x >= 26.6) target = DAY;
+    const jump = s.player.grounded ? x > 24.7 && x < 25.4 : s.player.vy < 0;
+    return { right: true, jump, shift: want(s, target) };
   },
-  // night past P0, day past P1, up the day crate, then jump off it and clock in mid-air: entry 2 puts the
-  // pillar under you; from its top, jump against the mezzanine
   pillar: (s, m) => {
     const p = s.player;
     const x = tx(s);
