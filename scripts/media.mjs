@@ -278,6 +278,34 @@ async function fullRun() {
   const fresh = await evaluate('(() => { const g = __doubleShift; return { screen: g.screen, spent: g.spent.reduce((n, s) => n + (s ?? 0), 0), results: g.results.filter(Boolean).length }; })()');
   flow('clocking in from the title starts a new run', fresh.screen !== 'title' && fresh.spent < 5 && fresh.results === 0, fresh);
 
+  // skipping an act card with the shift key holds it, but spends no clock-in
+  await open('');
+  await press('Space'); // the act card
+  await sleep(200);
+  await press('KeyK');
+  await sleep(200);
+  const skipped = await evaluate('({ screen: __doubleShift.screen, shifts: __doubleShift.state.shifts })');
+  flow('skipping the act card spends no clock-in', skipped.screen === 'play' && skipped.shifts === 0, skipped);
+
+  // Esc from a level select opened on a break goes back to the break; losing focus takes a break
+  await open('?level=clock&autostart');
+  await sleep(300);
+  await press('Escape');
+  await press('KeyL');
+  await press('Escape');
+  const back = await evaluate('__doubleShift.screen');
+  flow('Esc from level select returns to the break it came from', back === 'paused', back);
+  await press('Escape');
+  await evaluate("dispatchEvent(new Event('blur'))");
+  const blurred = await evaluate('__doubleShift.screen');
+  flow('losing focus pauses the level', blurred === 'paused', blurred);
+
+  // the last timecard can't be mashed past the ending
+  await evaluate('(() => { const g = __doubleShift; g.screen = "end"; g.screenTime = 0; })()');
+  await press('Space');
+  const end = await evaluate('__doubleShift.screen');
+  flow('Space in the first 0.6 s keeps the end screen up', end === 'end', end);
+
   // browser shortcuts stay the browser's: Ctrl+R in a level is the page's reload, not the game's restart
   await open('?level=clock&autostart');
   await sleep(400);

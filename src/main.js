@@ -413,10 +413,12 @@ function handleEvents(events) {
         fx.death = 1;
         break;
       case 'prank': {
-        sfx.giggle();
-        sfx.shimmer();
-        fx.squint = 1;
-        fx.pops.push({ x: W / 2, y: 86, t: 0, text: 'hee hee hee', big: true });
+        if (events.find((e) => e.type === 'prank') === ev) { // two pranks on one night entry still giggle once
+          sfx.giggle();
+          sfx.shimmer();
+          fx.squint = 1;
+          fx.pops.push({ x: W / 2, y: 86, t: 0, text: 'hee hee hee', big: true });
+        }
         const pr = level().pranks.find((q) => q.id === ev.id);
         if (pr?.sound) playSound(pr.sound); // e.g. doorThunk under the giggle
         for (const [, tx, ty] of pr?.cells ?? []) fx.sparkles.push({ x: tx * TILE + TILE / 2, y: ty * TILE + TILE / 2, t: 0, seed: tx * 31 + ty });

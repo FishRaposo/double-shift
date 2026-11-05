@@ -352,6 +352,7 @@ export const LEVELS = [
     name: 'Inventory',
     act: 2,
     props: [
+      { kind: 'sign', tx: 4, ty: 11, text: 'STUCK? RESTART.', style: 'paper' },
       { kind: 'memo', tx: 9, ty: 11, text: "Lost: one (1) plank. If found, please return to the pit." },
       { kind: 'noticeBoard', tx: 3, ty: 10 }, { kind: 'footprints', tx: 17, ty: 13 }, { kind: 'footprints', tx: 18, ty: 13 },
     ],
@@ -1132,6 +1133,7 @@ export const LEVELS = [
       { kind: 'noticeBoard', tx: 26, ty: 12, layer: 'day' },
       { kind: 'mug', tx: 13, ty: 12, layer: 'night', flip: true }, // someone's coffee, upside down under the walkway
     ],
+    decor: [{ kind: 'eyes', tx: 14, ty: 8 }],
     day: [
       '................................',
       '................................',
@@ -1178,6 +1180,7 @@ export const LEVELS = [
       { kind: 'noticeBoard', tx: 7, ty: 10, layer: 'day' },
       { kind: 'vent', tx: 6, ty: 4, layer: 'night', flip: true }, // under the floor's copy, where you hang
     ],
+    decor: [{ kind: 'eyes', tx: 24, ty: 8 }],
     day: [
       '................................',
       '................................',
