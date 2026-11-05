@@ -13,7 +13,7 @@ import { drawText, measureText, wrapText } from './font.js';
 import { drawSprite, drawEyes, eyesOpen, workerFrame, spriteRect, ART, SPRITES, C, JOB_NIGHT_PAL } from './sprites.js';
 import {
   PAL, PROPS, drawBackground, drawSolidTile, drawHatch, drawEchoEdges, drawRebar, drawLaser, drawHazardEcho,
-  drawExit, drawExitLock, drawCheckpoint, drawSign, drawFreak, drawTool, drawCarriedTool, drawFixture, drawJobLink, drawFixBrackets, drawWater, drawStatusMark, drawPatrol, drawGaze, drawTurnTimer, drawPrankCells,
+  drawExit, drawCheckpoint, drawSign, drawFreak, drawTool, drawCarriedTool, drawFixture, drawJobLink, drawFixBrackets, drawWater, drawStatusMark, drawPatrol, drawGaze, drawTurnTimer, drawPrankCells,
   drawShiftRing, drawDust, drawPuff, drawSparkle, drawPanel,
   drawStamp, drawLogo, drawWetTile, drawSkin, shouldHatch, withCellMirror, PLATE, NOTE_STRIP, px, drawMemoPanel,
 } from './art.js';
@@ -437,12 +437,6 @@ function handleEvents(events) {
         fix.cells.forEach(([, tx, ty], k) => { if (k % every === 0) fx.puffs.push({ x: tx * TILE + TILE / 2, y: ty * TILE + TILE / 2, t: 0 }); });
         break;
       }
-      case 'exitLocked': {
-        const { exit } = level();
-        sfx.shiftFail();
-        fx.pops.push({ x: exit.tx * TILE + TILE / 2, y: exit.ty * TILE - 40, t: 0, text: 'WORK ORDER FIRST' });
-        break;
-      }
       case 'win':
         sfx.win();
         setTimeout(() => sfx.stamp(), 450);
@@ -669,7 +663,7 @@ function drawTells(lvl, s, layer, t) {
       PROPS.eyes(g, x - 30, up ? y + 26 : y - 50, { t, seed: 7 });
       PROPS.eyes(g, x + 4, up ? y + 40 : y - 64, { t, seed: 3 });
     } else {
-      drawSign(g, x, y - 36, NOTEXT ? '    ' : pr.tell.text ?? 'MINE', 'note', 2); // the freaks' sticky note (WRITING.md §5)
+      drawSign(g, x, Math.max(y - 36, x < 340 ? 122 : HUD_BOTTOM), NOTEXT ? '    ' : pr.tell.text ?? 'MINE', 'note', 2); // the sticky note (WRITING.md §5), below the work order
     }
     const text = prankCountdown(pr.nights);
     const spot = countdownSpot(lvl, labels, x, y, measureText(text, 2), gravitySign(lvl, layer) < 0);
@@ -687,7 +681,7 @@ function countdownSpot(lvl, labels, tellX, tellY, w, flipped) {
   if (x + w / 2 > exitLeft && x - w / 2 < exitLeft + TILE) x = exitLeft < W / 2 ? exitLeft + TILE + 6 + w / 2 : exitLeft - w / 2;
   const hits = (y) => labels.some((l) => Math.abs(l.x - x) < (l.w + w) / 2 + 4 && Math.abs(l.y - y) < 16);
   const near = flipped ? tellY + 2 : tellY - 16;
-  const y = Math.max(HUD_BOTTOM, hits(near) ? (flipped ? tellY + 60 : tellY - 82) : near);
+  const y = Math.max(x < 340 ? 142 : HUD_BOTTOM, hits(near) ? (flipped ? tellY + 60 : tellY - 82) : near);
   labels.push({ x, y, w });
   return { x, y };
 }
@@ -741,10 +735,6 @@ function drawWorkOrder(lvl, s, layer, t) {
     jobLabel(job.fix.name, job.fix.tx, job.fix.ty, placed);
     const end = job.fix.link.at(-1);
     if (end && job.fix.target) jobLabel(job.fix.target, end[0], end[1], placed);
-    if (job.fix.cells.length === 0 && !done) { // a job with no machine locks the exit instead
-      const pose = exitPose(lvl, layer, s.overrides);
-      if (pose) drawExitLock(g, lvl.exit.tx, lvl.exit.ty, pose);
-    }
   });
 }
 

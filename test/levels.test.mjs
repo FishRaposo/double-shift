@@ -481,10 +481,11 @@ test('Clock Out: every prank is telegraphed, the step coming back included', () 
 
 test('Clock Out: the stolen door leaves its empty frame', () => {
   const lvl = L.clockout;
-  assert.deepEqual(skinPlan(lvl, NIGHT, {}), [{ draw: 'door', tx: 16, ty: 14, h: 2, hang: true }]);
+  const doors = (ov) => skinPlan(lvl, NIGHT, ov).filter((p) => p.tx === 16);
+  assert.deepEqual(doors({}), [{ draw: 'door', tx: 16, ty: 14, h: 2, hang: true }]);
   const { state } = play(lvl, (s, m, f) => (s.shifts >= 3 ? {} : SOLUTIONS.clockout(s, m, f)), 120 * 4); // to the 2nd clock-in
   assert.equal(state.nightEntries, 2);
-  assert.deepEqual(skinPlan(lvl, NIGHT, state.overrides), [{ draw: 'emptyFrame', tx: 16, ty: 14, h: 2, hang: true }]);
+  assert.deepEqual(doors(state.overrides), [{ draw: 'emptyFrame', tx: 16, ty: 14, h: 2, hang: true }]);
 });
 
 // A relocated object goes round its places forever: however many clock-ins, its useful place comes back.
@@ -581,14 +582,14 @@ for (const { id } of LEVELS) {
     assert.equal(state.won, true);
     assert.equal(events.filter((e) => e.type === 'tool').length, L[id].repairs.length);
     assert.equal(events.filter((e) => e.type === 'repaired').length, L[id].repairs.length);
-    for (const job of L[id].repairs) assert.notEqual(job.tool.layer, job.fix.layer);
+    assert.ok(L[id].repairs.some((job) => job.tool.layer !== job.fix.layer), 'at least one job crosses the shifts');
     assert.equal(events.filter((e) => e.type === 'exitLocked').length, 0);
   });
 }
 
 // ---------- repairs that change the level ----------
 
-const REDESIGNED = ['clock', 'scaff', 'closing', 'midair', 'inventory', 'watch', 'stairs', 'doors', 'wet', 'pillar', 'supervisor', 'stacked', 'portrait', 'daywalker', 'offset', 'audit', 'upside', 'fallup', 'ceiling', 'heels'];
+const REDESIGNED = ['clock', 'scaff', 'closing', 'midair', 'inventory', 'watch', 'stairs', 'doors', 'wet', 'pillar', 'supervisor', 'stacked', 'portrait', 'daywalker', 'offset', 'audit', 'upside', 'fallup', 'ceiling', 'heels', 'clockout'];
 
 for (const id of REDESIGNED) {
   test(`${id}: the repair changes the map, and the level can't be won without it`, () => {

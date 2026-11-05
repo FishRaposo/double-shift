@@ -4,7 +4,7 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as of 2026-11-05 (after t
 
 **At a glance**
 - **The one rule:** `src/rules.js` decides everything that matters; the screen only draws it (§2).
-- `npm start` to play, `npm test` (<!-- n:tests -->462<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
+- `npm start` to play, `npm test` (<!-- n:tests -->463<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
 - Add a level: grids in `src/levels.js` + a `SOLUTIONS` entry in `test/solutions.mjs` (§6; the full recipe is BUILD.md §2.1).
 - The five added mechanics (wet floor, day-walker, supervisor, offset layer, Upside Down) are built — §6.5 documents them.
 
@@ -159,9 +159,7 @@ One object moved by every night entry (the pillar, the portrait, Ceiling Walker'
 
 ### 6.4 Work orders
 
-*(Being rebuilt: `repairs: [...]` with `fix.set` changes the map and `fix.link` draws the run to what it drives. Act 1 and Employee of the Month use it; the rest still lock the exit.)*
-
-Every level has a `repair: { tool: { tx, ty, layer, name, kind }, fix: { tx, ty, layer, name, kind } }`. Touch the tool on its shift (`tool` event), then the broken thing on its shift (`repaired`). The exit stays locked until then: touching it emits `exitLocked` once per visit. `state.repair` is `{ tool, done }`; checkpoints snapshot it and a death restores it. No new input; `toolPickup` and `repaired` are the sounds. The tool and the broken thing sit on the par route, on different shifts (`test/levels.test.mjs`). The repairs are the worker's own job and have nothing to do with the freaks. Art: `drawTool`, `drawRepairSpot`, `drawExitLock`; the kinds are fuse, wrench/pipe, bulb/light, oil/hinge, tape/cable.
+Every level has `repairs: [...]`, each a `tool` and a `fix`. `fix.set` changes the map in the prank format, `fix.link` draws the run to what it drives, `fix.goal` and `fix.target` are its HUD and tag words, and `fix.dark` is a room that stays black until the repair. Earlier shape: a `repair: { tool: { tx, ty, layer, name, kind }, fix: { tx, ty, layer, name, kind } }`. Touch the tool on its shift (`tool` event), then the broken thing on its shift (`repaired`). The exit stays locked until then: touching it emits `exitLocked` once per visit. `state.repair` is `{ tool, done }`; checkpoints snapshot it and a death restores it. No new input; `toolPickup` and `repaired` are the sounds. The tool and the broken thing sit on the par route, on different shifts (`test/levels.test.mjs`). The repairs are the worker's own job and have nothing to do with the freaks. Art: `drawTool`, `drawRepairSpot`, `drawExitLock`; the kinds are fuse, wrench/pipe, bulb/light, oil/hinge, tape/cable.
 
 ### 6.5 Added mechanics (built)
 
@@ -218,7 +216,7 @@ The five added mechanics from [CONTENT.md](CONTENT.md) §3 — all built, tested
 
 | Command | What it covers |
 |---|---|
-| `npm test` | <!-- n:tests -->462<!-- /n --> tests: GDD §13.7 cases 1–15, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, Upside Down rules (flip, gravity sign, hanging, jump and cut, nudge order, coyote across a flip, hazard band, grid edges, checkpoints, fuzz), every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
+| `npm test` | <!-- n:tests -->463<!-- /n --> tests: GDD §13.7 cases 1–15, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, Upside Down rules (flip, gravity sign, hanging, jump and cut, nudge order, coyote across a flip, hazard band, grid edges, checkpoints, fuzz), every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
 | `npm run check` | Every module parses; every level validates |
 | `npm run audit` | Per level: the slack of every required shift and jump (fails under the act floor), input-lag tolerance 0–150 ms, and a random search for wins below par or without shifting (`scripts/audit-levels.mjs`). |
 | `npm run media` | Real browser (headless Edge/Chrome, no dependencies): plays level 1 with key presses, fails on page errors, a wrong outcome, audio clipping or a slow frame; saves the cover, screenshots and gallery. |

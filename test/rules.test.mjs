@@ -1139,12 +1139,15 @@ test('work order: the tool, then the fix, then the exit opens', () => {
   assert.deepEqual(events.filter((e) => ['tool', 'repaired', 'win'].includes(e.type)).map((e) => e.type), ['tool', 'repaired', 'win']);
 });
 
-test('work order: the exit stays locked without the repair, and says so once per visit', () => {
-  const lvl = JOB('night', 'night'); // both on the night shift: walking by on day does nothing
-  const { state, events } = play(lvl, () => ({ right: true }), 120 * 3);
-  assert.equal(state.won, false);
-  assert.equal(state.repairs[0].tool, false);
-  assert.equal(events.filter((e) => e.type === 'exitLocked').length, 1);
+test('work order: a repair changes the map, and waits rather than close on the worker', () => {
+  const job = (x) => ({ repairs: [{ tool: { tx: 2, ty: 5, layer: 'day', name: 'A', kind: 'fuse' }, fix: { tx: 4, ty: 5, layer: 'day', name: 'B', kind: 'fuse', set: [{ layer: 'day', x0: x, y0: 5, ch: '#' }] } }] });
+  const lvl = level(JOB_DAY, JOB_NIGHT, job(7));
+  let s = walkTo(lvl, initState(lvl), 5);
+  assert.equal(s.repairs[0].done, true);
+  assert.equal(tileAt(lvl, DAY, 7, 5, s.overrides), '#');
+  const onMe = level(JOB_DAY, JOB_NIGHT, job(4));
+  s = walkTo(onMe, initState(onMe), 4);
+  assert.equal(s.repairs[0].done, false, 'not while you stand in it');
 });
 
 test('work order: the tool and the broken thing only count on their own shift', () => {

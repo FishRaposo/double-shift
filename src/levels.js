@@ -1434,7 +1434,19 @@ export const LEVELS = [
     act: FINALE_ACT,
     rev: 2, // the rework: bests from the classic Clock Out (CLOCKOUT_CLASSIC, rev 1) don't carry over
     note: "Almost done. Don't look at the vents.",
-    repair: { tool: { tx: 10, ty: 13, layer: 'day', name: 'FUSE', kind: 'fuse' }, fix: { tx: 15, ty: 13, layer: 'night', name: 'FUSE BOX', kind: 'fuse' } },
+    repairs: [{ // one job per room; the last is the time clock itself
+      tool: { tx: 4, ty: 13, layer: 'night', name: 'FUSE', kind: 'fuse' },
+      fix: { tx: 10, ty: 13, layer: 'day', name: 'FUSE BOX', kind: 'fuse', goal: 'OPEN THE SHUTTER', target: 'SHUTTER', link: [[10, 12], [10, 9], [12, 9]], set: [{ layer: 'day', x0: 12, y0: 10, y1: 13, ch: '.' }, { layer: 'night', x0: 12, y0: 13, ch: '.' }] },
+    }, {
+      tool: { tx: 14, ty: 13, layer: 'night', name: 'TAPE', kind: 'tape' },
+      fix: { tx: 18, ty: 13, layer: 'day', name: 'LOOSE CABLE', kind: 'cable', goal: 'OPEN THE SHUTTER', target: 'SHUTTER', link: [[18, 12], [18, 9], [20, 9]], set: [{ layer: 'day', x0: 20, y0: 10, y1: 13, ch: '.' }] },
+    }, {
+      tool: { tx: 26, ty: 13, layer: 'night', name: 'WRENCH', kind: 'wrench' },
+      fix: { tx: 28, ty: 13, layer: 'day', name: 'LEAKING PIPE', kind: 'pipe', goal: 'OPEN THE HATCH', target: 'HATCH', link: [[28, 12], [29, 9]], set: [{ layer: 'night', x0: 28, x1: 31, y0: 8, ch: '.' }] },
+    }, {
+      tool: { tx: 31, ty: 10, layer: 'night', name: 'TIMECARD', kind: 'card' },
+      fix: { tx: 31, ty: 7, layer: 'night', name: 'TIME CLOCK', kind: 'clock', goal: 'FIX THE TIME CLOCK', target: 'WAY OUT', link: [[30, 7], [29, 6]], set: [{ layer: 'night', x0: 28, x1: 31, y0: 6, ch: '.' }] },
+    }],
     par: 7,
     // One room per act, on the flipped map, with one of every freak: the walkway (row 5) is the night's ceiling, one
     // step above the floor, so a shift flips you in place. Room 1 (act 1, cols 0-11): no ceiling over the spawn, so
@@ -1452,6 +1464,9 @@ export const LEVELS = [
       { x0: 30, x1: 31, y0: 12, ch: '.' }, // the time clock's pocket is day-only: the shaft is 3 wide at night
       { x0: 30, y0: 13, ch: '.' },
       { x0: 31, y0: 14, ch: '.' },
+      { x0: 12, y0: 13, ch: '#' }, // room 1's shutter, on the night route too
+      { x0: 28, x1: 31, y0: 8, ch: '#' }, // the hatch across the shaft
+      { x0: 28, x1: 31, y0: 6, ch: '#' }, // and the last one, that only the time clock opens
     ],
     pranks: [
       { id: 'door', onNight: 2, tell: { tx: 16, ty: 11, text: 'FINDERS KEEPERS' }, sound: 'doorThunk', set: [{ layer: 'night', x0: 16, y0: 13, y1: 14, ch: '.' }] },
@@ -1460,7 +1475,13 @@ export const LEVELS = [
       // the same spot: its tell stays up after the step goes, so one more clock-in reads as the way back
       { id: 'stepBack', onNight: 4, tell: { tx: 29, ty: 3 }, set: [{ layer: 'night', x0: 29, x1: 31, y0: 0, y1: 3, ch: '#' }, { layer: 'night', x0: 31, y0: 4, ch: '.' }] },
     ],
-    skins: [{ kind: 'door', tx: 16, ty: 14, layer: 'night' }], // Lost & Found's door, in the tunnel's mouth
+    skins: [
+      { kind: 'door', tx: 16, ty: 14, layer: 'night' },
+      { kind: 'shutter', tx: 12, ty: 13, layer: 'day' }, { kind: 'shutter', tx: 12, ty: 13, h: 1, layer: 'night' },
+      { kind: 'shutter', tx: 20, ty: 13, layer: 'day' },
+      { kind: 'deck', tx: 28, ty: 8, w: 4, layer: 'night' },
+      { kind: 'deck', tx: 28, ty: 6, w: 4, layer: 'night' },
+    ], // Lost & Found's door, in the tunnel's mouth
     freaks: [
       { kind: 'peeker', tx: 6, ty: 13, period: 1.2, duty: 0.6 },
       { kind: 'squatter', tx: 19, ty: 13 },
@@ -1471,11 +1492,10 @@ export const LEVELS = [
     props: [
       { kind: 'memo', tx: 10, ty: 12, w: 160, text: "Overtime is mandatory. So are the freaks, apparently.", layer: 'day' },
       { kind: 'sign', tx: 4, ty: 9, text: 'LAST SHIFT', style: 'paper', layer: 'day' },
-      { kind: 'coatRack', tx: 12, ty: 13, layer: 'day' },
+      { kind: 'coatRack', tx: 11, ty: 13, layer: 'day' },
       { kind: 'vent', tx: 20, ty: 8, layer: 'day' },
       { kind: 'vent', tx: 19, ty: 4, layer: 'night', flip: true }, // the note's warning, with eyes in it
       { kind: 'timeClock', tx: 29, ty: 4, layer: 'day' },
-      { kind: 'timeClock', tx: 28, ty: 4, layer: 'night', flip: true }, // under the ceiling they leave alone
     ],
     decor: [{ kind: 'eyes', tx: 5, ty: 7 }, { kind: 'eyes', tx: 13, ty: 6 }, { kind: 'eyes', tx: 19, ty: 4 }, { kind: 'eyes', tx: 27, ty: 7 }],
     day: [
@@ -1489,10 +1509,10 @@ export const LEVELS = [
       '................................',
       '................................',
       '................................',
-      '...............#........#.......',
-      '...............#........#.......',
-      '...............#........#.......',
-      '.S...........C.#......C.#..C....',
+      '............#..#....#...#.......',
+      '............#..#....#...#.......',
+      '............#..#....#...#.......',
+      '.S..........#C.#....#.C.#..C....',
       '##.......################..#####',
       '##.......################..#####',
       '##.......################..#####',

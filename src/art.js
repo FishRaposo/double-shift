@@ -684,18 +684,6 @@ export function drawFixBrackets(g, x, y, k, layer) {
   g.globalAlpha = prev;
 }
 
-// a job with no machine to change only locks the exit: a chain across the door and a padlock
-export function drawExitLock(g, tx, ty, { hang = false } = {}) {
-  const { door: d } = exitRects(tx, ty, { hang });
-  const cy = d.y + d.h / 2;
-  px(g, d.x - A, cy - A, 15, 2, C.steelLo);
-  px(g, d.x + 3 * A, cy - 2 * A, 7, 6, C.ink);
-  px(g, d.x + 4 * A, cy - A, 5, 4, C.steel);
-  px(g, d.x + 4 * A, cy - 5 * A, 1, 3, C.steelHi);
-  px(g, d.x + 8 * A, cy - 5 * A, 1, 3, C.steelHi);
-  px(g, d.x + 4 * A, cy - 5 * A, 5, 1, C.steelHi);
-}
-
 // water: a hazard filling its tile. Only the top row of a body of water shows the surface.
 export function drawWater(g, tx, ty, t, surface, layer) {
   const x = tx * TILE;

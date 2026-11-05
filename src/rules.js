@@ -51,7 +51,7 @@ function skinCells(sk) {
 // A level's work orders (`repairs`, or one `repair`): pick up the tool on its shift, then fix the broken thing on its
 // shift. Both are touched, like a checkpoint: no extra button. `fix.set` is what the repair changes, in the prank
 // format: the shutter rises, the water drains. `fix.link` is the run of cable or pipe the art draws from the broken
-// thing to what it drives. A job without `set` only locks the exit until it's done.
+// thing to what it drives; `goal` and `target` are its words on the HUD and the tag.
 function parseRepairs(def) {
   const jobs = def.repairs ?? (def.repair ? [def.repair] : []);
   return jobs.map((job) => parseRepair(def, job));
@@ -417,7 +417,6 @@ export function initState(level) {
     deaths: 0,
     checkpoint: { ...pos, layer, id: null, overrides: {}, nightEntries: 0, repairs: level.repairs.map(() => ({ tool: false, done: false })) },
     repairs: level.repairs.map(() => ({ tool: false, done: false })), // the level's work orders, in order
-    atLockedExit: false, // touching the exit before the work is done (one nudge per visit)
     won: false,
     time: 0,
     nightEntries: 0, // successful shifts into night: the freaks act on these
@@ -682,13 +681,10 @@ export function step(level, prev, input = NO_INPUT, dt = DT) {
       s.events.push({ type: 'repaired', job: i });
     }
   });
-  const atExit = overlapsTile(p, level.exit.tx, level.exit.ty);
-  const locked = level.repairs.some((job, i) => job.fix.cells.length === 0 && !s.repairs[i].done);
-  if (atExit && !locked) {
+  if (overlapsTile(p, level.exit.tx, level.exit.ty)) {
     s.won = true;
     s.events.push({ type: 'win', shifts: s.shifts, par: level.par });
-  } else if (atExit && !s.atLockedExit) s.events.push({ type: 'exitLocked' });
-  s.atLockedExit = atExit && !s.won;
+  }
   return s;
 }
 
