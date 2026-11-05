@@ -1,6 +1,6 @@
 # itch.io page kit
 
-Everything needed to create the *Double Shift* page on itch.io, in the order the itch dashboard asks for it. Settings come from [RELEASE.md](../docs/RELEASE.md) §2. **Fish writes the final description words**; the draft below is checked against the current build (<!-- n:levels -->21<!-- /n --> levels, <!-- n:tests -->411<!-- /n --> tests, level select, pixel art and music). The paste-ready description in §4 carries no markers, so check its numbers by hand before pasting (the release refresh does).
+Everything needed to create the *Double Shift* page on itch.io, in the order the itch dashboard asks for it. Settings come from [RELEASE.md](../docs/RELEASE.md) §2. **Fish writes the final description words**; the draft below is checked against the current build (<!-- n:levels -->21<!-- /n --> levels, <!-- n:tests -->421<!-- /n --> tests, level select, pixel art and music). The paste-ready description in §4 carries no markers, so check its numbers by hand before pasting (the release refresh does).
 
 ## 1. Build the files
 
@@ -74,7 +74,7 @@ npm run gif -- doors      # media/demo-doors.gif (480×270): Lost & Found's scri
 > **What's in this build:** 21 levels in five acts and a finale, from your first clock-in to the last, including an act where the night shift is upside down. Every prank and patrol shows what it's about to do. Gamepad support, rebindable controls and a speedrun timer. Made for GitHub Game Off 2026 (theme: SHIFT).
 >
 > **How it was made**
-> Designed by Vinícius Raposo for GitHub Game Off 2026. Built with AI assistance (Claude) to his design document, with draft text from the same place, then tested like production software: the gameplay rules are a pure module, the game has 411 automated tests, and every level is proven solvable at par by a scripted run. No engine, no assets: the pixel art, the pixel font and the music are all drawn and synthesized by code, code that was also written with AI assistance. No generated images or audio were used. Source: https://github.com/FishRaposo/double-shift
+> Designed by Vinícius Raposo for GitHub Game Off 2026. Built with AI assistance (Claude) to his design document, with draft text from the same place, then tested like production software: the gameplay rules are a pure module, the game has 421 automated tests, and every level is proven solvable at par by a scripted run. No engine, no assets: the pixel art, the pixel font and the music are all drawn and synthesized by code, code that was also written with AI assistance. No generated images or audio were used. Source: https://github.com/FishRaposo/double-shift
 >
 > If you enjoyed it, a follow or a small donation helps.
 

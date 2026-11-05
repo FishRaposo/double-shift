@@ -609,6 +609,54 @@ function drawGlowEyes(g, cx, y, { t = 0, seed = 0 } = {}) {
   }
 }
 
+// ---------- work orders: the worker's own job ----------
+
+const TOOL_ART = {
+  fuse(g, x, y) { px(g, x + 5 * A, y, 5, 8, '#e8e2d0'); px(g, x + 6 * A, y + 2 * A, 3, 4, '#f2a516'); },
+  wrench(g, x, y) {
+    for (let i = 0; i < 7; i++) px(g, x + (4 + i) * A, y + (7 - i) * A, 2, 2, '#c9d3dc');
+    px(g, x + 9 * A, y, 4, 1, '#c9d3dc');
+    px(g, x + 12 * A, y, 1, 3, '#c9d3dc');
+  },
+  bulb(g, x, y) { px(g, x + 5 * A, y, 5, 5, '#ffec5a'); px(g, x + 6 * A, y + 5 * A, 3, 3, '#9a9a9a'); },
+};
+
+// the tool, floating on its tile. `live`: this is its shift; on the other one it's a faint promise
+export function drawTool(g, job, t, live) {
+  const prev = g.globalAlpha;
+  g.globalAlpha = prev * (live ? 1 : 0.4);
+  const x = job.tx * TILE;
+  const y = job.ty * TILE + 8 * A + (live ? Math.round(Math.sin(t * 4)) * A : 0);
+  px(g, x + A, y - 4 * A, 13, 16, 'rgba(255,236,90,0.28)'); // it has to read as "pick me up" on both skies
+  px(g, x + 3 * A, y - 2 * A, 9, 12, 'rgba(27,18,9,0.7)');
+  TOOL_ART[job.kind](g, x, y);
+  g.globalAlpha = prev;
+}
+
+// the broken thing on the wall at (tx, ty), and how it looks once it's fixed
+export function drawRepairSpot(g, job, t, live, done) {
+  const prev = g.globalAlpha;
+  g.globalAlpha = prev * (live ? 1 : 0.4);
+  const x = job.tx * TILE;
+  const y = job.ty * TILE;
+  const blink = Math.floor(t * 3) % 2 === 0;
+  if (job.kind === 'fuse') {
+    px(g, x + 2 * A, y + A, 11, 13, '#4f5b6e');
+    px(g, x + 3 * A, y + 2 * A, 9, 11, '#262c38');
+    px(g, x + 6 * A, y + 4 * A, 3, 5, done ? '#2bdc6a' : blink ? '#e0473c' : '#5a2320');
+  } else if (job.kind === 'pipe') {
+    px(g, x, y + 2 * A, 15, 4, '#7d8a99');
+    px(g, x + 6 * A, y + A, 3, 6, '#5c6775');
+    if (!done) px(g, x + 7 * A, y + (7 + Math.floor(t * 6) % 6) * A, 1, 2, '#5ff2ff');
+  } else {
+    px(g, x + 7 * A, y, 1, 4, '#4a3b2c');
+    px(g, x + 4 * A, y + 4 * A, 7, 2, '#6b5a48');
+    px(g, x + 5 * A, y + 6 * A, 5, 3, done ? '#ffec5a' : '#3a3a3a');
+    if (done) { g.fillStyle = 'rgba(255,236,90,0.14)'; g.fillRect(x - TILE / 2, y + 9 * A, 2 * TILE, 3 * TILE - 18); }
+  }
+  g.globalAlpha = prev;
+}
+
 // ---------- telegraphs: what a freak or prank is about to do (docs/ART.md §3) ----------
 
 const PEEK_WARN = 0.35; // seconds of rattle before a peeker pops out

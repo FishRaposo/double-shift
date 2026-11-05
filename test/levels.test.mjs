@@ -622,3 +622,15 @@ test('Head Over Heels: the spawn is nowhere near the exit (hold left, clock in e
   const { state } = play(L.heels, (s, m, f) => ({ left: true, shift: s.player.vy > 0 && s.layer === DAY }), 120 * 4);
   assert.equal(state.won, false, 'won by clocking in on the way down');
 });
+
+// ---------- work orders (repair prototype): Clock In, Inventory, Night Watch ----------
+
+for (const id of ['clock', 'inventory', 'watch']) {
+  test(`${id}: the work order sits on the par route, on the two shifts`, () => {
+    const { events, state } = play(L[id], SOLUTIONS[id], 120 * 30);
+    assert.equal(state.won, true);
+    assert.deepEqual(events.filter((e) => ['tool', 'repaired'].includes(e.type)).map((e) => e.type), ['tool', 'repaired']);
+    assert.notEqual(L[id].repair.tool.layer, L[id].repair.fix.layer);
+    assert.equal(events.filter((e) => e.type === 'exitLocked').length, 0);
+  });
+}

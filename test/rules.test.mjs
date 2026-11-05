@@ -1117,3 +1117,70 @@ test('overridesAfter: the tile overrides after N night clock-ins, pranks applied
   assert.equal(s.nightEntries, 4);
   assert.deepEqual(s.overrides, R.overridesAfter(lvl, 4));
 });
+
+// ---------- work orders (repair prototype) ----------
+const JOB_DAY = [
+  '..........',
+  '..........',
+  '..........',
+  '..........',
+  '..........',
+  '.S......E.',
+  '##########',
+];
+const JOB_NIGHT = JOB_DAY.map((r) => r.replace(/[SE]/g, '.'));
+const JOB = (tool = 'day', fix = 'day') => level(JOB_DAY, JOB_NIGHT, { repair: { tool: { tx: 3, ty: 5, layer: tool, name: 'FUSE', kind: 'fuse' }, fix: { tx: 6, ty: 5, layer: fix, name: 'FUSE BOX', kind: 'fuse' } } });
+const walkTo = (lvl, s, tile) => { for (let i = 0; i < 600 && s.player.x / TILE < tile && !s.won; i++) s = step(lvl, s, RIGHT); return s; };
+
+test('work order: the tool, then the fix, then the exit opens', () => {
+  const lvl = JOB();
+  const { state, events } = play(lvl, () => ({ right: true }), 120 * 4);
+  assert.equal(state.won, true);
+  assert.deepEqual(events.filter((e) => ['tool', 'repaired', 'win'].includes(e.type)).map((e) => e.type), ['tool', 'repaired', 'win']);
+});
+
+test('work order: the exit stays locked without the repair, and says so once per visit', () => {
+  const lvl = JOB('night', 'night'); // both on the night shift: walking by on day does nothing
+  const { state, events } = play(lvl, () => ({ right: true }), 120 * 3);
+  assert.equal(state.won, false);
+  assert.equal(state.repair.tool, false);
+  assert.equal(events.filter((e) => e.type === 'exitLocked').length, 1);
+});
+
+test('work order: the tool and the broken thing only count on their own shift', () => {
+  const lvl = JOB('night', 'day');
+  let s = walkTo(lvl, initState(lvl), 4.5);
+  assert.equal(s.repair.tool, false, 'walked past it on day');
+  s = place(step(lvl, s, SHIFT), 3, 5);
+  s = stepN(lvl, s, 2);
+  assert.equal(s.repair.tool, true);
+});
+
+test('work order: the broken thing needs the tool first', () => {
+  const lvl = JOB('night', 'day');
+  const s = walkTo(lvl, initState(lvl), 7);
+  assert.equal(s.repair.done, false);
+});
+
+test('work order: a death returns to what the checkpoint saved, tool included', () => {
+  const job = { repair: { tool: { tx: 2, ty: 1, layer: 'day', name: 'A', kind: 'fuse' }, fix: { tx: 9, ty: 1, layer: 'day', name: 'B', kind: 'fuse' } } };
+  const stopAfterDying = (s) => ({ right: s.deaths === 0 });
+  const saved = level(['..........', '.S.C.....E', '####....##'], ['..........', '..........', '####....##'], job);
+  const a = play(saved, stopAfterDying, 120 * 4).state;
+  assert.equal(a.deaths, 1);
+  assert.equal(a.repair.tool, true, 'picked up before the checkpoint, so it stays');
+  const unsaved = level(['..........', '.S.......E', '####....##'], ['..........', '..........', '####....##'], job);
+  const b = play(unsaved, stopAfterDying, 120 * 4).state;
+  assert.equal(b.deaths, 1);
+  assert.equal(b.repair.tool, false, 'no checkpoint: the tool goes back');
+});
+
+test('a level without a work order is unchanged: the exit just works', () => {
+  const lvl = level(JOB_DAY, JOB_NIGHT);
+  assert.equal(lvl.repair, null);
+  assert.equal(play(lvl, () => ({ right: true }), 120 * 4).state.won, true);
+});
+
+test("work order: a position needs a layer", () => {
+  assert.throws(() => level(JOB_DAY, JOB_NIGHT, { repair: { tool: { tx: 1, ty: 1 }, fix: { tx: 2, ty: 1, layer: 'day' } } }), /needs a layer/);
+});

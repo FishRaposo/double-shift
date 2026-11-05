@@ -18,6 +18,8 @@
 // props:  cosmetic scenery from PROPS in src/art.js: { kind, tx, ty, layer?: 'day'|'night', w?, text?, style?,
 //         flip? } (flip hangs it upside down in its cell, for a flipped night; signs stay upright). One `memo`
 //         per level: its text shows on a panel while the worker is near.
+// repair: a work order (prototype): { tool: { tx, ty, layer, name, kind }, fix: { tx, ty, layer, name, kind } }. Touch the
+//         tool on its shift, then the broken thing on its shift; the exit stays locked until then.
 // act:    which act the level belongs to (the first level of each act is always open in level select).
 // rev:    the level's revision: saved bests from an older one don't carry over.
 
@@ -146,6 +148,7 @@ export const LEVELS = [
     // past the wall at col 24 and too high to touch, so it is evidence, not danger
     freaks: [{ kind: 'peeker', tx: 26, ty: 8, period: 1.6, duty: 0.5 }], // on a stack too tall to reach: a look, not a threat yet
     note: 'Gap in the floor by day. The night crew laid planks, and locked the gate.',
+    repair: { tool: { tx: 16, ty: 13, layer: 'night', name: 'FUSE', kind: 'fuse' }, fix: { tx: 27, ty: 13, layer: 'day', name: 'FUSE BOX', kind: 'fuse' } },
     par: 2,
     day: [
       '................................',
@@ -361,6 +364,7 @@ export const LEVELS = [
       { kind: 'noticeBoard', tx: 3, ty: 10 }, { kind: 'footprints', tx: 17, ty: 13 }, { kind: 'footprints', tx: 18, ty: 13 },
     ],
     note: 'Every time you clock in, something gets moved.',
+    repair: { tool: { tx: 17, ty: 13, layer: 'day', name: 'WRENCH', kind: 'wrench' }, fix: { tx: 28, ty: 13, layer: 'night', name: 'LEAKING PIPE', kind: 'pipe' } },
     par: 3,
     day: [
       '................................',
@@ -423,6 +427,7 @@ export const LEVELS = [
       { kind: 'vent', tx: 22, ty: 11 }, { kind: 'mug', tx: 3, ty: 13, layer: 'day' },
     ],
     note: 'Something is in the tunnel. It only moves at night.',
+    repair: { tool: { tx: 12, ty: 13, layer: 'day', name: 'BULB', kind: 'bulb' }, fix: { tx: 25, ty: 13, layer: 'night', name: 'DEAD LIGHT', kind: 'light' } },
     par: 4,
     day: [
       '......##############............',

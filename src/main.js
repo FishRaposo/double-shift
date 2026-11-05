@@ -13,7 +13,7 @@ import { drawText, measureText, wrapText } from './font.js';
 import { drawSprite, drawEyes, eyesOpen, workerFrame, spriteRect, ART, SPRITES, C } from './sprites.js';
 import {
   PAL, PROPS, drawBackground, drawSolidTile, drawHatch, drawEchoEdges, drawRebar, drawLaser, drawHazardEcho,
-  drawExit, drawCheckpoint, drawSign, drawFreak, drawStatusMark, drawPatrol, drawGaze, drawTurnTimer, drawPrankCells,
+  drawExit, drawCheckpoint, drawSign, drawFreak, drawTool, drawRepairSpot, drawStatusMark, drawPatrol, drawGaze, drawTurnTimer, drawPrankCells,
   drawShiftRing, drawDust, drawPuff, drawSparkle, drawPanel,
   drawStamp, drawLogo, drawWetTile, drawSkin, shouldHatch, withCellMirror, PLATE, NOTE_STRIP, px, drawMemoPanel,
 } from './art.js';
@@ -426,6 +426,19 @@ function handleEvents(events) {
         break;
       }
       case 'checkpoint': sfx.checkpoint(); fx.ping = 1; break;
+      case 'tool': sfx.uiSelect(); break;
+      case 'repaired': {
+        const { fix } = level().repair;
+        sfx.checkpoint();
+        fx.pops.push({ x: fix.tx * TILE + TILE / 2, y: fix.ty * TILE - 16, t: 0, text: 'FIXED' });
+        break;
+      }
+      case 'exitLocked': {
+        const { exit } = level();
+        sfx.shiftFail();
+        fx.pops.push({ x: exit.tx * TILE + TILE / 2, y: exit.ty * TILE - 40, t: 0, text: 'WORK ORDER FIRST' });
+        break;
+      }
       case 'win':
         sfx.win();
         setTimeout(() => sfx.stamp(), 450);
@@ -696,6 +709,15 @@ function drawFreakPlans(lvl, boxes, layer) {
   });
 }
 
+// the level's repair: the tool until it's picked up, the broken thing, and the exit's lock
+function drawWorkOrder(lvl, s, layer, t) {
+  const job = lvl.repair;
+  if (!job) return;
+  if (!s.repair.tool) drawTool(g, job.tool, t, layer === job.tool.layer);
+  drawRepairSpot(g, job.fix, t, layer === job.fix.layer, s.repair.done);
+  if (!s.repair.done) drawSign(g, lvl.exit.tx * TILE + TILE / 2, lvl.exit.ty * TILE - 40, 'LOCKED', 'red', 1);
+}
+
 function drawDecor(def, layer, t) {
   if (layer !== NIGHT) return;
   (def.decor ?? []).forEach((d, i) => {
@@ -786,6 +808,10 @@ function drawHud(lvl, s, layer) {
   const pal = PAL[layer];
   hud(`${game.index + 1}/${levels.length}  ${lvl.name.toUpperCase()}`, 14, 12, layer);
   if (settings.get().timer) hud(`TIME ${s.time.toFixed(2)}`, 14, 40, layer); // the speedrun timer (SETTINGS)
+  if (lvl.repair) {
+    const line = s.repair.done ? 'DONE' : s.repair.tool ? `FIX THE ${lvl.repair.fix.name}` : `GET THE ${lvl.repair.tool.name}`;
+    hud(`WORK ORDER: ${line}`, 14, settings.get().timer ? 64 : 40, layer);
+  }
   // shift indicator: icon + label (not colour alone), on one plate
   const label = layer === DAY ? 'DAY SHIFT' : 'NIGHT SHIFT';
   const lw = measureText(label, 2);
@@ -846,6 +872,7 @@ function drawPlay() {
     drawCheckpoint(g, c.tx, c.ty, s.checkpoint.id === c.id, s.checkpoint.id === c.id ? game.fx.ping : 0, { hang: still.hangs[i] });
   });
   drawDecor(def, layer, t);
+  drawWorkOrder(lvl, s, layer, t);
   drawTells(lvl, s, layer, t);
   const boxes = freakBoxes(lvl, s);
   drawFreakPlans(lvl, boxes, layer);
@@ -941,13 +968,14 @@ function drawCard() {
   drawText(g, lvl.name, cx, 152, { scale: 2, color: ink, align: 'center' });
   px(g, cx - 180, 176, 180, 1, 'rgba(59,45,31,0.4)');
   const rows = [['Clock-ins', String(r.shifts)], ['Par', String(r.par)], ['Time', `${r.time.toFixed(2)}s`], ['Incidents', String(r.deaths)]];
+  if (lvl.repair) rows.push(['Work order', 'DONE']);
   rows.forEach(([k, v], i) => {
     drawText(g, k, cx - 170, 190 + i * 28, { scale: 2, color: ink });
     drawText(g, v, cx + 170, 190 + i * 28, { scale: 2, color: ink, align: 'right' });
   });
   const diff = r.shifts - r.par;
   const k = Math.min(1, Math.max(0, (game.screenTime - 0.45) / 0.12));
-  if (game.screenTime > 0.45) drawStamp(g, cx + 70, 330, stampText(diff), diff <= 0 ? '#c0392b' : '#7f6a50', 3, k);
+  if (game.screenTime > 0.45) drawStamp(g, cx + 70, lvl.repair ? 344 : 330, stampText(diff), diff <= 0 ? '#c0392b' : '#7f6a50', 3, k);
   const comment = timecardComment(r);
   drawText(g, comment, cx, 372, { scale: measureText(comment, 2) > 440 ? 1 : 2, color: ink, align: 'center' });
   drawActions(CARD_ACTIONS, CARD_ROW, ink);

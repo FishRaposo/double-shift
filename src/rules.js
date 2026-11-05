@@ -48,6 +48,17 @@ function skinCells(sk) {
 
 // A level is { name, par, day: string[], night: string[] } — or `offset` or `upsideDown: true`, plus an optional
 // `nightPatch`, instead of `night`: those generate the night grid from the day one.
+// A level's work order (optional): pick up the tool on its shift, then fix the broken thing on its shift. The exit
+// stays locked until it's done. Both are touched, like a checkpoint: no extra button.
+function parseRepair(def) {
+  if (!def.repair) return null;
+  const at = ({ layer, ...rest }, what) => {
+    if (layer !== 'day' && layer !== 'night') throw new Error(`${def.name}: the repair's ${what} needs a layer, 'day' or 'night'`);
+    return { ...rest, layer: layer === 'day' ? DAY : NIGHT };
+  };
+  return { tool: at(def.repair.tool, 'tool'), fix: at(def.repair.fix, 'fix') };
+}
+
 // Legend: '#' solid, '^' hazard, 'S' spawn, 'E' exit, 'C' checkpoint, '.' empty.
 // S, E and C are shared between shifts and may be written in either grid.
 export function parseLevel(def) {
@@ -142,6 +153,7 @@ export function parseLevel(def) {
     pranks,
     freaks,
     skins,
+    repair: parseRepair(def),
     offset: def.offset ?? null,
     upsideDown: !!def.upsideDown, // the night is the day turned over, gravity included (gravitySign)
     nightGenerated: !def.night, // the night grid was generated from the day one (offset, upside down)
@@ -394,7 +406,9 @@ export function initState(level) {
     shiftPending: 0, // seconds left on a buffered shift request
     shifts: 0, // successful shifts this run (the timecard)
     deaths: 0,
-    checkpoint: { ...pos, layer, id: null, overrides: {}, nightEntries: 0 },
+    checkpoint: { ...pos, layer, id: null, overrides: {}, nightEntries: 0, repair: { tool: false, done: false } },
+    repair: { tool: false, done: false }, // the level's work order, if it has one
+    atLockedExit: false, // touching the exit before the work is done (one nudge per visit)
     won: false,
     time: 0,
     nightEntries: 0, // successful shifts into night: the freaks act on these
@@ -527,6 +541,7 @@ function die(level, s, cause, by) {
   // GDD §9.3: level objects return to the checkpoint's state, so a prank can never softlock a run
   s.overrides = s.checkpoint.overrides;
   s.nightEntries = s.checkpoint.nightEntries;
+  s.repair = s.checkpoint.repair;
   s.shiftPending = 0;
   p.grounded = isGrounded(level, s.layer, p, s.overrides);
   s.events.push({ type: 'respawn' });
@@ -641,14 +656,25 @@ export function step(level, prev, input = NO_INPUT, dt = DT) {
       const there = here ? null : standableSpot(level, 1 - s.layer, c.tx, c.ty, s.overrides);
       if (!here && !there) continue;
       const layer = here ? s.layer : 1 - s.layer;
-      s.checkpoint = { ...(here ?? there), layer, id: c.id, overrides: s.overrides, nightEntries: s.nightEntries };
+      s.checkpoint = { ...(here ?? there), layer, id: c.id, overrides: s.overrides, nightEntries: s.nightEntries, repair: s.repair };
       s.events.push({ type: 'checkpoint', id: c.id });
     }
   }
-  if (overlapsTile(p, level.exit.tx, level.exit.ty)) {
+  const job = level.repair;
+  if (job && !s.repair.tool && s.layer === job.tool.layer && overlapsTile(p, job.tool.tx, job.tool.ty)) {
+    s.repair = { ...s.repair, tool: true };
+    s.events.push({ type: 'tool' });
+  }
+  if (job && s.repair.tool && !s.repair.done && s.layer === job.fix.layer && overlapsTile(p, job.fix.tx, job.fix.ty)) {
+    s.repair = { ...s.repair, done: true };
+    s.events.push({ type: 'repaired' });
+  }
+  const atExit = overlapsTile(p, level.exit.tx, level.exit.ty);
+  if (atExit && (!job || s.repair.done)) {
     s.won = true;
     s.events.push({ type: 'win', shifts: s.shifts, par: level.par });
-  }
+  } else if (atExit && !s.atLockedExit) s.events.push({ type: 'exitLocked' });
+  s.atLockedExit = atExit && !s.won;
   return s;
 }
 
