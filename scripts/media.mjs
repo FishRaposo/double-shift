@@ -38,7 +38,7 @@ try {
 }
 const { send, evaluate, open, errors } = page;
 
-const KEYS = { Space: [' ', 32], KeyK: ['k', 75], KeyL: ['l', 76], KeyO: ['o', 79], KeyJ: ['j', 74], Enter: ['Enter', 13], Escape: ['Escape', 27], ArrowRight: ['ArrowRight', 39], ArrowDown: ['ArrowDown', 40] };
+const KEYS = { ArrowLeft: ['ArrowLeft', 37], Space: [' ', 32], KeyK: ['k', 75], KeyL: ['l', 76], KeyO: ['o', 79], KeyJ: ['j', 74], Enter: ['Enter', 13], Escape: ['Escape', 27], ArrowRight: ['ArrowRight', 39], ArrowDown: ['ArrowDown', 40] };
 const key = (type, code) => send('Input.dispatchKeyEvent', { type, code, key: KEYS[code][0], windowsVirtualKeyCode: KEYS[code][1] });
 const press = async (code) => { await key('keyDown', code); await sleep(40); await key('keyUp', code); };
 
@@ -204,12 +204,22 @@ async function fullRun() {
     await sleep(320);
     await key('keyUp', 'Space');
   };
-  await hop(20.7); // up onto the deck the bolt raised
+  await until(async () => (await tileX()) > 20.2); // the fix is behind you: stop, so a slow frame can't miss the jump
+  await key('keyUp', 'ArrowRight');
+  await sleep(250);
+  await key('keyDown', 'ArrowRight');
+  await hop(0); // up onto the deck the bolt raised
   await hop(23);
   await until(async () => (await tileX()) > 26);
   await press('KeyK');
-  await until(async () => (await evaluate('__doubleShift.screen')) === 'card');
-  await key('keyUp', 'ArrowRight');
+  await until(async () => (await tileX()) > 29.4 || (await evaluate('__doubleShift.screen')) === 'card');
+  await key('keyUp', 'ArrowRight'); // a jump can carry you over the door: come back to it
+  await until(async () => (await evaluate('__doubleShift.screen')) === 'card', 1000);
+  if ((await evaluate('__doubleShift.screen')) !== 'card') {
+    await key('keyDown', 'ArrowLeft');
+    await until(async () => (await evaluate('__doubleShift.screen')) === 'card', 1500);
+    await key('keyUp', 'ArrowLeft');
+  }
   await sleep(700);
   const l1 = await evaluate('({ screen: __doubleShift.screen, shifts: __doubleShift.state.shifts, deaths: __doubleShift.state.deaths })');
   await shot('04-timecard.png');
@@ -308,7 +318,8 @@ async function fullRun() {
   await sleep(300); // the page's first frames
   const tap = async (i) => { await evaluate(`window.__pad.buttons[${i}].pressed = true`); await sleep(150); await evaluate(`window.__pad.buttons[${i}].pressed = false`); await sleep(150); };
   await tap(0);
-  await sleep(1800); // the act card
+  for (let i = 0; i < 80 && (await evaluate('__doubleShift.screen')) !== 'play'; i++) await sleep(50); // the act card
+  await sleep(100);
   await tap(1);
   const padState = await evaluate('({ screen: __doubleShift.screen, layer: __doubleShift.state?.layer, index: __doubleShift.index, x: __doubleShift.state?.player.x, shifts: __doubleShift.state?.shifts, time: __doubleShift.state?.time })');
   flow('gamepad: A clocks in from the title, B shifts', padState.screen === 'play' && padState.layer === 1, padState);
