@@ -62,7 +62,8 @@ function skinCells(sk) {
 //   machine  `car: { w, stops: [[tx, ty], ...] }`: a platform, drawn in the grids at its first stop, that moves one stop
 //            per night clock-in once repaired, back and forth, and carries whoever stands on it.
 //   light    `clears: { x0, x1, y0, y1 }`: once repaired, the freaks in that rectangle scatter.
-//   secure   `secures: [prankId]`: once repaired, those pranks stop, and the map stays as they left it.
+//   secure   `secures: [prankId]`: once repaired, those pranks stop, and the map stays as they left it. On each of several
+//            `spots`, so that one bolt has to choose. `when: { layer, tx, ty, ch }`: it only bites with that tile in place.
 function parseRepair(def, job) {
   const at = ({ layer, ...rest }, what) => {
     if (layer !== 'day' && layer !== 'night') throw new Error(`${def.name}: the repair's ${what} needs a layer, 'day' or 'night'`);
@@ -70,7 +71,7 @@ function parseRepair(def, job) {
   };
   const spot = (s) => { const f = at(s, 'fix'); return { ...f, cells: expandCells(f.set ?? []), link: f.link ?? [] }; };
   const spots = (job.fix.spots ?? [job.fix]).map((s) => spot({ ...job.fix, spots: undefined, ...s }));
-  const fix = { ...spots[0], cells: spots.flatMap((s) => s.cells), secures: job.fix.secures ?? [] };
+  const fix = { ...spots[0], cells: spots.flatMap((s) => s.cells), secures: spots.flatMap((s) => s.secures ?? []) };
   return { tool: at(job.tool, 'tool'), fix, spots, undoes: !!job.fix.swap || spots.length > 1 };
 }
 
@@ -496,7 +497,7 @@ export function pendingPranks(level, s) {
 
 // The pranks a finished Secure job has stopped.
 export function securedPranks(level, s) {
-  return new Set(level.repairs.flatMap((job, i) => (s.repairs[i].done ? job.fix.secures : [])));
+  return new Set(level.repairs.flatMap((job, i) => (s.repairs[i].done ? job.spots[s.repairs[i].at].secures ?? [] : [])));
 }
 
 function pranksFor(level, entry, s) {
@@ -659,7 +660,8 @@ function touchJob(level, s, job, i) {
     return;
   }
   if (!state.armed || (state.done && (!job.undoes || spot !== state.at))) return;
-  const { cells } = job.spots[spot];
+  const { cells, when } = job.spots[spot];
+  if (when && !state.done && tileAt(level, when.layer === 'night' ? NIGHT : DAY, when.tx, when.ty, s.overrides) !== when.ch) return;
   const next = state.done ? withoutCells(s.overrides, cells) : withPranks(s.overrides, [{ cells }]);
   if (overlapsSolid(level, s.layer, p.x, p.y, undefined, undefined, next)) return;
   s.overrides = next;
