@@ -1,7 +1,7 @@
 // Double Shift — browser shell: input capture, fixed-step loop, rendering.
 // Draws only what src/rules.js decided. Art lives in sprites.js (characters) and art.js (everything else).
 
-import { step, initState, parseLevel, tileAt, isSolidChar, isHazardChar, freakBoxes, pendingPranks, gravitySign, TILE, DT, DAY, NIGHT, PARAMS, FREAK } from './rules.js';
+import { step, initState, parseLevel, tileAt, isSolidChar, isHazardChar, freakBoxes, pendingPranks, securedPranks, gravitySign, TILE, DT, DAY, NIGHT, PARAMS, FREAK } from './rules.js';
 import { LEVELS, ACTS, FINALE_ACT } from './levels.js';
 import { createInput } from './input.js';
 import { createPad, readPads, padMenuKey } from './pad.js';
@@ -429,14 +429,26 @@ function handleEvents(events) {
       case 'checkpoint': sfx.checkpoint(); fx.ping = 1; break;
       case 'tool': sfx.toolPickup(); break;
       case 'repaired': {
-        const { fix } = level().repairs[ev.job];
+        const job = level().repairs[ev.job];
+        const fix = job.spots[ev.spot];
         sfx.repaired();
+        if (job.fix.clears) {
+          sfx.giggle();
+          for (const b of freakBoxes(level(), game.state)) if (b.scattered) fx.puffs.push({ x: b.x + b.w / 2, y: b.y + b.h / 2, t: 0 });
+        }
         fx.fixes.push({ x: fix.tx * TILE + TILE / 2, y: fix.ty * TILE + TILE / 2, t: 0 });
         fx.pops.push({ x: fix.tx * TILE + TILE / 2, y: fix.ty * TILE - 16, t: 0, text: 'FIXED' });
         const every = Math.ceil(fix.cells.length / 16); // what it just changed, a puff here and there
         fix.cells.forEach(([, tx, ty], k) => { if (k % every === 0) fx.puffs.push({ x: tx * TILE + TILE / 2, y: ty * TILE + TILE / 2, t: 0 }); });
         break;
       }
+      case 'pulled': {
+        const fix = level().repairs[ev.job].spots[ev.spot];
+        sfx.pulled();
+        fx.pops.push({ x: fix.tx * TILE + TILE / 2, y: fix.ty * TILE - 16, t: 0, text: 'OFF' });
+        break;
+      }
+      case 'machine': sfx.machine(); break;
       case 'win':
         sfx.win();
         setTimeout(() => sfx.stamp(), 450);
@@ -678,6 +690,13 @@ function drawTells(lvl, s, layer, t, box) {
     const spot = countdownSpot(lvl, labels, x, y, measureText(text, 2), gravitySign(lvl, layer) < 0, box);
     hud(text, spot.x, spot.y, layer, { align: 'center', color: layer === NIGHT ? '#ffd23f' : '#5a3d10' });
   }
+  // what the job stopped: the note comes down and says so
+  const stopped = securedPranks(lvl, s);
+  for (const pr of lvl.pranks) {
+    if (!stopped.has(pr.id) || !pr.tell || NOTEXT) continue;
+    const x = pr.tell.tx * TILE + TILE / 2;
+    drawSign(g, x, Math.max(pr.tell.ty * TILE - 21, hudFloor(box, x - 50) + 14), 'BOLTED', 'green', 2);
+  }
 }
 
 
@@ -721,28 +740,48 @@ function drawFreakPlans(lvl, boxes, layer) {
 // the level's repairs: the cable or pipe to what they drive, the tool until it's picked up, the broken thing
 function drawWorkOrder(lvl, s, layer, t) {
   lvl.repairs.forEach((job, i) => {
-    const { tool, done } = s.repairs[i];
-    drawJobLink(g, job.fix.link, t, done, layer);
+    const { tool, done, at } = s.repairs[i];
     if (!tool) drawTool(g, job.tool, t, layer);
-    const cordFrom = job.fix.kind === 'light' ? lightCordFrom(lvl, layer, job.fix.tx, job.fix.ty, s.overrides) : null;
-    drawFixture(g, job.fix, t, layer, done, { cordFrom });
+    job.spots.forEach((spot, k) => {
+      const on = done && (at === k || job.spots.length === 1);
+      drawJobLink(g, spot.link, t, on, layer);
+      const cordFrom = spot.kind === 'light' ? lightCordFrom(lvl, layer, spot.tx, spot.ty, s.overrides) : null;
+      drawFixture(g, spot, t, layer, on, { cordFrom });
+      // what this one would change, for the job in hand and anything that can still be swapped
+      if (on || (i !== s.repairs.findIndex((r) => !r.done) && !job.undoes)) return;
+      const cells = spot.cells.map(([l, tx, ty, ch]) => ({ layer: l, tx, ty, ch })).filter((c) => c.layer === layer && tileAt(lvl, layer, c.tx, c.ty, s.overrides) !== c.ch);
+      if (cells.length) drawPrankCells(g, cells, (ch) => !isSolidChar(ch) && !isHazardChar(ch), { alpha: 0.8, color: layer === NIGHT ? '#9dffb8' : '#3d7a4a' });
+    });
+  });
+}
+
+// a room waiting for its light: dim, with its freaks plain to see; lit, and empty of them
+function drawLitRooms(lvl, s) {
+  lvl.repairs.forEach((job, i) => {
+    const r = job.fix.clears;
+    if (!r) return;
+    g.fillStyle = s.repairs[i].done ? 'rgba(255,233,107,0.12)' : 'rgba(5,6,15,0.5)';
+    g.fillRect(r.x0 * TILE, r.y0 * TILE, (r.x1 - r.x0 + 1) * TILE, (r.y1 - r.y0 + 1) * TILE);
   });
 }
 
 // everything in the job in hand says what it is, on top of the level so that nothing can hide the words
 function drawJobTags(lvl, s, box) {
-  const i = s.repairs.findIndex((r) => !r.done);
+  const open = s.repairs.findIndex((r) => !r.done);
+  const i = open === -1 ? lvl.repairs.findLastIndex((job) => job.undoes) : open; // a swap stays labelled once it's on
   if (NOTEXT || i === -1) return;
-  const { tool, fix } = lvl.repairs[i];
+  const { tool, spots } = lvl.repairs[i];
   const placed = [];
   const tag = (text, tx, ty) => {
     const { x, y } = placeTag(placed, box, measureText(text, 2), tx * TILE + TILE / 2, ty * TILE - 14, W);
     drawSign(g, x, y, text, 'paper', 2);
   };
   if (!s.repairs[i].tool) tag(tool.name, tool.tx, tool.ty);
-  tag(fix.name, fix.tx, fix.ty);
-  const end = fix.link.at(-1);
-  if (end && fix.target) tag(fix.target, end[0], end[1]);
+  for (const spot of spots) {
+    tag(spot.name, spot.tx, spot.ty);
+    const end = spot.link.at(-1);
+    if (end && spot.target) tag(spot.target, end[0], end[1]);
+  }
 }
 
 // a room with its light out: nothing to see until the repair but the exit's glow
@@ -783,7 +822,7 @@ function drawWorker(s, layer) {
   }
   drawSprite(g, 'worker', workerFrame(p, s.time, fx, sign), p.x, p.y, { flip: p.facing < 0, vflip, palette: layer === NIGHT ? NIGHT_PAL : null });
   // the tool he's carrying, in his hand on the side he's facing
-  const held = level().repairs.findIndex((job, i) => s.repairs[i].tool && !s.repairs[i].done);
+  const held = level().repairs.findIndex((job, i) => s.repairs[i].tool && !s.repairs[i].done && !job.fix.swap);
   if (held >= 0) drawCarriedTool(g, level().repairs[held].tool.kind, p.x + (p.facing < 0 ? -9 : PARAMS.playerW - 2), p.y + (vflip ? 4 : 12), layer);
 }
 
@@ -850,8 +889,14 @@ function drawNoteStrip(text) {
 // the work order in words: the job in hand and the next step
 function jobWords(lvl, s) {
   const next = s.repairs.findIndex((r) => !r.done);
-  const job = lvl.repairs[next === -1 ? lvl.repairs.length - 1 : next];
-  const step = next === -1 ? 'DONE' : s.repairs[next].tool ? `FIX THE ${job.fix.name}` : `GET THE ${job.tool.name}`;
+  const i = next === -1 ? lvl.repairs.length - 1 : next;
+  const job = lvl.repairs[i];
+  const { tool, done, at } = s.repairs[i];
+  const many = job.spots.length > 1;
+  let step = `GET THE ${job.tool.name}`;
+  if (done && many) step = `${job.tool.name} IN THE ${job.spots[at].name}`;
+  else if (done) step = job.undoes ? 'TOUCH IT TO SWAP' : 'DONE';
+  else if (tool) step = many ? `FIT THE ${job.tool.name}` : `FIX THE ${job.fix.name}`;
   const goal = job.fix.goal ?? `FIX THE ${job.fix.name}`;
   return { goal: `WORK ORDER: ${goal}`, step };
 }
@@ -949,12 +994,14 @@ function drawPlay() {
     drawCheckpoint(g, c.tx, c.ty, s.checkpoint.id === c.id, s.checkpoint.id === c.id ? game.fx.ping : 0, { hang: still.hangs[i] });
   });
   drawDecor(def, layer, t);
+  drawLitRooms(lvl, s);
   drawWorkOrder(lvl, s, layer, t);
   const box = jobHudBox(lvl, s);
   drawTells(lvl, s, layer, t, box);
   const boxes = freakBoxes(lvl, s);
-  drawFreakPlans(lvl, boxes, layer);
+  drawFreakPlans(lvl, boxes.filter((b) => !b.scattered), layer);
   boxes.forEach((b, i) => {
+    if (b.scattered) return;
     // eyes point where it's going; the clipboard's gaze is the tell
     const look = b.kind === 'supervisor' ? b.facing : b.dir;
     // supervisors squint just before they turn: the readable anticipation cue

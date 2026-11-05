@@ -62,6 +62,12 @@ export function skinPlan(level, layer, ov = {}) {
       if (count > 0) out.push({ draw: 'doorPile', tx: sk.tx, ty: sk.ty, count });
     }
   }
+  for (const job of level.repairs ?? []) {
+    const { car } = job.fix;
+    if (!car) continue;
+    const at = car.stops.find(([tx, ty]) => Array.from({ length: car.w }, (_, dx) => tx + dx).every((x) => solid(level, layer, ov, x, ty)));
+    if (at) out.push({ draw: 'car', tx: at[0], ty: at[1], w: car.w, stops: car.stops });
+  }
   return out;
 }
 

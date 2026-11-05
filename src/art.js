@@ -1093,6 +1093,28 @@ export function drawDeck(g, tx, ty, w, sag, floorRow) {
   }
 }
 
+// a hoist car: a steel platform on its rails, with every stop it can reach marked
+export function drawCar(g, tx, ty, w, stops, layer) {
+  const mark = layer === NIGHT ? 'rgba(217,246,255,0.5)' : 'rgba(59,45,31,0.55)';
+  const xs = stops.map(([x]) => x);
+  const ys = stops.map(([, y]) => y);
+  for (const col of [Math.min(...xs), Math.max(...xs) + w]) {
+    for (let y = Math.min(...ys) * TILE; y < (Math.max(...ys) + 1) * TILE; y += 8) px(g, col * TILE - 1, y, 1, 2, mark);
+  }
+  for (const [x, y] of stops) {
+    px(g, x * TILE - 6, y * TILE, 3, 1, mark);
+    px(g, (x + w) * TILE, y * TILE, 3, 1, mark);
+  }
+  const x = tx * TILE;
+  const y = ty * TILE;
+  const W = w * 15;
+  px(g, x, y, W, 15, C.ink);
+  px(g, x + A, y + A, W - 2, 3, C.steelHi);
+  px(g, x + A, y + 4 * A, W - 2, 8, C.steel);
+  for (let i = 1; i < W - 4; i += 6) px(g, x + (i + 1) * A, y + 6 * A, 3, 3, '#e8b23a');
+  px(g, x + A, y + 12 * A, W - 2, 2, C.steelLo);
+}
+
 // One entry of skinPlan() (src/skins.js): the object art over solid tiles. Portraits blink, so they need t.
 export function drawSkin(g, sp, layer, t = 0) {
   if (sp.hang) { // turned over about its middle row: on a flipped night its floor end is the top
@@ -1109,6 +1131,7 @@ export function drawSkin(g, sp, layer, t = 0) {
   else if (sp.draw === 'shutter') drawShutter(g, sp.tx, sp.ty, layer, sp.h);
   else if (sp.draw === 'shutterOpen') drawShutterOpen(g, sp.tx, sp.ty);
   else if (sp.draw === 'deck') drawDeck(g, sp.tx, sp.ty, sp.w, sp.sag, sp.floorRow);
+  else if (sp.draw === 'car') drawCar(g, sp.tx, sp.ty, sp.w, sp.stops, layer);
 }
 
 // ---------- effects ----------
