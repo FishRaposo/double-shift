@@ -748,7 +748,7 @@ function drawWorkOrder(lvl, s, layer, t) {
       const cordFrom = spot.kind === 'light' ? lightCordFrom(lvl, layer, spot.tx, spot.ty, s.overrides) : null;
       drawFixture(g, spot, t, layer, on, { cordFrom });
       // what this one would change, for the job in hand and anything that can still be swapped
-      if (on || (i !== s.repairs.findIndex((r) => !r.done) && !job.undoes)) return;
+      if (on || (i !== jobInHand(lvl, s) && !job.undoes)) return;
       const cells = spot.cells.map(([l, tx, ty, ch]) => ({ layer: l, tx, ty, ch })).filter((c) => c.layer === layer && tileAt(lvl, layer, c.tx, c.ty, s.overrides) !== c.ch);
       if (cells.length) drawPrankCells(g, cells, (ch) => !isSolidChar(ch) && !isHazardChar(ch), { alpha: 0.8, color: layer === NIGHT ? '#9dffb8' : '#3d7a4a' });
     });
@@ -767,7 +767,7 @@ function drawLitRooms(lvl, s) {
 
 // everything in the job in hand says what it is, on top of the level so that nothing can hide the words
 function drawJobTags(lvl, s, box) {
-  const open = s.repairs.findIndex((r) => !r.done);
+  const open = jobInHand(lvl, s);
   const i = open === -1 ? lvl.repairs.findLastIndex((job) => job.undoes) : open; // a swap stays labelled once it's on
   if (NOTEXT || i === -1) return;
   const { tool, spots } = lvl.repairs[i];
@@ -874,15 +874,18 @@ function drawNoteStrip(text) {
   drawText(g, text, W / 2, top + 7, { scale: 2, color: NOTE_STRIP.ink, align: 'center' });
 }
 
+// the job in hand: the first one not done; a fuse that has to travel isn't done at its first box
+const jobInHand = (lvl, s) => lvl.repairs.findIndex((job, i) => !s.repairs[i].done || (job.fix.relay && s.repairs[i].at === 0));
+
 // the work order in words: the job in hand and the next step
 function jobWords(lvl, s) {
-  const next = s.repairs.findIndex((r) => !r.done);
+  const next = jobInHand(lvl, s);
   const i = next === -1 ? lvl.repairs.length - 1 : next;
   const job = lvl.repairs[i];
   const { tool, done, at } = s.repairs[i];
   const many = job.spots.length > 1;
   let step = `GET THE ${job.tool.name}`;
-  if (done && many) step = `${job.tool.name} IN THE ${job.spots[at].name}`;
+  if (done && many) step = job.fix.relay && at === 0 ? `TAKE THE ${job.tool.name} WITH YOU` : `${job.tool.name} IN THE ${job.spots[at].name}`;
   else if (done) step = job.undoes ? 'TOUCH IT TO SWAP' : job.fix.car ? 'CLOCK IN TO MOVE IT' : 'DONE';
   else if (tool) step = many ? `FIT THE ${job.tool.name}` : `FIX THE ${job.fix.name}`;
   const { when } = job.fix;

@@ -111,10 +111,9 @@ Every level is built on one rule: **the repair is the level's puzzle, not its lo
 | 18 | Falling Up (`fallup`) | 4 | Water | Peeker | Turn the valve mid-fall, and the leak goes back down the pit |
 | 19 | Ceiling Walker (`ceiling`) | 4 | Secure | Supervisor, prank | Bolt the far plank by day, under the clipboard’s tunnel |
 | 20 | Head Over Heels (`heels`) | 7 | Power | Day-walkers, lurkers | One fuse for the floor corridor and the ceiling corridor: take it up the shaft |
-| 21 | Clock Out (`clockout`) | 7 | Build, Light, Water | All | One job per room, the light clearing the next room, then the time clock |
+| 21 | Clock Out (`clockout`) | 7 | All six | All | One fuse through two shutters, a light for the low tunnel, a clamp on the last step, the valve, the winch, then the time clock |
 
 Notes that outlive the table:
-- **Clock Out** uses Build, Light and Water, not all six: it keeps its four rooms and the time clock. Power, Machine and Secure rooms would need the finale rebuilt.
 - **The classic Clock Out** stays in `src/levels.js` as `CLOCKOUT_CLASSIC` (not in `LEVELS`), proven at par 7.
 - **Text:** the art carries the idea and the labels name it. `npm run media -- --notext <ids>` is a review check; the text stays in the game.
 

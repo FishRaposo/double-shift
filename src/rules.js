@@ -58,6 +58,7 @@ function skinCells(sk) {
 //   build    `set` alone: the change stays.
 //   power    `spots`: one tool, several sockets, each with its own `set`. Touching the filled one pulls the tool and
 //            undoes its `set`; touching an empty one with the tool fills it.
+//            `relay: true`: it has to travel, so the HUD keeps it in hand until it's past its first box.
 //   water    `swap: true`: touching it again undoes `set`, and again redoes it.
 //   machine  `car: { w, stops: [[tx, ty], ...] }`: a platform, drawn in the grids at its first stop, that moves one stop
 //            per night clock-in once repaired, back and forth, and carries whoever stands on it.

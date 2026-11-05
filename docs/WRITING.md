@@ -77,7 +77,7 @@ In the order of the 21-level game (LEVELS.md §5.0). ✅ = in the build.
 | 18 Falling Up (`fallup`) ✅ | The floor is up there now. So is the water. |
 | 19 Ceiling Walker (`ceiling`) ✅ | Something is walking on the ceiling. It's fine. |
 | 20 Head Over Heels (`heels`) ✅ | Up is a matter of opinion now. |
-| 21 Clock Out (`clockout`) ✅ | Almost done. Don't look at the vents. |
+| 21 Clock Out (`clockout`) ✅ | Almost done. One of everything. Don't look at the vents. |
 
 Notes 7, 8, 10, 11, 13 and 15 come from Fish's idea pool (2026-11-02). 8 and 15 are unchanged; 7, 10, 11 and 13 are lightly trimmed to fit one line at scale 2 (14 px tall) (his full lines are the "Fiction" lines in LEVELS.md §5). Act 5 is Fish's Upside Down idea (LEVELS.md §5.2). *Freight* ("The crates were stacked properly. They were.") is kept for post-jam.
 
@@ -95,10 +95,10 @@ SPOOKED! · AAAGH! · NOPE! · EEP! · NOT PAID ENOUGH
 | Sticky note tell (day) ✅ | MINE |
 | Prank countdown (both shifts) ✅ | NEXT NIGHT · IN 2 NIGHTS |
 | Work order HUD ✅ *(drafts)* | WORK ORDER: OPEN THE SHUTTER, then GET THE FUSE · FIX THE FUSE BOX · DONE |
-| Work order goals ✅ *(drafts)* | RAISE THE DECK · ONE FUSE: TAKE IT WITH YOU · SEND THE WATER BACK · BOLT THE PLANK DOWN · LIGHT THE CORRIDOR · FREE THE HOIST · BOLT THE DOORS IN PLACE · TURN THE LEAK ASIDE · JACK UP THE PILLAR · ONE FUSE, TWO SHUTTERS · ONE BOLT: STOP THE RIGHT ONE · LIGHT THE PORTRAIT · FREE THE LIFT · OPEN THE GATE · LIGHT THE LAST TUNNEL · CHANGE THE CEILING LIGHT · ONE FUSE, TWO CORRIDORS · OPEN THE SHUTTER · LIGHT THE NEXT ROOM · SEND THE WATER DOWN · FIX THE TIME CLOCK |
+| Work order goals ✅ *(drafts)* | RAISE THE DECK · ONE FUSE: TAKE IT WITH YOU · SEND THE WATER BACK · BOLT THE PLANK DOWN · LIGHT THE CORRIDOR · FREE THE HOIST · BOLT THE DOORS IN PLACE · TURN THE LEAK ASIDE · JACK UP THE PILLAR · ONE FUSE, TWO SHUTTERS · ONE BOLT: STOP THE RIGHT ONE · LIGHT THE PORTRAIT · FREE THE LIFT · OPEN THE GATE · LIGHT THE LAST TUNNEL · CHANGE THE CEILING LIGHT · ONE FUSE, TWO CORRIDORS · LIGHT THE LOW TUNNEL · BOLT THE LAST STEP DOWN · SEND THE LEAK DOWN · SLIDE THE HATCH ASIDE · FIX THE TIME CLOCK |
 | Work order tags in the level ✅ *(drafts)* | The tool, the broken thing and what it drives each carry a small paper label until the job is done |
 | Work order jobs ✅ *(drafts)* | FUSE / FUSE BOX · WRENCH / LEAKING PIPE · BULB / DEAD LIGHT · OIL CAN / SQUEAKY HINGE · TAPE / LOOSE CABLE |
-| Work order feedback ✅ *(drafts)* | FIXED · OFF · BOLTED · CLOCK IN TO MOVE IT · TOUCH IT TO SWAP |
+| Work order feedback ✅ *(drafts)* | FIXED · OFF · BOLTED · CLOCK IN TO MOVE IT · TOUCH IT TO SWAP · TAKE THE FUSE WITH YOU · WAIT FOR THE PILLAR |
 | More tells ✅ (Nov 3: MINE NOW on Inventory's and Stacked's planks, DO NOT TUCH on Stacked's gate, FINDERS KEEPERS on the finale's door) | MINE NOW · DO NOT TUCH · FINDERS KEEPERS · (a drawing of eyes) |
 | Hex-flavored tells *(candidates; HEXED. NO TUCH is on Night Audit's plank)* | MINE BY ANSHENT LAW · HEXED. NO TUCH · THE PLANK IS OURS NOW · WE SEE YOU (WE R SHINY) |
 | The freaks' proud sign over the staircase (`stairs`) ✅ | OUR STARES! |

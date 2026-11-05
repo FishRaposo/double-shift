@@ -87,6 +87,7 @@ export const SOLUTIONS = {
   },
   clockout: (s, m) => {
     const x = tx(s);
+    const [fuse] = s.repairs;
     switch (s.shifts) {
       case 0: return { right: true, shift: x >= 2.5 };
       case 1: {
@@ -95,15 +96,14 @@ export const SOLUTIONS = {
         if (sup.facing === 1 && sup.turnIn >= 0.9) m.past = true;
         return { right: x < 4.4 || !!m.past, shift: x >= 9.6 };
       }
-      case 2: return { right: true, shift: x >= 13 };
+      case 2: // through the shutter, then back to the box in the wall for the fuse
+        if (fuse.at === 0 && !m.far) { if (x > 14.1) m.far = true; return { right: true }; }
+        if (fuse.at === 0) return { left: true };
+        return { right: x < 14.2, shift: x >= 13.9 };
       case 3: return { right: true, shift: x >= 16.4 };
       case 4: return { right: x < 22.4, shift: x >= 22.4 };
-      case 5: {
-        const sup = freakBoxes(L.clockout, s).find((b) => b.kind === 'supervisor');
-        if (sup.facing === -1 && sup.turnIn >= 1) m.go = true;
-        return { right: !!m.go && x < 27.65, shift: x >= 27.65 };
-      }
-      case 6: return { shift: Math.abs(s.player.vx) < 1 };
+      case 5: return { right: x < 27.65, shift: x >= 27.65 };
+      case 6: return { right: true, shift: x >= 28.8 };
       default: return { right: true };
     }
   },

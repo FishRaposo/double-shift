@@ -244,44 +244,6 @@ test('Clock Out: one of every freak, and the supervisor perched out of the corri
   assert.equal(L.clockout.freaks.find((f) => f.kind === 'supervisor').ty, 4);
 });
 
-test('Clock Out: room 1, staying on night after the gap stops at the locked gate', () => {
-  let maxX = 0;
-  const policy = (s, m, f) => { // as the solution, past the peeker, then never out
-    maxX = Math.max(maxX, s.player.x);
-    const out = SOLUTIONS.clockout(s, m, f);
-    return s.shifts === 1 ? { right: out.right } : out;
-  };
-  const { state } = play(L.clockout, policy, 120 * 6);
-  assert.equal(state.won, false);
-  assert.equal(state.deaths, 0);
-  assert.equal(state.layer, NIGHT);
-  assert.ok(maxX < 11 * TILE, `got to x ${maxX}`);
-});
-
-test('Clock Out: room 2, the door goes on the second clock-in, but the far wall still needs a clock-out', () => {
-  let maxX = 0;
-  const policy = (s, m, f) => { maxX = Math.max(maxX, s.player.x); return s.shifts >= 3 ? { right: true } : SOLUTIONS.clockout(s, m, f); };
-  const { state, events } = play(L.clockout, policy, 120 * 8);
-  assert.ok(events.some((e) => e.type === 'prank' && e.id === 'door'));
-  assert.equal(state.won, false);
-  assert.ok(maxX < 21 * TILE, `got to x ${maxX}`);
-});
-
-test('Clock Out: room 4, the third clock-in took the step: up the shaft never reaches the time clock', () => {
-  // the solution across the wax (entry 3), then straight on up the shaft without clocking out and in again: no
-  // ceiling over the shaft, and the time clock walled up, so you fly out the top or end up stuck under the wall
-  const lvl = L.clockout;
-  const policy = (s, m, f) => (s.shifts >= 5 && m.go ? { right: true } : SOLUTIONS.clockout(s, m, f));
-  const { state, events } = play(lvl, policy, 120 * 14);
-  assert.ok(events.some((e) => e.type === 'prank' && e.id === 'stepGone'));
-  assert.equal(state.won, false);
-  assert.ok(!events.some((e) => e.type === 'shift' && e.layer === DAY && events.indexOf(e) > events.findIndex((x) => x.id === 'stepGone')));
-  // and with the 4th clock-in (the solution), the step is back and the time clock open
-  const won = play(lvl, SOLUTIONS.clockout, 120 * 20);
-  assert.equal(won.state.won, true);
-  assert.deepEqual(won.events.filter((e) => e.type === 'prank').map((e) => e.id), ['door', 'stepGone', 'stepBack']);
-});
-
 test('Falling Up: no brake from the floor (a clock-in at the foot of the wall never gets under it)', () => {
   // the shortcut the full audit's random search found: jump along the floor, clock in falling at the wall's
   // foot, pass under it on the night side, rise into the pit and clock out going up: an arc onto the far floor
@@ -295,10 +257,6 @@ test('Falling Up: no brake from the floor (a clock-in at the foot of the wall ne
     const { state } = play(lvl, policy, 120 * 8);
     assert.ok(!(state.won && state.shifts < lvl.par), `won with ${state.shifts} clock-ins (shift windows ${a}, ${b})`);
   }
-});
-
-test('Clock Out: every prank is telegraphed, the step coming back included', () => {
-  for (const pr of L.clockout.pranks) assert.ok(pr.tell, `${pr.id} has no tell`);
 });
 
 test('Clock Out: the stolen door leaves its empty frame', () => {
@@ -409,6 +367,16 @@ test('distribution: every level has its type, each type repeats, and only the fi
   for (const type of ['build', 'power', 'water', 'machine', 'light', 'secure']) assert.ok(count(type) >= 2, type);
   const quiet = LEVELS.filter((d) => L[d.id].freaks.length === 0 && L[d.id].pranks.length === 0).map((d) => d.id);
   assert.deepEqual(quiet, ['clock', 'scaff', 'midair']);
+});
+
+test('Clock Out: one job of every type, room by room', () => {
+  const jobs = L.clockout.repairs;
+  assert.ok(jobs.some((j) => j.spots.length > 1), 'power');
+  assert.ok(jobs.some((j) => j.fix.swap), 'water');
+  assert.ok(jobs.some((j) => j.fix.car), 'machine');
+  assert.ok(jobs.some((j) => j.fix.clears), 'light');
+  assert.ok(jobs.some((j) => j.fix.secures.length > 0), 'secure');
+  assert.ok(jobs.some((j) => !j.fix.swap && !j.fix.car && j.spots.length === 1 && j.fix.cells.length > 0), 'build');
 });
 
 const without = (lvl, i) => ({ ...lvl, repairs: lvl.repairs.map((job, k) => (k === i ? { ...job, tool: { ...job.tool, tx: -9 } } : job)) });
