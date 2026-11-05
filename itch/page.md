@@ -1,6 +1,6 @@
 # itch.io page kit
 
-Everything needed to create the *Double Shift* page on itch.io, in the order the itch dashboard asks for it. Settings come from [RELEASE.md](../docs/RELEASE.md) §2. **Fish writes the final description words**; the draft below is checked against the current build (<!-- n:levels -->21<!-- /n --> levels, <!-- n:tests -->360<!-- /n --> tests, level select, pixel art and music). The paste-ready description in §4 carries no markers, so check its numbers by hand before pasting (the release refresh does).
+Everything needed to create the *Double Shift* page on itch.io, in the order the itch dashboard asks for it. Settings come from [RELEASE.md](../docs/RELEASE.md) §2. **Fish writes the final description words**; the draft below is checked against the current build (<!-- n:levels -->21<!-- /n --> levels, <!-- n:tests -->411<!-- /n --> tests, level select, pixel art and music). The paste-ready description in §4 carries no markers, so check its numbers by hand before pasting (the release refresh does).
 
 ## 1. Build the files
 
@@ -32,7 +32,7 @@ npm run gif -- doors      # media/demo-doors.gif (480×270): Lost & Found's scri
 | Community | Comments |
 | Visibility | **Draft** first. Play it on the page once, then Public at submission time (the publish date is fixed at that click). |
 
-**Metadata tab:** Inputs: Keyboard, Gamepad. Languages: English. Accessibility: none ticked yet (nothing from itch's list exists in the build).
+**Metadata tab:** Inputs: Keyboard, Gamepad. Languages: English. Accessibility: tick only what the build has (reduced effects, volume sliders, rebinding; RELEASE.md §2).
 
 **Theme (Edit theme on the page):** background `#0b1029`, text `#d9f6ff`, links `#5ff2ff`, embed background `#0b1029`.
 
@@ -41,7 +41,7 @@ npm run gif -- doors      # media/demo-doors.gif (480×270): Lost & Found's scri
 | Slot | File |
 |---|---|
 | Cover image | `media/cover.png` |
-| Screenshots (in this order) | `demo-doors.gif` (the GIF goes first: itch plays a GIF screenshot in place), `19-prank-inventory.png` (a prank as it lands), `20-flip-mind-your-head.png` (the flip), `15-clock-out-night.png`, `07-night-watch-night.png`, `08-night-watch-day.png` (the freaks frozen by day), `03-clock-in-night.png`, `04-timecard.png`, `09-level-select.png`, `01-title.png` |
+| Screenshots (in this order) | `demo-doors.gif` (provisional; Fish picks. The GIF goes first: itch plays a GIF screenshot in place), `19-prank-inventory.png` (a prank as it lands), `20-flip-mind-your-head.png` (the flip), `15-clock-out-night.png`, `07-night-watch-night.png`, `08-night-watch-day.png` (the freaks frozen by day), `03-clock-in-night.png`, `04-timecard.png`, `09-level-select.png`, `01-title.png` |
 | Gameplay video or trailer | Leave empty: the field takes a YouTube or Vimeo link, and the GIF already leads the screenshots. Other GIF candidates: `npm run gif -- upside` (the flip), `inventory` (the plank prank), `watch` (frozen freaks); ART.md §8. |
 
 ## 4. Description (paste into the editor; Fish edits the words)
@@ -71,10 +71,10 @@ npm run gif -- doors      # media/demo-doors.gif (480×270): Lost & Found's scri
 >
 > *On Windows, hammering Shift can open Sticky Keys. Use K, or turn off the Sticky Keys shortcut.*
 >
-> **What's in this build:** 21 levels in five acts and a finale, from your first clock-in to the last, including an act where the night shift is upside down. Gamepad support, rebindable controls and a speedrun timer. Made for GitHub Game Off 2026 (theme: SHIFT).
+> **What's in this build:** 21 levels in five acts and a finale, from your first clock-in to the last, including an act where the night shift is upside down. Every prank and patrol shows what it's about to do. Gamepad support, rebindable controls and a speedrun timer. Made for GitHub Game Off 2026 (theme: SHIFT).
 >
 > **How it was made**
-> Designed by Vinícius Raposo for GitHub Game Off 2026. Built with AI assistance (Claude) to his design document, then tested like production software: the gameplay rules are a pure module, the game has 360 automated tests, and every level is proven solvable at par by a scripted run. No engine, no assets: the pixel art, the pixel font and the music are all drawn and synthesized by code. Source: https://github.com/FishRaposo/double-shift
+> Designed by Vinícius Raposo for GitHub Game Off 2026. Built with AI assistance (Claude) to his design document, with draft text from the same place, then tested like production software: the gameplay rules are a pure module, the game has 411 automated tests, and every level is proven solvable at par by a scripted run. No engine, no assets: the pixel art, the pixel font and the music are all drawn and synthesized by code, code that was also written with AI assistance. No generated images or audio were used. Source: https://github.com/FishRaposo/double-shift
 >
 > If you enjoyed it, a follow or a small donation helps.
 

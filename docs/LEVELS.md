@@ -6,7 +6,7 @@ Companion to [GDD.md](GDD.md) §6 and §8. Tile = 30 px. Levels are 32×18 tiles
 - Jumpable rise: **≤ 3 tiles**. Gaps: **≤ 4** comfortable, **≥ 7** impossible (use 8 for "must shift") (§1).
 - A level is two ASCII grids (day, night) plus optional pranks, freaks and decor (§2).
 - **The game is 21 levels: five acts of four plus the finale (§5.0).** <!-- n:levels -->21<!-- /n --> built (§4): tiers A and B, all of act 5 (§5.2) and the reworked finale (§5.3). Tier A (a complete game) is built.
-- Leave **≥ 200 ms** of slack per required input in acts 1–2, **≥ 100 ms** in acts 3–5 (tested).
+- Leave **≥ 200 ms** of slack per required input in acts 1–2, **≥ 100 ms** in acts 3–6 (tested).
 - Nothing ships without a scripted par solution in the tests and the §6 checklist.
 
 ## 1. Movement metrics (from `PARAMS`, measured 2026-11-02)
@@ -45,7 +45,7 @@ Companion to [GDD.md](GDD.md) §6 and §8. Tile = 30 px. Levels are 32×18 tiles
   offset: { dx, dy },          // optional, REPLACES night: night grid = day grid moved (dx,dy) tiles
   upsideDown: true,            // optional, REPLACES night: night grid = day grid turned over, gravity up at night (§5.2)
   nightPatch: [{ x0, x1, y0, y1, ch }],   // optional, with offset or upsideDown: diffs applied to the generated night
-  pranks: [{ id, onNight: 2, tell: { tx, ty }, set: [{ layer: 'night', x0, x1, y0, y1, ch }], sound: 'doorThunk' }],  // sound optional
+  pranks: [{ id, onNight: 2, every: 2, tell: { tx, ty, text: 'MINE NOW' }, set: [{ layer: 'night', x0, x1, y0, y1, ch }], sound: 'doorThunk' }],  // every, text and sound optional
   skins:  [{ kind: 'door', tx, ty, h? }, { kind: 'pillar', tx, ty, h? }, { kind: 'portrait', tx, ty, w?, h? }, { kind: 'doorPile', tx, ty, h? }],  // a pile is 2 wide, at most h (3) high
           // object art over solid tiles, optional layer: 'day'|'night'. Doors and pillars stand on (tx, ty), a portrait
           // hangs from its top-left (tx, ty), the pile's bottom row is ty. The art follows the tiles (src/skins.js).
@@ -75,7 +75,7 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 ## 3. Design rules (from GDD §6.3, plus the freaks)
 
 1. The intended solution uses only established mechanics.
-2. Everything needed is observable: echoes show the other shift, hatching shows "only in this shift", tells show pending pranks, frozen freaks show where they'll be.
+2. Everything needed is observable: echoes show the other shift, hatching shows "only in this shift", tells show pending pranks with a countdown and outlined tiles, tracks show patrols, frozen freaks show where they'll be.
 3. Every failure has a visible cause.
 4. No reliance on unpredictable physics.
 5. Shifting must matter (the test "cannot win without shifting" enforces this).
@@ -91,7 +91,7 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 - **Day:** floor with an 8-tile gap (cols 12–19). **Night:** continuous floor, but a full-height gate at col 24.
 - **Solution:** shift to night before the gap, cross, shift back to day before the gate, exit.
 - **Tutorial prompt** shows until the first shift. Barrier tape and a RENOVATION note dress the shaft.
-- **Freak evidence:** a peeker sits on a night-only crate at col 26 (so it can never touch the player) and footprints lead past the gate.
+- **Freak evidence:** a peeker sits on a night-only stack at col 26, five tiles tall (so it can never touch the player) and footprints lead past the gate.
 
 ### 2. Scaffolding: par 1 (act 1)
 - **Lesson:** use the other shift's geometry to get past a block.
@@ -142,7 +142,7 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 - **Where to clock:** one entry per room. Room 1: anywhere. Room 2 has lasers by night (cols 8–9) and rebar by day (13–14): clock out before the lasers, back in before the rebar. Room 3's lurker (col 20, range 1) works nights: clock out as you come in, back in past it. Low beams (rows 9–12, their tops out of reach) hang over the hazards and the lurker, so nothing can be jumped: spending all five clock-ins at the spawn meets the lasers at night (a test pins it; the PR 4 review found that route winning before the beams). A checkpoint at the door of room 3 saves at night with two doors gone.
 - **Solution:** the five clock-ins above, then climb the pile at night: jump against its side, then against the ledge.
 - **Par:** 5 is the minimum: three night entries take five clock-ins from day, and nothing else reaches the ledge (the audit's random search finds no win below it). It inverts "fewest clock-ins" as planned.
-- **Margin:** clock-ins 275–525 ms, jumps 375–450 ms, input lag up to 150 ms still wins.
+- **Margin:** clock-ins 275–525 ms, jumps 358–375 ms, input lag up to 150 ms still wins.
 - **Props:** a notice board (day), the LOST & FOUND box, a vent (night); the stolen doors leave frames.
 
 ### 9. Wet Floor: par 4 (act 3)
@@ -166,6 +166,7 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 - **Solution:** clock into night short of the first tunnel, wait for the supervisor to face right, cross; wait in the nook (cols 14–18, checkpoint at col 16) for it to face left, cross; back to day at the night wall.
 
 ### 12. Stacked: par 5 (act 3)
+- **The gate (Nov 5):** the drop on entry 1 is its own prank with its own tell at col 18, so the outline and the countdown there agree; when it has fired, the same tell counts down to the gate lifting.
 - **Lesson:** several pranks are queued; each fixes one obstacle and breaks another. The puzzle is where you clock in.
 - **Layout:** spawn floor cols 0–5, gap A cols 6–13, middle floor cols 14–17, a day wall at col 18 (only the night gets past), landing cols 19–22, gap B cols 23–30, the exit on col 31.
 - **Pranks (all three tells visible from the spawn):** entry 1 bridges gap A but drops a night gate at col 18; entry 2 lifts the gate but takes the bridge back; entry 3 lays a plank over gap B.
@@ -196,6 +197,7 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 - **Props:** floor signs read 3 and 3.5.
 
 ### 16. Night Audit: par 5 (act 4, built Nov 3)
+- **Freaks (Nov 5):** a peeker works the second tunnel and a squatter sits past the plank, both answering to the clipboard, so the exam uses every freak in the game so far.
 - **Lesson:** acts 1–4 on one screen, no new rules: the exam before the building turns over.
 - **Every beat is a 1-tile tunnel under a 4-thick roof** (its top 5 up): nothing can be jumped or walked over. (The first build had 1-row roofs, 2 up; the audit's random search walked across their tops and won in 2.) A checkpoint after each beat.
 - **Beat 1 (wax):** a day wall (col 3) sends you in at night; under the roof, rebar by day (cols 4–5) keeps you on the night's wax, which won't let you stop before the laser (col 9): clock out on the dry stretch (cols 6–8).
@@ -208,7 +210,7 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 ### 17. Mind Your Head: par 2 (act 5, built Nov 3)
 - **Lesson:** at night the building is upside down: you fall up, and walk along what was the ceiling (`upsideDown: true`; the night is generated, §5.2).
 - **Day:** a floor with an 8-tile pit (cols 10–17, too far to jump); a walkway high above it (row 6, cols 6–25) with a wall standing on it at col 24 (rows 2–5); a beam over the exit (row 3, cols 28–31); a shelf at (20, 13) under the checkpoint. **Night** is that map turned over: the walkway is at row 11, three rows above the worker's head on the floor, the wall hangs under it (rows 12–15), and the exit hangs from the beam's copy.
-- **Solution:** clock in under the walkway (cols 6–9) and fall up onto it; walk across the pit hanging from it; past the pit, clock out and drop to the floor; exit. The wall is deeper than a night jump (96 px against 120 px), so staying on night never gets past it.
+- **Solution:** clock in under the walkway (cols 6–9) and fall up onto it; walk across the pit hanging from it; past the pit, clock out and drop to the floor; exit. The wall is deeper than a night jump (93.5 px against 120 px), so staying on night never gets past it.
 - **Teach safely:** the first clock-in is on open floor with a clear mirror; flipping too early lands you on the night ceiling (the floor's copy), where the pit is a hole: clock out and try again.
 - **Checkpoint** at (20, 12): it hangs from the walkway at night and sits on the shelf by day, so it saves on either shift.
 - **Margin:** both clock-ins have ≈ 990 ms; input lag up to 150 ms still wins (`npm run audit`).
@@ -225,7 +227,8 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 ### 19. Ceiling Walker: par 4 (act 5, built Nov 3)
 - **Lesson:** the old tricks on the flipped map: freeze a freak, read a prank.
 - **Day:** three floors split by two 8-tile pits (A: cols 5–12, B: cols 22–29), the exit on the last floor (cols 30–31); a walkway high above them (row 6) with gaps over both pits, and a column hanging from the top (rows 0–4, cols 15–18). **Night** is that map turned over (`upsideDown`): the walkway is at row 11, one step above the worker's head, and the column stands up from the bottom edge, leaving a 1-tile tunnel under the walkway at cols 15–18. A `nightPatch` lays their plank over the walkway's gap above pit A and bricks up the exit's floor (cols 30–31, rows 13–17).
-- **The plank** (`relocations`, from the second clock-in on): entry 2 moves it over pit B, entry 3 back over pit A, and so on, for 8 moves. The day tell (MINE) marks pit B; at night the eyes hang under it.
+- **Rehearsing the finale (Nov 5):** the walkway's copy is waxed at cols 13–14, just before the tunnel, and a supervisor hangs over it (col 18, row 4), so the lurker slacks whenever it looks away. A day wall (col 29) closes the exit's pocket, so the only way in is hanging from the plank on entry 2.
+- **The plank** (`relocations`, from the second clock-in on): entry 2 moves it over pit B, entry 3 back over pit A, and so on, for good. The day tell (MINE) marks pit B; at night the eyes hang under it.
 - **Solution (4):** clock in on the spawn floor and fall up onto the walkway; cross pit A hanging from it (the plank's there on entry 1). A lurker hangs in the tunnel: clock out before it and drop to the floor, walk under its outline, clock in past the column (entry 2: the plank's over pit B now) and cross. The exit is bricked up at night: clock out over it and drop in.
 - **Why it holds:** both pits and both walkway gaps are 8 wide (a night jump reaches 5.6 tiles, like a day one). The tunnel's column runs to the grid's bottom edge, solid at night, because in the first draft a night jump went under a 1-row tunnel floor and past the lurker. The exit's cell sits under the night hang, so its floor is walled at night. Arriving at pit B on entry 3 finds the plank back over pit A: clock out and in again.
 - **Checkpoint** at (19, 13), past the column on the day floor: day-only (nothing to hang from at night), so at night it's drawn upright on the floor's echo (`checkpointHangs`, `src/skins.js`).
@@ -236,23 +239,24 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 - **Lesson:** act 5's combination: every shift freezes one freak, wakes the other, and flips gravity.
 - **Day:** a loop on two corridors. The floor (rows 14–17) is the bottom corridor's floor, the walkway (row 5) the top one's. A block (cols 13–19) is solid but for one slot through each corridor (rows 4 and 13). Bottom: the spawn floor (cols 10–12), the slot, a pit (cols 20–27, 8 wide) and the far floor (cols 28–31). Top: the far walkway (cols 20–30) with a gap at col 31, the slot, the walkway at cols 10–12, a last gap with no floor and no walkway (cols 2–9, 8 wide) and the exit on a walkway stub (cols 0–1). **Night** is that map turned over (`upsideDown`): you hang under the walkway's copy along the bottom and under the floor's copy along the top, 4 px from where you stood, so a shift flips you in place; the slots map onto each other. A `nightPatch` lays their plank over the pit's copy (row 3, cols 20–27).
 - **The freaks:** each slot holds a day-walker and a lurker, one awake per shift (bottom: the day-walker at col 13, the lurker at 18; top: the reverse). In a 1-tile slot nothing is jumped: you pass the frozen one's outline and must not clock in or out on top of the one that's about to wake.
-- **The plank** (`relocations` from the 4th clock-in): over the last gap on entry 4, back over the pit's copy on 5, and so on (8 moves). Day tell MINE over the gap; at night the eyes hang under it.
+- **The plank** (`relocations` from the 4th clock-in): over the last gap on entry 4, back over the pit's copy on 5, and so on, for good. Day tell MINE over the gap; at night the eyes hang under it.
 - **Solution (7):** clock in before the bottom day-walker; out before the lurker; in again past it (entry 2) and cross the pit hanging; at the walkway's gap you fall up the shaft to the top. Clock out onto the walkway and walk back over the pit; in before the top day-walker (3), out before its lurker, then in on the walkway at cols 10–12: the 4th clock-in brings the plank over the last gap, and you cross it hanging to the exit.
-- **Why par holds:** the exit is only reachable at night over the plank, which first covers the last gap on the 4th clock-in, so every route clocks in 4 times from a day start: 7 shifts. Staying on night along the top under their plank skips a clock-out and in, and then the 4th clock-in hasn't happened at the gap: clock out and in once more.
+- **Why par holds:** a wall (col 9) cuts the spawn off from the last gap and a low day roof stops a jump clearing the walkway's copy, so the top corridor is only reached round the loop. The exit is only reachable at night over the plank, which first covers the last gap on the 4th clock-in, so every route clocks in 4 times from a day start: 7 shifts. Staying on night along the top under their plank skips a clock-out and in, and then the 4th clock-in hasn't happened at the gap: clock out and in once more.
 - **Checkpoints** at (29, 4) after the shaft and (11, 4) before the last gap, both standable in both shifts.
 - **Margin:** clock-ins 367–842 ms; input lag up to 150 ms still wins (`npm run audit`).
 - **Props:** a HARD HAT AREA sign and a notice board (day), a hard hat stuck to the ceiling (night, `flip`, `PROPS.hardHat`), eyes in the dark over the last gap.
 
 ### 21. Clock Out: par 7 (the finale, reworked Nov 3 as `rev: 2`; §5.3)
+- **One of every freak (Nov 5):** a peeker in room 1 (wait, hanging, until the clipboard looks away), a squatter in room 2, a lurker in room 3, the day-walker in room 4, and the supervisor perched at col 23, row 4, under the floor's copy. A vent with eyes in it pays off the note. It asks nothing act 5 hasn't rehearsed (wax and a clipboard on a flipped map: Ceiling Walker).
 - **Lesson:** everything you know, in one run, one room per act, on the flipped map.
 - **Map:** `upsideDown`; the walkway (row 5) is the night's ceiling one step above the floor, so a shift flips you in place, as in Ceiling Walker. The night's walls are drawn in the day grid's top rows so they mirror into the night's bottom ones (the gate, the door, both tunnels' floors, room 2's far wall); by day they stand on the walkway and close it off, because a mid-jump clock-in at the spawn could otherwise reach the walkway's top and walk it past every room (found by the audit's random search, then closed).
 - **Room 1 (act 1, cols 0–11):** no ceiling over the spawn: walk off the ledge and clock in as you fall, and the walkway's copy catches you; cross the 7-wide gap hanging; clock out before the gate, locked at night.
 - **Room 2 (act 2, cols 12–21):** a day wall (col 15); the door they take on the 2nd clock-in (col 16, telegraphed; Lost & Found's door skin, then its empty frame); a lurker in the tunnel; the far wall (col 21) is night-only, so clock out before the lurker and walk through its frozen outline. Checkpoint at col 13.
 - **Room 3 (act 3, cols 22–26):** stop on the dry floor (checkpoint, col 22) and clock in; the supervisor watches one tunnel at a time, and its clock only runs at night, so wait there, hanging, until the clipboard turns away from this tunnel, then slide over the waxed ceiling past its lurker before it turns back.
 - **Room 4 (acts 4–5, cols 27–31):** the 3rd clock-in took the step at the top of the shaft and walled up the time clock (telegraphed, and the tell stays up until the 4th puts them back): clock out on the dry floor short of the day-walker, in again (the 4th puts both back), and fall up the shaft to the time clock. Checkpoint at col 27. By day the time clock sits in a pocket, so a clock-out mid-rise can't reach it either.
-- **Margin:** clock-ins 333–617 ms; input lag up to 150 ms still wins; no win below par in the audit or in 80,000 further random tries.
+- **Margin:** clock-ins 250–617 ms; no win below par in the two-way audit.
 - **Ending:** the timecard, then the end screen (WRITING.md §8).
-- **Fallback:** today's three-room version stays in `src/levels.js` as `CLOCKOUT_CLASSIC` (not in `LEVELS`), proven at par 7 by `SOLUTIONS_EXTRA.clockoutClassic`; shipping it again is swapping one entry. Its rooms: a pit with a night stone and a higher day stone (mid-air shifts); `watch`'s tunnel with day crates and a lurker; the time clock on a ledge whose night step they take on clock-in 3 and return on 4.
+- **The classic version** stays in `src/levels.js` as `CLOCKOUT_CLASSIC` (not in `LEVELS`), proven at par 7 by `SOLUTIONS_EXTRA.clockoutClassic`. Bringing it back would also need a memo and new room tests. Its rooms: a pit with a night stone and a higher day stone (mid-air shifts); `watch`'s tunnel with day crates and a lurker; the time clock on a ledge whose night step they take on clock-in 3 and return on 4.
 
 ## 5.0 The 21-level sequence (20 levels + finale; Fish, 2026-11-02)
 
@@ -277,7 +281,7 @@ Five acts of four, then the finale. Each act introduces one idea, practises it, 
 | 15 | 4 | Floor 3.5 (`offset`) | **Offset layer**: night is the building moved; apex shifts | ✅ |
 | 16 | 4 | Night Audit (`audit`) | Acts 1–4 exam on one screen; no new rules | ✅ |
 | 17 | **5 · Upside Down** (the building turns over) | Mind Your Head (`upside`) | **Upside Down**: at night the map is flipped and gravity points up | ✅ |
-| 18 | 5 | Falling Up (`fallup`) | Mid-fall flips; climb a shaft by flipping | ✅ |
+| 18 | 5 | Falling Up (`fallup`) | Mid-fall flips; climb by flipping | ✅ |
 | 19 | 5 | Ceiling Walker (`ceiling`) | A freak on the ceiling; a prank on the flipped map | ✅ |
 | 20 | 5 | Head Over Heels (`heels`) | Act 5's combination: every shift freezes one freak and flips gravity | ✅ |
 | 21 | **Finale** | Clock Out (`clockout`) | Pays everything off, then the ending | ✅ reworked (`rev: 2`); the 3-room version is the fallback |
@@ -289,13 +293,13 @@ Five acts of four, then the finale. Each act introduces one idea, practises it, 
 - **New rules, one per act from act 3:** wax in 9, offset in 15, upside down in 17.
 - **Act 4 previews act 5:** Floor 3.5 already says "the building isn't where it was", so the flip in 17 is the next step, not a jump.
 
-**Tiers:** A = the 12 built (a complete game today). B = 17, adding `stairs`, `doors`, `pillar`, `portrait`, `audit` on existing systems (M2, Nov 15). C = 21, adding act 5 and the finale rework; the gravity flip must be working and `upside` proven by **Nov 18**. Content freeze Nov 22. If a tier slips its levels go post-jam and the rest keep their order; today's Clock Out is always the fallback finale.
+**Tiers** (how it was planned; all shipped): A = the original 12, B = 17 on existing systems, C = 21 with act 5 and the finale rework.
 
-## 5. Planned levels (specs)
+## 5. Original specs (all built; §4 is the truth)
 
-The levels still to build in acts 2–4, in the §5.0 order (manifest: [CONTENT.md](CONTENT.md) §2). Each spec gives the lesson, a layout concept within the §1 metrics, the intended solution and a **target** par range. The real par is whatever the scripted solution in `SOLUTIONS` proves when the level is built; grids are drawn at build time. Rows are 0–17; "floor" means the usual floor with its top at row 14 (stand on row 13).
+The specs the levels in acts 2–4 were built from, in the §5.0 order (manifest: [CONTENT.md](CONTENT.md) §2). Each spec gives the lesson, a layout concept within the §1 metrics, the intended solution and a **target** par range. The real par is whatever the scripted solution in `SOLUTIONS` proves when the level is built; grids are drawn at build time. Rows are 0–17; "floor" means the usual floor with its top at row 14 (stand on row 13).
 
-**Tiers:** A = jam minimum, B = existing systems only, C = needs a new mechanic (all four tier-C mechanics shipped in `wet`, `supervisor`, `offset` and `daywalker`). If a level is cut, the rest keep their order.
+**Tiers:** A = jam minimum, B = existing systems only, C = needed a new mechanic.
 
 | # | Act | Level | id | Tier |
 |---|---|---|---|---|
@@ -355,7 +359,7 @@ The levels still to build in acts 2–4, in the §5.0 order (manifest: [CONTENT.
 
 ## 5.1 Idea pool status
 
-**Upside Down** (Fish, 2026-11-02) is decided and planned as act 5 (§5.2). All six ideas from Fish's first pool (2026-11-02) are slotted; `supervisor` and `offset` are built, the rest planned: *Lost & Found* → `doors`, *Under Renovation* → `stairs`, *Structural Integrity* → `pillar`, *Night Management* → `supervisor`, *Employee of the Month* → `portrait`, *Floor 3.5* → `offset`.
+**Upside Down** (Fish, 2026-11-02) shipped as act 5 (§5.2). All six ideas from Fish's first pool (2026-11-02) are built: *Lost & Found* → `doors`, *Under Renovation* → `stairs`, *Structural Integrity* → `pillar`, *Night Management* → `supervisor`, *Employee of the Month* → `portrait`, *Floor 3.5* → `offset`.
 
 **Post-jam pool**
 
@@ -382,7 +386,7 @@ The levels still to build in acts 2–4, in the §5.0 order (manifest: [CONTENT.
 | # | Act | Level | id | New element | Tier |
 |---|---|---|---|---|---|
 | 17 | 5 Upside Down | Mind Your Head | `upside` | At night you fall up: the ceiling is the floor | C |
-| 18 | 5 | Falling Up | `fallup` | Shift mid-fall to reverse it; climb a shaft by flipping | C |
+| 18 | 5 | Falling Up | `fallup` | Shift mid-fall to reverse it; climb by flipping | C |
 | 19 | 5 | Ceiling Walker | `ceiling` | A freak on the ceiling, and a prank on a flipped map | C |
 | 20 | 5 | Head Over Heels | `heels` | Act 5's combination: every shift freezes one freak and flips gravity | C |
 
@@ -409,11 +413,11 @@ The levels still to build in acts 2–4, in the §5.0 order (manifest: [CONTENT.
 - **Concept:** `upsideDown: true`. A day-walker patrols the floor by day; a lurker walks the flipped ceiling by night. Each shift both flips you to the other side of the room and swaps which freak is moving, so you route through the moments when the one on your side is frozen. It ends on a prank: a plank moved on the flipped map, telegraphed by a tell hanging from the ceiling.
 - **Role:** the hardest level before the finale. Fairness floor 100 ms per required input; checkpoints between beats.
 
-**Cut date:** the gravity flip (rules, tests, drawing) working and `upside` proven by **Nov 18**. If it misses, act 5 and the finale rework move to post-jam; the game ships acts 1–4 and today's Clock Out.
 
-## 5.3 The finale: Clock Out reworked *(✅ built Nov 3 at par 7, `rev: 2`, §4; the 3-room version is the fallback)*
 
-The 3-room Clock Out (`CLOCKOUT_CLASSIC`) is a complete finale and ships again if act 5 slips. The rework makes it pay off every act:
+## 5.3 The finale: Clock Out reworked *(✅ built Nov 3 at par 7, `rev: 2`, §4)*
+
+The classic 3-room Clock Out (`CLOCKOUT_CLASSIC`) is kept for the record. The rework makes the finale pay off every act:
 - **One screen, `upsideDown: true`, four rooms**, each recalling an act:
   1. mid-air shifts across stones (act 1); built as a clock-in mid-fall off the ledge, then the gap and the gate. Stones don't work on a flipped map: a day jump rises away from the night's ceiling and a night jump drops away from the day's floor, so a mid-air shift can't carry you onto a stone of the other shift;
   2. a frozen-lurker tunnel and a telegraphed prank (act 2);
@@ -428,7 +432,7 @@ The 3-room Clock Out (`CLOCKOUT_CLASSIC`) is a complete finale and ships again i
 Jam raters often play only the first couple of minutes (GDD §1.8), so act 1 shows freak *evidence* from the very first night shift — no pranks, no danger before level 5:
 - **Clock In:** a peeker blinks behind the locked night gate (sealed off, unreachable), footprints lead up to it, eyes in the dark past it;
 - **Scaffolding:** eyes float in the dark where the scaffold stands by day; footprints on the night floor;
-- **Closing Time:** a peeker sealed past the far gate blinks at night and stands frozen beside the exit by day — the first freak a player walks through;
+- **Closing Time:** a peeker on a high night shelf over the exit blinks at night and hangs frozen there by day, out of reach;
 - **Mid-Air:** eyes decor was already there ("Something up there blinked.");
 - level select from the title screen (A7), so anyone can reach *Inventory* and *Night Watch*.
 

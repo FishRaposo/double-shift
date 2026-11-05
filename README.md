@@ -10,7 +10,7 @@ A puzzle-platformer for [GitHub Game Off 2026](https://itch.io/jam/game-off-2026
 
 **Play in the browser: [fishraposo.github.io/double-shift](https://fishraposo.github.io/double-shift/)** (the itch.io page comes at jam submission).
 
-> Status: **feature-complete**: <!-- n:levels -->21<!-- /n --> levels in five acts plus the Clock Out finale, act 5 (Upside Down) included, with gamepad support, rebindable controls, a speedrun timer and music that builds act by act. Playtests and polish come next; jam submission on Nov 30. Design: [`docs/GDD.md`](docs/GDD.md) (v0.6; the full plan is 21 levels in five acts). How and why it was built: [`docs/DESIGN.md`](docs/DESIGN.md). Production docs (schedule, tech, levels, art, audio, writing, playtest, release): [`docs/INDEX.md`](docs/INDEX.md).
+> Status: **feature-complete**: <!-- n:levels -->21<!-- /n --> levels in five acts plus the Clock Out finale, act 5 (Upside Down) included, with gamepad support, rebindable controls, a speedrun timer and music that builds act by act. Playtests and polish come next; jam submission on Nov 30. Design: [`docs/GDD.md`](docs/GDD.md) (v0.6). How and why it was built: [`docs/DESIGN.md`](docs/DESIGN.md). Production docs (schedule, tech, levels, art, audio, writing, playtest, release): [`docs/INDEX.md`](docs/INDEX.md).
 
 ## Game Off 2026
 
@@ -78,7 +78,7 @@ scripts/        serve, check, zip for itch, media + headless checks, demo GIFs
 
 ## Tests
 
-The suite has <!-- n:tests -->360<!-- /n --> tests.
+The suite has <!-- n:tests -->411<!-- /n --> tests.
 
 ```sh
 npm test         # GDD §13.7 shift/collision edge cases, pranks and freaks, wet floor, day/night

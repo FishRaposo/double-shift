@@ -119,7 +119,7 @@ test('Stacked: clocking in twice before gap A takes the bridge away; the pit res
   assert.equal(state.won, false);
 });
 
-test('Clock Out (classic): still wins at par 7, the fallback finale', () => {
+test('Clock Out (classic): still wins at par 7', () => {
   const lvl = parseLevel(CLOCKOUT_CLASSIC);
   const { state } = play(lvl, SOLUTIONS_EXTRA.clockoutClassic);
   assert.equal(state.won, true);

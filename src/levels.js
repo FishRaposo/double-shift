@@ -3,8 +3,9 @@
 // S, E and C are shared between shifts. `par` = the scripted solution's clock-ins (test/solutions.mjs);
 // the tests also check fair timing and that no route wins below par (npm run audit).
 //
-// pranks: what the freaks change on the Nth entry into night. `set` rectangles override tiles;
-//         `tell` is where the warning (eyes at night, a note by day) appears before it happens.
+// pranks: what the freaks change on the Nth entry into night (`onNight`; `every` repeats it). `set` rectangles
+//         override tiles; `tell` is where the warning (eyes at night, a note by day, `text` for its words, and a
+//         countdown) appears before it happens; `sound` plays under the giggle.
 // freaks: fixed patterns on their own shift's clock, frozen while you're on the other shift.
 //         lurker (patrols `range` tiles at `speed` px/s), peeker (out for `duty` of `period` s),
 //         squatter (never moves), supervisor (turns every `period` s from `startFacing`; only the
@@ -12,10 +13,13 @@
 // offset: { dx, dy } instead of a night grid: night is the day grid moved; `nightPatch` adds differences.
 // upsideDown: true instead of a night grid: night is the day grid turned over and gravity points up there
 //         (act 5). Author the day map; night pranks, tells, freaks and props use night screen coordinates.
-// decor:  cosmetic only.
+// decor:  cosmetic only: small dim eyes, just watching (a tell's big glowing pair always means a prank).
+// skins:  object art over solid tiles: doors, pillars, portraits (src/skins.js).
 // props:  cosmetic scenery from PROPS in src/art.js: { kind, tx, ty, layer?: 'day'|'night', w?, text?, style?,
-//         flip? } (flip hangs it upside down in its cell, for a flipped night; signs stay upright).
+//         flip? } (flip hangs it upside down in its cell, for a flipped night; signs stay upright). One `memo`
+//         per level: its text shows on a panel while the worker is near.
 // act:    which act the level belongs to (the first level of each act is always open in level select).
+// rev:    the level's revision: saved bests from an older one don't carry over.
 
 export const ACTS = { 1: 'Renovation', 2: 'Overtime', 3: 'Graveyard Shift', 4: 'Lights Out', 5: 'Upside Down', 6: 'Finale' };
 
@@ -1318,7 +1322,7 @@ export const LEVELS = [
     id: 'clockout',
     name: 'Clock Out',
     act: FINALE_ACT,
-    rev: 2, // the rework: bests from today's Clock Out (CLOCKOUT_CLASSIC, rev 1) don't carry over
+    rev: 2, // the rework: bests from the classic Clock Out (CLOCKOUT_CLASSIC, rev 1) don't carry over
     note: "Almost done. Don't look at the vents.",
     par: 7,
     // One room per act, on the flipped map, with one of every freak: the walkway (row 5) is the night's ceiling, one

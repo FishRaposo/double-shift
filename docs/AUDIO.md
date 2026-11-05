@@ -3,7 +3,7 @@
 Companion to [GDD.md](GDD.md) §11. All audio is synthesized with WebAudio in `src/audio.js`. No audio files, no licensed music.
 
 **At a glance**
-- 25 sound effects are built (§2); the 16-bar theme ships in two synced arrangements that crossfade on every shift (§3).
+- 26 sound effects are built (§2); the 16-bar theme ships in two synced arrangements that crossfade on every shift (§3).
 - Every SFX is ≤ 0.25 s. The shift sound's pitch says where you went: down = night, up = day.
 - Funny, not scary: yelps, giggles, a rubber stamp. `M` mutes.
 
@@ -35,7 +35,7 @@ The original 11, re-voiced 2026-11-02 with filters and a little noise so they si
 | Win | Arpeggio | triangle 523, 659, 784, 1047 Hz, 0.12 s each, 80 ms apart, vol 0.22 |
 | Timecard stamp | Thunk | square 90 → 50 Hz, 0.09 s, vol 0.24, plus noise (450 ms after win) |
 
-The 14 added since (same `SOUNDS` map, main voice only). The level-mechanic sounds were pre-built before their levels shipped:
+The 15 added since (same `SOUNDS` map, main voice only). The level-mechanic sounds were pre-built before their levels shipped:
 
 | Event | Sound | Values |
 |---|---|---|
@@ -95,13 +95,13 @@ The act follows the level being played (menus play act 1's) and changes from the
 | Lurker footsteps *(not wired)* | Very quiet ticks while you're on night. Decided against on 2026-11-03: it clutters the mix. |
 | Freaks freeze (shift to day) | Optional "record scratch" micro-sound layered under the shift blip |
 | Prank shimmer | Layered under the giggle when a prank fires: 3–4 quick sine pings, high (~1.5–2.5 kHz), very quiet. The "how did they do that?" half of the joke. |
-| Peeker hands | A tiny scratch (filtered noise, 0.03 s) when a peeker grips the ledge |
+| Peeker hands *(not built)* | A tiny scratch (filtered noise, 0.03 s) when a peeker grips the ledge |
 | Wet floor slide | Squeak on hard stop |
 | Menu move / select | Soft clicks |
 
 ### 4.1 SFX for the new levels *(built 2026-11-02; all wired. Door and pillar sounds play through a prank's `sound` field and are first heard in `doors` and `pillar`)*
 
-Same `tone()` format as §2; every sound ≤ 0.25 s.
+Same `voice()` format as §2; every sound ≤ 0.25 s.
 
 | Event | Level | Sound | Values (starting point) |
 |---|---|---|---|

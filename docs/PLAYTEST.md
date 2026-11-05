@@ -12,8 +12,8 @@ Companion to [GDD.md](GDD.md) §19. Playtests answer questions the tests can't: 
 
 | Round | When | Build | Who | Focus |
 |---|---|---|---|---|
-| 0 | Nov 2–3 | Levels 1–6 | Fish | Feel, Sticky Keys, tuning |
-| 1 | by Nov 8 (M1) | Levels 1–6 | 1–2 people who haven't seen it | Do they get Shift, echoes, freezing, pranks without help? |
+| 0 | by Nov 8 | All 21 levels | Fish | Feel, Sticky Keys, tuning |
+| 1 | by Nov 8 (M1) | All 21 levels | 1–2 people who haven't seen it | Do they get Shift, echoes, freezing, pranks without help? |
 | 2 | by Nov 22 (M3) | Full run: every level still in after the cut dates (up to 21) | 2–3 new people | Pacing across five acts and the finale, how readable the Upside Down flip is on first sight, difficulty curve, new mechanics readable on first sight, jokes landing |
 | 3 | Nov 26 (M4) | itch draft page | 1 person, their own machine | Loads, runs, controls, nothing broken |
 
@@ -38,7 +38,7 @@ Jam communities (the Game Off itch community, Discord) are a source of cold test
 - Do they read the **dashed echoes** before shifting, or shift blindly?
 - Do they understand **why a shift was rejected**?
 - Level 6: do they figure out that **day freezes the lurker**? How long does it take?
-- Level 5: do they **notice the tell** (eyes/MINE) before the prank? Do they understand the plank moved *because they clocked in*?
+- Level 5: do they **notice the tell** (eyes/MINE, NEXT NIGHT, the outlined tiles) before the prank? Do they understand the plank moved *because they clocked in*?
 - Do they look at **par**? Do they retry a level to beat it unprompted? (Strongest fun signal.)
 - Do they laugh at anything? Which line/gag?
 - Do they say "the freaks"?
@@ -82,7 +82,7 @@ Actions (→ PRODUCTION.md backlog IDs):
 
 ## 7. Round 2 sheet (full run, by Nov 22)
 
-**Build:** the Pages link or `npm start` at the release-candidate commit (log `git log --oneline -1`). All <!-- n:levels -->21<!-- /n --> levels. Time the run per act; there's no estimate yet.
+**Build:** the Pages link or `npm start` at the release-candidate commit (log `git log --oneline -1`). All <!-- n:levels -->21<!-- /n --> levels. Time the run per act; 35–50 minutes is an unmeasured estimate.
 
 **First, the 5-second test** (cold, before they've played). It checks ART.md §3.1's reading order on real screens. Make the deck with `npm run media` and `npm run media -- --review wet,daywalker`. Show each shot for 5 seconds, then hide it. Ask them to point to (or say where) **the worker, the way out, something that would hurt them, and a creature**, and whether it's **day or night**. Mark each one found, wrong or missed. Explain nothing. Check each shot yourself before the session; the key below lists what to look for.
 
@@ -90,7 +90,7 @@ Actions (→ PRODUCTION.md backlog IDs):
 |---|---|---|---|---|
 | 1 | 1 | `media/02-clock-in-day.png` | Day | Worker bottom left; exit right; the taped gap in the floor; no creature |
 | 2 | 2 | `media/07-night-watch-night.png` | Night | Worker left; exit right; the freaks in the tunnel and by the exit |
-| 3 | 3 | `media/review/wet-night.png` | Night | Worker left; exit right; the rope across the middle; a lurker by the exit |
+| 3 | 3 | `media/review/wet-night.png` | Night | Worker left; exit right; the lasers in the corridor; a lurker by the exit |
 | 4 | 4 | `media/review/daywalker-day.png` | Day | Worker left; exit right; the day-walker (shades) in the middle; dashed outlines of frozen freaks |
 | 5 | 5 | `media/20-flip-mind-your-head.png` | Night (upside down) | Worker hanging, left of centre; exit hanging, bottom right; no creature |
 | 6 | Finale | `media/14-clock-out-day.png` | Day | Worker bottom left; exit top right; the pit; the day-walker bottom right |
@@ -99,7 +99,8 @@ Goal: every tester finds the worker and the exit in every shot and names the shi
 
 **While they play,** besides §3:
 - Act 2: do they connect a door vanishing to their own clock-in (Lost & Found)?
-- Act 3: do they read the wet floor's slide, and the supervisor's clipboard?
+- Act 3: do they read the wet floor's slide, and the supervisor's clipboard: its wedge and pips, "!" as danger, "z" as safe?
+- Any act: do they use a patrol's floor track and a peeker's rattle before contact?
 - Act 4: are they surprised one freak works days? Does Floor 3.5's half-storey make sense?
 - Act 5, **the flip:** their first reaction on Mind Your Head, the time to their first deliberate flip, whether they say "upside down", and whether they find the flip-as-brake on Falling Up.
 - The finale: do they recognise one room per act?

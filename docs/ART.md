@@ -37,7 +37,7 @@ Graphics is a rated jam category. Simple shapes score well when they look *chose
 - **One line language.** Solid edges use the 2 px edge of their shift. "Other shift" is always dashed. "Only in this shift" is always hatched. Don't invent a new line style per element.
 - **Motion before detail.** An animated simple shape (§4 animations, freak jitter and blinks, effect rings) reads as finished. A detailed static one reads as a placeholder. Spend art time on animation and effects first (A2, A1).
 - **Same building, two lights.** Every room is drawn twice from the same shapes; only light and props change (pillar 2).
-- **Consistent type.** Monospace only, at the sizes in §7.
+- **Consistent type.** The pixel font only, at the sizes in §7.
 - **Props tell the story** (§6, A3): signage, memos and tape make it a place. They're cheap and they carry the jokes.
 
 ## 2. Palettes
@@ -102,6 +102,7 @@ Behind everything, one motif per act (§6). Every color stays ≤ 1.35:1 against
 | Current shift | HUD label DAY SHIFT / NIGHT SHIFT + sun/moon icon + background | Text + icon + background pattern (panes vs stars) |
 | Freak (night, active) | Black lumpy silhouette + eyes | Silhouette |
 | Freak (day, frozen) | Dashed silhouette outline in the night echo blue, dim eyes | Dashed |
+| Decor eyes | Small and dim, no glow: they're just watching. The big glowing pair always means a prank with a countdown | Size, glow |
 | Peeker hidden | Dark slot + small eyes; for the last 0.35 s before it pops, the slot rattles, the eyes open and a "!" shows | Shape + mark |
 | Patrol route | Dashed red-orange track on the floor with end stops, on both shifts; a slacking freak's track is faint. Eyes look the way it's walking | Dashes + end stops |
 | Pending prank | Night: two pairs of eyes near the target. Day: yellow MINE note. Both: a countdown under it (NEXT NIGHT, IN 2 NIGHTS) and the tiles it will change outlined (yellow by night, rust by day): tinted = something will be here, crossed = it will be gone. A tile shows only its next change; a repeating prank keeps its tell while its next lap changes something | Eyes / note shape, text, dashes + crosses |
@@ -150,7 +151,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 ## 4. The worker
 
 - Hitbox 18×26 px (9×13 art px); sprite 11×16 art px with a built-in outline (`#1b1209` by day, `#d9f6ff` by night). Blue overalls (`#2f6fdc` / shade `#2558b8` day, `#3f86ff` / `#2f6fdc` night), face `#f2c79a`, eye on the facing side, yellow hard hat `#ffcc33`, hi-vis stripe (`#ffe680` day, `#c6ff4d` night), brown boots `#5a3d10`.
-- ✅ Frames: `idle0/1` (bob), `run0–3`, `jump` (legs tucked), `fall` (legs apart), `land` (squash, 0.1 s), `spookBody` + `boots` (the spooked gag: the body pops up while the boots stay put for 0.35 s). `workerFrame(player, t, fx)` picks the frame (tested).
+- ✅ Frames: `idle0/1` (bob), `run0–3`, `jump` (legs tucked), `fall` (legs apart), `land` (squash, 0.1 s), `spookBody` + `boots` (the spooked gag: the body pops up while the boots stay put for 0.35 s). `workerFrame(player, t, fx, sign)` picks the frame (tested).
 - Failed-shift feedback: red pixel frame around the worker (0.25 s). No camera shake.
 - Jump and landing kick up dust; a hazard or fall death bursts into a white puff.
 
@@ -162,7 +163,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 - ✅ Sprites (12×13 art px, body `#05060f`, rim `#5ff2ff`), one silhouette per kind so a frozen outline still says which kind it is (`test/art.test.mjs`: every pair ≥ 12 art px apart; every silhouette fills ≥ 75 % of its hitbox, so a touch looks like a touch): **lurker** (pointed ears, wide body, 2-frame walk), **peeker** (narrow, fingers gripping above its head), **squatter** (wide and smug, low on its hoard: a plank end and a hard hat), **supervisor** (a green visor `#2bdc6a` and its clipboard), **day-walker** (a hard hat, since it clocked in for the day shift, in orange `#ff8a1c`, never the worker's yellow; shades `#3a4048` with white glints instead of eyes). Jitter ±1 art px while active.
 - ✅ Eyes: two 1×2 art-px eyes in `#ffec5a`, blink (shut ~0.12 s every ~3.1 s, offset per freak); lurker eyes glance; eyes **squint** smugly for 0.8 s after a prank.
 - ✅ Peeker hidden: a dark slot with eyes that rattles just before it pops.
-- ✅ By day: dotted outline of the silhouette in the night echo blue, eyes at 60%. On every shift to day the outlines **flash** white once (freeze cue, 0.15 s).
+- ✅ By day: dashed outline of the silhouette in the night echo blue, eyes at 60%. On every shift to day the outlines **flash** white once (freeze cue, 0.15 s).
 - ✅ Prank sparkle: plus-shaped twinkles in the freak-eye yellow over the changed tiles (0.5 s). Off with reduced effects.
 - ✅ Upside Down (Nov 3): a freak of a flipped shift hangs from the solid above its cell (`hang` on its box, rules.js) and draws upside down (`vflip`), outline and eyes included; a ducked peeker's slot sits on the ceiling side. The day-walker belongs to the day, which never flips.
 - *(post-jam)* Scatterer: scurry pose.
@@ -172,7 +173,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | Freak | Look | Facing / state cue | Colors (existing only) |
 |---|---|---|---|
 | **Supervisor** (`supervisor`) | The usual lump, a bit taller, holding a clipboard (a paper rectangle with three ink lines). Sits on a perch. | The head bump and clipboard sit on the watched side; eyes are drawn only on that side; it snaps (no tween) when it turns, with 0.3 s of anticipation (the eyes slide across first). | Body `#05060f`, rim `rgba(95,242,255,0.6)`; clipboard paper `#f7efdc`, ink `#3b2d1f`; eyes freak yellow |
-| **Slacking freaks** (unwatched) | Same silhouette, no jitter | Eyes closed to 1 px lines; a tiny "z" in `hudSoft` above (optional) | Existing |
+| **Slacking freaks** (unwatched) | Same silhouette, no jitter | Eyes closed to 1 px lines; dimmed, with a drifting "z" (§3) | Existing |
 | **Day-walker** (`daywalker`) | A lump in an orange hard hat and shades (Nov 3: its own silhouette), readable in daylight: dark body against the warm sky, with a cream rim instead of cyan | By night: dashed outline in the **day echo orange** (it belongs to the day shift), dim shades | Body `#05060f`, rim `#fbecc9`, hat `#ff8a1c`, shades `#3a4048`; night outline `rgba(255,170,80,0.95)` |
 
 ## 6. Environment
@@ -194,7 +195,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 - Solids: day = brick courses; night = inset panel seams.
 - ✅ Props per level, never collidable (§6.2): notice board with memos, vents (where peekers live), barrier tape at shafts, pallets on delivery stacks, signage ("CLOSING TIME", "WET FLOOR"), footprints leading to prank targets.
 
-### 6.1 New tiles and objects *(drawing built 2026-11-02 in `src/art.js`; wet floor and the offset floor signs are in use, the rest wait for their levels)*
+### 6.1 New tiles and objects *(drawing built 2026-11-02 in `src/art.js`; all in use)*
 
 | Item | Level | Drawing | Colors |
 |---|---|---|---|
@@ -214,7 +215,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | Time clock (the exit) | `clockout` | The exit door with a punch clock beside it | Exit colors + checkpoint clock `#ffd23f` |
 | Upside Down night ✅ (Nov 3) | act 5 | Everything with a floor side turns over on the flipped night: the worker (`vflip`; `spriteRect` keeps the hitbox rows, so the hat hangs below), freaks, lasers and hazard echoes (the band at the top of the tile, matching the rules), the checkpoint (mirrored inside its cell, but only where the flipped night holds it: one that only the day can stand on stays upright on the day floor's echo, `checkpointHangs` in `src/skins.js`) and the exit (the door hangs from its cell top, or stands if nothing is above it; not drawn while walled up: `exitPose` in `src/skins.js`; the sign goes under it, or beside it with no room). Dust kicks from the feet side, the spook gag pops away from the floor, tells hang under their target, and a prop with `flip: true` is mirrored inside its cell, so it hangs from the cell above, which must be solid at night and never taken by a prank (tested). The HUD, notes, signs and the EXIT text stay upright | Existing colors |
 
-### 6.2 Props per level *(prop drawings built; the 12 built levels have their props via the `props` field; planned levels add theirs when built)*
+### 6.2 Props per level *(prop drawings built; all 21 levels have theirs via the `props` field)*
 
 | Level | Props |
 |---|---|
@@ -258,7 +259,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | Screen / effect | Spec |
 |---|---|
 | Title + level select ✅ (A7) | Title: a LEVEL SELECT (L) button under the panel. Level select (night background, laid out by `src/layout.js` so six rows fit): one row per act, with a 90-px night tab on the left (ACT n at scale 2 and the act name at scale 1, or FINALE) and up to four 196×56 paper timecards; each card shows the level number (scale 3), the name (scale 1, wrapped), and `PAR p`, NOT YET, or a small rotated stamp (ON PAR / UNDER! in `#c0392b`, `+n` in `#7f6a50`). A paper detail bar at the bottom gives the selected level's full name, best and par at scale 2. Locked cards at 40% opacity. Selection: 3 px `#5ff2ff` frame. Unlock: act starts always open; otherwise after the previous level is cleared. |
-| Settings ✅ (A6) | Opened with O from title (button) and pause. Four night panels: MASTER, MUSIC, SOUND (10-block bars + %), REDUCED EFFECTS (ON/OFF). ↑↓ choose, ←→ change (or click the left/right half of a row), Esc back. Saved. |
+| Settings ✅ (A6) | Opened with O from title (button) and pause. Seven night panels: MASTER, MUSIC, SOUND (10-block bars + %), MUTE, REDUCED EFFECTS, SPEEDRUN TIMER (ON/OFF), CONTROLS. From a break the level stays behind them. ↑↓ choose, ←→ change (or click the left/right half of a row), Esc back. Saved. |
 | Act cards ✅ (A10) | 1.6 s split day/night card: ACT n (scale 3, yellow), the act name (scale 6, haloed), one line (WRITING.md §2.1); for the finale (act 6): FINALE, then the level's name. Any key or click skips; a two-chord sting. Shown the first time an act starts in a run. |
 | Timecard comment ✅ (A8) | One line under the stamp, scale 2 when it fits, else 1 (`timecardComment` in `src/copy.js`, WRITING.md §7). |
 | End screen totals ✅ (A8) | Paper panel with one row per act (clock-ins / par over the levels played) and total clock-ins vs. total par. The ending: a dozen pairs of eyes open one by one in the margins, then a lurker rises out of the bottom margin (scale 3) and waves an 8×10-art-px hand with a cyan rim (the `hand` sprite), then "See you tonight." |
@@ -274,7 +275,7 @@ Effects must stay readable under rapid shifting: no stacking full-screen flashes
 |---|---|---|
 | Cover image ✅ | **1260×1000** (630×500 ratio) | `tools/cover.html`, drawn with the game's own sprites, tiles and font at 2×: split day/night, the worker mid-jump on the seam (day colours left, night right) inside shift rings, a night-only plank and its echo, a smug lurker and eyes on the night side, a lurker hanging under the plank (act 5's flipped night), a MINE note on the day side, the logo, the tagline |
 | Screenshots ✅ | 960×540 (native) | `npm run media`: 19 shots. Two come from the scripted runs, for moments real keys can't time: a prank as it lands (Inventory, 0.14 s after the plank moves) and the flip (Mind Your Head). The rest: title, level 1 day/night, timecard, act card, Inventory day/night, Night Watch night/day, level select, end, Stacked night, Clock Out day/night, Mind Your Head night, settings, controls. Upload order: itch/page.md §3 |
-| Demo GIF (tool ✅) | 480×270 (`--full` 960×540), the run plus 1.5 s of timecard, ≤ 3 MB; first in the screenshot list | `npm run gif -- <id>`: one level's scripted run, played by the game. Candidates: `doors` (a prank every clock-in), `upside` (the flip), `watch` (frozen freaks). The brief was a mid-air shift chain, then a frozen-lurker pass; Fish picks. |
+| Demo GIF (tool ✅) | 480×270 (`--full` 960×540), the run plus 1.5 s of timecard, ≤ 3 MB; first in the screenshot list | `npm run gif -- <id>`: one level's scripted run, played by the game. Candidates (`doors` is provisional on the itch page): `doors` (a prank every clock-in), `upside` (the flip), `watch` (frozen freaks). The brief was a mid-air shift chain, then a frozen-lurker pass; Fish picks. |
 | Page theme | Background `#0b1029`, text `#d9f6ff`, links `#5ff2ff` | Matches the night palette; embed background `#0b1029` (same as `index.html`) |
 
 Capture with `npm run media` (headless Edge/Chrome: cover, screenshots, gallery, audio and draw-cost checks) and `npm run gif -- <id>` (demo GIFs, deterministic).

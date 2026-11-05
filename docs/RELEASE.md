@@ -13,11 +13,11 @@ Companion to [GDD.md](GDD.md) §1.8 and §16.4–16.5. Deadline **Dec 1, 2026, 1
 |---|---|---|
 | Start the game during the jam (Nov 1, 13:37 PST); templates and libraries are fine, the bulk of the work happens in November | All design, code and docs were made from Nov 1 after the theme announcement. The README states the timeline. If anything was prepared earlier, the host asks you to say so openly. | Met |
 | Public GitHub repo with the source (any license) | [FishRaposo/double-shift](https://github.com/FishRaposo/double-shift), MIT | Met |
-| Any tools; **AI is allowed** but must be disclosed when submitting. AI use doesn't affect eligibility or score. | Disclose on the submission form, in the itch AI Disclosure, and in the README, using the same words everywhere (§2) | At submission |
+| Any tools; **AI is allowed** but must be disclosed when submitting. Using AI doesn't disqualify a game. | Disclose on the submission form, in the itch AI Disclosure, and in the README, using the same words everywhere (§2) | At submission |
 | Submit on itch.io before the deadline; pushing to GitHub doesn't enter the game | The submission form asks for the repo URL | At submission |
 | Free to play is recommended | $0 or donate | Planned |
-| Updates allowed during the submission period. **Once voting starts, only critical bug fixes, each with a note explaining what changed** | Content freeze at submission; see §6 | — |
-| Only participants with a submitted game can rate. Six rated categories: **Overall, Gameplay, Graphics, Audio, Innovation, Theme interpretation**. Code quality is not judged. | See GDD §1.8 for how each category is earned | — |
+| Updates allowed during the submission period. **Once voting starts, only critical bug fixes, each with a note explaining what changed** | Content freeze Nov 22 (PRODUCTION.md §2); see §6 | — |
+| Only participants with a submitted game, and their teammates, can rate. Six rated categories: **Overall, Gameplay, Graphics, Audio, Innovation, Theme interpretation**. Code quality is not judged. | See GDD §1.8 for how each category is earned | — |
 | Content: itch rules only; adult/graphic content is less likely to be featured by GitHub | Mock horror, no gore (GDD §10.5) | Met |
 | Voting ends **Jan 1, 2027, 13:37 PST**; winners featured on the GitHub Blog and socials. No prizes. | — | — |
 
@@ -56,7 +56,7 @@ Then:
 | Platforms | HTML5 only |
 | Genre | Platformer (puzzle elements described in tags/description, not repeated as genre) |
 | Languages | English only |
-| Accessibility | Tick only what exists. The build has a **reduced effects** setting (no screen flashes, rings or sparkles) and adjustable music/sound volume; tick itch's matching options if offered (e.g. reduced motion / flashing). The four actions can be **rebound** (SETTINGS > CONTROLS). No colour-blind mode yet. |
+| Accessibility | Tick only what exists. The build has a **reduced effects** setting (no screen flashes, rings, sparkles, shaking or flicker) and adjustable music/sound volume; tick itch's matching options if offered (e.g. reduced motion / flashing). The four actions can be **rebound** (SETTINGS > CONTROLS). No colour-blind mode yet. |
 | Community | Comments |
 | Theme | Background `#0b1029`, text `#d9f6ff`, links `#5ff2ff`; embed background `#0b1029` (ART.md §8) |
 | Visibility | Draft → play it on the page once → **Public** (the publish date is fixed at that click) |
@@ -68,7 +68,7 @@ Rules: no synonyms, no engine/tool tags, no repeating the genre or platform, no 
 
 ### AI Disclosure
 - **Yes, the project contains generative AI output: Code, and Text & Dialog.** (The code was written with AI assistance to Fish's design; in-game text was drafted with AI assistance. Update this line if Fish rewrites all the copy himself.)
-- Graphics: **unticked** (drawn by code, no image model). Sound: **unticked** (synthesized by code, no audio model). If a design partner's art includes generated images, tick Graphics.
+- Graphics: **unticked** (drawn by code, no image model). Sound: **unticked** (synthesized by code, no audio model). The code that draws the art and plays the music was written with AI assistance: the page says so in "How it was made".
 - Itch adds the tag itself; never add an AI tag by hand.
 - The jam also asks you to disclose AI use in the submission; say the same thing in the page's "How it was made".
 
@@ -85,39 +85,9 @@ Publishing ≠ indexing. After going Public, check in ~1 hour by searching the *
 - [ ] Not NSFW
 - [ ] New pages with donations may sit in a review queue for a few days. The URL still works; share it. Never delete/recreate the page to "fix" indexing.
 
-## 4. Page description (draft; Fish writes the final words)
+## 4. Page description
 
-> **Every time you clock into the night shift, the freaks move something.**
->
-> You're covering a double shift, day and night, in the same building, at the same time. Press **Shift** to step between them, even mid-jump. The day crew's scaffolding catches you; the night's gate isn't down yet.
->
-> But clocking in has a cost. Clock into the night a second time and the plank you crossed on is gone, moved over the next pit. Nobody knows what the freaks are. They giggle. They leave notes. And they only move at night, so step into the day shift and they freeze mid-stride. (Well. Most of them.)
->
-> Finish each level clocking in as few times as possible. Your timecard is watching.
-
-*Hook rule:* lead with the pranks and the freezing freaks, not "switch between two worlds". Switching between two overlapping worlds is one of the example ideas on the jam page itself, so many entries will have it (GDD §1.8). Every example in the hook must exist in the shipped levels (the plank is the *Inventory* prank).
->
-> | | Keyboard | Gamepad |
-> |---|---|---|
-> | Move | A/D or ←/→ | Stick or d-pad |
-> | Jump | Space, W or ↑ (hold for higher) | A |
-> | Change shift | Shift or K | B, X or RB |
-> | Restart | R | Back |
-> | Pause | Esc | Start |
-> | Level select | L | X |
-> | Settings (volumes, effects, timer, controls) | O | Y |
-> | Mute | M | |
->
-> *On Windows, hammering Shift can open Sticky Keys. Use K, or turn off the Sticky Keys shortcut.*
->
-> **How it was made**
-> Designed by Vinícius Raposo for GitHub Game Off 2026 (theme: SHIFT). Built with AI assistance (Claude) to his design document, then tested like production software: the gameplay rules are a pure module with [N] automated tests, and every level is proven solvable at par by a scripted run. No engine, no assets: everything you see and hear is drawn and synthesized by code. Source: [GitHub link].
->
-> **Credits**: [design partner, as they choose to be credited, if involved]
->
-> If you enjoyed it, a follow or a small donation helps.
-
-**Before publishing, check every line against the build:** controls, level count, test count (`npm test`), any feature mentioned must exist (no planned features on the page).
+Lives in [itch/page.md](../itch/page.md) §4 (a draft; Fish writes the final words).
 
 ## 5. Submission day checklist (Nov 30)
 

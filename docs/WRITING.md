@@ -38,7 +38,7 @@ Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game l
 | Timecard ✅ | TIMECARD · Clock-ins · Par · Time · Incidents · stamps ON PAR / UNDER PAR! / +n OVERTIME |
 | End ✅ | SHIFT COMPLETE · Thanks for working overtime. · one row per act: ACT n · NAME (or FINALE) with clock-ins / par · Total clock-ins · Total time n s (with SPEEDRUN TIMER on; every attempt, restarts included) · the credits (§8) · SPACE: clock in again |
 
-### 2.1 Planned UI text *(drafts)*
+### 2.1 More UI text ✅ *(in the build; the words are drafts for Fish)*
 
 | Where | Text |
 |---|---|
@@ -96,7 +96,9 @@ SPOOKED! · AAAGH! · NOPE! · EEP! · NOT PAID ENOUGH
 | Prank countdown (both shifts) ✅ | NEXT NIGHT · IN 2 NIGHTS |
 | More tells ✅ (Nov 3: MINE NOW on Inventory's and Stacked's planks, DO NOT TUCH on Stacked's gate, FINDERS KEEPERS on the finale's door) | MINE NOW · DO NOT TUCH · FINDERS KEEPERS · (a drawing of eyes) |
 | Hex-flavored tells *(candidates; HEXED. NO TUCH is on Night Audit's plank)* | MINE BY ANSHENT LAW · HEXED. NO TUCH · THE PLANK IS OURS NOW · WE SEE YOU (WE R SHINY) |
-| The freaks' proud sign over the staircase (`stairs`) *(draft)* | OUR STARES! |
+| The freaks' proud sign over the staircase (`stairs`) ✅ | OUR STARES! |
+| Management's sign in `inventory` ✅ *(draft)* | STUCK? RESTART. |
+| `closing` sign ✅ | CLOSING TIME |
 
 ### 5.1 Signs in the levels ✅ *(in the build; drafts for Fish)*
 
@@ -180,4 +182,4 @@ Unused, kept for later: "Efficient. Suspiciously efficient."
 
 ## 9. itch page copy
 
-Lives in [RELEASE.md](RELEASE.md) §4. Fish writes the final version.
+Lives in [itch/page.md](../itch/page.md) §4. Fish writes the final version.

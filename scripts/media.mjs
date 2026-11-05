@@ -265,6 +265,7 @@ async function fullRun() {
   // gamepad: a stubbed standard pad (headless Chromium has none): A clocks in from the title, B shifts in the level
   await open('');
   await evaluate("(() => { window.__pad = { id: 'stub', mapping: 'standard', connected: true, axes: [0, 0, 0, 0], buttons: Array.from({ length: 17 }, () => ({ pressed: false, value: 0 })) }; navigator.getGamepads = () => [window.__pad]; })()");
+  await sleep(300); // the page's first frames
   const tap = async (i) => { await evaluate(`window.__pad.buttons[${i}].pressed = true`); await sleep(150); await evaluate(`window.__pad.buttons[${i}].pressed = false`); await sleep(150); };
   await tap(0);
   await sleep(1800); // the act card

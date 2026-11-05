@@ -251,7 +251,7 @@ export const SOLUTIONS = {
   },
 };
 
-// Policies for levels kept outside LEVELS: today's Clock Out, the fallback finale (CLOCKOUT_CLASSIC).
+// Policies for levels kept outside LEVELS: the classic Clock Out (CLOCKOUT_CLASSIC).
 export const SOLUTIONS_EXTRA = {
   clockoutClassic: (s) => {
     const x = tx(s);

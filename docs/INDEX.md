@@ -8,7 +8,7 @@ Everything needed to finish, ship and maintain *Double Shift* for GitHub Game Of
 |---|---|---|
 | [GDD.md](GDD.md) | The design: what the game is and why. Source of truth for rules (S-01…S-08), the freaks, tone, level plan. | Any design question |
 | [CONTENT.md](CONTENT.md) | The manifest: every level, system, asset, sound and text item in the full game, with tiers, cut dates and status. | Asking "what's in the game?" or "is X planned?" |
-| [BUILD.md](BUILD.md) | Build guide for agents: protocol, recipes, work order, and one task card per thing left to build (levels, Upside Down, skins, finale, cards, credits, sound hooks, release). | Picking up any build task |
+| [BUILD.md](BUILD.md) | Guide for agents: the working protocol, recipes for new levels, rules and assets, and the record of how each part was built. | Changing or adding anything |
 | [PRODUCTION.md](PRODUCTION.md) | Schedule to the deadline, milestones, the full backlog with priorities and cut lines. | Planning the day / week |
 | [DESIGN.md](DESIGN.md) | One-page write-up: the constraint, the key decisions, the numbers, what would change, a sixty-second pitch. | Explaining the project (portfolio, interviews, devlogs) |
 | [TECH.md](TECH.md) | Architecture, state shape, rules API, tuning values, how to add a level/prank/freak, testing, debug, build. | Writing code |

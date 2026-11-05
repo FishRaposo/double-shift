@@ -1,12 +1,12 @@
 # Technical Reference
 
-Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-02 (after the level audit).
+Companion to [GDD.md](GDD.md) §13. Describes the code as of 2026-11-05 (after the cohesion pass).
 
 **At a glance**
 - **The one rule:** `src/rules.js` decides everything that matters; the screen only draws it (§2).
-- `npm start` to play, `npm test` (<!-- n:tests -->360<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
+- `npm start` to play, `npm test` (<!-- n:tests -->411<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
 - Add a level: grids in `src/levels.js` + a `SOLUTIONS` entry in `test/solutions.mjs` (§6; the full recipe is BUILD.md §2.1).
-- The tier-C mechanics (wet floor, day-walker, supervisor, offset layer) are built — §6.5 documents them.
+- The five added mechanics (wet floor, day-walker, supervisor, offset layer, Upside Down) are built — §6.5 documents them.
 
 ## 1. Stack and constraints
 
@@ -27,7 +27,7 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-02 (a
 | `src/keys.js` | Key bindings: `DEFAULT_BINDS`, the menus' `RESERVED` keys, `rebind` (the action takes the key; an action left with none takes its free defaults back, else a swap), `cleanBinds` (repairs saved bindings), `keyLabel`/`keysText`/`keysShort` for the title, tutorial and CONTROLS screen (named by the player's keyboard layout where the browser shares it through `navigator.keyboard.getLayoutMap()`, so KeyQ reads A on AZERTY; otherwise by QWERTY position); `ownsKey` (keys kept from the page) and `browserShortcut` (a press with Ctrl, Cmd or Alt is the browser's: Ctrl+R reloads) | No |
 | `src/main.js` | Fixed-step loop, screens, event → sfx/fx, draw order; caches the static layer (echo, solids, hatched rims, skins, props, exit) per level × shift × prank state and the background per act × shift (the last 6); sizes the canvas on resize (`fitCanvas`, whole-pixel scale from `canvasScale`) | Yes |
 | `src/sprites.js` | Pixel sprites as string grids (worker frames, freaks), palettes, `workerFrame(p, t, fx, sign)` (pure), `spriteRect` (pure: where a frame lands, upright or `vflip`ped around its hitbox `box`), `drawSprite`/`drawEyes` | Data no; drawing yes |
-| `src/art.js` | Procedural pixel drawing: tiles, hatch, echoes, hazards, exit, checkpoint, signs, freaks, `PROPS`, planned-level objects, effects, panels, stamps, logo. Also the pure pieces the art tests check: the identity colors (`PAL`, `PLATE`, `NOTE_STRIP`, `HAZARD`, `BACKDROP`), `skyBands`, `exitRects` and `checkpointRect` (always on screen), and `shouldHatch` (only a one-shift region's rim; none when the night is generated). `drawBackground(g, layer, W, H, t, act)` draws the sky and `drawBackdrop`, one motif per act with rects only (the palette test rasterizes it) | Yes (canvas) |
+| `src/art.js` | Procedural pixel drawing: tiles, hatch, echoes, hazards, exit, checkpoint, signs, freaks, `PROPS`, level objects, telegraphs, effects, panels, stamps, logo. Also the pure pieces the art tests check: the identity colors (`PAL`, `PLATE`, `NOTE_STRIP`, `HAZARD`, `BACKDROP`), `skyBands`, `exitRects` and `checkpointRect` (always on screen), and `shouldHatch` (only a one-shift region's rim; none when the night is generated). `drawBackground(g, layer, W, H, t, act)` draws the sky and `drawBackdrop`, one motif per act with rects only (the palette test rasterizes it) | Yes (canvas) |
 | `src/font.js` | The pixel font: glyph table (pure), `measureText`, `wrapText`, `drawText` (cached string canvases) | Data no; drawing yes |
 | `src/copy.js` | Result-based lines: timecard comments, stamps, act card lines, spook lines, credits | No |
 | `src/layout.js` | Pure shell logic: `levelIndex` (`?level=` by id or position), `canvasScale` (whole device pixels per canvas pixel unless that wastes > 15 % of the window), the level select layout (`actRows`, `cardRect`, `tabRect`, `detailRect`, `moveSelect`, `selectClick`, `actLabel`), the end screen's per-act `endSummary` (with the run's total `time` for the speedrun timer), and memos (`memoNear`: within 2 tiles; `memoPanel`: the wrapped text's panel, ≤ 360 px or the memo's `w`, below the HUD, on screen) | No |
@@ -57,7 +57,7 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as built on 2026-11-02 (a
 
 ### 3.2 Order of operations inside `step()`
 1. **Shift** (new press sets a 80 ms buffer; try clean → nudge ≤4 px, against the destination's gravity first → keep buffering → reject). Validated against geometry *after* any due prank. After a shift you're grounded only if you touch the floor *and* move toward it or not at all (step 6's rule), so a nudge that leaves you flush against a floor you're leaving isn't a landing. A shift that turns gravity over (into or out of an Upside Down night) clears `rising`, and coyote time unless you're grounded after it.
-2. **Freak clock** advances by `dt` only if the player is on the night shift.
+2. **Freak clocks:** `freakClock` advances by `dt` only on the night shift, `dayClock` only on the day shift.
 3. **Horizontal** acceleration/deceleration (ground vs air values, turn-around boost).
 4. **Jump**: buffer (100 ms), coyote (80 ms, survives a shift of the same gravity), variable height (release while rising → `vy *= 0.45`). From here on every vertical rule reads `sign = gravitySign(level, layer)`, taken after the shift: the jump is `vy = −sign·620`, rising means `sign·vy < 0`.
 5. **Gravity** `vy += sign·gravity·dt`, clamped to `sign·vy ≤ maxFall`.
@@ -102,7 +102,7 @@ Shift happens first so a shift and a jump on the same tick see the new world (GD
 | `peek` | `id` | A peeker popped out (hidden last tick, out this tick) while you're on its shift; the boing |
 
 ### 3.5 Public API
-`TILE` (30), `DT`, `PARAMS`, `DAY`, `NIGHT`, `FREAK` ({w:20,h:22}), `SKIN_KINDS`, `parseLevel(def)`, `initState(level)`, `step(level, state, input)`, `NO_INPUT`, `tileAt(level, layer, tx, ty, overrides)` (outside the grid: side walls, a solid ceiling and an open floor, the other way up on a flipped layer), `overlapsSolid(...)`, `overlapsHazard(...)` (the hazard band is on the floor side of the tile: the bottom 45 %, or the top 45 % on a flipped layer), `freakBoxes(level, state)` (each box has `hang`: true for a freak of a flipped shift, which hangs from the solid above its cell), `pendingPranks(level, state)` (what the tells show: nights left and the tiles that will change), `isSolidChar(ch)`, `supervisorFacing(f, t)`, `watchedClock(side, sup, t)`, `isEmbedded(level, state)`, `gravitySign(level, layer)` (−1 only on the night of an `upsideDown` level), `spawnPoint(tx, ty, sign = 1)` (standing on the cell's floor, or hanging under the cell above), `standableSpot(level, layer, tx, ty, ov)` (that spot when it's free and grounded under the layer's gravity, else null; checkpoints and the fairness test use it). Death events carry `cause`, `by` (freak kind) and `layer` (the shift you died in).
+`TILE` (30), `DT`, `PARAMS`, `DAY`, `NIGHT`, `FREAK` ({w:20,h:22}), `SKIN_KINDS`, `pendingPranks(level, state)` (what the tells show: nights left, the tiles that will change), `parseLevel(def)`, `initState(level)`, `step(level, state, input)`, `NO_INPUT`, `tileAt(level, layer, tx, ty, overrides)` (outside the grid: side walls, a solid ceiling and an open floor, the other way up on a flipped layer), `overlapsSolid(...)`, `overlapsHazard(...)` (the hazard band is on the floor side of the tile: the bottom 45 %, or the top 45 % on a flipped layer), `freakBoxes(level, state)` (boxes also carry `hang`, `dir`, `popIn`, `supervised`, `watched` for the telegraphs) (each box has `hang`: true for a freak of a flipped shift, which hangs from the solid above its cell), `pendingPranks(level, state)` (what the tells show: nights left and the tiles that will change), `isSolidChar(ch)`, `supervisorFacing(f, t)`, `watchedClock(side, sup, t)`, `isEmbedded(level, state)`, `gravitySign(level, layer)` (−1 only on the night of an `upsideDown` level), `spawnPoint(tx, ty, sign = 1)` (standing on the cell's floor, or hanging under the cell above), `standableSpot(level, layer, tx, ty, ov)` (that spot when it's free and grounded under the layer's gravity, else null; checkpoints and the fairness test use it). Death events carry `cause`, `by` (freak kind) and `layer` (the shift you died in).
 
 Input frame: `{ left, right, jumpHeld, jumpPressed, shiftPressed }`.
 
@@ -115,7 +115,7 @@ Input frame: `{ left, right, jumpHeld, jumpPressed, shiftPressed }`.
 | `groundAccel` / `groundDecel` | 2600 / 3000 | px/s² | Snappy start/stop |
 | `airAccel` / `airDecel` | 1700 / 900 | px/s² | Air control; low decel keeps momentum |
 | `gravity` | 2000 | px/s² | |
-| `jumpVelocity` | 620 | px/s | Full jump ≈ 96 px (3.2 tiles), 0.62 s airtime |
+| `jumpVelocity` | 620 | px/s | Full jump ≈ 93.5 px (3.1 tiles), 0.62 s airtime |
 | `jumpCut` | 0.45 | × | Tap-jump height |
 | `maxFall` | 900 | px/s | 7.5 px/tick, less than a tile: no tunnelling |
 | `coyoteTime` | 0.08 | s | Carries across a shift |
@@ -129,7 +129,7 @@ Derived metrics for level design are in [LEVELS.md](LEVELS.md) §1. **Any change
 
 ## 5. Level format
 
-See [LEVELS.md](LEVELS.md) §2 for the full format. Summary: `{ id, name, act, note, par, day: [...], night: [...], pranks?, freaks?, skins?, decor?, props?, spawnLayer? }` — or `offset: { dx, dy }` + `nightPatch?` instead of `night` (§6.5). Act names are `ACTS` in `src/levels.js`; the finale is act `FINALE_ACT` (6). Grids must be equal size; the current game uses 32×18 (exactly one screen).
+See [LEVELS.md](LEVELS.md) §2 for the full format. Summary: `{ id, name, act, note, par, day: [...], night: [...], pranks?, freaks?, skins?, decor?, props?, spawnLayer?, rev? }` — or `offset: { dx, dy }` or `upsideDown: true`, with `nightPatch?`, instead of `night` (§6.5). Act names are `ACTS` in `src/levels.js`; the finale is act `FINALE_ACT` (6). Grids must be equal size; the current game uses 32×18 (exactly one screen).
 
 - **Skins** (`skins: [{ kind: 'door'|'pillar'|'portrait'|'doorPile', tx, ty, w?, h?, layer? }]`) are object art over ordinary solid tiles; `parseLevel` validates them like every other field (the kind is one of `SKIN_KINDS`, `layer` is `'day'`, `'night'` or left out for both, the covered cells are inside the grid, doors and pillars are 1 wide and the pile 2) and fills default sizes (door 1×2, pillar 1×4, portrait 3×2, pile 2 wide and at most `h` = 3 doors high). The pure `skinPlan(level, layer, ov)` in `src/skins.js` reads the tiles under each skin under the current prank overrides: all solid draws the object, all empty draws what's left (a door's empty frame, a pillar's crack) but only if the object stood there (the level built it there or a prank has written those tiles), mixed draws nothing. Doors and pillars stand on their bottom cell; a portrait hangs from its top-left cell; the pile counts solid rows up from its bottom row, never more than `h` (so a platform above it isn't drawn as doors).
 - **Prank sounds:** a prank may name a `sound` (a `SOUNDS` entry, e.g. `doorThunk`) played with the giggle when it fires.
@@ -157,9 +157,9 @@ One object moved by every night entry (the pillar, the portrait, Ceiling Walker'
 3. Tests first: behavior on it, behavior shifting onto/off it.
 4. Draw it in `drawSolids`/a new draw function.
 
-### 6.5 Tier-C mechanics (built)
+### 6.5 Added mechanics (built)
 
-The four tier-C mechanics from [CONTENT.md](CONTENT.md) §3 — all built, tested and shipped in their levels. Each follows the same rules as everything else: pure functions of state and level, no per-object mutable state.
+The five added mechanics from [CONTENT.md](CONTENT.md) §3 — all built, tested and shipped in their levels. Each follows the same rules as everything else: pure functions of state and level, no per-object mutable state.
 
 #### Wet floor `~` (SYS-1, level `wet`)
 - **Collision:** `~` is solid. One `isSolidChar(ch)` exported from `rules.js` is the single solidity test for rules (`overlapsSolid`) and renderer (`main.js`), so the two can't drift.
@@ -212,7 +212,7 @@ The four tier-C mechanics from [CONTENT.md](CONTENT.md) §3 — all built, teste
 
 | Command | What it covers |
 |---|---|
-| `npm test` | <!-- n:tests -->360<!-- /n --> tests: GDD §13.7 cases 1–15, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, Upside Down rules (flip, gravity sign, hanging, jump and cut, nudge order, coyote across a flip, hazard band, grid edges, checkpoints, fuzz), every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
+| `npm test` | <!-- n:tests -->411<!-- /n --> tests: GDD §13.7 cases 1–15, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, Upside Down rules (flip, gravity sign, hanging, jump and cut, nudge order, coyote across a flip, hazard band, grid edges, checkpoints, fuzz), every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
 | `npm run check` | Every module parses; every level validates |
 | `npm run audit` | Per level: the slack of every required shift and jump (fails under the act floor), input-lag tolerance 0–150 ms, and a random search for wins below par or without shifting (`scripts/audit-levels.mjs`). |
 | `npm run media` | Real browser (headless Edge/Chrome, no dependencies): plays level 1 with key presses, fails on page errors, a wrong outcome, audio clipping or a slow frame; saves the cover, screenshots and gallery. |
@@ -256,7 +256,7 @@ GitHub Pages serves `main` (root) at <https://fishraposo.github.io/double-shift/
 
 ## 11. Known limitations
 
-- No camera: levels are single-screen (open decision, PRODUCTION.md §5).
+- No camera: levels are single-screen (decided Nov 3, PRODUCTION.md §5).
 - No touch controls. A gamepad works (`src/pad.js`, a fixed standard mapping); if an embed's permissions keep `getGamepads()` from the page, `readPads` reports it and the game stays keyboard-only.
 - `structuredClone` per tick is fine at this state size; revisit only if levels grow a lot.
 - Browsers can't suppress OS shortcuts (Sticky Keys).

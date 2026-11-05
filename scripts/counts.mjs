@@ -1,7 +1,7 @@
 // Doc counts: every number in the docs that tracks the code is wrapped in a marker, and this script checks
 // (or rewrites) them against the code, so the docs can't drift (docs/INDEX.md: every number matches the code).
 //
-//   <!-- n:tests -->142<!-- /n -->            tests in `npm test` (runs the suite, ~10 s)
+//   <!-- n:tests -->142<!-- /n -->            tests in `npm test` (runs the suite, about a minute)
 //   <!-- n:levels -->12<!-- /n -->            levels in LEVELS
 //   <!-- n:lines:src/rules.js -->523<!-- /n -->   lines in a source file (as `wc -l` counts them)
 //
