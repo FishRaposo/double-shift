@@ -51,10 +51,6 @@ export function skinPlan(level, layer, ov = {}) {
       let all = true;
       for (let dy = 0; dy < sk.h && all; dy++) for (let dx = 0; dx < sk.w; dx++) if (!solid(level, layer, ov, sk.tx + dx, sk.ty + dy)) all = false;
       if (all) out.push({ draw: 'portrait', tx: sk.tx, ty: sk.ty, w: sk.w, h: sk.h });
-      else {
-        const bottom = sk.ty + sk.h - 1; // dropped flat: only the bottom row is left
-        if (columns(sk).every((tx) => solid(level, layer, ov, tx, bottom) && !solid(level, layer, ov, tx, bottom - 1))) out.push({ draw: 'portraitFlat', tx: sk.tx, ty: bottom, w: sk.w });
-      }
     } else if (sk.kind === 'doorPile') {
       let count = 0;
       const full = (ty) => columns(sk).every((tx) => solid(level, layer, ov, tx, ty));

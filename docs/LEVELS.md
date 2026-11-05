@@ -85,39 +85,38 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 8. Teach one new thing per level, in a safe space first, then test it.
 9. One screen: the whole puzzle is readable at a glance.
 
-## 4. The levels (redesigned around their repairs, Nov 5)
+## 4. The levels (rebuilt around what repairs do, Nov 5)
 
-Every level is built from one sentence: **what's visibly broken, and what fixing it changes.** A repair is fetched on one shift and made on the other where that helps the puzzle, and it changes the map (`fix.set`), so the level can't be won without it. The broken thing, what it drives and the link between them are visible, and the job in hand is labelled on the HUD and with tags in the level. The route and par of each are proven in `test/solutions.mjs`; `npm run audit` prints the timing windows.
+Every level is built on one rule: **the repair is the level's puzzle, not its lock.** The types and the freaks' roles are in the GDD (§4.10, §4.11). `test/levels.test.mjs` enforces the shape: every job is needed, the first repair lands within 70% of the scripted run, at least one shift and one jump follow it (a flipped level's falling counts), and each type does what it says. Those tests stop the old shape coming back; they can't prove a level is fun.
 
-| # | Level (id) | Par | What's broken | The job | What it changes |
+| # | Level (id) | Par | Repair | Freaks | The puzzle |
 |---|---|---|---|---|---|
-| 1 | Clock In (`clock`) | 2 | A dead roller shutter seals the exit | Fuse on the night boards over the pit; fuse box by day | The shutter rolls up |
-| 2 | Scaffolding (`scaff`) | 3 | A deck sags off a missing bolt | Wrench at night; bolt by day | The deck rises, so the top floor is in reach |
-| 3 | Closing Time (`closing`) | 2 | Rebar by day and lasers by night cover the floor | Tape by day; loose cable at night | The lasers die |
-| 4 | Mid-Air (`midair`) | 3 | A burst pipe has flooded the basement | Wrench on the day stone, reached mid-air; pipe at night | The water drains; the exit is on the basement floor |
-| 5 | Inventory (`inventory`) | 3 | A jammed fire door before the exit | Oil on the island between the pits; hinge at night | The door opens. Their plank moves on the 2nd night entry |
-| 6 | Night Watch (`watch`) | 4 | The last room is pitch dark | Bulb in the lurker's tunnel, by day; dead light at night | The room lights up and steps appear to the exit |
-| 7 | Under Renovation (`stairs`) | 2 | A hoist stuck at the bottom; the exit is across a gap | Tape by day; cable at the top of their stairs, at night | The hoist rises and bridges the gap |
-| 8 | Lost & Found (`doors`) | 5 | The exit ledge is out of reach of their door pile | Oil by day; hinge on top of the pile, at night (all three thefts) | A door swings out as a bridge |
-| 9 | Wet Floor (`wet`) | 4 | A burst pipe pours across the way out and wets the floor | Wrench by day; pipe at night | The water stops and the floor dries to grip |
-| 10 | Structural Integrity (`pillar`) | 3 | A sagging post blocks the top corridor | Wrench on the crate by day; jack on the ledge reached by their pillar, at night | The post lifts |
-| 11 | Night Management (`supervisor`) | 2 | A shutter seals the exit | Fuse in the tunnel the clipboard watches; box by day | The shutter opens |
-| 12 | Stacked (`stacked`) | 5 | A shutter over the far plank | Tape on the middle floor; loose cable on the landing, by day | The shutter opens |
-| 13 | Employee of the Month (`portrait`) | 4 | Their portrait fills the doorway on both shifts | Wrench on the day step; bracket at the top, at night | The portrait drops flat. A squatter sits at its foot, so come down by day |
-| 14 | Broad Daylight (`daywalker`) | 5 | A shutter seals the exit | Fuse at night; box at the end of the day-walker's beat | The shutter opens |
-| 15 | Floor 3.5 (`offset`) | 4 | The top floor has a lift shaft in it | Fuse by day; lift panel a floor down, at night | The lift bridges the shaft |
-| 16 | Night Audit (`audit`) | 5 | A gate and a shutter close the route | Two stations: tape and cable, fuse and box | Each opens the next stretch |
-| 17 | Mind Your Head (`upside`) | 2 | The ceiling light is out and the exit room is dark | Bulb by day; the fitting is on the ceiling, so at night | The room lights up and opens |
-| 18 | Falling Up (`fallup`) | 4 | A leak across the far side | Wrench on the walkway by day; pipe in the pit, at night | The water stops |
-| 19 | Ceiling Walker (`ceiling`) | 4 | A shutter on the ceiling route | Tape by day; cable at night | The shutter opens. The exit's pocket can only be entered hanging from the plank |
-| 20 | Head Over Heels (`heels`) | 7 | A shutter on the floor corridor, a stuck door on the ceiling corridor | Two jobs, one on each | Each corridor opens |
-| 21 | Clock Out (`clockout`) | 7 | Every room is shut, and the time clock is broken | One job per room, the last in the shaft: timecard, then the time clock | Shutters, hatches, and the way out. Then the ending |
+| 1 | Clock In (`clock`) | 3 | Build | None | Cross on the night boards, fix the deck, and climb it to the top floor |
+| 2 | Scaffolding (`scaff`) | 4 | Build | None | The deck and the wall beside it are the day crew's: jump off the deck and clock in mid-air |
+| 3 | Closing Time (`closing`) | 2 | Power | Peeker | One fuse: fit it in the shutter box, pull it from the far side, fit it in the laser box |
+| 4 | Mid-Air (`midair`) | 3 | Water | None | Climb out mid-air; the valve floods where you came from and drains where you are going |
+| 5 | Inventory (`inventory`) | 3 | Secure | Prank | Bolt the far plank before the second night |
+| 6 | Night Watch (`watch`) | 4 | Light | Lurker, squatter | The bulb is on a lurker's beat; the light clears the corridor past it |
+| 7 | Under Renovation (`stairs`) | 5 | Machine | Lurker | The hoist moves a stop per clock-in, wherever you are: be there when it comes |
+| 8 | Lost & Found (`doors`) | 6 | Secure | Pranks, lurker | The doors swap every night: bolt them when they are where you want them |
+| 9 | Wet Floor (`wet`) | 4 | Water | Lurker | Fetch the wrench from the lurker's corridor, turn the leak onto it, and ride the wax out above |
+| 10 | Structural Integrity (`pillar`) | 5 | Secure | Repeating prank | The jack only bites with the pillar under the beam, and it has to stay for the next clock-in |
+| 11 | Night Management (`supervisor`) | 2 | Power | Supervisor, lurkers | Two tunnels, one each side of the clipboard, and the fuse goes through with you |
+| 12 | Stacked (`stacked`) | 3 | Secure | Three pranks | Three things are scheduled and there is one bolt: read them and choose |
+| 13 | Employee of the Month (`portrait`) | 4 | Light | Squatter | By day the portrait fills the doorway, by night its sitter does; the spotlight clears it |
+| 14 | Broad Daylight (`daywalker`) | 5 | Machine | Day-walker, lurker | A beat on each shift in the tunnel, and every clock-in past them moves the hoist |
+| 15 | Floor 3.5 (`offset`) | 6 | Machine | Peeker | The lift is a trolley across the top-floor gap, and it only runs on a clock-in |
+| 16 | Night Audit (`audit`) | 5 | Build, Secure, Light | Several | The exam: a gate, a plank and a tunnel, one job per stretch |
+| 17 | Mind Your Head (`upside`) | 2 | Light | Squatter | Change the light from the ceiling; the squatter in the low lane past it scatters |
+| 18 | Falling Up (`fallup`) | 4 | Water | Peeker | Turn the valve mid-fall, and the leak goes back down the pit |
+| 19 | Ceiling Walker (`ceiling`) | 4 | Secure | Supervisor, prank | Bolt the far plank by day, under the clipboard’s tunnel |
+| 20 | Head Over Heels (`heels`) | 7 | Power | Day-walkers, lurkers | One fuse for the floor corridor and the ceiling corridor: take it up the shaft |
+| 21 | Clock Out (`clockout`) | 7 | Build, Light, Water | All | One job per room, the light clearing the next room, then the time clock |
 
 Notes that outlive the table:
-- **One of every freak:** Clock Out has a peeker, a squatter, a lurker, the day-walker and the supervisor on a perch. Night Audit uses a peeker and a squatter too.
-- **Act 5 rehearses the finale:** Ceiling Walker has wax and a clipboard on a flipped map.
+- **Clock Out** uses Build, Light and Water, not all six: it keeps its four rooms and the time clock. Power, Machine and Secure rooms would need the finale rebuilt.
 - **The classic Clock Out** stays in `src/levels.js` as `CLOCKOUT_CLASSIC` (not in `LEVELS`), proven at par 7.
-- **Text:** the art carries the idea and the labels name it. `npm run media -- --notext <ids>` is a review check that a level still makes sense with its text hidden; the text stays in the game.
+- **Text:** the art carries the idea and the labels name it. `npm run media -- --notext <ids>` is a review check; the text stays in the game.
 
 ## 5.0 The 21-level sequence (20 levels + finale; Fish, 2026-11-02)
 

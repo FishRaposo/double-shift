@@ -3,7 +3,7 @@
 Companion to [GDD.md](GDD.md) §11. All audio is synthesized with WebAudio in `src/audio.js`. No audio files, no licensed music.
 
 **At a glance**
-- 28 sound effects are built (§2); the 16-bar theme ships in two synced arrangements that crossfade on every shift (§3).
+- 30 sound effects are built (§2); the 16-bar theme ships in two synced arrangements that crossfade on every shift (§3).
 - Every SFX is ≤ 0.25 s. The shift sound's pitch says where you went: down = night, up = day.
 - Funny, not scary: yelps, giggles, a rubber stamp. `M` mutes.
 
@@ -116,6 +116,8 @@ Same `voice()` format as §2; every sound ≤ 0.25 s.
 | Gravity flip (`flip`, every shift in an Upside Down level, under the shift sound) | act 5 | A falling whoomp | sine 300 → 120 Hz, 0.12 s, vol 0.12 |
 | Tool picked up (`toolPickup`) | every level | Two rising notes |
 | Repair done (`repaired`) | every level | A clunk, then two bright notes |
+| Fuse pulled, valve swapped back (`pulled`) | Power, Water | A short falling clunk |
+| Machine stop (`machine`) | Machine | A low grind |
 
 ## 5. Mixing checklist
 

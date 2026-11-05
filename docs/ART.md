@@ -180,9 +180,11 @@ The screen should read in this order: **worker → what's solid now → hazards 
 ### 5.2 Work orders *(built Nov 5)*
 
 - **Tools** are 11×11 sprites (`tool-*` in `src/sprites.js`): fuse, wrench, bulb, oil, tape, card. On the other shift they're dashed outlines. The worker carries the tool in hand.
-- **Fixtures** (`fix-*`) have a `broken` and a `fixed` frame that differ in silhouette: fuse box, pipe, light, bolt, hinge, cable, clock. A test enforces it.
+- **Fixtures** (`fix-*`) have a `broken` and a `fixed` frame that differ in silhouette: fuse box, pipe, light, bolt, hinge, cable, clock, valve, winch. A test enforces it.
 - **The link:** a broken dead line from the fixture to what it drives, a live moving line once repaired (`drawJobLink`).
-- **Machines** are skins over solid tiles: roller shutter, scaffold deck, the big portrait and its flat fallen form. Water is the tile `w`; the other shift shows it as a dotted box the size of the tile, and a flipped night turns it over, so it pours upward. A dark room is `fix.dark`.
+- **Machines** are skins over solid tiles: roller shutter, scaffold deck, the big portrait, and the hoist car (`drawCar`) with its rails and every stop marked. The next stop is outlined like a prank.
+- **What a job would change** is outlined in green for the job in hand and anything that can still be swapped. A room waiting for its light is dim, with its freaks showing; lit, it is warm and empty. A stopped prank gets a green BOLTED note.
+- Water is the tile `w`; the other shift shows it as a dotted box the size of the tile, and a flipped night turns it over, so it pours upward. A dark room is `fix.dark`.
 - **Words:** the HUD says the job and the next step, with icons; paper tags name the tool, the broken thing and what it drives for the job in hand.
 - **Feedback:** corner brackets, puffs on what changed, and a FIXED pop.
 

@@ -883,7 +883,7 @@ function jobWords(lvl, s) {
   const many = job.spots.length > 1;
   let step = `GET THE ${job.tool.name}`;
   if (done && many) step = `${job.tool.name} IN THE ${job.spots[at].name}`;
-  else if (done) step = job.undoes ? 'TOUCH IT TO SWAP' : 'DONE';
+  else if (done) step = job.undoes ? 'TOUCH IT TO SWAP' : job.fix.car ? 'CLOCK IN TO MOVE IT' : 'DONE';
   else if (tool) step = many ? `FIT THE ${job.tool.name}` : `FIX THE ${job.fix.name}`;
   const goal = job.fix.goal ?? `FIX THE ${job.fix.name}`;
   return { goal: `WORK ORDER: ${goal}`, step };

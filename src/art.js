@@ -1047,16 +1047,6 @@ export function drawPortrait(g, x, y, t, w = 3, h = 2) {
   px(g, cx - 10 * A, y + (H - 6) * A, 20, 1, C.brassLo);
 }
 
-// the same portrait, dropped flat on the floor: a gold-edged slab
-export function drawPortraitFlat(g, tx, ty, w) {
-  const x = tx * TILE;
-  const y = ty * TILE + 8 * A;
-  px(g, x, y, w * 15, 7, C.ink);
-  px(g, x + A, y + A, w * 15 - 2, 5, C.brassLo);
-  px(g, x + 2 * A, y + A, w * 15 - 4, 1, C.brass);
-  px(g, x + 3 * A, y + 3 * A, w * 15 - 6, 2, '#5a2f3c');
-}
-
 // a steel roller shutter over a doorway, and the drum it rolls up into
 export function drawShutter(g, tx, ty, layer, rows = 4) {
   const x = tx * TILE;
@@ -1127,7 +1117,6 @@ export function drawSkin(g, sp, layer, t = 0) {
   else if (sp.draw === 'crack') drawCrack(g, sp.tx, sp.ty, layer);
   else if (sp.draw === 'doorPile') drawDoorPile(g, sp.tx, sp.ty, layer, sp.count);
   else if (sp.draw === 'portrait') drawPortrait(g, sp.tx * TILE, sp.ty * TILE, t, sp.w, sp.h);
-  else if (sp.draw === 'portraitFlat') drawPortraitFlat(g, sp.tx, sp.ty, sp.w);
   else if (sp.draw === 'shutter') drawShutter(g, sp.tx, sp.ty, layer, sp.h);
   else if (sp.draw === 'shutterOpen') drawShutterOpen(g, sp.tx, sp.ty);
   else if (sp.draw === 'deck') drawDeck(g, sp.tx, sp.ty, sp.w, sp.sag, sp.floorRow);
