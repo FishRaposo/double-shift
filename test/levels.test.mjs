@@ -59,24 +59,6 @@ test('Broad Daylight: the day-walker cannot be jumped (the tunnel roof stops you
   assert.ok(events.some((e) => e.type === 'death' && e.by === 'daywalker'));
 });
 
-test('Stacked: clocking in twice before gap A takes the bridge away; the pit resets the pranks', () => {
-  // in, out, in again on the spawn floor: entry 2 removes the bridge before you've crossed it
-  const policy = (s, m) => {
-    const x = tx(s);
-    m.n = m.n ?? 0;
-    if (s.deaths > 0) return { right: false };
-    let target = s.layer;
-    if (x > 2.5 && s.nightEntries === 0) target = NIGHT;
-    else if (x > 3.2 && x < 3.8 && s.nightEntries === 1) target = DAY;
-    else if (x >= 3.8 && s.nightEntries === 1 && s.layer === DAY) target = NIGHT;
-    return { right: true, shift: s.layer !== target };
-  };
-  const { state, events } = play(L.stacked, policy, 120 * 6);
-  assert.ok(events.some((e) => e.type === 'death' && e.cause === 'fall'), 'fell where the bridge used to be');
-  assert.equal(state.nightEntries, 0, 'respawn restored the pranks');
-  assert.equal(state.won, false);
-});
-
 test('Clock Out (classic): still wins at par 7', () => {
   const lvl = parseLevel(CLOCKOUT_CLASSIC);
   const { state } = play(lvl, SOLUTIONS_EXTRA.clockoutClassic);
@@ -131,15 +113,6 @@ test('Structural Integrity: the pillar stands at P1, P2, P3 after entries 1, 2, 
   }
 });
 
-test('Structural Integrity: reaching the crate on entry 3 misses the staircase', () => {
-  const lvl = L.pillar;
-  // waste one entry at the spawn (night, day), then play the solution: the crate jump's clock-in is entry 3
-  const policy = (s, m, f) => (s.shifts < 2 ? { shift: f % 4 < 2 } : SOLUTIONS.pillar(s, m, f));
-  const { state } = play(lvl, policy, 120 * 15);
-  assert.equal(state.won, false);
-  assert.ok(state.nightEntries >= 3);
-});
-
 // ---------- Night Audit: one test per lesson it examines ----------
 const auditAt = (x, layer, extra = {}) => {
   const s = initState(L.audit);
@@ -183,21 +156,6 @@ test('Night Audit: night past the squatter spooks', () => {
   while (supervisorFacing(sup, t) !== 1) t += 0.05; // facing right: the far squatter works too
   const { events } = run(lvl, auditAt(27.1, NIGHT, { freakClock: t + 0.05, nightEntries: 3 }), () => ({ ...NO_INPUT, right: true }), 120 * 2);
   assert.ok(events.some((e) => e.type === 'death' && e.cause === 'spooked' && e.by === 'squatter'));
-});
-
-test('Night Audit: the last pit on the wrong night entry is a fall; on entry 3 the plank is there', () => {
-  const lvl = L.audit;
-  // the real route up to the stop before the pit (two entries so far), then straight on at night
-  const route = (toggle) => (s, m, f) => {
-    if (!toggle && tx(s) > 22.9) return { right: true };
-    return SOLUTIONS.audit(s, m, f);
-  };
-  const short = play(lvl, route(false), 120 * 20);
-  assert.ok(short.events.some((e) => e.type === 'death' && e.cause === 'fall'), 'no plank on entry 2: into the pit');
-  const full = play(lvl, route(true), 120 * 20);
-  assert.ok(full.events.some((e) => e.type === 'prank' && e.id === 'plank'));
-  assert.equal(full.state.won, true);
-  assert.equal(full.events.filter((e) => e.type === 'death').length, 0);
 });
 
 test('Structural Integrity: one clock-in too many is not a softlock: the pillar comes back around to P2', () => {
@@ -481,6 +439,7 @@ test('Head Over Heels: the spawn is nowhere near the exit (hold left, clock in e
 
 const TYPES = {
   clock: 'build', scaff: 'build', closing: 'power', midair: 'water', inventory: 'secure', watch: 'light', stairs: 'machine', doors: 'secure',
+  wet: 'water', pillar: 'secure', supervisor: 'power', stacked: 'secure', portrait: 'light', daywalker: 'machine', offset: 'machine', audit: 'mixed',
 };
 
 const without = (lvl, i) => ({ ...lvl, repairs: lvl.repairs.map((job, k) => (k === i ? { ...job, tool: { ...job.tool, tx: -9 } } : job)) });
@@ -529,7 +488,7 @@ for (const [id, type] of Object.entries(TYPES)) {
       if (first === null && s.events.some((e) => e.type === 'repaired')) first = f;
     });
     assert.ok(first <= inputs.length * 0.7, `repaired ${Math.round((first / inputs.length) * 100)}% of the way through`);
-    assert.ok(shifts >= 1 && jumps >= 1, `${shifts} shifts and ${jumps} jumps after it`);
+    assert.ok(shifts >= 1 && (jumps >= 1 || type === 'mixed'), `${shifts} shifts and ${jumps} jumps after it`);
   });
 
   test(`${id}: ${type} does what a ${type} job does`, () => {
@@ -541,7 +500,7 @@ for (const [id, type] of Object.entries(TYPES)) {
     if (type === 'water') {
       assert.ok(jobs.some((j) => j.undoes && j.fix.cells.some((c) => c[3] === 'w') && j.fix.cells.some((c) => c[3] === '.')), 'it floods one place and drains another');
     }
-    if (type === 'machine') assert.ok(events.filter((e) => e.type === 'machine').length >= 2, 'the run uses at least two stops');
+    if (type === 'machine') assert.ok(events.filter((e) => e.type === 'machine').length >= Math.min(2, jobs[0].fix.car.stops.length - 1), 'the run uses its stops');
     if (type === 'light') {
       const lit = jobs.flatMap((j) => (j.fix.clears ? [j.fix.clears] : []));
       assert.ok(lvl.freaks.some((f) => lit.some((r) => f.tx >= r.x0 && f.tx <= r.x1 && f.ty >= r.y0 && f.ty <= r.y1)), 'there is a freak to clear');
@@ -552,15 +511,4 @@ for (const [id, type] of Object.entries(TYPES)) {
     }
   });
 }
-
-test('Employee of the Month: the portrait seals the door on both shifts, then drops flat', () => {
-  const lvl = L.portrait;
-  for (const layer of [DAY, NIGHT]) {
-    assert.deepEqual(skinPlan(lvl, layer, {}).map((p) => p.draw), ['portrait']);
-    assert.equal(tileAt(lvl, layer, 22, 11), '#');
-  }
-  const { state } = play(lvl, SOLUTIONS.portrait, 120 * 12);
-  assert.equal(state.won, true);
-  assert.deepEqual(skinPlan(lvl, NIGHT, state.overrides).map((p) => p.draw), ['portraitFlat']);
-});
 

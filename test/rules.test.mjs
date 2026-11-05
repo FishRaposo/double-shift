@@ -1251,7 +1251,7 @@ test('machine: nothing until repaired; then one stop per night clock-in, back an
 
 test('machine: it carries whoever stands on it, and a clock-in that would bury you waits', () => {
   const lvl = level(LIFT_DAY, LIFT_NIGHT, LIFT);
-  const running = () => { const st = initState(lvl); st.repairs = [{ ...st.repairs[0], tool: true, done: true }]; return st; };
+  const running = () => { const st = initState(lvl); st.repairs = [{ ...st.repairs[0], tool: true, done: true, at: 0 }]; return st; };
   let s = stepN(lvl, place(running(), 6, 3), 40);
   assert.equal(s.player.grounded, true);
   const { y } = s.player;

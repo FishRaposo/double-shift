@@ -302,3 +302,7 @@ test('work orders: every tool and fixture a level names has a sprite', () => {
     }
   }
 });
+
+test('every level note fits on its strip', () => {
+  for (const def of LEVELS) if (def.note) assert.ok(measureText(def.note, 2) <= 900, `${def.id}: ${measureText(def.note, 2)} px`);
+});
