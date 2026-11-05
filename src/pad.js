@@ -23,8 +23,8 @@ export function readPads(nav) {
 }
 
 // Outside a level a press stands in for a menu key: A Space, B Esc, X L (level select), Y O (settings), Start
-// Space on the title and Esc elsewhere, Back R, the d-pad or stick the arrows. Null: no menu meaning.
-const MENU_KEYS = Object.freeze({ PadA: 'Space', PadB: 'Escape', PadX: 'KeyL', PadY: 'KeyO', PadSelect: 'KeyR', PadUp: 'ArrowUp', PadDown: 'ArrowDown', PadLeft: 'ArrowLeft', PadRight: 'ArrowRight' });
+// Space on the title and Esc elsewhere, Back R, RB Q (on a break: the title), the d-pad or stick the arrows. Null: no menu meaning.
+const MENU_KEYS = Object.freeze({ PadA: 'Space', PadB: 'Escape', PadX: 'KeyL', PadY: 'KeyO', PadSelect: 'KeyR', PadRB: 'KeyQ', PadUp: 'ArrowUp', PadDown: 'ArrowDown', PadLeft: 'ArrowLeft', PadRight: 'ArrowRight' });
 export function padMenuKey(code, screen) {
   if (code === 'PadStart') return screen === 'title' ? 'Space' : 'Escape';
   return MENU_KEYS[code] ?? null;

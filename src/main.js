@@ -219,7 +219,7 @@ function handleKey(e) {
   if (game.screen === 'end') {
     if (game.screenTime < 0.6) return; // mashing past the last timecard mustn't skip the ending
     if (e.code === 'Space' || e.code === 'Enter') startRun(0);
-    else if (e.code === 'Escape') setScreen('title');
+    else if (e.code === 'Escape') { game.index = 0; setScreen('title'); } // the next clock-in is a new game
     return;
   }
   if (game.screen === 'paused') {
@@ -227,6 +227,7 @@ function handleKey(e) {
     else if (e.code === 'KeyR') startLevel(game.index, { card: false });
     else if (e.code === 'KeyL') openSelect();
     else if (e.code === 'KeyO') openSettings();
+    else if (e.code === 'KeyQ') setScreen('title');
     return;
   }
   // play
@@ -271,7 +272,7 @@ function pollPad() {
 // Clicking outside an itch embed mustn't leave the level running.
 addEventListener('blur', () => {
   input.clear();
-  if (game.screen === 'play') setScreen('paused');
+  if (game.screen === 'play' || game.screen === 'act') setScreen('paused'); // an act card would run on into the level
 });
 // Size the canvas to a whole number of device pixels per canvas pixel unless that wastes > 15% of the window
 // (src/layout.js canvasScale); the CSS in index.html is the fallback before this runs.
@@ -336,11 +337,11 @@ const settingRect = (row) => ({ x: W / 2 - 260, y: 110 + row * 50, w: 520, h: 44
 // On-screen key names: the layout's for letters, and the pad's button when the pad was used last.
 const KEY_WORDS = { Space: 'SPACE', Escape: 'Esc', Enter: 'Enter' };
 const keyName = (code) => KEY_WORDS[code] ?? keyLabel(code, keyLayout);
-const PAD_WORDS = { Space: 'A', Escape: 'B', KeyR: 'Back', KeyL: 'X', KeyO: 'Y' };
+const PAD_WORDS = { Space: 'A', Escape: 'B', KeyR: 'Back', KeyL: 'X', KeyO: 'Y', KeyQ: 'RB' };
 const btnName = (code) => (game.padLast ? PAD_WORDS[code] : keyName(code));
 
 // A centred row of actions ("Esc: resume   R: restart"), the same on every device: each is also a click target.
-const PAUSE_ACTIONS = [['Escape', 'resume'], ['KeyR', 'restart'], ['KeyL', 'levels'], ['KeyO', 'settings']];
+const PAUSE_ACTIONS = [['Escape', 'resume'], ['KeyR', 'restart'], ['KeyL', 'levels'], ['KeyO', 'settings'], ['KeyQ', 'title']];
 const CARD_ACTIONS = [['Space', 'next'], ['KeyR', 'retry'], ['KeyL', 'levels']];
 const END_ACTIONS = [['Space', 'clock in again'], ['Escape', 'title']];
 const PAUSE_ROW = { y: H / 2 + 12 };
@@ -663,7 +664,7 @@ const HUD_BOTTOM = 62;
 function countdownSpot(lvl, labels, tellX, tellY, w, flipped) {
   const exitLeft = lvl.exit.tx * TILE - 6;
   let x = Math.min(W - w / 2 - 6, Math.max(w / 2 + 6, tellX));
-  if (x + w / 2 > exitLeft && x - w / 2 < exitLeft + TILE) x = exitLeft - w / 2;
+  if (x + w / 2 > exitLeft && x - w / 2 < exitLeft + TILE) x = exitLeft < W / 2 ? exitLeft + TILE + 6 + w / 2 : exitLeft - w / 2;
   const hits = (y) => labels.some((l) => Math.abs(l.x - x) < (l.w + w) / 2 + 4 && Math.abs(l.y - y) < 16);
   const near = flipped ? tellY + 2 : tellY - 16;
   const y = Math.max(HUD_BOTTOM, hits(near) ? (flipped ? tellY + 60 : tellY - 82) : near);
@@ -1064,7 +1065,7 @@ function drawSelect() {
 }
 
 function drawPause() {
-  drawPanel(g, W / 2 - 300, H / 2 - 64, 600, 128, false);
+  drawPanel(g, W / 2 - 380, H / 2 - 64, 760, 128, false);
   drawText(g, 'ON BREAK', W / 2, H / 2 - 40, { scale: 3, color: '#d9f6ff', align: 'center' });
   drawActions(PAUSE_ACTIONS, PAUSE_ROW, '#d9f6ff');
 }

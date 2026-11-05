@@ -93,6 +93,8 @@ export async function startBrowser({ serveRoot = null, profilePrefix = 'ds-cdp-'
   }
 
   async function close() {
+    // ask the browser to quit first: on Windows kill() stops only the launcher, and its renderers live on
+    if (ws?.readyState === WebSocket.OPEN) await Promise.race([send('Browser.close').catch(() => {}), sleep(2000)]);
     ws?.close();
     browser?.kill();
     server.kill();
@@ -128,11 +130,18 @@ export async function startBrowser({ serveRoot = null, profilePrefix = 'ds-cdp-'
       if (r.exceptionDetails) throw new Error(`in the page: ${r.exceptionDetails.exception?.description ?? r.exceptionDetails.text}`);
       return r.result.value;
     },
-    // Load a path from the server in a w × h viewport, then give it a moment to start.
+    // Load a path from the server in a w × h viewport, wait for the page to finish loading (a busy machine can
+    // take seconds; module scripts have run by then), then give it a moment to start.
     async open(path, w = 960, h = 540) {
       await send('Emulation.setDeviceMetricsOverride', { width: w, height: h, deviceScaleFactor: 1, mobile: false });
-      await send('Page.navigate', { url: `http://localhost:${port}/${path}` });
-      await sleep(700);
+      const url = `http://localhost:${port}/${path}`;
+      await send('Page.navigate', { url });
+      const loaded = `location.href === ${JSON.stringify(url)} && document.readyState === 'complete'`;
+      for (const t0 = Date.now(); Date.now() - t0 < 15000; await sleep(50)) {
+        const r = await send('Runtime.evaluate', { expression: loaded, returnByValue: true }).catch(() => null);
+        if (r?.result?.value) break;
+      }
+      await sleep(400);
     },
   };
 }

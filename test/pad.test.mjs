@@ -89,5 +89,5 @@ test('pad: in menus A confirms, B goes back, X opens level select, Y settings, S
   assert.equal(padMenuKey('PadStart', 'paused'), 'Escape');
   assert.equal(padMenuKey('PadSelect', 'card'), 'KeyR');
   assert.equal(padMenuKey('PadDown', 'select'), 'ArrowDown');
-  assert.equal(padMenuKey('PadRB', 'title'), null);
+  assert.equal(padMenuKey('PadRB', 'paused'), 'KeyQ'); // on a break: the title
 });

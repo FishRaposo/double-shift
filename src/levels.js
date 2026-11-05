@@ -142,8 +142,8 @@ export const LEVELS = [
       { kind: 'footprints', tx: 22, ty: 13, layer: 'night' },
     ],
     decor: [{ kind: 'eyes', tx: 29, ty: 4 }],
-    // the night crew is here from level 1: a peeker blinks behind the locked gate — sealed
-    // off by the wall at col 24, so it is evidence, not danger
+    // the night crew is here from level 1: a peeker blinks on a stack past the locked gate — out of reach
+    // past the wall at col 24 and too high to touch, so it is evidence, not danger
     freaks: [{ kind: 'peeker', tx: 26, ty: 8, period: 1.6, duty: 0.5 }], // on a stack too tall to reach: a look, not a threat yet
     note: 'Gap in the floor by day. The night crew laid planks, and locked the gate.',
     par: 2,
@@ -253,8 +253,8 @@ export const LEVELS = [
       { kind: 'sign', tx: 5, ty: 10, text: 'CLOSING TIME', style: 'paper' }, { kind: 'sign', tx: 22, ty: 10, text: 'LASERS', style: 'red', layer: 'night' },
     ],
     decor: [{ kind: 'eyes', tx: 24, ty: 4 }],
-    // a peeker sealed past the far night gate: it blinks at night, and by day its frozen
-    // outline stands beside the exit — the first freak a new player walks through
+    // a peeker on a high shelf past the far night gate: it blinks at night, and by day its frozen
+    // outline hangs over the exit — the first freak a new player sees frozen
     freaks: [{ kind: 'peeker', tx: 29, ty: 7, period: 1.3, duty: 0.4 }], // up on a shelf, out of reach
     note: 'Rebar by day, lasers by night. Gates go down at closing.',
     par: 2,
