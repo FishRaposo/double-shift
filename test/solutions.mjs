@@ -66,8 +66,8 @@ export const SOLUTIONS = {
     if (s.nightEntries === 0 && x > 3.5) target = NIGHT; // entry 1: the bridge over gap A
     else if (s.nightEntries === 1 && x > 14.3 && x < 15.5) target = DAY; // over A: out on the middle floor...
     else if (s.nightEntries === 1 && x >= 15.5) target = NIGHT; // ...and in: entry 2 lifts the gate at col 18
-    else if (s.nightEntries === 2 && x > 19.3 && x < 20.5) target = DAY; // past the gate: out on the landing...
-    else if (s.nightEntries === 2 && x >= 20.5) target = NIGHT; // ...and in: entry 3 lays the plank over gap B
+    else if (s.nightEntries === 2 && x > 19.3 && x < 22.1) target = DAY; // past the gate: out on the landing, to the cable...
+    else if (s.nightEntries === 2 && x >= 22.1) target = NIGHT; // ...and in: entry 3 lays the plank over gap B
     return { right: true, shift: want(s, target) };
   },
   // The finale, one room per act. 1: walk off the ledge and clock in as you fall (the walkway's copy catches you),

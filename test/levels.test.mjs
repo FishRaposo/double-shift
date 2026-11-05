@@ -600,7 +600,7 @@ for (const { id } of LEVELS) {
 
 // ---------- repairs that change the level ----------
 
-const REDESIGNED = ['clock', 'scaff', 'closing', 'midair', 'inventory', 'watch', 'stairs', 'doors', 'portrait'];
+const REDESIGNED = ['clock', 'scaff', 'closing', 'midair', 'inventory', 'watch', 'stairs', 'doors', 'wet', 'pillar', 'supervisor', 'stacked', 'portrait'];
 
 for (const id of REDESIGNED) {
   test(`${id}: the repair changes the map, and the level can't be won without it`, () => {

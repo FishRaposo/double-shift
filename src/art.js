@@ -702,7 +702,11 @@ export function drawWater(g, tx, ty, t, surface, layer) {
   const y = ty * TILE;
   g.fillStyle = layer === NIGHT ? '#1f6f8f' : '#3f9fbf';
   g.fillRect(x, y + (surface ? 3 * A : 0), TILE, surface ? TILE - 3 * A : TILE);
-  if (!surface) return;
+  if (!surface) { // falling or deep: streaks running down it
+    g.fillStyle = layer === NIGHT ? '#3aa8bd' : '#8fd6e8';
+    for (const [sx, phase] of [[2, 0], [7, 5], [11, 9]]) g.fillRect(x + sx * A, y + ((Math.floor(t * 40) + phase * A + ty * 7) % 12) * A, A, 3 * A);
+    return;
+  }
   for (let i = 0; i < 15; i++) {
     const w = Math.round(Math.sin(tx * 15 + i * 0.8 + t * 3));
     px(g, x + i * A, y + (2 + w) * A, 1, 1, '#d9f6ff');

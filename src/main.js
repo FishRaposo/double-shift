@@ -432,7 +432,8 @@ function handleEvents(events) {
         const { fix } = level().repairs[ev.job];
         sfx.repaired();
         fx.fixes.push({ x: fix.tx * TILE + TILE / 2, y: fix.ty * TILE + TILE / 2, t: 0 });
-        for (const [, tx, ty] of fix.cells) fx.puffs.push({ x: tx * TILE + TILE / 2, y: ty * TILE + TILE / 2, t: 0 }); // what it just changed
+        const every = Math.ceil(fix.cells.length / 16); // what it just changed, a puff here and there
+        fix.cells.forEach(([, tx, ty], k) => { if (k % every === 0) fx.puffs.push({ x: tx * TILE + TILE / 2, y: ty * TILE + TILE / 2, t: 0 }); });
         break;
       }
       case 'exitLocked': {
