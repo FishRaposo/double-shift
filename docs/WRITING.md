@@ -21,22 +21,24 @@ Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game l
 | Where | Text |
 |---|---|
 | Title ✅ | DOUBLE SHIFT |
-| Subtitle *(provisional)* | The Freaks Come Out at Night |
+| Subtitle *(provisional)* | The Freaks Come Out at Night. On the title screen since Nov 3 as "The freaks come out at night." under the logo, as on the itch cover, so the hook lands before level 6; Fish makes the final call by Nov 22 |
 | Tagline ✅ | One building. Two shifts. One worker. |
 | Start ✅ | Click or press SPACE to clock in |
-| Sticky Keys note ✅ | Windows: hammering Shift can open Sticky Keys — use K, or turn off the Sticky Keys shortcut. |
-| Tutorial ✅ | Press SHIFT (or K) to change shifts / Dashed outlines show the other shift |
+| Sticky Keys note ✅ | Windows: hammering Shift can open Sticky Keys — use K, or turn off the Sticky Keys shortcut. (Built from the bindings: the other SHIFT keys, else "rebind SHIFT in SETTINGS > CONTROLS"; hidden when Shift doesn't change shifts.) |
+| Tutorial ✅ | Press Shift or K to change shifts (the keys come from the player's bindings) / Dashed outlines show the other shift |
 | Pause ✅ | ON BREAK · Esc: resume · R: restart · L: levels · O: settings |
 | Title buttons ✅ | LEVEL SELECT (L) · SETTINGS (O) |
-| Settings ✅ | SETTINGS · MASTER · MUSIC · SOUND · REDUCED EFFECTS ON/OFF · Up/Down: choose · Left/Right: change · Esc: back |
+| Title gamepad line ✅ | Gamepad: stick move · A jump · B, X or RB shift · Start pause · X levels · Y settings |
+| Settings ✅ | SETTINGS · MASTER · MUSIC · SOUND · REDUCED EFFECTS ON/OFF · SPEEDRUN TIMER ON/OFF · CONTROLS Enter > · Up/Down: choose · Left/Right: change · Esc: back |
+| Controls ✅ | CONTROLS · LEFT · RIGHT · JUMP · SHIFT, each with its keys ("Shift or K") · RESET TO DEFAULTS · PRESS A KEY · Press the new key · Esc: cancel · Up/Down: choose · Enter: change · Esc: back · Back to the defaults. · Not that one: use a letter, a digit, an arrow, Space or Shift (R, L, O and M are the menus'). |
 | Act cards ✅ | ACT n · NAME · the line from §2.1 |
-| Level select ✅ | TIMECARDS · ACT n · NAME · BEST n · PAR p · NOT YET · stamps ON PAR / UNDER! / +n · Arrows: choose · SPACE or click: clock in · Esc: back |
+| Level select ✅ | TIMECARDS · act tabs: ACT n + the act name, or FINALE · each card: the number, the NAME, PAR p / NOT YET, stamps ON PAR / UNDER! / +n · detail bar: n. NAME · BEST n · PAR p (or NOT YET) · Arrows: choose · SPACE or click: clock in · Esc: back |
 | Timecard ✅ | NEW BEST (when a saved best is beaten) |
-| HUD ✅ | DAY SHIFT / NIGHT SHIFT · CLOCK-INS n · PAR p |
+| HUD ✅ | DAY SHIFT / NIGHT SHIFT · CLOCK-INS n · PAR p · TIME 12.34 (with SPEEDRUN TIMER on) |
 | Timecard ✅ | TIMECARD · Clock-ins · Par · Time · Incidents · stamps ON PAR / UNDER PAR! / +n OVERTIME |
-| End ✅ | SHIFT COMPLETE · Thanks for working overtime. · every level with clock-ins / par · Total clock-ins · SPACE: clock in again |
+| End ✅ | SHIFT COMPLETE · Thanks for working overtime. · one row per act: ACT n · NAME (or FINALE) with clock-ins / par · Total clock-ins · Total time n s (with SPEEDRUN TIMER on; every attempt, restarts included) · the credits (§8) · SPACE: clock in again |
 
-### 2.1 Planned UI text *(drafts)*
+### 2.1 More UI text ✅ *(in the build; the words are drafts for Fish)*
 
 | Where | Text |
 |---|---|
@@ -44,10 +46,10 @@ Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game l
 | Act 2 card | ACT 2 · OVERTIME · "Something keeps moving things." |
 | Act 3 card | ACT 3 · GRAVEYARD SHIFT · "They've gotten organized." |
 | Act 4 card | ACT 4 · LIGHTS OUT · "The building doesn't add up anymore." |
-| Act 5 card *(planned)* | ACT 5 · UPSIDE DOWN · "The night shift turned the building over." |
-| Finale card *(planned)* | FINALE · CLOCK OUT · "One more shift." |
-| Sticky Keys joke (G14) | A freak memo: "WE PRES SHIFT 5 TIMES. FOR FUN." + the practical line kept below it |
-| End (full game) | SHIFT COMPLETE · totals · SPACE: clock in again |
+| Act 5 card ✅ | ACT 5 · UPSIDE DOWN · "The night shift turned the building over." |
+| Finale card ✅ | FINALE · CLOCK OUT · "One more shift." |
+| Sticky Keys joke (G14) ✅ | A freak memo: "WE PRES SHIFT 5 TIMES. FOR FUN." on a sticky note on the title screen, the practical line kept below it |
+| End (full game) ✅ | SHIFT COMPLETE · one row per act · totals · credits · SPACE: clock in again |
 
 ## 3. Level notes (shown 5 s at level start)
 
@@ -61,20 +63,20 @@ In the order of the 21-level game (LEVELS.md §5.0). ✅ = in the build.
 | 4 Mid-Air ✅ | Something up there blinked. |
 | 5 Inventory ✅ | Every time you clock in, something gets moved. |
 | 6 Night Watch ✅ | Something is in the tunnel. It only moves at night. |
-| 7 Under Renovation (`stairs`) | They built a staircase. It leads nowhere. They're very proud. |
-| 8 Lost & Found (`doors`) | The freaks have stolen every door. Not the keys. The doors. |
+| 7 Under Renovation (`stairs`) ✅ | They built a staircase. It leads nowhere. They're very proud. |
+| 8 Lost & Found (`doors`) ✅ | The freaks have stolen every door. Not the keys. The doors. |
 | 9 Wet Floor (`wet`) ✅ | Someone waxed the floors. Nobody on the payroll waxes floors. |
-| 10 Structural Integrity (`pillar`) | They moved a load-bearing pillar. The building is somehow fine. |
+| 10 Structural Integrity (`pillar`) ✅ | They moved a load-bearing pillar. The building is somehow fine. |
 | 11 Night Management (`supervisor`) ✅ | One of them has a clipboard now. It supervises the others. |
 | 12 Stacked (`stacked`) ✅ | They've been busy. |
-| 13 Employee of the Month (`portrait`) | They installed a portrait of themselves. It blocks the exit. |
+| 13 Employee of the Month (`portrait`) ✅ | They installed a portrait of themselves. It blocks the exit. |
 | 14 Broad Daylight (`daywalker`) ✅ | One of them clocked in for the day shift. |
 | 15 Floor 3.5 (`offset`) ✅ | There is no Floor 3 anymore. It's now Floor 3.5. |
-| 16 Night Audit (`audit`) | Management is doing a walkthrough tonight. So are they. |
-| 17 Mind Your Head (`upside`) | They flipped the night shift. Mind your head. |
-| 18 Falling Up (`fallup`) | The floor is up there now. |
-| 19 Ceiling Walker (`ceiling`) | Something is walking on the ceiling. It's fine. |
-| 20 Head Over Heels (`heels`) | Up is a matter of opinion now. |
+| 16 Night Audit (`audit`) ✅ | Management is doing a walkthrough tonight. So are they. |
+| 17 Mind Your Head (`upside`) ✅ | They flipped the night shift. Mind your head. |
+| 18 Falling Up (`fallup`) ✅ | The floor is up there now. |
+| 19 Ceiling Walker (`ceiling`) ✅ | Something is walking on the ceiling. It's fine. |
+| 20 Head Over Heels (`heels`) ✅ | Up is a matter of opinion now. |
 | 21 Clock Out (`clockout`) ✅ | Almost done. Don't look at the vents. |
 
 Notes 7, 8, 10, 11, 13 and 15 come from Fish's idea pool (2026-11-02). 8 and 15 are unchanged; 7, 10, 11 and 13 are lightly trimmed to fit one line at scale 2 (14 px tall) (his full lines are the "Fiction" lines in LEVELS.md §5). Act 5 is Fish's Upside Down idea (LEVELS.md §5.2). *Freight* ("The crates were stacked properly. They were.") is kept for post-jam.
@@ -91,12 +93,35 @@ SPOOKED! · AAAGH! · NOPE! · EEP! · NOT PAID ENOUGH
 |---|---|
 | Prank fires ✅ | hee hee hee |
 | Sticky note tell (day) ✅ | MINE |
-| More tells | MINE NOW · DO NOT TUCH · FINDERS KEEPERS · (a drawing of eyes) |
-| Hex-flavored tells *(candidates)* | MINE BY ANSHENT LAW · HEXED. NO TUCH · THE PLANK IS OURS NOW · WE SEE YOU (WE R SHINY) |
+| Prank countdown (both shifts) ✅ | NEXT NIGHT · IN 2 NIGHTS |
+| More tells ✅ (Nov 3: MINE NOW on Inventory's and Stacked's planks, DO NOT TUCH on Stacked's gate, FINDERS KEEPERS on the finale's door) | MINE NOW · DO NOT TUCH · FINDERS KEEPERS · (a drawing of eyes) |
+| Hex-flavored tells *(candidates; HEXED. NO TUCH is on Night Audit's plank)* | MINE BY ANSHENT LAW · HEXED. NO TUCH · THE PLANK IS OURS NOW · WE SEE YOU (WE R SHINY) |
+| The freaks' proud sign over the staircase (`stairs`) ✅ | OUR STARES! |
+| Management's sign in `inventory` ✅ *(draft)* | STUCK? RESTART. |
+| `closing` sign ✅ | CLOSING TIME |
 
-## 6. Notice board memos *(planned, A3)*
+### 5.1 Signs in the levels ✅ *(in the build; drafts for Fish)*
 
-Shown as props; readable when the worker stands near (or always, small).
+| Level | Sign |
+|---|---|
+| `clock` | RENOVATION |
+| `scaff` | DELIVERIES |
+| `closing` | LASERS |
+| `stairs` | OUR STARES! (the freaks') |
+| `pillar` | LOAD BEARING |
+| `supervisor` | STAFF ONLY |
+| `daywalker` | DAY SHIFT |
+| `offset` | 3 · 3.5 (floor numbers) |
+| `audit` | INSPECTION |
+| `upside` | MIND YOUR HEAD |
+| `fallup` | THIS WAY UP |
+| `ceiling` | IT'S FINE |
+| `heels` | HARD HAT AREA |
+| `clockout` | LAST SHIFT |
+
+## 6. Notice board memos ✅ (Nov 3: one per level, §6.1)
+
+A memo is a scrap of paper pinned to the wall (`memo` prop); while the worker stands within 2 tiles of it, its text shows on a paper panel above it (scale 2, at most 360 px wide; `memoPanel` in `src/layout.js`). Tests pin that every level has one, that the scripted route passes close enough to read it, and that its panel never covers the exit, a tell or a sign.
 
 - "To the night crew: please stop moving the planks. — Management"
 - "To the day crew: we do not have a night crew. — Night Management"
@@ -109,7 +134,7 @@ Shown as props; readable when the worker stands near (or always, small).
 - "Break room: all snacks have been taken. The wrappers have been arranged in a circle. With candles."
 - "Do not leave shiny objects unattended."
 
-### 6.1 One memo per level *(drafts; pick from §6 or these)*
+### 6.1 One memo per level ✅ *(in the build; drafts for Fish)*
 
 | Level | Memo |
 |---|---|
@@ -128,6 +153,11 @@ Shown as props; readable when the worker stands near (or always, small).
 | `offset` | "The elevator now stops at 3.5. Do not press 3.5." |
 | `daywalker` | "Day crew: if you see eyes, no you didn't." |
 | `portrait` | "Employee of the Month: [photo is just eyes]" |
+| `audit` | "Pest control visit cancelled. Pest control would like to not talk about it." (from §6) |
+| `upside` | "Ceiling inspection passed. The ceiling is now the floor. — Facilities" *(new draft)* |
+| `fallup` | "Gravity will be restored after the renovation. — Facilities" *(new draft)* |
+| `ceiling` | "To the night crew: please stop moving the planks. — Management" (from §6) |
+| `heels` | "To the day crew: we do not have a night crew. — Night Management" (from §6) |
 | `clockout` | "Overtime is mandatory. So are the freaks, apparently." |
 
 ## 7. Timecard comments ✅
@@ -146,10 +176,10 @@ Unused, kept for later: "Efficient. Suspiciously efficient."
 
 ## 8. Ending ✅ (after `clockout`)
 
-- ✅ The end screen: SHIFT COMPLETE, totals across all levels (every level's clock-ins / par, total vs. total par).
+- ✅ The end screen: SHIFT COMPLETE, one row per act (that act's clock-ins / par over the levels played this run), total vs. total par. Twenty-one level rows don't fit the screen at a readable size; six act rows do.
 - ✅ In the dark margins a dozen pairs of eyes open one after another; once they're all open, one freak waves, and "See you tonight." appears below the card.
-- *(planned)* Credits: Designed by Vinícius Raposo. Built with AI assistance (Claude). [Design partner, as they choose to be credited.] Made for GitHub Game Off 2026.
+- ✅ Credits (`CREDITS` in `src/copy.js`), under the end screen's totals: "Designed by Vinícius Raposo. Built with AI assistance (Claude). Made for GitHub Game Off 2026." Final wording (Fish, 2026-11-03): no design-partner line, since the art is all code-drawn.
 
 ## 9. itch page copy
 
-Lives in [RELEASE.md](RELEASE.md) §4. Fish writes the final version.
+Lives in [itch/page.md](../itch/page.md) §4. Fish writes the final version.

@@ -1,29 +1,22 @@
 // Keyboard input → per-tick input frames. No DOM access: feed it KeyboardEvent-like objects.
 // GDD S-05: one shift attempt per physical key-down; OS key-repeat ignored; presses that
-// land between physics ticks are queued, not dropped.
+// land between physics ticks are queued, not dropped. Which keys drive which action comes from
+// getBinds() (src/keys.js), read on every event, so a rebinding applies at once.
 
-const BINDS = {
-  left: ['ArrowLeft', 'KeyA'],
-  right: ['ArrowRight', 'KeyD'],
-  jump: ['Space', 'KeyW', 'ArrowUp'],
-  shift: ['ShiftLeft', 'ShiftRight', 'KeyK'],
-};
+import { DEFAULT_BINDS, actionOf } from './keys.js';
 
-export const GAME_KEYS = new Set(Object.values(BINDS).flat());
+// A gamepad's fixed codes (src/pad.js) drive the same actions, whatever the keyboard bindings are.
+const PAD_BINDS = Object.freeze({ left: ['PadLeft'], right: ['PadRight'], jump: ['PadA'], shift: ['PadB', 'PadX', 'PadRB'] });
+const actionFor = (binds, code) => actionOf(binds, code) ?? actionOf(PAD_BINDS, code);
 
-function actionOf(code) {
-  for (const [action, codes] of Object.entries(BINDS)) if (codes.includes(code)) return action;
-  return null;
-}
-
-export function createInput() {
+export function createInput(getBinds = () => DEFAULT_BINDS) {
   const held = new Set();
   let jumpPresses = 0;
   let shiftPresses = 0;
 
   return {
     keyDown(e) {
-      const a = actionOf(e.code);
+      const a = actionFor(getBinds(), e.code);
       if (!a) return false;
       // OS auto-repeat: never a new press, but it re-asserts the hold. So a key held through a screen
       // change (act card, resume, restart all clear input) starts working again ~30 ms later.
@@ -35,7 +28,7 @@ export function createInput() {
     },
     keyUp(e) {
       held.delete(e.code);
-      return actionOf(e.code) !== null;
+      return actionFor(getBinds(), e.code) !== null;
     },
     clear() {
       held.clear();
@@ -43,7 +36,7 @@ export function createInput() {
       shiftPresses = 0;
     },
     isHeld(action) {
-      return BINDS[action].some((c) => held.has(c));
+      return getBinds()[action].some((c) => held.has(c)) || PAD_BINDS[action].some((c) => held.has(c));
     },
     // Called once per physics tick. Consumes at most one queued press of each kind.
     consume() {

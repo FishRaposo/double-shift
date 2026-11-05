@@ -1,6 +1,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createInput } from '../src/input.js';
+import { DEFAULT_BINDS, rebind } from '../src/keys.js';
 
 const down = (code, repeat = false) => ({ code, repeat });
 
@@ -59,4 +60,25 @@ test('a key held through a screen change (input cleared) comes back on its next 
   const f = inp.consume();
   assert.equal(f.right, true, 'still holding right');
   assert.equal(f.shiftPressed, false, 'a repeat is never a new shift press');
+});
+
+test("input: a rebound key drives the action and the old one doesn't", () => {
+  const binds = rebind(DEFAULT_BINDS, 'jump', 'KeyJ').binds;
+  const inp = createInput(() => binds);
+  inp.keyDown(down('KeyJ'));
+  assert.equal(inp.consume().jumpPressed, true);
+  inp.keyDown(down('Space'));
+  assert.equal(inp.consume().jumpPressed, false, 'Space no longer jumps');
+  assert.equal(inp.keyDown(down('Space')), false, 'and it is not a game key any more');
+});
+
+test('input: one shift per press holds with custom binds', () => {
+  const binds = rebind(DEFAULT_BINDS, 'shift', 'KeyX').binds;
+  const inp = createInput(() => binds);
+  inp.keyDown(down('KeyX'));
+  for (let i = 0; i < 10; i++) inp.keyDown(down('KeyX', true));
+  const frames = Array.from({ length: 5 }, () => inp.consume());
+  assert.equal(frames.filter((f) => f.shiftPressed).length, 1);
+  inp.keyDown(down('ShiftLeft'));
+  assert.equal(inp.consume().shiftPressed, false, 'Shift was given up');
 });

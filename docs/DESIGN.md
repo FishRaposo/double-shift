@@ -1,6 +1,6 @@
 # Design Notes
 
-How *Double Shift* was designed and built, and why. The full design is in [GDD.md](GDD.md) and the code reference is [TECH.md](TECH.md). Numbers are from the repo on 2026-11-02.
+How *Double Shift* was designed and built, and why. The full design is in [GDD.md](GDD.md) and the code reference is [TECH.md](TECH.md). Numbers are from the repo on 2026-11-03.
 
 ## The constraint
 
@@ -8,7 +8,7 @@ One month (GitHub Game Off, Nov 1 – Dec 1, 2026, theme SHIFT), one designer, n
 
 - **No engine, no dependencies, no asset files.** Plain JavaScript modules on one 960×540 canvas. Everything on screen is drawn by code and every sound is synthesized with WebAudio. Nothing to license, nothing to load, and it runs in any browser.
 - **The game must be provable, not just playable.** With AI writing code, "it seemed to work" isn't enough. Every rule that decides whether you live, die or win has a test.
-- **Scope to the deadline.** 12 levels exist, including the finale, and already make a complete game; the full plan is 21 (five acts of four plus the finale) in tiers, so any cut still ships complete (CONTENT.md).
+- **Scope to the deadline.** The plan was 21 levels (five acts of four plus the finale) built in tiers, so any cut would still ship a complete game (CONTENT.md). All <!-- n:levels -->21<!-- /n --> exist.
 
 ## The decisions
 
@@ -18,7 +18,9 @@ One month (GitHub Game Off, Nov 1 – Dec 1, 2026, theme SHIFT), one designer, n
 
 **The other shift is frozen.** Nothing moves on the shift you're not in. That removed a whole class of bugs, and then it became a mechanic: each freak only moves on its own shift, so stepping into the other one freezes it mid-stride (later, one of them works days).
 
-**Pranks make clock-ins a resource.** Each entry into the night shift can fire a prank that changes the building (the plank you crossed on moves over the next pit). The timecard counts clock-ins against a par, so the puzzle becomes *when* to shift, not only *where*. Every prank has a visible tell, and dying restores the prank state saved at your last checkpoint, so a prank can never make a level impossible to finish.
+**Pranks make clock-ins a resource.** Each entry into the night shift can fire a prank that changes the building (the plank you crossed on moves over the next pit). The timecard counts clock-ins against a par, so the puzzle becomes *when* to shift, not only *where*. Every prank has a visible tell with a countdown and outlined tiles, drawn from pure rule state (`pendingPranks`), and dying restores the prank state saved at your last checkpoint, so a prank can never make a level impossible to finish.
+
+**The night can turn over.** Act 5's night is the day map upside down, with gravity pointing up. Every vertical rule (jump, gravity, grounding, the nudge, hazards, the grid edges, respawn) reads one gravity sign, so the flipped night is the day's rules mirrored rather than a second physics. The 12 levels that existed before it kept identical audit numbers.
 
 **Freaks have no AI.** Each one is a fixed pattern computed from a clock that only runs on its own shift: a patrol, a peek cycle, a sit; the supervisor's workers run on "time spent being watched", which has a closed form. That keeps them predictable, makes freezing free, and makes them testable.
 
@@ -26,15 +28,16 @@ One month (GitHub Game Off, Nov 1 – Dec 1, 2026, theme SHIFT), one designer, n
 
 ## The numbers
 
-- 141 automated tests (`npm test`): shift and collision edge cases, nudge/buffer, pranks, freaks, checkpoint restore, input rules, determinism, a 6000-tick fuzz for getting stuck in walls, every level at par, progress and settings saving (including blocked or corrupt storage), the art and music data (every glyph and sprite well-formed, every sound short), and **fairness**: every input a level requires has ≥ 200 ms of slack in acts 1–2 and ≥ 100 ms in acts 3–4, no respawn point sits in a patrol, no freak guards an exit.
-- `src/rules.js` is 523 lines. The shell (`src/main.js`) is 730; the art is `src/art.js` (529), `src/sprites.js` (248) and `src/font.js` (192); sound is `src/audio.js` (193) and `src/music.js` (238).
-- Drawing a frame costs about 0.4 ms (the static layer is cached), measured headless by `npm run media`.
-- CI runs the syntax check, level validation and the tests on every push.
+- <!-- n:tests -->411<!-- /n --> automated tests (`npm test`): shift and collision edge cases, nudge/buffer, pranks, freaks, checkpoint restore, input rules, determinism, a 6000-tick fuzz for getting stuck in walls, every level at par, progress and settings saving (including blocked or corrupt storage), the art and music data (every glyph and sprite well-formed, every sound short), and **fairness**: every input a level requires has ≥ 200 ms of slack in acts 1–2 and ≥ 100 ms in acts 3–6, no respawn point sits in a patrol, no freak guards an exit.
+- `src/rules.js` is <!-- n:lines:src/rules.js -->658<!-- /n --> lines. The shell (`src/main.js`) is <!-- n:lines:src/main.js -->1156<!-- /n -->; the art is `src/art.js` (<!-- n:lines:src/art.js -->1032<!-- /n -->), `src/sprites.js` (<!-- n:lines:src/sprites.js -->302<!-- /n -->) and `src/font.js` (<!-- n:lines:src/font.js -->209<!-- /n -->); sound is `src/audio.js` (<!-- n:lines:src/audio.js -->199<!-- /n -->) and `src/music.js` (<!-- n:lines:src/music.js -->268<!-- /n -->).
+- Drawing a frame costs under 0.5 ms (the static layer is cached), measured headless by `npm run media`.
+- CI runs the syntax check, level validation, the tests and the doc-count check on every push.
+- The demo GIFs are the tests' own scripted runs, played by the game on a fixed clock (`npm run gif`), so a GIF can't show a run the suite doesn't prove.
 
 ## What would change with more time
 
 - A camera and larger levels (single-screen rooms were chosen so every puzzle reads at a glance; GDD §21).
-- Gamepad support and rebindable keys (Shift can trigger Windows Sticky Keys; K is the workaround today).
+- Touch controls (keyboard and gamepad only today).
 - Shared-state objects (levers, doors that exist in both shifts).
 - A task pack of bugs and features with automated checks, like the ones for Fish's earlier games.
 

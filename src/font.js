@@ -39,6 +39,7 @@ const G = {
   g: ['.....', '.....', '.####', '#...#', '#...#', '#...#', '.####', '....#', '.###.'],
   h: ['#....', '#....', '####.', '#...#', '#...#', '#...#', '#...#'],
   i: ['.#.', '...', '##.', '.#.', '.#.', '.#.', '###'],
+  í: ['..#', '.#.', '##.', '.#.', '.#.', '.#.', '###'], // the credits: Vinícius
   j: ['...#', '....', '..##', '...#', '...#', '...#', '...#', '#..#', '.##.'],
   k: ['#...', '#...', '#..#', '#.#.', '##..', '#.#.', '#..#'],
   l: ['##.', '.#.', '.#.', '.#.', '.#.', '.#.', '###'],
@@ -127,6 +128,22 @@ export function measureArt(text) {
 
 export function measureText(text, scale = 2) {
   return measureArt(text) * scale;
+}
+
+// Greedy word wrap: lines no wider than maxPx at this scale (a single word wider than that gets a line
+// to itself). Pure, so layouts that depend on it are tested.
+export function wrapText(text, maxPx, scale = 2) {
+  const lines = [];
+  let line = '';
+  for (const word of String(text).split(' ').filter(Boolean)) {
+    const next = line ? `${line} ${word}` : word;
+    if (line && measureText(next, scale) > maxPx) {
+      lines.push(line);
+      line = word;
+    } else line = next;
+  }
+  if (line) lines.push(line);
+  return lines;
 }
 
 // ---------- drawing (browser only) ----------

@@ -23,7 +23,23 @@ import { drawText } from '../src/font.js';
 import { drawSprite, drawEyes, SPRITES, ART } from '../src/sprites.js';
 import * as art from '../src/art.js';
 import { unlockAudio, playSound, SOUNDS, setMusicShift, setMenu, voice, makeNoise } from '../src/audio.js';
-import { scheduleStep, STEP, STEPS_PER_BAR } from '../src/music.js';
+import { scheduleStep, STEP, STEPS_PER_BAR, layersFor } from '../src/music.js';
+import { parseLevel } from '../src/rules.js';
+import { skinPlan } from '../src/skins.js';
+
+// A small room with every skin, before and after the freaks' pranks (skinPlan reads the tiles under each one).
+const SKIN_ROOM = parseLevel({
+  name: 'skins', par: 0,
+  day: ['S...#......###.E', '.#..#......###..', '.#..#..##.......', '....#..##.......'],
+  night: ['....#......###..', '.#..#......###..', '.#..#..##.......', '....#..##.......'],
+  skins: [
+    { kind: 'door', tx: 1, ty: 2 }, { kind: 'pillar', tx: 4, ty: 3 },
+    { kind: 'doorPile', tx: 7, ty: 3 }, { kind: 'portrait', tx: 11, ty: 0 },
+  ],
+});
+// after: the door is stolen, the pillar moved away, one more door on the pile
+const AFTER = Object.fromEntries([[1, 1], [1, 2], [4, 0], [4, 1], [4, 2], [4, 3]].map(([x, y]) => [`0,${x},${y}`, '.'])
+  .concat([[7, 1], [8, 1]].map(([x, y]) => [`0,${x},${y}`, '#'])));
 
 const { PAL, DAY, NIGHT, TILE, PROPS } = art;
 const cv = document.getElementById('c');
@@ -86,6 +102,7 @@ function draw(t) {
   label('supervisor facing left', 470, y + 112);
   drawSprite(g, 'lurker', 'a', 620, y + 54, { scale: 3 });
   drawEyes(g, 'lurker', 620, y + 54, { state: 'shut', scale: 3 });
+  art.drawStatusMark(g, 650, y + 54, 'slack', 0.4);
   label('slacking', 618, y + 112);
   drawSprite(g, 'lurker', 'a', 720, y + 54, { scale: 3 });
   drawEyes(g, 'lurker', 720, y + 54, { state: 'squint', scale: 3 });
@@ -93,6 +110,7 @@ function draw(t) {
   // peeker hidden
   art.px(g, 820, y + 90, 12, 3, 'rgba(0,0,0,0.6)');
   drawEyes(g, 'peeker', 820, y + 66, { state: 'open' });
+  art.drawStatusMark(g, 832, y + 66, 'alert', 0);
   label('peeker hidden', 806, y + 112);
   ['lurker', 'peeker', 'squatter', 'supervisor'].forEach((k, i) => {
     drawSprite(g, k, 'a', 940 + i * 80, y + 54, { outline: PAL[NIGHT].echo, scale: 3 });
@@ -100,12 +118,41 @@ function draw(t) {
   label('frozen by day (night echo blue)', 950, y + 112);
   y += 130;
 
-  section(y, 100, 'DAY-WALKER · day, and frozen by night', DAY);
-  drawSprite(g, 'daywalker', Math.floor(t * 6) % 2 ? 'b' : 'a', 40, y + 40, { scale: 3 });
-  drawEyes(g, 'daywalker', 40, y + 40, { state: 'open', scale: 3 });
-  drawSprite(g, 'daywalker', 'a', 160, y + 40, { outline: PAL[DAY].echo, scale: 3 });
-  label('day-walker', 36, y + 86, DAY);
+  // ---- upside down: the flipped night hangs everything from the ceiling ----
+  section(y, 170, 'UPSIDE DOWN · the flipped night: hanging worker, freaks, hazards, checkpoint and exit');
+  {
+    const top = y + 40; // a ceiling to hang from
+    for (let x = 0; x < W; x += TILE) art.drawSolidTile(g, x / TILE, top / TILE - 1, NIGHT, { up: false, down: true, left: false, right: false });
+    const hangY = Math.round(top / TILE) * TILE;
+    const row = hangY / TILE;
+    drawSprite(g, 'worker', 'idle0', 40, hangY, { vflip: true, palette: NIGHT_PAL });
+    drawSprite(g, 'worker', 'jump', 100, hangY + 40, { vflip: true, palette: NIGHT_PAL });
+    drawSprite(g, 'worker', 'fall', 160, hangY + 40, { vflip: true, palette: NIGHT_PAL });
+    label('worker: hanging, jumping, falling', 30, y + 150);
+    const fb = (kind, x, active = true) => ({ kind, shift: NIGHT, x, y: hangY, w: 20, h: 22, active, facing: 1, turnIn: 9, hang: true });
+    [['lurker', 240], ['peeker', 300], ['squatter', 360], ['supervisor', 420]].forEach(([k, x], i) => art.drawFreak(g, fb(k, x), i, t, { layer: NIGHT, freakShift: NIGHT }));
+    art.drawFreak(g, fb('peeker', 480, false), 1, t, { layer: NIGHT, freakShift: NIGHT });
+    art.drawFreak(g, fb('lurker', 540), 0, t, { layer: DAY, freakShift: NIGHT });
+    label('hanging freaks, a ducked peeker, a frozen outline', 230, y + 150);
+    art.drawLaser(g, 20, row, t, true, false, { top: true });
+    art.drawLaser(g, 21, row, t, false, true, { top: true });
+    art.drawHazardEcho(g, 23, row, PAL[NIGHT].echo, { top: true });
+    label('laser + echo, top of tile', 600, y + 150);
+    art.drawCheckpoint(g, 26, row, false, 0, { hang: true });
+    art.drawCheckpoint(g, 27, row, true, Math.abs(Math.sin(t * 3)), { hang: true });
+    art.drawExit(g, 29, row, NIGHT, { hang: true });
+    label('hanging checkpoints and exit', 790, y + 150);
+  }
+  y += 170;
+
+  section(y, 100, 'DAY-WALKER · day (orange hard hat and shades), and frozen by night', DAY);
+  const dw = (x, active) => ({ kind: 'daywalker', shift: DAY, x, y: y + 40, w: 20, h: 22, active, facing: 0 });
+  art.drawFreak(g, dw(40, true), 0, t, { layer: DAY, freakShift: DAY });
+  art.drawFreak(g, dw(160, true), 0, t, { layer: NIGHT, freakShift: DAY });
+  label('day-walker', 30, y + 86, DAY);
   label('its outline at night (day echo orange)', 150, y + 86, DAY);
+  drawSprite(g, 'hand', 'a', 520, y + 30, { scale: 3 });
+  label('the ending: one of them waves', 470, y + 86, DAY);
   y += 100;
 
   // ---- tiles ----
@@ -138,6 +185,17 @@ function draw(t) {
     y += 140;
   }
 
+  // ---- skins: object art over solid tiles, before and after the pranks (src/skins.js) ----
+  section(y, 170, 'SKINS · before the pranks, and after (door stolen, pillar moved, pile grows)', DAY);
+  for (const [ov, x0, name] of [[{}, 1, 'before'], [AFTER, 18, 'after']]) {
+    g.save();
+    g.translate(x0 * TILE, y + 36);
+    for (const sp of skinPlan(SKIN_ROOM, DAY, ov)) art.drawSkin(g, sp, DAY, t);
+    g.restore();
+    label(name, x0 * TILE, y + 160, DAY);
+  }
+  y += 170;
+
   // ---- objects ----
   section(y, 140, 'OBJECTS AND SIGNS');
   g.save();
@@ -163,17 +221,39 @@ function draw(t) {
   y += 140;
 
   // ---- props ----
-  section(y, 130, 'PROPS', DAY);
+  section(y, 230, 'PROPS', DAY);
   const kinds = Object.keys(PROPS).filter((k) => !['sign', 'eyes'].includes(k));
   kinds.forEach((k, i) => {
-    const x = 20 + i * 76;
+    const x = 20 + (i % 12) * 100;
     g.save();
-    g.translate(0, y + 50);
+    g.translate(0, y + 50 + Math.floor(i / 12) * 100);
     PROPS[k](g, x + 8, 30, k === 'barrierTape' ? 2 : {}, {});
     g.restore();
-    label(k, x, y + 118, DAY);
+    label(k, x, y + 118 + Math.floor(i / 12) * 100, DAY);
   });
-  y += 130;
+  y += 230;
+
+  // ---- telegraphs: what a freak or prank is about to do ----
+  section(y, 170, 'TELEGRAPHS');
+  const sup = { x: 70, y: y + 50, w: 20, h: 22, facing: 1, turnIn: 1.1, hang: false };
+  art.drawGaze(g, sup, 220, y + 130);
+  art.drawTurnTimer(g, sup, 2);
+  label('gaze, side arrow, turn pips', 40, y + 150);
+  art.drawPatrol(g, 300, 420, y + 130);
+  art.drawPatrol(g, 300, 420, y + 100, 0.45);
+  art.drawPatrol(g, 300, 420, y + 50, 1, true);
+  label('patrol: live, slacking, hanging', 280, y + 150);
+  art.drawStatusMark(g, 500, y + 80, 'alert', t);
+  art.drawStatusMark(g, 560, y + 80, 'slack', t);
+  label('"!" watched, "z" slacking', 470, y + 150);
+  const cellsAt = (tx0, ty) => [0, 1, 2].map((d) => ({ tx: tx0 + d, ty, ch: '#' }));
+  g.save();
+  g.translate(0, y % 30);
+  art.drawPrankCells(g, cellsAt(22, Math.floor(y / 30) + 2), (ch) => ch === '.');
+  art.drawPrankCells(g, cellsAt(27, Math.floor(y / 30) + 2).map((c) => ({ ...c, ch: '.' })), (ch) => ch === '.');
+  g.restore();
+  label('prank tiles: will appear, will go', 660, y + 150);
+  y += 170;
 
   // ---- effects and UI ----
   section(y, 170, 'EFFECTS AND UI');
@@ -192,7 +272,30 @@ function draw(t) {
   label('paper and night panels, stamps', 560, y + 150);
   y += 170;
 
+  // ---- backdrops: one per act, day over night (drawn once, then scaled down) ----
+  section(y, 300, 'BACKDROPS · one quiet motif per act, day over night');
+  BACKDROP_ACTS.forEach(([act, name], i) => {
+    const x = 16 + i * 210;
+    for (const [row, layer] of [[0, DAY], [1, NIGHT]]) g.drawImage(backdrop(layer, act), x, y + 40 + row * 116, 192, 108);
+    label(name, x, y + 278);
+  });
+  y += 300;
+
   cv.height !== y && (cv.height = y);
+}
+
+const BACKDROP_ACTS = [[1, '1 RENOVATION'], [2, '2 OVERTIME'], [3, '3 GRAVEYARD SHIFT'], [4, '4 LIGHTS OUT'], [5, '5 UPSIDE DOWN'], [6, 'FINALE']];
+const backdrops = new Map();
+function backdrop(layer, act) {
+  const key = `${act},${layer}`;
+  if (!backdrops.has(key)) {
+    const c = document.createElement('canvas');
+    c.width = 960;
+    c.height = 540;
+    art.drawBackground(c.getContext('2d'), layer, 960, 540, 0, act);
+    backdrops.set(key, c);
+  }
+  return backdrops.get(key);
 }
 
 let start = performance.now();
@@ -239,7 +342,8 @@ window.__audioCheck = async () => {
     });
     report.sfx[name] = +r.peak.toFixed(3);
   }
-  for (const [name, layer] of [['day', 0], ['night', 1]]) {
+  // act 1 is the bare theme (keys `day`, `night`); the finale (act 6) plays every layer (`day6`, `night6`)
+  for (const [name, layer, act] of [['day', 0, 1], ['night', 1, 1], ['day6', 0, 6], ['night6', 1, 6]]) {
     const bars = 8;
     const r = await peakOf(bars * STEPS_PER_BAR * STEP + 0.5, (off) => {
       const noise = makeNoise(off);
@@ -249,7 +353,7 @@ window.__audioCheck = async () => {
       night.gain.value = layer === 1 ? 1 : 0;
       day.connect(off.destination);
       night.connect(off.destination);
-      for (let s = 0; s < bars * STEPS_PER_BAR; s++) scheduleStep(off, { day, night }, s, 0.05 + s * STEP, noise);
+      for (let s = 0; s < bars * STEPS_PER_BAR; s++) scheduleStep(off, { day, night }, s, 0.05 + s * STEP, noise, layersFor(act));
     });
     report.music[name] = { peak: +r.peak.toFixed(3), seconds: +(bars * STEPS_PER_BAR * STEP).toFixed(3) };
   }

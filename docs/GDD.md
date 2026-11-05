@@ -2,7 +2,7 @@
 ## Game Design Document
 
 **Version:** 0.6.0  
-**Status:** Prototype  
+**Status:** Feature-complete  
 **Project:** Game Off 2026  
 **Theme:** SHIFT  
 **Genre:** 2D Puzzle-Platformer  
@@ -25,10 +25,10 @@
 | Shift rules | Same spot, momentum kept, instant, no cooldown, one shift per key press, separate geometry per shift, a blocked shift nudges ≤ 4 px → waits 80 ms → is refused | §3.3 (S-01…S-08) |
 | The other shift | Shown as dashed outlines; geometry that exists only in your current shift is hatched; nothing on the other shift moves | §4.6, §7 |
 | The freaks | Undefined, nocturnal, out to annoy you. Pranks fire on the Nth night clock-in; visible freaks (lurker, peeker, squatter, supervisor) freeze by day, and the day-walker freezes by night. Never chase, always telegraphed. | §4.8–4.10 |
-| Score | Timecard: clock-ins vs. par (fewest shifts the designer found, proven by tests) | §15.3 |
+| Score | Timecard: clock-ins vs. par (the fewest shifts the scripted solution and the audit found, proven by tests) | §15.3 |
 | Tone | Mock horror: petty monsters, deadpan worker, no gore, no jump scares | §10.5 |
 | Look and sound | Crisp pixel art on a 2-px grid, a hand-made pixel font, a spooky-goofy theme whose day/night arrangements crossfade on every shift; all made in code (built 2026-11-02) | §10, §11, ART.md, AUDIO.md |
-| Levels | **21: five acts of four plus the finale.** 12 built (a complete game, tier A); tier B = 17, tier C = 21 with act 5 Upside Down (night flipped, gravity up) and the finale rework. Four new mechanics shipped; Upside Down is the fifth | §8.2, [CONTENT.md](CONTENT.md) |
+| Levels | **21: five acts of four plus the finale.** <!-- n:levels -->21<!-- /n --> built, with act 5 Upside Down (night flipped, gravity up) and the finale rework. All five new mechanics shipped, Upside Down last | §8.2, [CONTENT.md](CONTENT.md) |
 | Jam | Game Off 2026, theme SHIFT, due Dec 1 13:37 PST. Lead with the pranks and freezing freaks: two overlapping worlds alone is one of the jam page's example ideas. | §1.8 |
 
 **Living sections** (kept current): §0, §1, §3, §4, §8.2, §10.5, §15.3, §18, §21. **Historical sections** (the original pre-v0.2 plan, kept for the record): §13.1–13.8, §16, §22. Their banners say what replaced them.
@@ -50,7 +50,7 @@ This GDD decides *what* the game is. The production docs in this folder decide *
 | **21 levels: five acts of four plus the finale** (§8.2), with a freak-and-mechanic ladder | Fish, 2026-11-02: start almost normal, introduce everything gradually, grow into the Upside Down levels, end on a finale that pays it all off |
 | **Act 5: Upside Down**: at night the map is flipped and gravity points up (LEVELS.md §5.2) | Fish's idea; the other shift becomes the same building turned over |
 | Two new levels: **Night Audit** (act 4 exam) and **Head Over Heels** (act 5 combination) | Each late act ends on a combination level |
-| **Clock Out reworked** as an upside-down finale, one room per act; today's version is the fallback | The finale should pay off every act |
+| **Clock Out reworked** as an upside-down finale, one room per act; the classic version is kept in the code | The finale should pay off every act |
 
 ## v0.5
 
@@ -165,7 +165,7 @@ What the freaks actually are is **deliberately undefined**, in the docs as well 
 The fiction does three jobs:
 
 1. **Explains differences.** Every difference between the day map and the night map is either the building's ordinary life (renovation, deliveries, closing time) or the freaks' doing.
-2. **Carries the arc.** Act 1 has only evidence. Act 2 the freaks appear. Act 3 they bring new tricks (wax, management). Act 4 they bend the rules: the floor moves, one of them works days.
+2. **Carries the arc.** Act 1 has only evidence. Act 2 the freaks appear. Act 3 they bring new tricks (wax, management). Act 4 they bend the rules: the floor moves, one of them works days. Act 5 they turn the night over. The finale is the way out.
 3. **Frames the score.** The shift counter is a timecard. Fewer clock-ins is better, and every clock-in gives the freaks another chance.
 
 Narrative remains environmental: signage, notes, memos, the state of the rooms, timecard comments. No dialogue system.
@@ -176,9 +176,9 @@ SHIFT is read three ways at once:
 
 - **The Shift key** is the only new verb.
 - **The work shift** is the fiction.
-- **Things shifted** is the antagonist: the freaks move things around between shifts, up to whole floors in act 3.
+- **Things shifted** is the antagonist: the freaks move things around between shifts, up to whole floors in act 4.
 
-The jam page's own theme text mentions "work the night shift" and jokes that Shift is the key that "accidentally enable[s] sticky keys". We already have both: the night shift is the fiction, and the Sticky Keys warning is a real design constraint (§3.2). *(planned)* Turn the warning into an in-joke: a memo on the title or pause screen from the freaks, written as if they set off Sticky Keys on purpose. Keep the practical advice next to it.
+The jam page's own theme text mentions "work the night shift" and jokes that Shift is the key that "accidentally enable[s] sticky keys". We already have both: the night shift is the fiction, and the Sticky Keys warning is a real design constraint (§3.2). *(built Nov 3, on the title)* Turn the warning into an in-joke: a memo on the title or pause screen from the freaks, written as if they set off Sticky Keys on purpose. Keep the practical advice next to it.
 
 ## 1.8 Jam Fit and Scoring
 
@@ -186,12 +186,12 @@ Game Off is rated by other participants in six categories (RELEASE.md §0). What
 
 | Category | What earns it here | Gap today |
 |---|---|---|
-| Overall | A complete, polished run with a satisfying final timecard | 4 tier-B levels remain: `stairs`, `doors`, `pillar`, `portrait` (§8.2); the finale and its ending are built |
+| Overall | A complete, polished run with a satisfying final timecard | Tier B is built (17 levels), and so are act 5 and the reworked finale (Nov 3; §8.2); the finale and its ending are built |
 | Gameplay | Tight movement (§5), mid-air shifting, par as a second puzzle per level | Tuning pass (G1), playtests |
 | Graphics | A deliberate code-drawn style: two palettes of one building, echoes, readable freaks (ART.md §1.1) | — |
 | Audio | Theme in two arrangements crossfaded on shift (§11.3); yelp, giggle, stamp | — |
 | Innovation | **Pranks**: each night clock-in can change the building, so clock-ins are a resource. **Freaks freeze by day**: the other shift is a pause button for the monsters. Timecard par. | — (evidence from level 1; first encounter level 3) |
-| Theme | The Shift key, the work shift, and the building that shifts, all at once (§1.7) | Sticky Keys joke (planned) |
+| Theme | The Shift key, the work shift, and the building that shifts, all at once (§1.7) | — |
 
 **Overlap warning.** The jam page's list of example ideas includes a puzzle-platformer where you shift between two overlapping realities and a monster might be standing on the bridge in the other one. That is our core premise, so many entries will look like ours at first glance. Everywhere a rater forms a first impression (the itch hook, cover, GIF, the first two minutes of play), lead with what only this game does: the freaks prank the building every time you clock in, and freeze when you leave the night.
 
@@ -228,7 +228,7 @@ The player retains their position and movement state.
 |---|---|
 | Playable dimensions | 2 |
 | Core mechanics | Move, jump, shift |
-| Main levels | 21 compact levels: five acts of four plus the finale (tiers: 12 built / 17 / 21) |
+| Main levels | 21 compact levels: five acts of four plus the finale  |
 | Estimated completion | 35–50 minutes |
 | Difficulty | Progressive |
 | Checkpoints | Yes, where appropriate |
@@ -236,8 +236,8 @@ The player retains their position and movement state.
 | Bosses | Not planned |
 | Narrative | Minimal / environmental |
 | Leaderboards | Stretch goal |
-| Speedrun timer | Stretch goal |
-| Gamepad support | Stretch goal |
+| Speedrun timer | Stretch goal; built Nov 3 (SETTINGS > SPEEDRUN TIMER: the level time on the HUD, the run total on the end screen) |
+| Gamepad support | Stretch goal; built Nov 3 (`src/pad.js`: a fixed standard mapping, menus included) |
 | Delivery | itch.io |
 | Repository | Public GitHub repository |
 
@@ -290,7 +290,7 @@ Shifting does not inherently:
 
 - Move the player's coordinates.
 - Reset velocity.
-- Change gravity.
+- Change gravity (except on Upside Down levels, §8.2, where the night is the map turned over).
 - Interrupt an existing jump.
 - Apply a movement penalty.
 - Consume resources.
@@ -309,7 +309,7 @@ The primary consequence of shifting is that the player's surrounding physical en
 | Restart level | R |
 | Pause | Escape |
 
-Controls should be rebindable if feasible.
+Move, jump and shift are rebindable (SETTINGS > CONTROLS).
 
 **Important:** Pressing Shift five times in a row can trigger Windows Sticky Keys, and a browser cannot suppress it. **Week-1 test:** play the prototype on Windows and see whether normal play triggers it (other key presses in between should reset the count; held arrow keys may not). If it triggers, K becomes the advertised primary bind and Shift the thematic alternative, and the title screen carries a one-line note on disabling the OS shortcut.
 
@@ -367,7 +367,7 @@ Changing dimensions does not create a separate player character or position.
 
 **Decision (v0.2):** A shift that would overlap solid geometry in the destination is resolved in this order:
 
-1. **Corner nudge.** If moving the player by up to 4 px (configurable) in any single direction clears the overlap, nudge the player and shift. Nudges prefer up, then the direction of travel.
+1. **Corner nudge.** If moving the player by up to 4 px (configurable) in any single direction clears the overlap, nudge the player and shift. Nudges prefer against the destination's gravity, then the direction of travel.
 2. **Shift buffer.** Otherwise the request stays pending for 80 ms (configurable). On every physics tick inside the window, the shift is re-attempted; it fires on the first tick the destination clears.
 3. **Rejection.** If the window expires, the shift is rejected.
 
@@ -497,8 +497,8 @@ Layer differentiation never relies on color alone: solid vs. echo is filled vs. 
 1. **Pranksters, not hunters.** The freaks never chase the player. They rearrange, steal, block, and bail.
 2. **Never fully shown.** Silhouettes, eyes, sounds, notes. No close-up, no reveal, no name beyond "the freaks."
 3. **Deterministic.** Fixed patterns only, no AI. Same inputs, same freaks: predictable, testable, par-proof.
-4. **Night creatures.** Visible freaks exist only on the night shift and obey S-06/§4.6: when the player is on day shift, every freak freezes mid-stride. By day they are drawn as dashed outlines where they will be on return.
-5. **Fair.** Every prank and every freak is telegraphed before it can hurt (§6.3 rule 2).
+4. **Night creatures.** Visible freaks live on the night shift (the day-walker, on the day shift) and obey S-06/§4.6: on the other shift they freeze mid-stride, drawn as dashed outlines where they will be on return.
+5. **Fair.** Every prank and every freak is telegraphed before it can hurt (§6.3 rule 2): a prank counts down and outlines its tiles, a patrol shows its track, a peeker rattles before it pops, and a supervised freak wears "!" while watched and "z" while slacking.
 
 **Personality (decided 2026-11-02)**
 
@@ -518,7 +518,6 @@ What that means in play:
 - **Smug about it.** Grand gestures, tiny stakes. The comedy is the gap between how impressive the prank is and how pointless it is.
 - **Never cute enough to cuddle, never scary.** Rubber-suit-monster energy: lumpy, jittering, glowing eyes, but petty.
 
-Specs: ART.md §5 (look), AUDIO.md §4 (sound), WRITING.md §1 (voice).
 
 Specs: ART.md §5 (look), AUDIO.md §2 and §4 (sound), WRITING.md §1 (voice).
 
@@ -528,8 +527,8 @@ The freaks act **when the player shifts, not over time**: in the moment of trans
 
 - Each level may define pranks. A prank fires on the **Nth successful entry into the night shift** and overrides tiles in either layer (remove a plank, add a crate, move a gate).
 - The destination of a shift is validated against the geometry *as it will be after the prank*. If the prank would bury the player, the shift is buffered/rejected per S-08 and the prank waits.
-- Pranks are permanent for the run, except that **death restores the prank state of the active checkpoint** (§9.3).
-- **Tells:** before a prank fires, its target is marked: eyes watching from the dark at night, a sticky note (MINE) by day. When it fires, the player hears a giggle.
+- Pranks are permanent for the run (a repeating prank fires again every n night entries, so a moved object comes back round), except that **death restores the prank state of the active checkpoint** (§9.3).
+- **Tells:** before a prank fires, its target is marked: big glowing eyes at night, a sticky note (MINE) by day, with a countdown under it (NEXT NIGHT, IN 2 NIGHTS) and the tiles it will change outlined. When it fires, the player hears a giggle.
 - Consequence: shift count is a resource. Players plan *when* to clock in and how many times, because each entry changes the night.
 
 Example (*Inventory*): the night plank spans the first pit on the first visit. On the second clock-in, the freaks move it to the second pit. The level is solved by stepping out to day between the pits and back in.
@@ -541,7 +540,7 @@ Example (*Inventory*): the night plank spans the first pit on the first visit. O
 | Lurker | Patrols a fixed span at fixed speed | Pass it by freezing it (go to day, walk past its outline, come back) | Act 2 |
 | Peeker | Pops out of a hole on a timer, ducks back in | Timing | Act 2 |
 | Squatter | Sits in a doorway, never moves | Route through the other shift | Act 2 |
-| Supervisor | Holds a clipboard, turns left/right on a fixed cycle. Freaks on the side it faces work; the others slack off (frozen, harmless). Never moves, never spooks. | Timing by reading its facing | Act 3 (`supervisor`) |
+| Supervisor | Holds a clipboard, turns left/right on a fixed cycle. Freaks on the side it faces work ("!"); the others slack off (frozen, harmless, "z"). A wedge shows its gaze, an arrow and pips show when it turns. Never moves, never spooks. | Timing by reading its facing | Act 3 (`supervisor`) |
 | Day-walker | Patrols like a lurker, but on the **day** shift; frozen by night | Each shift now freezes the other's freaks | Act 4 (`daywalker`) |
 | Scatterer *(post-jam)* | Flees when approached, knocking things over (real-time geometry change) | — | — |
 
@@ -840,15 +839,15 @@ A linear progression is sufficient.
 |---|---|---|---|---|
 | 5. Inventory ✅ | First prank | Each clock-in changes the night | The plank keeps moving | A |
 | 6. Night Watch ✅ | Lurker, peeker, squatter | Freaks freeze when you go to day | Something is in the tunnel | A |
-| 7. Under Renovation | Height from one shift | Climb a night staircase, shift mid-air onto a day ledge | A staircase to nowhere; they're very proud | B |
-| 8. Lost & Found | Wanted pranks (act 2 combination) | Spend clock-ins on purpose | They stole every door | B |
+| 7. Under Renovation ✅ | Height from one shift | Climb a night staircase, shift mid-air onto a day ledge | A staircase to nowhere; they're very proud | B |
+| 8. Lost & Found ✅ | Wanted pranks (act 2 combination) | Spend clock-ins on purpose | They stole every door | B |
 
 **Act 3: Graveyard Shift** (they get organized; first new rule)
 
 | Level | Focus | Intended Lesson | Fiction | Tier |
 |---|---|---|---|---|
 | 9. Wet Floor ✅ | Wet floor `~` | Slide at night, grip by day | Floors waxed at night (by whom?) | C |
-| 10. Structural Integrity | Moving object | Count your night entries: the pillar is a wall, then a step | The load-bearing pillar moved | B |
+| 10. Structural Integrity ✅ | Moving object | Count your night entries: the pillar is a wall, then a step | The load-bearing pillar moved | B |
 | 11. Night Management ✅ | Supervisor freak | Cross on the side it isn't watching | One of them has a clipboard | C |
 | 12. Stacked ✅ | Multiple pranks (act 3 combination) | Order your clock-ins | They've been busy | A |
 
@@ -856,29 +855,29 @@ A linear progression is sufficient.
 
 | Level | Focus | Intended Lesson | Fiction | Tier |
 |---|---|---|---|---|
-| 13. Employee of the Month | Obstacle as tool | The portrait blocks the exit, then becomes the step | Their portrait. It's just eyes. | B |
+| 13. Employee of the Month ✅ | Obstacle as tool | The portrait blocks the exit, then becomes the step | Their portrait. It's just eyes. | B |
 | 14. Broad Daylight ✅ | Day-walker freak | Each shift freezes the other shift's freaks; you must freeze it | One of them works days now | C |
 | 15. Floor 3.5 ✅ | Offset layer | Shift at the apex to climb between floors | Night is half a storey up | C |
-| 16. Night Audit | Acts 1–4 exam | Everything so far, one screen, no new rules | Management's walkthrough; so is theirs | B |
+| 16. Night Audit ✅ | Acts 1–4 exam | Everything so far, one screen, no new rules | Management's walkthrough; so is theirs | B |
 
 **Act 5: Upside Down** (the building turns over)
 
 | Level | Focus | Intended Lesson | Fiction | Tier |
 |---|---|---|---|---|
-| 17. Mind Your Head | Night flipped, gravity up | At night you fall up; the ceiling is the floor | They flipped the night shift | C |
-| 18. Falling Up | Mid-fall flips | Shift mid-fall to reverse it; climb a shaft by flipping | The floor is up there now | C |
-| 19. Ceiling Walker | Flip + freak + prank | Freeze a ceiling lurker; read a prank on the flipped map | Something walks on the ceiling | C |
-| 20. Head Over Heels | Act 5 combination | Every shift freezes one freak and flips gravity | Up is a matter of opinion now | C |
+| 17. Mind Your Head ✅ | Night flipped, gravity up | At night you fall up; the ceiling is the floor | They flipped the night shift | C |
+| 18. Falling Up ✅ | Mid-fall flips | Shift mid-fall to reverse it; climb by flipping | The floor is up there now | C |
+| 19. Ceiling Walker ✅ | Flip + freak + prank | Freeze a ceiling lurker; read a prank on the flipped map | Something walks on the ceiling | C |
+| 20. Head Over Heels ✅ | Act 5 combination | Every shift freezes one freak and flips gravity | Up is a matter of opinion now | C |
 
 **Finale**
 
 | Level | Focus | Intended Lesson | Fiction | Tier |
 |---|---|---|---|---|
-| 21. Clock Out ✅ (rework planned) | Everything | One room per act, then the time clock; the ending | Get out. Final timecard. They wave from the dark. | A built / C rework |
+| 21. Clock Out ✅ (reworked Nov 3) | Everything | One room per act, then the time clock; the ending | Get out. Final timecard. They wave from the dark. | A built / C rework |
 
 **Ladder.** Freak evidence in act 1; pranks single (5), wanted (8), moving an object (10), queued (12); visible freaks (6), the supervisor (11), the day-walker (14), a freak on the ceiling (19); one new rule per act from act 3: wax (9), offset (15), upside down (17). Floor 3.5 previews act 5: the building stops being where it was before it turns over.
 
-**Tiers and cut dates.** A = the 12 built; B = 17 (M2, Nov 15); C = 21, which needs the gravity flip working and `upside` proven by **Nov 18**. Content freeze **Nov 22**. If a tier slips, its levels go post-jam and the rest keep their order; today's Clock Out is always the fallback finale. Levels are referred to by id, so cuts never renumber anything.
+**Tiers.** How it was planned, kept as history: A = the original 12, B = 17, C = 21. Everything shipped by Nov 3. Levels are referred to by id, so nothing ever renumbers.
 
 **Shared state and Freight** (crates restacking on a cycle) are post-jam (LEVELS.md §5.1).
 
@@ -974,7 +973,7 @@ Moving hazards and enemies are not required for the first playable build.
 The player fails when:
 
 - They contact a lethal hazard in the active dimension.
-- They touch an active freak on the night shift ("spooked").
+- They touch an active freak on its own shift ("spooked").
 - They fall outside valid level boundaries.
 - A defined environmental failure condition is met.
 
@@ -1064,7 +1063,7 @@ The camera should prioritize precise platforming.
 
 Requirements:
 
-- Smooth horizontal tracking.
+- None: every level is one screen (§21).
 - Adequate forward visibility.
 - No camera reset when shifting.
 - Minimal unnecessary camera movement.
@@ -1084,7 +1083,7 @@ Not a horror game. Rubber-suit-monster energy: real monsters, ridiculous ones, m
 - **Mystery is the punchline.** The freaks are never explained or fully shown. Their nature is undefined, even in these docs (§4.8).
 - **Original jokes only.** The tone is inspired by classic cartoon monster capers and absurdist TV, but no characters, catchphrases or famous bits are borrowed.
 
-The freaks are drawn in code: a dark lumpy, jittering silhouette with fur spikes and a pair of blinking yellow eyes. The art pass gives them more attitude, not more explanation (ART.md §5).
+The freaks are drawn in code: a dark lumpy, jittering silhouette and a pair of blinking yellow eyes. The art pass gives them more attitude, not more explanation (ART.md §5).
 
 ---
 
@@ -1183,7 +1182,7 @@ Priority settings:
 - Music volume.
 - Effects volume.
 - Reduced screen effects.
-- Control rebinding, if feasible.
+- Control rebinding *(built Nov 3: SETTINGS > CONTROLS; the four actions, never the menu keys)*.
 
 ## 12.6 Accessibility
 
@@ -1425,6 +1424,14 @@ Special cases to test:
 9. Shift immediately before landing.
 10. Shift on the same update as a jump input.
 
+Upside Down levels add (decided 2026-11-03; every rule is the day rule mirrored; each case is an `upside down:` test in `test/rules.test.mjs` since Nov 3):
+
+11. Shift into the flipped night: you fall up and land hanging under the solid above.
+12. Jump on a flipped layer: the jump goes down the screen, and releasing early cuts it.
+13. Mid-air flip: velocity is kept on screen, so a rise becomes a fall the other way; coyote time is cleared, so there's no mid-air jump right after a flip. That holds even when the nudge leaves you touching the new floor while you move away from it: touching isn't landing.
+14. Grounded flip into the mirrored floor: refused like any blocked shift (nudge against the new gravity first, then buffer, then fail).
+15. Fall out the top on a flipped layer: a fall death, exactly like falling out the bottom by day.
+
 The game should resolve each case consistently.
 
 ## 13.8 Collision Strategy
@@ -1443,18 +1450,18 @@ Rules:
 
 ## 13.9 Architecture (v0.2)
 
-- `src/rules.js`: pure game rules. No DOM, no time source; `step(level, state, input)` returns the next state. Pranks are tile overrides in the state; freaks are a pure function of a night-only clock (`freakBoxes`).
+- `src/rules.js`: pure game rules. No DOM, no time source; `step(level, state, input)` returns the next state. Pranks are tile overrides in the state; freaks are a pure function of their own shift's clock (`freakBoxes`).
 - `src/levels.js`: level data as two-layer ASCII maps.
 - `src/input.js`: key events → per-tick input frames (one shift per key-down, repeats ignored, presses between ticks queued). No DOM.
 - `src/main.js`: fixed-step loop and rendering. Draws only what the rules decided.
 - `src/audio.js`: WebAudio synthesis.
-- `test/`: `node --test` suites against the real rules module.
+- `test/`: `node --test` suites against the real rules module. The full file list is TECH.md §2.
 
 This is the same architecture as the developer's previous browser games (Recall, Wick, Thaw).
 
 ## 13.10 Level Data
 
-Levels should be data-driven. **Format (v0.2):** each level is two equal-size ASCII grids (day, night) plus metadata (name, par). Legend: `#` solid, `^` hazard, `S` spawn, `E` exit, `C` checkpoint, `.` empty. Spawn, exit and checkpoints are shared and may be written in either grid. Plain text is fast to author, diffable, and readable in review.
+Levels should be data-driven. **Format (v0.2):** each level is two equal-size ASCII grids (day, night) plus metadata (name, par). Legend: `#` solid, `^` hazard, `~` wet floor, `S` spawn, `E` exit, `C` checkpoint, `.` empty. Spawn, exit and checkpoints are shared and may be written in either grid. Plain text is fast to author, diffable, and readable in review.
 
 Optional per-level lists: `pranks` (`onNight`, `tell`, `set` rectangles of tile overrides), `freaks` (`kind`, tile, `range`/`speed` for lurkers, `period`/`duty` for peekers), `decor` (cosmetic, e.g. eyes in the dark).
 
@@ -1538,7 +1545,7 @@ Timing should not interfere with the default puzzle-solving experience.
 
 ## 15.3 Shift Par (the timecard)
 
-**Decision (v0.2): in scope for the jam.** Track successful shifts per level. Each level has a **par**: the fewest shifts the designer found. The level-complete screen is a timecard showing clock-ins vs. par.
+**Decision (v0.2): in scope for the jam.** Track successful shifts per level. Each level has a **par**: the fewest shifts the scripted solution and the audit found. The level-complete screen is a timecard showing clock-ins vs. par.
 
 - Rejected or buffered-then-expired shifts do not count.
 - Every entry into night may trigger a prank (§4.9), so par is a puzzle about *when* to clock in, not only how often.
@@ -1710,7 +1717,7 @@ The minimum release is complete when:
 | Levels feel repetitive | High | Focus on distinct geometric relationships |
 | Excessive visual effects obscure play | Medium | Short effects and reduced-effects option |
 | Rapid Shift input triggers OS shortcuts | Medium | Remapping and Sticky Keys guidance |
-| Scope grows beyond the jam (16 levels, 4 new mechanics) | High | Tiers A/B/C with dated cut lines (§8.2); tier A always ships; content freeze Nov 22 |
+| Scope grew past the first plan (21 levels, 5 new mechanics) | Resolved | All built by Nov 3; content freeze Nov 22 |
 | Difficulty spikes unexpectedly | Medium | External playtesting |
 | Too much architectural work delays content | Medium | Keep extensibility lightweight |
 | Unintended routes break progression | Medium | Systematic level testing |
@@ -1830,22 +1837,23 @@ The following decisions require prototypes or further discussion.
 | Momentum preservation | Required | Locked |
 | Shift cooldown | None | Locked |
 | Dimensions in jam version | Two | Locked |
-| Shift input | Shift key, rebindable if feasible | Locked |
+| Shift input | Shift key, rebindable | Locked |
 | Shift direction | Binary toggle | Locked |
 | Movement physics | Responsive, momentum-preserving | High |
 | Visual identity | Code-drawn as a deliberate style; one building in two lights | Locked (v0.4) |
 | Hazards | Simple and dimension-specific | Medium |
 | Checkpoint frequency | Based on challenge length | Medium |
 | Moving objects in inactive layers | Frozen | Locked |
-| Level count | 21: five acts of four plus the finale; tiers 12 / 17 / 21 with cut dates (§8.2) | Locked (v0.6) |
-| New mechanics in jam scope | Wet floor, supervisor, offset layer, day-walker; each cut if it misses its date | Locked (v0.5) |
+| Level count | 21: five acts of four plus the finale (§8.2) | Locked (v0.6) |
+| Camera | None: single-screen rooms, 32×18 | Locked (Nov 3) |
+| New mechanics in jam scope | Wet floor, supervisor, offset layer, day-walker, Upside Down; all shipped | Locked (v0.6) |
 | Antagonist | The freaks: never fully shown, nature undefined, nocturnal and annoying (§4.8) | Locked |
 | Tone | Mock horror | Locked |
 | Pranks trigger | Nth entry into night | Locked |
 | Freak AI | None: fixed patterns, frozen by day | Locked |
 | Subtitle | *The Freaks Come Out at Night* | Provisional |
 | Shared state (levers/doors) | Post-jam | Deferred |
-| Speedrun timer | Optional | Low |
+| Speedrun timer | Built (SETTINGS) | Low |
 | Additional dimensions | Post-jam | Deferred |
 | Narrative | Minimal | Provisional |
 

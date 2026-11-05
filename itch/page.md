@@ -1,15 +1,16 @@
 # itch.io page kit
 
-Everything needed to create the *Double Shift* page on itch.io, in the order the itch dashboard asks for it. Settings come from [RELEASE.md](../docs/RELEASE.md) §2. **Fish writes the final description words**; the draft below is checked against the current build (12 levels, 141 tests, level select, pixel art and music).
+Everything needed to create the *Double Shift* page on itch.io, in the order the itch dashboard asks for it. Settings come from [RELEASE.md](../docs/RELEASE.md) §2. **Fish writes the final description words**; the draft below is checked against the current build (<!-- n:levels -->21<!-- /n --> levels, <!-- n:tests -->411<!-- /n --> tests, level select, pixel art and music). The paste-ready description in §4 carries no markers, so check its numbers by hand before pasting (the release refresh does).
 
 ## 1. Build the files
 
 ```bash
 npm run zip      # double-shift-web.zip: index.html + src/ at the archive root
-npm run media    # media/cover.png (1260×1000) + 10 screenshots (960×540) + the asset gallery, via headless Edge/Chrome
+npm run media    # media/cover.png (1260×1000) + 19 screenshots (960×540) + the asset gallery, via headless Edge/Chrome
+npm run gif -- doors      # media/demo-doors.gif (480×270): Lost & Found's scripted run, a prank on every clock-in
 ```
 
-`npm run media` also plays level 1 with real keys at full speed and fails if it can't be cleared or the page logs an error.
+`npm run media` also plays level 1 with real keys at full speed and fails if it can't be cleared or the page logs an error. Smoke-test the upload itself: unzip `double-shift-web.zip` into an empty folder and run `npm run media -- <outdir> --root <that folder>`.
 
 ## 2. Create the project (itch.io → Dashboard → Create new project)
 
@@ -23,7 +24,7 @@ npm run media    # media/cover.png (1260×1000) + 10 screenshots (960×540) + th
 | Release status | Released *(or In development while still building)* |
 | Pricing | **$0 or donate**, suggested donation small (jam host recommends free) |
 | Uploads | `double-shift-web.zip` → tick **This file will be played in the browser** |
-| Embed options | Viewport **960 × 540**; **Fullscreen button** on; **Mobile friendly** off (keyboard only); **Automatically start on page load** off (there's a title screen; the first click starts the game); Enable scrollbars off |
+| Embed options | Viewport **960 × 540**; **Fullscreen button** on; **Mobile friendly** off (keyboard or gamepad, no touch controls); **Automatically start on page load** off (there's a title screen; the first click starts the game); Enable scrollbars off |
 | Details: Genre | Platformer |
 | Tags | `puzzle-platformer`, `2D`, `Short`, `Singleplayer`, `Funny`, `Monsters`, `Minimalist`, `game-off-2026` *(check each tag page first, RELEASE.md §2)* |
 | AI generation disclosure | **Yes**: Code, Text & Dialog. Graphics and Sound **no** (drawn and synthesized by code). |
@@ -31,7 +32,7 @@ npm run media    # media/cover.png (1260×1000) + 10 screenshots (960×540) + th
 | Community | Comments |
 | Visibility | **Draft** first. Play it on the page once, then Public at submission time (the publish date is fixed at that click). |
 
-**Metadata tab:** Inputs: Keyboard. Languages: English. Accessibility: none ticked yet (nothing from itch's list exists in the build).
+**Metadata tab:** Inputs: Keyboard, Gamepad. Languages: English. Accessibility: tick only what the build has (reduced effects, volume sliders, rebinding; RELEASE.md §2).
 
 **Theme (Edit theme on the page):** background `#0b1029`, text `#d9f6ff`, links `#5ff2ff`, embed background `#0b1029`.
 
@@ -40,8 +41,8 @@ npm run media    # media/cover.png (1260×1000) + 10 screenshots (960×540) + th
 | Slot | File |
 |---|---|
 | Cover image | `media/cover.png` |
-| Screenshots (in this order) | `03-clock-in-night.png`, `07-night-watch-night.png`, `05-inventory-day.png`, `06-inventory-night.png`, `04-timecard.png`, `08-night-watch-day.png`, `09-level-select.png`, `10-act-card.png`, `01-title.png` |
-| Gameplay video/GIF | *(planned: a ≤ 10 s GIF of a mid-air shift chain and a frozen-lurker pass, ART.md §8)* |
+| Screenshots (in this order) | `demo-doors.gif` (provisional; Fish picks. The GIF goes first: itch plays a GIF screenshot in place), `19-prank-inventory.png` (a prank as it lands), `20-flip-mind-your-head.png` (the flip), `15-clock-out-night.png`, `07-night-watch-night.png`, `08-night-watch-day.png` (the freaks frozen by day), `03-clock-in-night.png`, `04-timecard.png`, `09-level-select.png`, `01-title.png` |
+| Gameplay video or trailer | Leave empty: the field takes a YouTube or Vimeo link, and the GIF already leads the screenshots. Other GIF candidates: `npm run gif -- upside` (the flip), `inventory` (the plank prank), `watch` (frozen freaks); ART.md §8. |
 
 ## 4. Description (paste into the editor; Fish edits the words)
 
@@ -53,25 +54,27 @@ npm run media    # media/cover.png (1260×1000) + 10 screenshots (960×540) + th
 >
 > Finish each level clocking in as few times as possible. Your timecard is watching.
 >
-> **Controls** (keyboard)
+> **Controls**
 >
-> | Action | Keys |
-> |---|---|
-> | Move | A / D or ← / → |
-> | Jump | Space, W or ↑ (hold for higher) |
-> | Change shift | Shift or K |
-> | Restart level | R |
-> | Level select | L, or click LEVEL SELECT on the title |
-> | Settings | O (volumes, reduced effects) |
-> | Pause | Esc |
-> | Mute | M |
+> | Action | Keyboard | Gamepad |
+> |---|---|---|
+> | Move | A / D or ← / → | Stick or d-pad |
+> | Jump | Space, W or ↑ (hold for higher) | A |
+> | Change shift | Shift or K | B, X or RB |
+> | Restart level | R | Back |
+> | Pause | Esc | Start |
+> | Level select | L, or click LEVEL SELECT on the title | X |
+> | Settings | O: volumes, reduced effects, speedrun timer, controls | Y |
+> | Mute | M | |
+>
+> Move, jump and change shift can be rebound in SETTINGS > CONTROLS.
 >
 > *On Windows, hammering Shift can open Sticky Keys. Use K, or turn off the Sticky Keys shortcut.*
 >
-> **What's in this build:** 12 levels in four acts, from your first clock-in to the last. Made for GitHub Game Off 2026 (theme: SHIFT).
+> **What's in this build:** 21 levels in five acts and a finale, from your first clock-in to the last, including an act where the night shift is upside down. Every prank and patrol shows what it's about to do. Gamepad support, rebindable controls and a speedrun timer. Made for GitHub Game Off 2026 (theme: SHIFT).
 >
 > **How it was made**
-> Designed by Vinícius Raposo for GitHub Game Off 2026. Built with AI assistance (Claude) to his design document, then tested like production software: the gameplay rules are a pure module, the game has 141 automated tests, and every level is proven solvable at par by a scripted run. No engine, no assets: the pixel art, the pixel font and the music are all drawn and synthesized by code. Source: https://github.com/FishRaposo/double-shift
+> Designed by Vinícius Raposo for GitHub Game Off 2026. Built with AI assistance (Claude) to his design document, with draft text from the same place, then tested like production software: the gameplay rules are a pure module, the game has 411 automated tests, and every level is proven solvable at par by a scripted run. No engine, no assets: the pixel art, the pixel font and the music are all drawn and synthesized by code, code that was also written with AI assistance. No generated images or audio were used. Source: https://github.com/FishRaposo/double-shift
 >
 > If you enjoyed it, a follow or a small donation helps.
 

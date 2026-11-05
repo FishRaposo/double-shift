@@ -1,13 +1,11 @@
 // Fairness: every input a level requires has real timing slack, and no respawn point sits in a patrol.
-// Floors (Fish, 2026-11-02): ≥ 200 ms in acts 1–2, ≥ 100 ms in acts 3–4 (docs/LEVELS.md §1).
+// Floors (Fish, 2026-11-02): ≥ 200 ms in acts 1–2, ≥ 100 ms in acts 3–6, the finale included (docs/LEVELS.md §1).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { LEVELS } from '../src/levels.js';
-import { freakBoxes, initState, TILE, PARAMS } from '../src/rules.js';
-import { inputWindows } from './helpers.mjs';
+import { initState, standableSpot, TILE, PARAMS, DAY, NIGHT, freakBoxes } from '../src/rules.js';
+import { inputWindows, level, patrolBoxes, respawnSpots, spotInPatrol, WINDOW_FLOOR } from './helpers.mjs';
 import { SOLUTIONS, L } from './solutions.mjs';
-
-export const WINDOW_FLOOR = (act) => (act <= 2 ? 200 : 100);
 
 for (const def of LEVELS) {
   test(`${def.name}: every required shift and jump has ≥ ${WINDOW_FLOOR(def.act)} ms of slack`, () => {
@@ -16,33 +14,31 @@ for (const def of LEVELS) {
   });
 }
 
-// Every place a freak's active box can be over its whole cycle, sampled on both clocks.
-function patrolBoxes(lvl) {
-  const s = initState(lvl);
-  const out = [];
-  for (let t = 0; t <= 20; t += 1 / 30) {
-    s.freakClock = t;
-    s.dayClock = t;
-    for (const b of freakBoxes(lvl, s)) if (b.active && b.kind !== 'supervisor') out.push(b);
-  }
-  return out;
-}
-
 for (const def of LEVELS) {
   test(`${def.name}: no spawn or checkpoint lies inside a freak's patrol`, () => {
     const lvl = L[def.id];
-    const spots = [lvl.spawn, ...lvl.checkpoints].map(({ tx, ty }) => ({
-      x: tx * TILE + (TILE - PARAMS.playerW) / 2,
-      y: (ty + 1) * TILE - PARAMS.playerH,
-      at: `${tx},${ty}`,
-    }));
     const boxes = patrolBoxes(lvl);
-    for (const p of spots) {
-      const hit = boxes.find((b) => p.x < b.x + b.w && p.x + PARAMS.playerW > b.x && p.y < b.y + b.h && p.y + PARAMS.playerH > b.y);
+    for (const p of respawnSpots(lvl)) {
+      const hit = spotInPatrol(p, boxes);
       assert.equal(hit, undefined, `respawn ${p.at} overlaps a ${hit?.kind} patrol`);
     }
   });
 }
+
+test('fairness: a checkpoint that only a prank makes standable is still checked against patrols', () => {
+  const lvl = level(
+    ['........', '........', '........', '........', '........', '...C....', 'S......E', '########'],
+    ['........', '........', '........', '........', '........', '........', '........', '########'],
+    {
+      pranks: [{ id: 'floor', onNight: 1, set: [{ layer: 'day', x0: 3, y0: 6, ch: '#' }] }],
+      freaks: [{ kind: 'lurker', tx: 3, ty: 5, range: 1, speed: 40 }],
+    },
+  );
+  const boxes = patrolBoxes(lvl);
+  const before = respawnSpots(lvl).filter((p) => p.at !== 'spawn');
+  assert.ok(before.length === 1 && before[0].at.includes('after 1 night'), 'the spot exists only once the prank lays the floor');
+  assert.ok(spotInPatrol(before[0], boxes), 'and it sits in the lurker\'s patrol, so the level check would fail');
+});
 
 // A freak patrolling over the exit lets you dash in past it at the right moment (a Wet Floor skip).
 for (const def of LEVELS) {
@@ -51,5 +47,15 @@ for (const def of LEVELS) {
     const ex = { x: lvl.exit.tx * TILE, y: lvl.exit.ty * TILE, w: TILE, h: TILE };
     const hit = patrolBoxes(lvl).find((b) => ex.x < b.x + b.w && ex.x + ex.w > b.x && ex.y < b.y + b.h && ex.y + ex.h > b.y);
     assert.equal(hit, undefined, `a ${hit?.kind} patrol covers the exit`);
+  });
+}
+
+// The spawn is the first respawn point: it must stand (or hang) on ground in its own shift, or every death
+// would drop you from it.
+for (const def of LEVELS) {
+  test(`${def.name}: the spawn has ground under it in its shift`, () => {
+    const lvl = L[def.id];
+    const s = initState(lvl);
+    assert.deepEqual(standableSpot(lvl, s.layer, lvl.spawn.tx, lvl.spawn.ty), { x: s.player.x, y: s.player.y });
   });
 }

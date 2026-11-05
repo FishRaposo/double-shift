@@ -29,22 +29,42 @@ export const PARAMS = Object.freeze({
 export const DAY = 0;
 export const NIGHT = 1;
 
+// Skins are object art drawn over ordinary solid tiles (src/skins.js decides which); the rules only validate
+// them. Default sizes in tiles: a door is 1×2, a pillar 1×4, a portrait 3×2; the door pile is 2 wide and at most
+// h (3) doors high.
+export const SKIN_KINDS = Object.freeze(['door', 'pillar', 'portrait', 'doorPile']);
+const SKIN_SIZE = { door: [1, 2], pillar: [1, 4], portrait: [3, 2], doorPile: [2, 3] };
+
+// The cells a skin must have inside the grid: doors and pillars stand on their bottom cell (ty) and a portrait
+// hangs from its top-left cell. A pile's h is only a cap (skinPlan stops counting at the top of the grid), so
+// only its bottom row has to fit.
+function skinCells(sk) {
+  if (sk.kind === 'portrait') return { x0: sk.tx, x1: sk.tx + sk.w - 1, y0: sk.ty, y1: sk.ty + sk.h - 1 };
+  const h = sk.kind === 'doorPile' ? 1 : sk.h;
+  return { x0: sk.tx, x1: sk.tx + sk.w - 1, y0: sk.ty - h + 1, y1: sk.ty };
+}
+
 // ---------- level parsing ----------
 
-// A level is { name, par, day: string[], night: string[] } — or `offset` + optional
-// `nightPatch` instead of `night`, which generates the night grid from the day one.
+// A level is { name, par, day: string[], night: string[] } — or `offset` or `upsideDown: true`, plus an optional
+// `nightPatch`, instead of `night`: those generate the night grid from the day one.
 // Legend: '#' solid, '^' hazard, 'S' spawn, 'E' exit, 'C' checkpoint, '.' empty.
 // S, E and C are shared between shifts and may be written in either grid.
 export function parseLevel(def) {
   const { day } = def;
   if (def.night && def.offset) throw new Error(`${def.name}: give a night grid or an offset, not both`);
+  if (def.upsideDown && (def.night || def.offset)) throw new Error(`${def.name}: an upside down level generates its night from the day; give no night grid or offset`);
   for (const r of def.nightPatch ?? []) {
     if ('SEC'.includes(r.ch)) throw new Error(`${def.name}: nightPatch can't place S, E or C (they're shared)`);
   }
-  const night = def.night ?? generateOffset(def);
-  if (!night) throw new Error(`${def.name}: needs a night grid or an offset`);
+  const night = def.night ?? generateNight(def);
+  if (!night) throw new Error(`${def.name}: needs a night grid, an offset or upsideDown`);
   const sups = (def.freaks ?? []).filter((f) => f.kind === 'supervisor');
   if (sups.length > 1) throw new Error(`${def.name}: one supervisor per level`);
+  if (def.rev !== undefined && !(Number.isInteger(def.rev) && def.rev >= 1)) throw new Error(`${def.name}: rev must be a whole number from 1`);
+  for (const pr of def.pranks ?? []) {
+    if (pr.every !== undefined && !(Number.isInteger(pr.every) && pr.every >= 1)) throw new Error(`${def.name}: prank ${pr.id} every must be a whole number from 1`);
+  }
   for (const f of def.freaks ?? []) {
     if (f.period !== undefined && !(f.period > 0)) throw new Error(`${def.name}: ${f.kind} period must be > 0`);
     if (f.duty !== undefined && !(f.duty > 0 && f.duty <= 1)) throw new Error(`${def.name}: ${f.kind} duty must be in (0, 1]`);
@@ -78,9 +98,23 @@ export function parseLevel(def) {
   const pranks = (def.pranks ?? []).map((pr) => ({
     id: pr.id,
     onNight: pr.onNight,
+    every: pr.every ?? 0, // > 0: fires again every that many night entries after onNight (a relocation's lap)
     tell: pr.tell ?? null,
     cells: expandCells(pr.set ?? []),
+    sound: pr.sound ?? null, // an extra sound when it fires (SOUNDS name), e.g. doorThunk
   }));
+  const skins = (def.skins ?? []).map((sk) => {
+    if (!SKIN_KINDS.includes(sk.kind)) throw new Error(`${def.name}: unknown skin kind "${sk.kind}"`);
+    if (sk.kind === 'doorPile' && sk.w !== undefined && sk.w !== 2) throw new Error(`${def.name}: a door pile is 2 tiles wide (two doors lying flat)`);
+    if ((sk.kind === 'door' || sk.kind === 'pillar') && sk.w !== undefined && sk.w !== 1) throw new Error(`${def.name}: a ${sk.kind} is 1 tile wide`);
+    if (sk.layer !== undefined && sk.layer !== 'day' && sk.layer !== 'night') throw new Error(`${def.name}: skin layer must be 'day' or 'night' (or left out for both)`);
+    const [dw, dh] = SKIN_SIZE[sk.kind];
+    const layer = sk.layer === 'night' ? NIGHT : sk.layer === 'day' ? DAY : null;
+    const out = { kind: sk.kind, tx: sk.tx, ty: sk.ty, w: sk.w ?? dw, h: sk.h ?? dh, layer };
+    const c = skinCells(out);
+    if (!(c.x0 >= 0 && c.x1 < w && c.y0 >= 0 && c.y1 < h)) throw new Error(`${def.name}: skin ${sk.kind} at ${sk.tx},${sk.ty} is outside the grid`);
+    return out;
+  });
   const freaks = (def.freaks ?? []).map((f, i) => ({
     id: f.id ?? `freak${i}`,
     kind: f.kind,
@@ -97,6 +131,7 @@ export function parseLevel(def) {
   return {
     name: def.name,
     par: def.par,
+    rev: def.rev ?? 1, // a reworked level's revision: saves ignore bests from another one (save.js)
     w,
     h,
     spawnLayer: def.spawnLayer ?? DAY,
@@ -106,26 +141,28 @@ export function parseLevel(def) {
     checkpoints,
     pranks,
     freaks,
-    decor: def.decor ?? [],
+    skins,
     offset: def.offset ?? null,
+    upsideDown: !!def.upsideDown, // the night is the day turned over, gravity included (gravitySign)
+    nightGenerated: !def.night, // the night grid was generated from the day one (offset, upside down)
   };
 }
 
-// `offset: { dx, dy }` (in tiles) builds the night grid by moving the day grid:
-// night[y][x] = day[y - dy][x - dx], '.' outside the grid. S/E/C are shared markers and are
-// stripped from the copy — they are not moved. `nightPatch` rectangles (the prank `set`
-// format minus `layer`) then apply differences: the exit approach, hazards.
-function generateOffset(def) {
-  if (!def.offset) return null;
-  const { dx = 0, dy = 0 } = def.offset;
+// A generated night grid. `offset: { dx, dy }` (in tiles) moves the day grid: night[y][x] = day[y - dy][x - dx],
+// '.' outside the grid. `upsideDown` turns it over: night[y] = day[h - 1 - y]. S/E/C are shared markers and are
+// stripped from the copy — they are not moved. `nightPatch` rectangles (the prank `set` format minus `layer`)
+// then apply differences: the exit approach, hazards.
+function generateNight(def) {
+  if (!def.offset && !def.upsideDown) return null;
+  const { dx = 0, dy = 0 } = def.offset ?? {};
   const h = def.day.length;
   const w = def.day[0].length;
   const rows = [];
   for (let y = 0; y < h; y++) {
     let row = '';
     for (let x = 0; x < w; x++) {
-      const sy = y - dy;
-      const sx = x - dx;
+      const sy = def.upsideDown ? h - 1 - y : y - dy;
+      const sx = def.upsideDown ? x : x - dx;
       const ch = sy >= 0 && sy < h && sx >= 0 && sx < w ? def.day[sy][sx] : '.';
       row += ch === 'S' || ch === 'E' || ch === 'C' ? '.' : ch;
     }
@@ -155,11 +192,19 @@ function expandCells(rects) {
 
 // ---------- geometry ----------
 
+// Gravity per shift: 1 pulls down the screen; -1 (only the night of an upside-down level) pulls up. Every rule
+// that knows which way is down reads this, so the flipped night is the day's rules mirrored.
+export function gravitySign(level, layer) {
+  return level.upsideDown && layer === NIGHT ? -1 : 1;
+}
+
 // `ov` holds geometry changed by the freaks' pranks: { 'layer,tx,ty': ch }.
+// Outside the grid: side walls, a solid ceiling and an open floor (falling out is death); a flipped layer has
+// them the other way up (open above, solid below).
 export function tileAt(level, layer, tx, ty, ov = NO_OV) {
   if (tx < 0 || tx >= level.w) return '#'; // side walls
-  if (ty < 0) return '#'; // ceiling
-  if (ty >= level.h) return '.'; // open below: falling out is death
+  if (ty < 0) return gravitySign(level, layer) > 0 ? '#' : '.'; // the ceiling
+  if (ty >= level.h) return gravitySign(level, layer) > 0 ? '.' : '#'; // the open floor
   const k = `${layer},${tx},${ty}`;
   if (k in ov) return ov[k];
   return level.layers[layer][ty][tx];
@@ -189,15 +234,22 @@ export function overlapsSolid(level, layer, x, y, w = PARAMS.playerW, h = PARAMS
   return false;
 }
 
+// A hazard's hitbox is the 45% of its tile on the floor side: the bottom, or the top on a flipped layer.
 export function overlapsHazard(level, layer, x, y, w = PARAMS.playerW, h = PARAMS.playerH, ov = NO_OV) {
   const [x0, x1] = tileSpan(x, w);
   const [y0, y1] = tileSpan(y, h);
   const hz = TILE * PARAMS.hazardHeight;
+  const up = gravitySign(level, layer) < 0;
   for (let ty = y0; ty <= y1; ty++) {
     for (let tx = x0; tx <= x1; tx++) {
       if (tileAt(level, layer, tx, ty, ov) !== '^') continue;
-      const top = (ty + 1) * TILE - hz;
-      if (y + h > top + EPS && y < (ty + 1) * TILE) return true;
+      if (up) {
+        const bottom = ty * TILE + hz;
+        if (y < bottom - EPS && y + h > ty * TILE) return true;
+      } else {
+        const top = (ty + 1) * TILE - hz;
+        if (y + h > top + EPS && y < (ty + 1) * TILE) return true;
+      }
     }
   }
   return false;
@@ -210,15 +262,16 @@ function overlapsTile(p, tx, ty) {
   );
 }
 
+// Ground is 1 px away in the direction gravity pulls.
 function isGrounded(level, layer, p, ov) {
-  return overlapsSolid(level, layer, p.x, p.y + 1, undefined, undefined, ov);
+  return overlapsSolid(level, layer, p.x, p.y + gravitySign(level, layer), undefined, undefined, ov);
 }
 
 // Low friction applies only while every tile under the feet is wet: one dry tile gives grip.
 function onWetFloor(level, s) {
   const p = s.player;
   if (!p.grounded) return false;
-  const ty = Math.floor((p.y + PARAMS.playerH + 1) / TILE);
+  const ty = gravitySign(level, s.layer) > 0 ? Math.floor((p.y + PARAMS.playerH + 1) / TILE) : Math.floor((p.y - 1) / TILE);
   const [x0, x1] = tileSpan(p.x, PARAMS.playerW);
   let wet = false;
   for (let tx = x0; tx <= x1; tx++) {
@@ -263,11 +316,16 @@ export function freakBoxes(level, s) {
   const facing = sup ? supervisorFacing(sup, s.freakClock) : 0;
   return level.freaks.map((f) => {
     const baseX = f.tx * TILE + (TILE - FREAK.w) / 2;
-    const y = (f.ty + 1) * TILE - FREAK.h;
+    const hang = gravitySign(level, f.shift) < 0; // a freak of a flipped shift hangs from the solid above its cell
+    const y = hang ? f.ty * TILE : (f.ty + 1) * TILE - FREAK.h;
     let x = baseX;
     let active = true;
     let face = 0;
     let turnIn = Infinity;
+    let dir = 0; // which way a patroller is walking
+    let popIn = 0; // seconds until a ducked peeker pops out, on its own clock
+    let supervised = false;
+    let watched = false;
     if (f.kind === 'supervisor') {
       face = facing;
       turnIn = (Math.floor(s.freakClock / f.period) + 1) * f.period - s.freakClock;
@@ -277,11 +335,23 @@ export function freakBoxes(level, s) {
         const side = Math.sign(f.tx - sup.tx) || 0;
         active = side !== 0 && facing === side; // only works while the clipboard points its way
         t = watchedClock(side, sup, s.freakClock);
+        supervised = true;
+        watched = active;
       }
-      if (f.kind === 'lurker' || f.kind === 'daywalker') x = baseX + pingpong(f.phase + t * f.speed, f.range * TILE);
-      if (f.kind === 'peeker') active = active && ((t + f.phase) % f.period) < f.duty * f.period;
+      if (f.kind === 'lurker' || f.kind === 'daywalker') {
+        const len = f.range * TILE;
+        const d = f.phase + t * f.speed;
+        x = baseX + pingpong(d, len);
+        dir = len <= 0 ? 0 : pingpong(d + 1e-6, len) >= pingpong(d, len) ? 1 : -1;
+      }
+      if (f.kind === 'peeker') {
+        const m = (t + f.phase) % f.period;
+        const up = m < f.duty * f.period;
+        active = active && up;
+        popIn = up ? 0 : f.period - m;
+      }
     }
-    return { id: f.id, kind: f.kind, shift: f.shift, x, y, w: FREAK.w, h: FREAK.h, active, facing: face, turnIn };
+    return { id: f.id, kind: f.kind, shift: f.shift, x, y, w: FREAK.w, h: FREAK.h, active, facing: face, turnIn, hang, dir, popIn, supervised, watched };
   });
 }
 
@@ -296,16 +366,25 @@ function touchedFreak(level, s) {
 
 // ---------- state ----------
 
-function spawnPoint(tx, ty) {
+// Where you stand in a cell: on its floor, or with gravity -1 hanging under the cell above (head at its top).
+export function spawnPoint(tx, ty, sign = 1) {
   return {
     x: tx * TILE + (TILE - PARAMS.playerW) / 2,
-    y: (ty + 1) * TILE - PARAMS.playerH,
+    y: sign > 0 ? (ty + 1) * TILE - PARAMS.playerH : ty * TILE,
   };
 }
 
+// The spot in a cell where you'd stand under that shift's gravity, or null when it's inside solid or has no
+// ground. Spawn, checkpoint saves and respawns use it (and the fairness test), so a respawn is always grounded.
+export function standableSpot(level, layer, tx, ty, ov = NO_OV) {
+  const pos = spawnPoint(tx, ty, gravitySign(level, layer));
+  if (overlapsSolid(level, layer, pos.x, pos.y, undefined, undefined, ov)) return null;
+  return isGrounded(level, layer, pos, ov) ? pos : null;
+}
+
 export function initState(level) {
-  const pos = spawnPoint(level.spawn.tx, level.spawn.ty);
   const layer = level.spawnLayer;
+  const pos = spawnPoint(level.spawn.tx, level.spawn.ty, gravitySign(level, layer));
   const player = { ...pos, vx: 0, vy: 0, facing: 1, grounded: false, coyote: 0, jumpBuf: 0, rising: false };
   player.grounded = isGrounded(level, layer, player, NO_OV);
   player.coyote = player.grounded ? PARAMS.coyoteTime : 0;
@@ -332,8 +411,39 @@ export const NO_INPUT = Object.freeze({ left: false, right: false, jumpHeld: fal
 
 // Pranks due on the next entry into night. The freaks act in the moment of transition,
 // the one moment the player can't see.
+// The next night entry a prank fires on, or null when it's done: a prank with `every` never is.
+function nextFiring(pr, entries) {
+  if (pr.onNight > entries) return pr.onNight;
+  return pr.every > 0 ? pr.onNight + Math.ceil((entries + 1 - pr.onNight) / pr.every) * pr.every : null;
+}
+
+// What the freaks still have planned, soonest first, for the tells: `nights` is how many night
+// entries away it is; `cells` are the tiles it will really change. A cell shows only its next change,
+// and a tell shows only while its prank has something to change and no sooner prank is telling from that spot.
+export function pendingPranks(level, s) {
+  const seen = new Set();
+  const told = new Set();
+  return level.pranks
+    .map((pr) => ({ pr, next: nextFiring(pr, s.nightEntries) }))
+    .filter(({ next }) => next !== null)
+    .sort((a, b) => a.next - b.next)
+    .map(({ pr, next }) => {
+      const cells = [];
+      for (const [layer, tx, ty, ch] of pr.cells) {
+        const key = `${layer},${tx},${ty}`;
+        if (seen.has(key) || tileAt(level, layer, tx, ty, s.overrides) === ch) continue;
+        seen.add(key);
+        cells.push({ layer, tx, ty, ch });
+      }
+      const spot = pr.tell && `${pr.tell.tx},${pr.tell.ty}`;
+      const tell = pr.tell && cells.length > 0 && !told.has(spot) ? pr.tell : null;
+      if (tell) told.add(spot);
+      return { id: pr.id, nights: next - s.nightEntries, tell, cells };
+    });
+}
+
 function pranksFor(level, entry) {
-  return level.pranks.filter((pr) => pr.onNight === entry);
+  return level.pranks.filter((pr) => pr.onNight === entry || (pr.every > 0 && entry > pr.onNight && (entry - pr.onNight) % pr.every === 0));
 }
 
 function withPranks(ov, pranks) {
@@ -341,6 +451,14 @@ function withPranks(ov, pranks) {
   const next = { ...ov };
   for (const pr of pranks) for (const [layer, tx, ty, ch] of pr.cells) next[`${layer},${tx},${ty}`] = ch;
   return next;
+}
+
+// The tile overrides after `entries` night clock-ins: each entry's due pranks applied in order, as tryShift does.
+// The fairness test uses it to check respawn spots that only a prank creates.
+export function overridesAfter(level, entries) {
+  let ov = {};
+  for (let e = 1; e <= entries; e++) ov = withPranks(ov, pranksFor(level, e));
+  return ov;
 }
 
 // Attempt the pending shift. Order: clean → corner nudge → keep buffering.
@@ -356,11 +474,12 @@ function tryShift(level, s) {
   let dy = 0;
   if (blocked(p.x, p.y)) {
     const dir = p.vx !== 0 ? Math.sign(p.vx) : p.facing;
+    const up = -gravitySign(level, target); // against the destination's gravity first
     const candidates = [];
-    for (let d = 1; d <= PARAMS.shiftNudge; d++) candidates.push([0, -d]);
+    for (let d = 1; d <= PARAMS.shiftNudge; d++) candidates.push([0, up * d]);
     for (let d = 1; d <= PARAMS.shiftNudge; d++) candidates.push([dir * d, 0]);
     for (let d = 1; d <= PARAMS.shiftNudge; d++) candidates.push([-dir * d, 0]);
-    for (let d = 1; d <= PARAMS.shiftNudge; d++) candidates.push([0, d]);
+    for (let d = 1; d <= PARAMS.shiftNudge; d++) candidates.push([0, -up * d]);
     const hit = candidates.find(([cx, cy]) => !blocked(p.x + cx, p.y + cy));
     if (!hit) return false;
     [dx, dy] = hit;
@@ -372,8 +491,15 @@ function tryShift(level, s) {
   s.shiftPending = 0;
   s.overrides = ov;
   if (entry) s.nightEntries = entry;
-  p.grounded = isGrounded(level, s.layer, p, s.overrides); // S-5.5: recompute contacts immediately
-  s.events.push({ type: 'shift', layer: target, nudged: dx !== 0 || dy !== 0 });
+  // S-5.5: recompute contacts immediately, by step 6's rule: touching a floor you're moving away from isn't
+  // standing on it (a flip can leave you flush against the new floor on your way off it)
+  p.grounded = gravitySign(level, s.layer) * p.vy >= 0 && isGrounded(level, s.layer, p, s.overrides);
+  if (gravitySign(level, target) !== gravitySign(level, 1 - target)) {
+    // gravity turned over: what you were rising against is now a fall, and no mid-air jump right after a flip
+    p.rising = false;
+    if (!p.grounded) p.coyote = 0;
+  }
+  s.events.push({ type: 'shift', layer: target, nudged: dx !== 0 || dy !== 0, x: p.x, y: p.y }); // where it happened: a death later this tick moves the player
   for (const pr of due) s.events.push({ type: 'prank', id: pr.id });
   return true;
 }
@@ -424,14 +550,21 @@ export function step(level, prev, input = NO_INPUT, dt = DT) {
     }
   }
 
-  // 2. Each shift's clock moves only while you're in it.
+  // 2. Each shift's clock moves only while you're in it. A peeker popping out (hidden before the tick, out
+  // after it) is an event, for the boing; its clock runs only at night, so that's the only time it can pop.
   if (s.layer === NIGHT) {
     for (const f of level.freaks) {
       if (f.kind === 'supervisor' && supervisorFacing(f, s.freakClock) !== supervisorFacing(f, s.freakClock + dt)) {
         s.events.push({ type: 'supervisorTurn', id: f.id, facing: supervisorFacing(f, s.freakClock + dt) });
       }
     }
+    const before = level.freaks.some((f) => f.kind === 'peeker') ? freakBoxes(level, s) : null;
     s.freakClock += dt;
+    if (before) {
+      freakBoxes(level, s).forEach((b, i) => {
+        if (b.kind === 'peeker' && b.active && !before[i].active) s.events.push({ type: 'peek', id: b.id });
+      });
+    }
   } else s.dayClock += dt;
 
   // 3. Horizontal intent. Wet floor `~` swaps the ground accel/decel for the slick pair.
@@ -450,26 +583,28 @@ export function step(level, prev, input = NO_INPUT, dt = DT) {
     if (wet && before !== 0 && p.vx === 0) s.events.push({ type: 'wetStop' });
   }
 
-  // 4. Jump: buffer, coyote (which carries across shifts), variable height.
+  // 4. Jump: buffer, coyote (which carries across shifts of the same gravity), variable height. `sign` is the
+  // gravity after the shift resolved: every vertical rule below is the same rule mirrored on a flipped night.
+  const sign = gravitySign(level, s.layer);
   if (input.jumpPressed) p.jumpBuf = P.jumpBuffer;
   else p.jumpBuf = Math.max(0, p.jumpBuf - dt);
   if (p.grounded) p.coyote = P.coyoteTime;
   if (p.jumpBuf > 0 && (p.grounded || p.coyote > 0)) {
-    p.vy = -P.jumpVelocity;
+    p.vy = -sign * P.jumpVelocity;
     p.jumpBuf = 0;
     p.coyote = 0;
     p.grounded = false;
     p.rising = true;
-    s.events.push({ type: 'jump' });
+    s.events.push({ type: 'jump', x: p.x, y: p.y, layer: s.layer });
   }
-  if (p.rising && !input.jumpHeld && p.vy < 0) {
+  if (p.rising && !input.jumpHeld && sign * p.vy < 0) {
     p.vy *= P.jumpCut;
     p.rising = false;
   }
-  if (p.vy >= 0) p.rising = false;
+  if (sign * p.vy >= 0) p.rising = false;
 
   // 5. Gravity.
-  p.vy = Math.min(p.vy + P.gravity * dt, P.maxFall);
+  p.vy = sign * Math.min(sign * p.vy + P.gravity * dt, P.maxFall);
 
   // 6. Move X, then Y, resolving against the active layer only.
   p.x += p.vx * dt;
@@ -486,27 +621,27 @@ export function step(level, prev, input = NO_INPUT, dt = DT) {
     p.vy = 0;
     p.rising = false;
   }
-  p.grounded = p.vy >= 0 && isGrounded(level, s.layer, p, s.overrides);
+  p.grounded = sign * p.vy >= 0 && isGrounded(level, s.layer, p, s.overrides);
   p.coyote = p.grounded ? P.coyoteTime : Math.max(0, p.coyote - dt);
-  if (p.grounded && !wasGrounded) s.events.push({ type: 'land' });
+  if (p.grounded && !wasGrounded) s.events.push({ type: 'land', x: p.x, y: p.y, layer: s.layer });
 
   // 7. Hazards, freaks, and falling out.
   if (overlapsHazard(level, s.layer, p.x, p.y, undefined, undefined, s.overrides)) { die(level, s, 'hazard'); return s; }
   const fb = touchedFreak(level, s);
   if (fb) { die(level, s, 'spooked', fb.kind); return s; }
-  if (p.y > level.h * TILE + 60) { die(level, s, 'fall'); return s; }
+  if (sign > 0 ? p.y > level.h * TILE + 60 : p.y + P.playerH < -60) { die(level, s, 'fall'); return s; }
 
   // 8. Shared objects: checkpoints and exit exist in both shifts.
-  // A checkpoint saves you in the shift you touched it in, but only where you'd respawn standing on
-  // floor: touched mid-air over a pit, it saves in the other shift if that one has floor, else not at all.
-  // (Otherwise a respawn would drop straight back into the pit, forever.)
+  // A checkpoint saves you in the shift you touched it in, but only where you'd respawn on ground (standing,
+  // or hanging on a flipped night): touched mid-air over a pit, it saves in the other shift if that one has
+  // ground, else not at all. (Otherwise a respawn would drop straight back into the pit, forever.)
   for (const c of level.checkpoints) {
     if (c.id !== s.checkpoint.id && overlapsTile(p, c.tx, c.ty)) {
-      const pos = spawnPoint(c.tx, c.ty);
-      const standable = (layer) => !solidAt(level, s, layer, pos.x, pos.y) && isGrounded(level, layer, pos, s.overrides);
-      const layer = standable(s.layer) ? s.layer : standable(1 - s.layer) ? 1 - s.layer : null;
-      if (layer === null) continue;
-      s.checkpoint = { ...pos, layer, id: c.id, overrides: s.overrides, nightEntries: s.nightEntries };
+      const here = standableSpot(level, s.layer, c.tx, c.ty, s.overrides);
+      const there = here ? null : standableSpot(level, 1 - s.layer, c.tx, c.ty, s.overrides);
+      if (!here && !there) continue;
+      const layer = here ? s.layer : 1 - s.layer;
+      s.checkpoint = { ...(here ?? there), layer, id: c.id, overrides: s.overrides, nightEntries: s.nightEntries };
       s.events.push({ type: 'checkpoint', id: c.id });
     }
   }

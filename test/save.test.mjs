@@ -3,6 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { createSave, isUnlocked, better, createSettings, DEFAULT_SETTINGS } from '../src/save.js';
 import { LEVELS, ACTS } from '../src/levels.js';
+import { DEFAULT_BINDS, rebind } from '../src/keys.js';
 
 function memoryStorage(initial = {}) {
   const m = new Map(Object.entries(initial));
@@ -62,6 +63,23 @@ test('level select: act starts are always open; other levels open after the prev
   assert.equal(isUnlocked(LEVELS, 2, save), actStart[2], 'but not the one after');
 });
 
+// The 21-level game inserts levels between the built ones. Unlocks are keyed by id, so a returning player
+// keeps every level they cleared, and the chain runs through the new levels (pinned for docs/BUILD.md T18).
+test('level select: inserting levels keeps cleared levels open and chains through new ones', () => {
+  const save = createSave(memoryStorage());
+  for (const id of ['clock', 'scaff', 'watch', 'wet', 'supervisor']) save.record(id, r(1, 2));
+  const at = (defs, id) => defs.findIndex((d) => d.id === id);
+  const defs = [...LEVELS];
+  defs.splice(at(defs, 'watch') + 1, 0, { id: 'stairs', act: 2 }, { id: 'doors', act: 2 });
+  defs.splice(at(defs, 'wet') + 1, 0, { id: 'pillar', act: 3 });
+  assert.equal(isUnlocked(defs, at(defs, 'watch'), save), true, 'a cleared level stays open');
+  assert.equal(isUnlocked(defs, at(defs, 'stairs'), save), true, 'a new level opens after the cleared one before it');
+  assert.equal(isUnlocked(defs, at(defs, 'doors'), save), false, 'the chain still gates the next one');
+  assert.equal(isUnlocked(defs, at(defs, 'wet'), save), true, 'act starts stay open');
+  assert.equal(isUnlocked(defs, at(defs, 'pillar'), save), true, 'opens after the cleared act start');
+  assert.equal(isUnlocked(defs, at(defs, 'supervisor'), save), true, 'cleared before the insertion: still open');
+});
+
 test('every level belongs to a named act, acts never go backwards, and act 1 starts the game', () => {
   assert.equal(LEVELS[0].act, 1);
   LEVELS.forEach((d, i) => {
@@ -86,4 +104,65 @@ test('settings: blocked or corrupt storage falls back to defaults without throwi
   assert.equal(createSettings(throwing).set({ music: 0.1 }).music, 0.1);
   const bad = memoryStorage({ 'double-shift.settings.v1': '{"music":"loud","reduced":"yes"}' });
   assert.deepEqual(createSettings(bad).get(), { ...DEFAULT_SETTINGS });
+});
+
+test('saves: a best from an older rev is ignored; unlocks are unaffected', () => {
+  const storage = memoryStorage();
+  const save = createSave(storage);
+  save.record('clockout', r(7, 40)); // the classic finale: rev 1, the default
+  assert.deepEqual(save.best('clockout'), r(7, 40), 'rev 1 reads its own best');
+  assert.equal(save.best('clockout', 2), null, 'the rework (rev 2) ignores it');
+  assert.equal(save.cleared('clockout'), true, 'but the level still counts as cleared');
+  assert.equal(save.record('clockout', r(9, 60), 2), true, "the first rev-2 result is its best, even if it's worse");
+  assert.deepEqual(save.best('clockout', 2), r(9, 60));
+  const again = createSave(storage); // survives a reload
+  assert.deepEqual(again.best('clockout', 2), r(9, 60));
+  assert.equal(again.record('clockout', r(10, 50), 2), false, 'within a rev, the usual rule');
+  const defs = [{ id: 'a', act: 6 }, { id: 'clockout', act: 6, rev: 2 }, { id: 'b', act: 6 }];
+  assert.equal(isUnlocked(defs, 2, again), true, 'a clear from any rev opens the next level');
+});
+
+test('saves: going back to an older revision finds its bests again', () => {
+  // the fallback: if the classic finale ships again (rev 1), a player's classic best is still there
+  const storage = memoryStorage();
+  const save = createSave(storage);
+  save.record('clockout', r(7, 40));
+  save.record('clockout', r(9, 60), 2);
+  const again = createSave(storage);
+  assert.deepEqual(again.best('clockout'), r(7, 40));
+  assert.deepEqual(again.best('clockout', 2), r(9, 60));
+  assert.equal(createSave(memoryStorage()).cleared('clockout'), false);
+  const onlyRework = createSave(memoryStorage());
+  onlyRework.record('clockout', r(9, 60), 2);
+  assert.equal(onlyRework.cleared('clockout'), true, 'a clear on the rework alone counts too');
+});
+
+test('settings: binds survive a reload; corrupt binds fall back', () => {
+  const storage = memoryStorage();
+  const binds = rebind(DEFAULT_BINDS, 'shift', 'KeyJ').binds;
+  createSettings(storage).set({ binds });
+  assert.deepEqual(createSettings(storage).get().binds, binds);
+  assert.deepEqual(createSettings(memoryStorage()).get().binds, DEFAULT_BINDS, 'a fresh save has the defaults');
+  storage.setItem('double-shift.settings.v1', JSON.stringify({ master: 0.5, binds: { left: 'x', jump: ['Escape'] } }));
+  const repaired = createSettings(storage).get();
+  assert.equal(repaired.master, 0.5);
+  assert.deepEqual(repaired.binds, DEFAULT_BINDS, 'nothing usable: the defaults');
+});
+
+test('settings: the speedrun timer defaults off and survives a reload', () => {
+  const storage = memoryStorage();
+  assert.equal(createSettings(storage).get().timer, false);
+  createSettings(storage).set({ timer: true });
+  assert.equal(createSettings(storage).get().timer, true);
+  storage.setItem('double-shift.settings.v1', JSON.stringify({ timer: 'yes' }));
+  assert.equal(createSettings(storage).get().timer, false, 'junk reads as off');
+});
+
+test('settings: binds() reads the bindings without copying them, and follows set()', () => {
+  const st = createSettings(memoryStorage());
+  const a = st.binds();
+  assert.equal(st.binds(), a, 'the same object on every read: input reads it at 120 Hz');
+  assert.deepEqual(a, st.get().binds);
+  st.set({ binds: { ...a, jump: ['KeyJ'] } });
+  assert.deepEqual(st.binds().jump, ['KeyJ'], 'a rebind shows at once');
 });

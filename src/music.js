@@ -73,6 +73,22 @@ export function chordNotes(half) {
   return CHORDS[HALF_BAR_CHORDS[half]].map((n) => 60 + pcOf(n));
 }
 
+// The music builds with the game (AUDIO.md §3.1): each act adds a layer to the same theme, and the finale plays
+// them all. Act 2: a night pulse an octave under the bass. Act 3: a second day lead a third above the melody.
+// Act 4: the night organ on every off-beat. Act 5 (Upside Down): the melody turned upside down, at night.
+export function layersFor(act) {
+  return { pulse: act >= 2, lead2: act >= 3, fastStabs: act >= 4, inverted: act >= 5 };
+}
+
+// The melody mirrored around its first note: the night counter-melody of act 5 and the finale.
+export const INVERTED = MELODY.map((n) => (typeof n === 'number' ? 2 * MELODY[0] - n : n));
+
+// A diatonic third above a note of C major (C E G and F A C and G B D: four semitones up from C, F, G, else three).
+export function thirdAbove(n) {
+  const pc = ((n % 12) + 12) % 12;
+  return n + ([0, 5, 7].includes(pc) ? 4 : 3);
+}
+
 export const LOOP_STEPS = BARS * STEPS_PER_BAR;
 export const LOOP_SECONDS = LOOP_STEPS * STEP;
 
@@ -80,27 +96,36 @@ export const LOOP_SECONDS = LOOP_STEPS * STEP;
 
 const freq = (n) => 440 * 2 ** ((n - 69) / 12);
 
-// Schedules both arrangements for one eighth-note step at time t. dest: { day, night } gain nodes.
-export function scheduleStep(ctx, dest, step, t, noise) {
+const holdSteps = (line, s) => {
+  let len = 1;
+  while (line[(s + len) % LOOP_STEPS] === '-') len++;
+  return len;
+};
+
+// Schedules both arrangements for one eighth-note step at time t. dest: { day, night } gain nodes; layers: the
+// act's extra parts (layersFor).
+export function scheduleStep(ctx, dest, step, t, noise, layers = layersFor(1)) {
   const s = ((step % LOOP_STEPS) + LOOP_STEPS) % LOOP_STEPS;
   const note = MELODY[s];
   if (typeof note === 'number') {
-    let len = 1;
-    while (MELODY[(s + len) % LOOP_STEPS] === '-') len++;
-    const dur = len * STEP;
+    const dur = holdSteps(MELODY, s) * STEP;
     lead(ctx, dest.day, note, t, dur);
     theremin(ctx, dest.night, minorize(note), t, dur, prevNote(s));
+    if (layers.lead2) pluck(ctx, dest.day, thirdAbove(note), t, Math.min(dur, STEP * 1.6) * 0.9, 'square', 0.03, 1200);
   }
+  const inv = INVERTED[s];
+  if (layers.inverted && typeof inv === 'number') pluck(ctx, dest.night, minorize(inv), t, holdSteps(INVERTED, s) * STEP * 0.9, 'sine', 0.04, 4000);
   if (s % 2 === 0) {
     const beat = s / 2;
     pluck(ctx, dest.day, bassNote(beat, false), t, STEP * 0.9, 'square', 0.09, 700);
     pluck(ctx, dest.night, minorize(bassNote(beat, true)), t, STEP * 1.8, 'triangle', 0.16, 2000);
+    if (layers.pulse) pluck(ctx, dest.night, minorize(bassNote(beat, true)) - 12, t, STEP * 0.9, 'triangle', 0.05, 1200);
     if (beat % 2 === 0) kick(ctx, dest.day, t);
   } else {
     hat(ctx, dest.day, t, noise);
   }
-  // organ stabs on the "and" of 2 and 4
-  if (s % 8 === 3 || s % 8 === 7) {
+  // organ stabs on the "and" of 2 and 4 (act 4 on: every off-beat)
+  if (layers.fastStabs ? s % 2 === 1 : s % 8 === 3 || s % 8 === 7) {
     for (const n of chordNotes(Math.floor(s / 4))) pluck(ctx, dest.night, minorize(n), t, STEP * 0.6, 'square', 0.022, 1800);
   }
 }
@@ -205,6 +230,7 @@ export function createMusic(ctx, out, noise) {
   let step = 0;
   let next = ctx.currentTime + 0.1;
   let timer = null;
+  let layers = layersFor(1);
   const tick = () => {
     // a throttled background tab can miss many ticks: skip the missed steps rather than play them at once
     if (next < ctx.currentTime) {
@@ -213,7 +239,7 @@ export function createMusic(ctx, out, noise) {
       next += missed * STEP;
     }
     while (next < ctx.currentTime + 0.12) {
-      scheduleStep(ctx, { day, night }, step, next, noise);
+      scheduleStep(ctx, { day, night }, step, next, noise, layers);
       step++;
       next += STEP;
     }
@@ -224,6 +250,10 @@ export function createMusic(ctx, out, noise) {
       next = ctx.currentTime + 0.1;
       timer = setInterval(tick, 25);
       tick();
+    },
+    // The act's layers (layersFor), from the next scheduled step on: the theme never restarts.
+    setAct(act) {
+      layers = layersFor(act);
     },
     // 0 = day, 1 = night. A ≤ 60 ms crossfade so the switch lands on the shift.
     setShift(layer) {

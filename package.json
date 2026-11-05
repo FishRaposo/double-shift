@@ -11,7 +11,9 @@
     "serve": "node scripts/serve.mjs",
     "zip": "node scripts/zip.mjs",
     "media": "node scripts/media.mjs",
-    "audit": "node scripts/audit-levels.mjs"
+    "gif": "node scripts/gif.mjs",
+    "audit": "node scripts/audit-levels.mjs",
+    "counts": "node scripts/counts.mjs"
   },
   "license": "MIT"
 }
