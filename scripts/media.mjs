@@ -221,7 +221,7 @@ async function fullRun() {
     await key('keyUp', 'ArrowLeft');
   }
   await sleep(700);
-  const l1 = await evaluate('({ screen: __doubleShift.screen, shifts: __doubleShift.state.shifts, deaths: __doubleShift.state.deaths })');
+  const l1 = await evaluate('({ screen: __doubleShift.screen, shifts: __doubleShift.state.shifts, deaths: __doubleShift.state.deaths, x: __doubleShift.state.player.x / 30, y: __doubleShift.state.player.y / 30, layer: __doubleShift.state.layer })');
   await shot('04-timecard.png');
   if (l1.screen !== 'card') { failed = true; console.error(`level 1 not cleared with real keys: ${JSON.stringify(l1)}`); }
 
