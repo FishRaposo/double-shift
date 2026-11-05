@@ -71,7 +71,7 @@ npm run gif -- doors      # media/demo-doors.gif (480×270): Lost & Found's scri
 >
 > *On Windows, hammering Shift can open Sticky Keys. Use K, or turn off the Sticky Keys shortcut.*
 >
-> **What's in this build:** 21 levels in five acts and a finale, from your first clock-in to the last, including an act where the night shift is upside down. Every prank and patrol shows what it's about to do. Gamepad support, rebindable controls and a speedrun timer. Made for GitHub Game Off 2026 (theme: SHIFT).
+> **What's in this build:** 21 levels in five acts and a finale, from your first clock-in to the last, including an act where the night shift is upside down. Every level has a job to do: fetch the tool, fix the broken thing, and the building changes. Every prank and patrol shows what it's about to do. Gamepad support, rebindable controls and a speedrun timer. Made for GitHub Game Off 2026 (theme: SHIFT).
 >
 > **How it was made**
 > Designed by Vinícius Raposo for GitHub Game Off 2026. Built with AI assistance (Claude) to his design document, with draft text from the same place, then tested like production software: the gameplay rules are a pure module, the game has 463 automated tests, and every level is proven solvable at par by a scripted run. No engine, no assets: the pixel art, the pixel font and the music are all drawn and synthesized by code, code that was also written with AI assistance. No generated images or audio were used. Source: https://github.com/FishRaposo/double-shift

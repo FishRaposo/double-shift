@@ -147,7 +147,7 @@ export const LEVELS = [
     // the night crew is here from level 1: a peeker blinks on a stack past the locked gate — out of reach
     // past the wall at col 24 and too high to touch, so it is evidence, not danger
     freaks: [{ kind: 'peeker', tx: 21, ty: 6, period: 1.6, duty: 0.5 }], // on a high shelf: a look, not a threat yet
-    note: 'Gap in the floor by day. The night crew laid planks, and locked the gate.',
+    note: 'Gap in the floor by day. The night crew laid planks. The shutter needs a fuse.',
     rev: 2,
     repairs: [{
       tool: { tx: 16, ty: 13, layer: 'night', name: 'FUSE', kind: 'fuse' },

@@ -102,7 +102,7 @@ Behind everything, one motif per act (§6). Every color stays ≤ 1.35:1 against
 | Current shift | HUD label DAY SHIFT / NIGHT SHIFT + sun/moon icon + background | Text + icon + background pattern (panes vs stars) |
 | Freak (night, active) | Black lumpy silhouette + eyes | Silhouette |
 | Freak (day, frozen) | Dashed silhouette outline in the night echo blue, dim eyes | Dashed |
-| Work order | The tool floats on a yellow halo, full strength on its shift and faint on the other; the broken thing sits in the level the same way, and looks fixed once done; a chain and red padlock on the exit until then; the job on the HUD under the level name | Halo, padlock, text |
+| Work order | Tools and fixtures are sprites, dashed on the other shift; a line links the fixture to what it drives; HUD text and icons, and paper tags on the job in hand (§5.2) | Shape, dashes, text |
 | Decor eyes | Small and dim, no glow: they're just watching. The big glowing pair always means a prank with a countdown | Size, glow |
 | Peeker hidden | Dark slot + small eyes; for the last 0.35 s before it pops, the slot rattles, the eyes open and a "!" shows | Shape + mark |
 | Patrol route | Dashed red-orange track on the floor with end stops, on both shifts; a slacking freak's track is faint. Eyes look the way it's walking | Dashes + end stops |
@@ -176,6 +176,15 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | **Supervisor** (`supervisor`) | The usual lump, a bit taller, holding a clipboard (a paper rectangle with three ink lines). Sits on a perch. | The head bump and clipboard sit on the watched side; eyes are drawn only on that side; it snaps (no tween) when it turns, with 0.3 s of anticipation (the eyes slide across first). | Body `#05060f`, rim `rgba(95,242,255,0.6)`; clipboard paper `#f7efdc`, ink `#3b2d1f`; eyes freak yellow |
 | **Slacking freaks** (unwatched) | Same silhouette, no jitter | Eyes closed to 1 px lines; dimmed, with a drifting "z" (§3) | Existing |
 | **Day-walker** (`daywalker`) | A lump in an orange hard hat and shades (Nov 3: its own silhouette), readable in daylight: dark body against the warm sky, with a cream rim instead of cyan | By night: dashed outline in the **day echo orange** (it belongs to the day shift), dim shades | Body `#05060f`, rim `#fbecc9`, hat `#ff8a1c`, shades `#3a4048`; night outline `rgba(255,170,80,0.95)` |
+
+### 5.2 Work orders *(built Nov 5)*
+
+- **Tools** are 11×11 sprites (`tool-*` in `src/sprites.js`): fuse, wrench, bulb, oil, tape, card. On the other shift they're dashed outlines. The worker carries the tool in hand.
+- **Fixtures** (`fix-*`) have a `broken` and a `fixed` frame that differ in silhouette: fuse box, pipe, light, bolt, hinge, cable, clock. A test enforces it.
+- **The link:** a broken dead line from the fixture to what it drives, a live moving line once repaired (`drawJobLink`).
+- **Machines** are skins over solid tiles: roller shutter, scaffold deck, the big portrait and its flat fallen form. Water is the tile `w`. A dark room is `fix.dark`.
+- **Words:** the HUD says the job and the next step, with icons; paper tags name the tool, the broken thing and what it drives for the job in hand.
+- **Feedback:** corner brackets, puffs on what changed, and a FIXED pop.
 
 ## 6. Environment
 

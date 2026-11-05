@@ -1,7 +1,7 @@
 # DOUBLE SHIFT
 ## Game Design Document
 
-**Version:** 0.6.0  
+**Version:** 0.7.0  
 **Status:** Feature-complete  
 **Project:** Game Off 2026  
 **Theme:** SHIFT  
@@ -42,6 +42,13 @@ This GDD decides *what* the game is. The production docs in this folder decide *
 ---
 
 # 0. Changes
+
+## v0.7
+
+| Change | Why |
+|---|---|
+| **Work orders:** every level is designed around a repair that changes the map (§4.11) | Fish, 2026-11-05: the platforming gets a real objective, and the worker has a job |
+| **Readability first:** the art shows the idea, and labels name it | Fish: everything clearly labelled, work orders included |
 
 ## v0.6
 
@@ -549,6 +556,15 @@ Touching an active freak on its own shift (night for most, day for the day-walke
 
 
 ---
+
+## 4.11 Work Orders
+
+Every level has at least one repair, and the level is designed around it.
+
+- **The loop:** touch the tool on its shift, touch the broken thing on its shift, and the map changes: a shutter rises, water drains, a room lights up. No extra button. The level can't be won without it.
+- **It's the worker's own job.** The freaks do their own thing and have nothing to do with it. Their pranks may help or get in the way, because of where the level puts them, never because they care.
+- **Readable:** the broken thing, what it drives and the cable or pipe between them can be seen, and the job in hand is written on the HUD and tagged in the level.
+- A checkpoint saves the job's progress with everything else (§9.3).
 
 # 5. Platforming System
 

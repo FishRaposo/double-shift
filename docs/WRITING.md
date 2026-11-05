@@ -57,7 +57,7 @@ In the order of the 21-level game (LEVELS.md §5.0). ✅ = in the build.
 
 | Level | Note |
 |---|---|
-| 1 Clock In ✅ | Gap in the floor by day. The night crew laid planks, and locked the gate. |
+| 1 Clock In ✅ | Gap in the floor by day. The night crew laid planks. The shutter needs a fuse. |
 | 2 Scaffolding ✅ | The day crew put up scaffolding. Deliveries came in. |
 | 3 Closing Time ✅ | Rebar by day, lasers by night. Gates go down at closing. |
 | 4 Mid-Air ✅ | Something up there blinked. |

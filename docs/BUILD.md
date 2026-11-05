@@ -100,7 +100,7 @@ Write the tests first in `test/rules.test.mjs`, using tiny ASCII levels: `level(
 
 ## 3. How it was built
 
-All seven milestone PRs landed by Nov 3 in PR #1: foundations (T17, T18, T14, T1, T15), the quality and identity pass (T19–T21), Upside Down (T7, T8, T13), tier B (T2–T6), act 5 and the finale (T9–T12, T22), copy and stretch (T23, T24), release (T25, T16). The Nov 5 cohesion pass then added the two-way route search, the telegraphs and the rehearsal of the finale in act 5.
+All seven milestone PRs landed by Nov 3 in PR #1: foundations (T17, T18, T14, T1, T15), the quality and identity pass (T19–T21), Upside Down (T7, T8, T13), tier B (T2–T6), act 5 and the finale (T9–T12, T22), copy and stretch (T23, T24), release (T25, T16). The Nov 5 cohesion pass then added the two-way route search, the telegraphs and the rehearsal of the finale in act 5, and all 21 levels were redesigned around repairs that change the map (LEVELS.md §4).
 
 ## 4. Task cards
 
