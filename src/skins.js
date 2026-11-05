@@ -29,7 +29,17 @@ export function skinPlan(level, layer, ov = {}) {
   const hang = gravitySign(level, layer) < 0 ? { hang: true } : {}; // on a flipped layer a door's floor end is its top
   for (const sk of level.skins ?? []) {
     if (sk.layer !== null && sk.layer !== layer) continue;
-    if (sk.kind === 'door' || sk.kind === 'pillar') {
+    if (sk.kind === 'shutter') {
+      const top = sk.ty - sk.h + 1;
+      const state = column(level, layer, ov, sk.tx, top, sk.ty);
+      if (state === 'solid') out.push({ draw: 'shutter', tx: sk.tx, ty: sk.ty, h: sk.h });
+      else if (state === 'empty') out.push({ draw: 'shutterOpen', tx: sk.tx, ty: top });
+    } else if (sk.kind === 'deck') {
+      const cells = Array.from({ length: sk.w }, (_, dx) => sk.tx + dx);
+      let floorRow = sk.ty + 1;
+      while (floorRow < level.h && !solid(level, layer, ov, sk.tx, floorRow)) floorRow++;
+      if (cells.every((tx) => solid(level, layer, ov, tx, sk.ty))) out.push({ draw: 'deck', tx: sk.tx, ty: sk.ty, w: sk.w, sag: sk.sag, floorRow });
+    } else if (sk.kind === 'door' || sk.kind === 'pillar') {
       const top = sk.ty - sk.h + 1;
       const state = column(level, layer, ov, sk.tx, top, sk.ty);
       if (state === 'solid') out.push({ draw: sk.kind, tx: sk.tx, ty: sk.ty, h: sk.h, ...hang });
@@ -40,6 +50,11 @@ export function skinPlan(level, layer, ov = {}) {
       let all = true;
       for (let dy = 0; dy < sk.h && all; dy++) for (let dx = 0; dx < sk.w; dx++) if (!solid(level, layer, ov, sk.tx + dx, sk.ty + dy)) all = false;
       if (all) out.push({ draw: 'portrait', tx: sk.tx, ty: sk.ty, w: sk.w, h: sk.h });
+      else {
+        const bottom = sk.ty + sk.h - 1; // dropped flat: only the bottom row is left
+        const row = Array.from({ length: sk.w }, (_, dx) => sk.tx + dx);
+        if (row.every((tx) => solid(level, layer, ov, tx, bottom)) && row.every((tx) => !solid(level, layer, ov, tx, bottom - 1))) out.push({ draw: 'portraitFlat', tx: sk.tx, ty: bottom, w: sk.w });
+      }
     } else if (sk.kind === 'doorPile') {
       let count = 0;
       const full = (ty) => Array.from({ length: sk.w }, (_, dx) => sk.tx + dx).every((tx) => solid(level, layer, ov, tx, ty));
@@ -48,6 +63,13 @@ export function skinPlan(level, layer, ov = {}) {
     }
   }
   return out;
+}
+
+// A ceiling light hangs on a cord from the first solid above it, or the top of the screen: the row the cord starts.
+export function lightCordFrom(level, layer, tx, ty, ov = {}) {
+  let row = ty;
+  while (row > 0 && !solid(level, layer, ov, tx, row - 1)) row--;
+  return row;
 }
 
 // A checkpoint is drawn the way the shift it saves in holds it: hanging only where a flipped night holds it (a

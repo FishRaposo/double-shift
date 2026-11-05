@@ -9,12 +9,14 @@ const want = (s, layer) => s.layer !== layer;
 
 export const SOLUTIONS = {
   clock: (s) => ({ right: true, shift: (tx(s) > 4 && tx(s) < 20 && want(s, NIGHT)) || (tx(s) > 20.5 && want(s, DAY)) }),
-  scaff: (s) => ({
-    right: true,
-    jump: s.player.grounded ? [4.0, 9.6, 13.6].some((a) => tx(s) > a && tx(s) < a + 0.6) : s.player.vy < 0,
-    shift: tx(s) > 19 && want(s, NIGHT),
-  }),
-  closing: (s) => ({ right: true, shift: (tx(s) > 10.4 && tx(s) < 18 && want(s, NIGHT)) || (tx(s) > 19.4 && want(s, DAY)) }),
+  scaff: (s) => {
+    const x = tx(s);
+    let target = DAY;
+    if (x > 2.6 && x < 4.6) target = NIGHT; // the wrench is on the night shift
+    else if (x > 19) target = NIGHT; // past the day tower
+    return { right: true, jump: s.player.grounded ? (x > 7 && x < 7.8) || (x > 11.2 && x < 11.9) || (x > 14.4 && x < 16) : s.player.vy < 0, shift: want(s, target) };
+  },
+  closing: (s) => ({ right: true, shift: (tx(s) > 10.4 && tx(s) < 26 && want(s, NIGHT)) || (tx(s) >= 26.15 && want(s, DAY)) }),
   midair: (s) => {
     const x = tx(s);
     const jump = s.player.grounded ? [5.0, 10.4, 16.4, 22.4].some((a) => x > a && x < a + 0.5) : s.player.vy < 0;
@@ -23,6 +25,7 @@ export const SOLUTIONS = {
     else if (x >= 13 && x < 19) target = DAY;
     else if (x >= 19 && x < 25) target = NIGHT;
     else if (x >= 25) target = s.layer;
+    if (s.repairs[0].done) return { left: true, shift: false }; // drained: back down to the exit
     return { right: true, jump, shift: want(s, target) };
   },
   inventory: (s) => {
@@ -154,12 +157,18 @@ export const SOLUTIONS = {
   // in, out, in: entry 2 hangs the portrait against the ledge. At night, jump at each wall: the portrait, the
   // ledge; then drop off the far side into the doorway (the portrait isn't in it any more)
   portrait: (s) => {
-    const p = s.player;
     const x = tx(s);
-    const plan = [[1.5, 4, NIGHT], [6, 8, DAY], [10, 12, NIGHT]];
-    const due = plan.find(([a, b]) => x >= a && x <= b);
-    const shift = !!due && s.layer !== due[2];
-    return { right: true, shift, jump: p.grounded ? x > 13 && x < 24 && Math.abs(p.vx) < 1 : p.vy < 0 };
+    const p = s.player;
+    const up = !p.grounded && p.vy < 0;
+    if (s.repairs[0].done) { // down on the day shift, past the frozen squatter, over the fallen picture
+      return { right: true, shift: want(s, DAY), jump: (p.grounded && x > 19.4) || (up && x < 26) };
+    }
+    let target = DAY;
+    if (x > 3 && x < 11.8) target = NIGHT;
+    else if (x >= 11.8 && x < 16.8) target = DAY;
+    else if (x >= 16.8) target = NIGHT;
+    const jump = p.grounded ? [5.4, 10.2, 15.8].some((a) => x > a && x < a + 0.9) : up;
+    return { right: x < 20.1, jump, shift: want(s, target) };
   },
   // in past the day wall, out on the dry stretch, in at the block; through the tunnels watching the clipboard;
   // past the frozen day-walker, out and in for the plank; past the far lurker on the clipboard's slack side

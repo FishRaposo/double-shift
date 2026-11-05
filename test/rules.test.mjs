@@ -1143,23 +1143,23 @@ test('work order: the exit stays locked without the repair, and says so once per
   const lvl = JOB('night', 'night'); // both on the night shift: walking by on day does nothing
   const { state, events } = play(lvl, () => ({ right: true }), 120 * 3);
   assert.equal(state.won, false);
-  assert.equal(state.repair.tool, false);
+  assert.equal(state.repairs[0].tool, false);
   assert.equal(events.filter((e) => e.type === 'exitLocked').length, 1);
 });
 
 test('work order: the tool and the broken thing only count on their own shift', () => {
   const lvl = JOB('night', 'day');
   let s = walkTo(lvl, initState(lvl), 4.5);
-  assert.equal(s.repair.tool, false, 'walked past it on day');
+  assert.equal(s.repairs[0].tool, false, 'walked past it on day');
   s = place(step(lvl, s, SHIFT), 3, 5);
   s = stepN(lvl, s, 2);
-  assert.equal(s.repair.tool, true);
+  assert.equal(s.repairs[0].tool, true);
 });
 
 test('work order: the broken thing needs the tool first', () => {
   const lvl = JOB('night', 'day');
   const s = walkTo(lvl, initState(lvl), 7);
-  assert.equal(s.repair.done, false);
+  assert.equal(s.repairs[0].done, false);
 });
 
 test('work order: a death returns to what the checkpoint saved, tool included', () => {
@@ -1168,16 +1168,16 @@ test('work order: a death returns to what the checkpoint saved, tool included', 
   const saved = level(['..........', '.S.C.....E', '####....##'], ['..........', '..........', '####....##'], job);
   const a = play(saved, stopAfterDying, 120 * 4).state;
   assert.equal(a.deaths, 1);
-  assert.equal(a.repair.tool, true, 'picked up before the checkpoint, so it stays');
+  assert.equal(a.repairs[0].tool, true, 'picked up before the checkpoint, so it stays');
   const unsaved = level(['..........', '.S.......E', '####....##'], ['..........', '..........', '####....##'], job);
   const b = play(unsaved, stopAfterDying, 120 * 4).state;
   assert.equal(b.deaths, 1);
-  assert.equal(b.repair.tool, false, 'no checkpoint: the tool goes back');
+  assert.equal(b.repairs[0].tool, false, 'no checkpoint: the tool goes back');
 });
 
 test('a level without a work order is unchanged: the exit just works', () => {
   const lvl = level(JOB_DAY, JOB_NIGHT);
-  assert.equal(lvl.repair, null);
+  assert.deepEqual(lvl.repairs, []);
   assert.equal(play(lvl, () => ({ right: true }), 120 * 4).state.won, true);
 });
 

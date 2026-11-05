@@ -277,3 +277,28 @@ test('prank tiles that will appear keep a full-strength dashed outline over thei
   assert.ok(dashes.length > 0 && dashes.every((c) => c.alpha === 1));
   assert.equal(g.globalAlpha, 1, 'the caller gets its alpha back');
 });
+
+// ---------- work orders ----------
+const silhouette = (rows) => rows.map((r) => r.replace(/[^.]/g, '#')).join('\n');
+
+test('work orders: every fixture looks different broken and fixed, in shape as well as colour', () => {
+  for (const [name, s] of Object.entries(SPRITES).filter(([n]) => n.startsWith('fix-'))) {
+    assert.equal(s.frames.broken.length, s.frames.fixed.length, name);
+    assert.notEqual(silhouette(s.frames.broken), silhouette(s.frames.fixed), `${name}: same silhouette`);
+  }
+});
+
+test('work orders: tools fit inside their tile and no two share a silhouette', () => {
+  const tools = Object.entries(SPRITES).filter(([n]) => n.startsWith('tool-'));
+  assert.equal(new Set(tools.map(([, s]) => silhouette(s.frames.a))).size, tools.length);
+  for (const [name, s] of tools) assert.ok(s.box[0] <= 11 && s.box[1] <= 11, name);
+});
+
+test('work orders: every tool and fixture a level names has a sprite', () => {
+  for (const def of LEVELS) {
+    for (const job of parseLevel(def).repairs) {
+      assert.ok(SPRITES[`tool-${job.tool.kind}`], `${def.id}: tool ${job.tool.kind}`);
+      assert.ok(SPRITES[`fix-${job.fix.kind}`], `${def.id}: fixture ${job.fix.kind}`);
+    }
+  }
+});

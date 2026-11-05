@@ -218,34 +218,6 @@ test('Structural Integrity: reaching the crate on entry 3 misses the staircase',
   assert.ok(state.nightEntries >= 3);
 });
 
-test('Employee of the Month: the exit can\'t be entered at night while the portrait hangs', () => {
-  const lvl = L.portrait;
-  for (const jumpEvery of [0, 25, 50]) {
-    let s = initState(lvl);
-    s.layer = NIGHT; // the portrait still hangs in front of the doorway (no night entry yet)
-    Object.assign(s.player, { x: 25 * TILE + 6, y: 14 * TILE - 26, vx: 0, vy: 0, grounded: true });
-    for (let f = 0; f < 120 * 8 && !s.won; f++) {
-      s = step(lvl, s, { ...NO_INPUT, right: true, jumpHeld: jumpEvery > 0 && f % jumpEvery < 16, jumpPressed: jumpEvery > 0 && f % jumpEvery === 0 });
-    }
-    assert.equal(s.won, false, `got in at night (jumpEvery=${jumpEvery})`);
-  }
-});
-
-test('Employee of the Month: without the entry-2 step the ledge is out of reach', () => {
-  const lvl = L.portrait;
-  for (const entries of [1, 3]) {
-    let s = initState(lvl);
-    for (let k = 0; k < 2 * entries - 1; k++) s = step(lvl, s, { ...NO_INPUT, shiftPressed: true }); // toggle at the spawn
-    assert.deepEqual([s.layer, s.nightEntries], [NIGHT, entries]);
-    for (const jumpEvery of [20, 40]) {
-      let t = structuredClone(s);
-      for (let f = 0; f < 120 * 10 && !t.won; f++) t = step(lvl, t, { ...NO_INPUT, right: true, jumpHeld: f % jumpEvery < 18, jumpPressed: f % jumpEvery === 0 });
-      assert.equal(t.won, false, `won on entry ${entries} (jumpEvery=${jumpEvery})`);
-      assert.ok(t.player.y > 9 * TILE, `on the ledge on entry ${entries}`);
-    }
-  }
-});
-
 // ---------- Night Audit: one test per lesson it examines ----------
 const auditAt = (x, layer, extra = {}) => {
   const s = initState(L.audit);
@@ -330,14 +302,6 @@ test('Structural Integrity: one clock-in too many is not a softlock: the pillar 
   for (let k = 0; k < 9; k++) s = step(lvl, s, { ...NO_INPUT, shiftPressed: true }); // entries 1-5 at the spawn
   assert.deepEqual([s.layer, s.nightEntries], [NIGHT, 5]);
   assert.ok([10, 11, 12, 13].every((ty) => tileAt(lvl, NIGHT, 20, ty, s.overrides) === '#'), 'at P2 again on entry 5');
-});
-
-test('Employee of the Month: one clock-in too many is not a softlock: the portrait comes back around to the step', () => {
-  const lvl = L.portrait;
-  let s = initState(lvl);
-  for (let k = 0; k < 9; k++) s = step(lvl, s, { ...NO_INPUT, shiftPressed: true }); // entries 1-5 at the spawn
-  assert.deepEqual([s.layer, s.nightEntries], [NIGHT, 5]);
-  assert.ok([16, 17, 18].every((tx) => tileAt(lvl, NIGHT, tx, 12, s.overrides) === '#'), 'by the ledge again on entry 5');
 });
 
 test('Falling Up: the first clock-in falls you up onto the ceiling (the floor is up there now)', () => {
@@ -547,7 +511,6 @@ const solidAt = (lvl, s, cells) => cells.every(([tx, ty]) => tileAt(lvl, NIGHT, 
 
 test('relocations never run out: P2, the step, the planks all come round again by entry 40-41', () => {
   assert.ok(solidAt(L.pillar, toggleTo(L.pillar, 41), [[20, 10], [20, 11], [20, 12], [20, 13]]), 'pillar at P2 on entry 41');
-  assert.ok(solidAt(L.portrait, toggleTo(L.portrait, 41), [[16, 12], [17, 12], [18, 12]]), 'portrait by the ledge on entry 41');
   assert.ok(solidAt(L.ceiling, toggleTo(L.ceiling, 40), [[22, 11], [29, 11]]), 'plank over pit B on entry 40');
   assert.ok(solidAt(L.heels, toggleTo(L.heels, 40), [[2, 3], [9, 3]]), 'plank over the last gap on entry 40');
 });
@@ -630,7 +593,39 @@ for (const { id } of LEVELS) {
     const { events, state } = play(L[id], SOLUTIONS[id], 120 * 30);
     assert.equal(state.won, true);
     assert.deepEqual(events.filter((e) => ['tool', 'repaired'].includes(e.type)).map((e) => e.type), ['tool', 'repaired']);
-    assert.notEqual(L[id].repair.tool.layer, L[id].repair.fix.layer);
+    for (const job of L[id].repairs) assert.notEqual(job.tool.layer, job.fix.layer);
     assert.equal(events.filter((e) => e.type === 'exitLocked').length, 0);
   });
 }
+
+// ---------- repairs that change the level ----------
+
+const REDESIGNED = ['clock', 'scaff', 'closing', 'midair', 'portrait'];
+
+for (const id of REDESIGNED) {
+  test(`${id}: the repair changes the map, and the level can't be won without it`, () => {
+    const lvl = L[id];
+    assert.ok(lvl.repairs.every((job) => job.fix.cells.length > 0 && job.fix.link.length >= 2));
+    const noTool = { ...lvl, repairs: lvl.repairs.map((job) => ({ ...job, tool: { ...job.tool, tx: -9 } })) };
+    assert.equal(searchBelowPar(noTool, 8, 200), Infinity);
+  });
+}
+
+test('Employee of the Month: the portrait seals the door on both shifts, then drops flat', () => {
+  const lvl = L.portrait;
+  for (const layer of [DAY, NIGHT]) {
+    assert.deepEqual(skinPlan(lvl, layer, {}).map((p) => p.draw), ['portrait']);
+    assert.equal(tileAt(lvl, layer, 22, 11), '#');
+  }
+  const { state } = play(lvl, SOLUTIONS.portrait, 120 * 12);
+  assert.equal(state.won, true);
+  assert.deepEqual(skinPlan(lvl, NIGHT, state.overrides).map((p) => p.draw), ['portraitFlat']);
+});
+
+test('Mid-Air: the water drains and the exit is on the basement floor', () => {
+  const lvl = L.midair;
+  assert.equal(tileAt(lvl, DAY, 16, 15), 'w');
+  const { state } = play(lvl, SOLUTIONS.midair, 120 * 12);
+  assert.equal(state.won, true);
+  assert.equal(tileAt(lvl, DAY, 16, 15, state.overrides), '.');
+});

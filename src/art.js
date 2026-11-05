@@ -2,7 +2,7 @@
 // Tiles, background, hazards, the exit, checkpoints, notes, signs, props, effects and UI panels.
 // Pure drawing helpers: they take a canvas context and data, and never read game state themselves.
 
-import { ART, C, SPRITES, drawSprite, drawEyes, eyesOpen } from './sprites.js';
+import { ART, C, SPRITES, JOB_NIGHT_PAL, drawSprite, drawEyes, eyesOpen } from './sprites.js';
 import { drawText, measureText } from './font.js';
 
 import { TILE, DAY, NIGHT, tileAt, isSolidChar } from './rules.js';
@@ -609,76 +609,104 @@ function drawGlowEyes(g, cx, y, { t = 0, seed = 0 } = {}) {
   }
 }
 
-// ---------- work orders: the worker's own job ----------
+// ---------- work orders: the worker's own job (docs/ART.md §5.2) ----------
+// Tools and fixtures are sprites. On the other shift they're dashed outlines, like everything else that isn't here.
 
-const TOOL_ART = {
-  fuse(g, x, y) { px(g, x + 5 * A, y, 5, 8, '#e8e2d0'); px(g, x + 6 * A, y + 2 * A, 3, 4, '#f2a516'); },
-  wrench(g, x, y) {
-    for (let i = 0; i < 7; i++) px(g, x + (4 + i) * A, y + (7 - i) * A, 2, 2, '#c9d3dc');
-    px(g, x + 9 * A, y, 4, 1, '#c9d3dc');
-    px(g, x + 12 * A, y, 1, 3, '#c9d3dc');
-  },
-  bulb(g, x, y) { px(g, x + 5 * A, y, 5, 5, '#ffec5a'); px(g, x + 6 * A, y + 5 * A, 3, 3, '#9a9a9a'); },
-  oil(g, x, y) { px(g, x + 4 * A, y + 3 * A, 6, 5, '#c0392b'); px(g, x + 9 * A, y + A, 1, 3, '#c9d3dc'); px(g, x + 10 * A, y, 2, 1, '#c9d3dc'); },
-  tape(g, x, y) { px(g, x + 4 * A, y + A, 7, 7, '#c9d3dc'); px(g, x + 6 * A, y + 3 * A, 3, 3, '#262c38'); },
-};
+const jobPal = (layer) => (layer === NIGHT ? JOB_NIGHT_PAL : null);
 
-// the exit before the work is done: a chain across the door and a padlock, on the door itself so nothing crowds it
+// the tool on its tile; `layer` is the shift being drawn
+export function drawTool(g, job, t, layer) {
+  const x = job.tx * TILE + 2 * A;
+  const y = job.ty * TILE + 2 * A;
+  if (layer !== job.layer) { drawSprite(g, `tool-${job.kind}`, 'a', x, y, { outline: PAL[job.layer].echo }); return; }
+  drawSprite(g, `tool-${job.kind}`, 'a', x, y + Math.round(Math.sin(t * 4)) * A, { palette: jobPal(layer) });
+}
+
+// the tool in the worker's hand
+export function drawCarriedTool(g, kind, x, y, layer) {
+  drawSprite(g, `tool-${kind}`, 'a', x, y, { palette: jobPal(layer), scale: 1 });
+}
+
+// the broken thing, sitting centred in its tile; a ceiling light hangs on its cord from `cordFrom` (a row)
+export function drawFixture(g, job, t, layer, done, { cordFrom = null } = {}) {
+  const name = `fix-${job.kind}`;
+  const [w, h] = SPRITES[name].box;
+  const x = job.tx * TILE + Math.floor((15 - w) / 2) * A;
+  const y = job.ty * TILE + (job.kind === 'light' ? 0 : Math.floor((15 - h) / 2) * A);
+  const here = layer === job.layer;
+  if (job.kind === 'light' && cordFrom !== null && here) {
+    for (let ty = cordFrom; ty < job.ty; ty++) px(g, job.tx * TILE + 7 * A, ty * TILE, 1, 15, layer === NIGHT ? C.steel : C.steelLo);
+  }
+  const frame = done ? 'fixed' : 'broken';
+  if (!here) { drawSprite(g, name, frame, x, y, { outline: PAL[job.layer].echo }); return; }
+  if (job.kind === 'light' && done) drawLightPool(g, job);
+  drawSprite(g, name, frame, x, y, { palette: jobPal(layer) });
+  if (done) return;
+  const spark = Math.floor(t * 5) % 3 !== 2;
+  if (job.kind === 'pipe') px(g, x + 7 * A, y + (8 + Math.floor(t * 8) % 7) * A, 1, 2, C.rim);
+  else if (spark && (job.kind === 'fuse' || job.kind === 'cable')) px(g, x + 6 * A, y + 4 * A, 2, 2, C.note);
+}
+
+// light falling from a repaired fixture, in steps on the art grid
+function drawLightPool(g, job) {
+  g.fillStyle = 'rgba(255,233,107,0.14)';
+  const cx = job.tx * TILE + TILE / 2;
+  for (let i = 0; i < 6; i++) { const half = (7 + i * 4) * A; g.fillRect(cx - half, job.ty * TILE + 8 * A + i * 8 * A, half * 2, 8 * A); }
+}
+
+// the run of cable or pipe from the broken thing to what it drives: dead until the repair, then live
+export function drawJobLink(g, points, t, done, layer) {
+  const lit = layer === NIGHT ? '#9dffb8' : '#3d7a4a';
+  const dead = layer === NIGHT ? 'rgba(217,246,255,0.45)' : 'rgba(59,45,31,0.55)';
+  for (let i = 0; i + 1 < points.length; i++) {
+    const [x0, y0] = points[i];
+    const [x1, y1] = points[i + 1];
+    const n = (Math.abs(x1 - x0) + Math.abs(y1 - y0)) * 15;
+    for (let k = 0; k <= n; k++) {
+      const x = (x0 + ((x1 - x0) * k) / (n || 1)) * TILE + TILE / 2;
+      const y = (y0 + ((y1 - y0) * k) / (n || 1)) * TILE + TILE / 2;
+      if (!done && k % 3 === 2) continue; // dead: a broken line
+      px(g, x, y, 1, 1, done && (k + Math.floor(t * 18)) % 9 < 2 ? '#ffffff' : done ? lit : dead);
+    }
+  }
+}
+
+// a repair landing: corner brackets opening out from the fixture
+export function drawFixBrackets(g, x, y, k, layer) {
+  const r = (10 + k * 14) * A;
+  const color = layer === NIGHT ? '#9dffb8' : '#3d7a4a';
+  const prev = g.globalAlpha;
+  g.globalAlpha = prev * (1 - k);
+  for (const [sx, sy] of [[-1, -1], [1, -1], [-1, 1], [1, 1]]) {
+    px(g, x + sx * r - (sx > 0 ? 3 * A : 0), y + sy * r, 3, 1, color);
+    px(g, x + sx * r, y + sy * r - (sy > 0 ? 3 * A : 0), 1, 3, color);
+  }
+  g.globalAlpha = prev;
+}
+
+// a job with no machine to change only locks the exit: a chain across the door and a padlock
 export function drawExitLock(g, tx, ty, { hang = false } = {}) {
   const { door: d } = exitRects(tx, ty, { hang });
   const cy = d.y + d.h / 2;
-  px(g, d.x - A, cy - A, 15, 2, '#c0392b');
-  px(g, d.x + 3 * A, cy - 2 * A, 7, 6, '#e0473c');
-  px(g, d.x + 4 * A, cy - 5 * A, 1, 3, '#c9d3dc');
-  px(g, d.x + 8 * A, cy - 5 * A, 1, 3, '#c9d3dc');
-  px(g, d.x + 4 * A, cy - 5 * A, 5, 1, '#c9d3dc');
-  px(g, d.x + 6 * A, cy, 1, 2, '#1b1209');
+  px(g, d.x - A, cy - A, 15, 2, C.steelLo);
+  px(g, d.x + 3 * A, cy - 2 * A, 7, 6, C.ink);
+  px(g, d.x + 4 * A, cy - A, 5, 4, C.steel);
+  px(g, d.x + 4 * A, cy - 5 * A, 1, 3, C.steelHi);
+  px(g, d.x + 8 * A, cy - 5 * A, 1, 3, C.steelHi);
+  px(g, d.x + 4 * A, cy - 5 * A, 5, 1, C.steelHi);
 }
 
-// the tool, floating on its tile. `live`: this is its shift; on the other one it's a faint promise
-export function drawTool(g, job, t, live) {
-  const prev = g.globalAlpha;
-  g.globalAlpha = prev * (live ? 1 : 0.4);
-  const x = job.tx * TILE;
-  const y = job.ty * TILE + 8 * A + (live ? Math.round(Math.sin(t * 4)) * A : 0);
-  px(g, x + A, y - 4 * A, 13, 16, 'rgba(255,236,90,0.28)'); // it has to read as "pick me up" on both skies
-  px(g, x + 3 * A, y - 2 * A, 9, 12, 'rgba(27,18,9,0.7)');
-  TOOL_ART[job.kind](g, x, y);
-  g.globalAlpha = prev;
-}
-
-// the broken thing on the wall at (tx, ty), and how it looks once it's fixed
-export function drawRepairSpot(g, job, t, live, done) {
-  const prev = g.globalAlpha;
-  g.globalAlpha = prev * (live ? 1 : 0.4);
-  const x = job.tx * TILE;
-  const y = job.ty * TILE;
-  const blink = Math.floor(t * 3) % 2 === 0;
-  if (job.kind === 'fuse') {
-    px(g, x + 2 * A, y + A, 11, 13, '#4f5b6e');
-    px(g, x + 3 * A, y + 2 * A, 9, 11, '#262c38');
-    px(g, x + 6 * A, y + 4 * A, 3, 5, done ? '#2bdc6a' : blink ? '#e0473c' : '#5a2320');
-  } else if (job.kind === 'pipe') {
-    px(g, x, y + 2 * A, 15, 4, '#7d8a99');
-    px(g, x + 6 * A, y + A, 3, 6, '#5c6775');
-    if (!done) px(g, x + 7 * A, y + (7 + Math.floor(t * 6) % 6) * A, 1, 2, '#5ff2ff');
-  } else if (job.kind === 'hinge') {
-    px(g, x + 3 * A, y + 2 * A, 9, 3, '#7d8a99');
-    px(g, x + 3 * A, y + 9 * A, 9, 3, '#7d8a99');
-    px(g, x + 6 * A, y + A, 3, 12, done ? '#c9d3dc' : '#a0522d');
-    if (!done && blink) px(g, x + 12 * A, y, 2, 2, '#ffec5a');
-  } else if (job.kind === 'cable') {
-    px(g, x, y + 3 * A, 6, 2, '#262c38');
-    px(g, x + 9 * A, y + (done ? 3 : 6) * A, 6, 2, '#262c38');
-    if (done) px(g, x + 5 * A, y + 2 * A, 5, 4, '#c9d3dc');
-    else if (blink) px(g, x + 7 * A, y + 4 * A, 2, 2, '#ffec5a');
-  } else {
-    px(g, x + 7 * A, y, 1, 4, '#4a3b2c');
-    px(g, x + 4 * A, y + 4 * A, 7, 2, '#6b5a48');
-    px(g, x + 5 * A, y + 6 * A, 5, 3, done ? '#ffec5a' : '#3a3a3a');
-    if (done) { g.fillStyle = 'rgba(255,236,90,0.14)'; g.fillRect(x - TILE / 2, y + 9 * A, 2 * TILE, 3 * TILE - 18); }
+// water: a hazard filling its tile. Only the top row of a body of water shows the surface.
+export function drawWater(g, tx, ty, t, surface, layer) {
+  const x = tx * TILE;
+  const y = ty * TILE;
+  g.fillStyle = layer === NIGHT ? '#1f6f8f' : '#3f9fbf';
+  g.fillRect(x, y + (surface ? 3 * A : 0), TILE, surface ? TILE - 3 * A : TILE);
+  if (!surface) return;
+  for (let i = 0; i < 15; i++) {
+    const w = Math.round(Math.sin(tx * 15 + i * 0.8 + t * 3));
+    px(g, x + i * A, y + (2 + w) * A, 1, 1, '#d9f6ff');
   }
-  g.globalAlpha = prev;
 }
 
 // ---------- telegraphs: what a freak or prank is about to do (docs/ART.md §3) ----------
@@ -990,13 +1018,74 @@ export function drawCrack(g, tx, ty, layer) {
   for (let i = 0; i < 8; i++) g.fillRect(x + (4 + (i % 2) * 2 + i) * A, y + i * A, A, A);
 }
 
+// A formal portrait: gold frame, a dark sitter with ears and a collar, a brass plate. Big, because it's a wall.
 export function drawPortrait(g, x, y, t, w = 3, h = 2) {
-  px(g, x, y, w * 15, h * 15, '#3b2d1f');
-  px(g, x + 2 * A, y + 2 * A, w * 15 - 4, h * 15 - 4, '#b8862f');
-  px(g, x + 3 * A, y + 3 * A, w * 15 - 6, h * 15 - 6, C.freak);
-  const cx = x + (w * TILE) / 2;
-  drawEyes(g, 'lurker', cx - 7 * A, y + 4 * A, { state: eyesOpen(t, 3) ? 'open' : 'shut' });
-  drawEyes(g, 'lurker', cx - 2 * A, y + 9 * A, { state: eyesOpen(t, 9) ? 'open' : 'shut', alpha: 0.7 });
+  const W = w * 15;
+  const H = h * 15;
+  px(g, x, y, W, H, C.ink);
+  px(g, x + A, y + A, W - 2, H - 2, C.brassLo);
+  px(g, x + 2 * A, y + 2 * A, W - 4, 1, C.brass);
+  px(g, x + 2 * A, y + 2 * A, 1, H - 4, C.brass);
+  px(g, x + 4 * A, y + 4 * A, W - 8, H - 8, '#5a2f3c'); // the wallpaper behind the sitter
+  const cx = x + (W * A) / 2;
+  const scale = Math.max(1, Math.floor((h * 15) / 22));
+  const head = 10 * scale;
+  const top = y + 8 * A;
+  px(g, cx - head * A, top + 5 * scale * A, head * 2, head + 2 * scale, C.freak); // head
+  px(g, cx - head * A, top + 2 * scale * A, 3 * scale, 4 * scale, C.freak); // ears
+  px(g, cx + (head - 3 * scale) * A, top + 2 * scale * A, 3 * scale, 4 * scale, C.freak);
+  px(g, cx - (head + 3 * scale) * A, top + (head + 8 * scale) * A, (head + 3 * scale) * 2, H - head - 8 * scale - 16, C.freak); // shoulders
+  px(g, cx - 3 * scale * A, top + (head + 8 * scale) * A, 6 * scale, 2 * scale, C.paper); // collar
+  const open = eyesOpen(t, 3);
+  for (const ex of [cx - 5 * scale * A, cx + 2 * scale * A]) px(g, ex, top + (8 * scale + (open ? 0 : 2 * scale)) * A, 3 * scale, open ? 4 * scale : scale, C.freakEye);
+  px(g, cx - 12 * A, y + (H - 7) * A, 24, 4, C.brass); // the plate
+  px(g, cx - 10 * A, y + (H - 6) * A, 20, 1, C.brassLo);
+}
+
+// the same portrait, dropped flat on the floor: a gold-edged slab
+export function drawPortraitFlat(g, tx, ty, w) {
+  const x = tx * TILE;
+  const y = ty * TILE + 8 * A;
+  px(g, x, y, w * 15, 7, C.ink);
+  px(g, x + A, y + A, w * 15 - 2, 5, C.brassLo);
+  px(g, x + 2 * A, y + A, w * 15 - 4, 1, C.brass);
+  px(g, x + 3 * A, y + 3 * A, w * 15 - 6, 2, '#5a2f3c');
+}
+
+// a steel roller shutter over a doorway, and the drum it rolls up into
+export function drawShutter(g, tx, ty, layer, rows = 4) {
+  const x = tx * TILE;
+  const y = (ty - rows + 1) * TILE;
+  px(g, x, y, 15, rows * 15, C.ink);
+  for (let i = 0; i < rows * 15; i += 3) {
+    px(g, x + A, y + i * A, 13, 2, C.steel);
+    px(g, x + A, y + i * A, 13, 1, C.steelHi);
+  }
+  px(g, x, y + (rows * 15 - 2) * A, 15, 2, C.steelLo);
+  px(g, x + 6 * A, y + (rows * 15 - 5) * A, 3, 3, C.ink); // the handle
+}
+
+export function drawShutterOpen(g, tx, ty) {
+  const x = tx * TILE;
+  const y = ty * TILE;
+  px(g, x, y, 15, 8, C.ink);
+  px(g, x + A, y + A, 13, 6, C.steel);
+  px(g, x + A, y + A, 13, 1, C.steelHi);
+  px(g, x + A, y + 5 * A, 13, 2, C.steelLo);
+}
+
+// scaffold deck: planks on tube, with legs down to the next floor; sagging, it hangs at an angle off one bolt
+export function drawDeck(g, tx, ty, w, sag, floorRow) {
+  const x = tx * TILE;
+  const y = ty * TILE;
+  const W = w * 15;
+  for (const lx of [1, W - 3]) for (let r = ty + 1; r < floorRow; r++) px(g, x + lx * A, r * TILE, 2, 15, C.steelLo);
+  for (let i = 0; i < W; i += 1) {
+    const dip = sag ? Math.floor((i / W) * 6) : 0;
+    px(g, x + i * A, y + (4 + dip) * A, 1, 5, i % 15 === 14 ? C.ink : C.plank);
+    px(g, x + i * A, y + (4 + dip) * A, 1, 1, '#b58b5a');
+    px(g, x + i * A, y + (9 + dip) * A, 1, 1, C.ink);
+  }
 }
 
 // One entry of skinPlan() (src/skins.js): the object art over solid tiles. Portraits blink, so they need t.
@@ -1011,6 +1100,10 @@ export function drawSkin(g, sp, layer, t = 0) {
   else if (sp.draw === 'crack') drawCrack(g, sp.tx, sp.ty, layer);
   else if (sp.draw === 'doorPile') drawDoorPile(g, sp.tx, sp.ty, layer, sp.count);
   else if (sp.draw === 'portrait') drawPortrait(g, sp.tx * TILE, sp.ty * TILE, t, sp.w, sp.h);
+  else if (sp.draw === 'portraitFlat') drawPortraitFlat(g, sp.tx, sp.ty, sp.w);
+  else if (sp.draw === 'shutter') drawShutter(g, sp.tx, sp.ty, layer, sp.h);
+  else if (sp.draw === 'shutterOpen') drawShutterOpen(g, sp.tx, sp.ty);
+  else if (sp.draw === 'deck') drawDeck(g, sp.tx, sp.ty, sp.w, sp.sag, sp.floorRow);
 }
 
 // ---------- effects ----------

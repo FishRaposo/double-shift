@@ -7,13 +7,13 @@ import { createInput } from './input.js';
 import { createPad, readPads, padMenuKey } from './pad.js';
 import { ACTIONS, DEFAULT_BINDS, ownsKey, rebind, keyLabel, keysText, keysShort, browserShortcut } from './keys.js';
 import { sfx, playSound, unlockAudio, setVolumes, setMusicShift, setMusicAct, setMenu } from './audio.js';
-import { skinPlan, checkpointHangs, exitPose } from './skins.js';
+import { skinPlan, checkpointHangs, exitPose, lightCordFrom } from './skins.js';
 import { createSave, createSettings, isUnlocked } from './save.js';
 import { drawText, measureText, wrapText } from './font.js';
-import { drawSprite, drawEyes, eyesOpen, workerFrame, spriteRect, ART, SPRITES, C } from './sprites.js';
+import { drawSprite, drawEyes, eyesOpen, workerFrame, spriteRect, ART, SPRITES, C, JOB_NIGHT_PAL } from './sprites.js';
 import {
   PAL, PROPS, drawBackground, drawSolidTile, drawHatch, drawEchoEdges, drawRebar, drawLaser, drawHazardEcho,
-  drawExit, drawExitLock, drawCheckpoint, drawSign, drawFreak, drawTool, drawRepairSpot, drawStatusMark, drawPatrol, drawGaze, drawTurnTimer, drawPrankCells,
+  drawExit, drawExitLock, drawCheckpoint, drawSign, drawFreak, drawTool, drawCarriedTool, drawFixture, drawJobLink, drawFixBrackets, drawWater, drawStatusMark, drawPatrol, drawGaze, drawTurnTimer, drawPrankCells,
   drawShiftRing, drawDust, drawPuff, drawSparkle, drawPanel,
   drawStamp, drawLogo, drawWetTile, drawSkin, shouldHatch, withCellMirror, PLATE, NOTE_STRIP, px, drawMemoPanel,
 } from './art.js';
@@ -41,7 +41,8 @@ const settings = createSettings(storage);
 setVolumes(settings.get());
 
 const params = new URLSearchParams(location.search);
-const freshFx = () => ({ flash: 0, flashLayer: DAY, fail: 0, death: 0, land: 0, rings: [], pops: [], dust: [], puffs: [], sparkles: [], spook: null, freeze: 0, squint: 0, ping: 0 });
+const NOTEXT = params.has('notext'); // the show-don't-tell check: no notes, memos or signs (docs/LEVELS.md §3)
+const freshFx = () => ({ flash: 0, flashLayer: DAY, fail: 0, death: 0, land: 0, rings: [], pops: [], dust: [], puffs: [], sparkles: [], fixes: [], spook: null, freeze: 0, squint: 0, ping: 0 });
 const game = {
   screen: 'title', // title | select | settings | controls | act | play | card | end | paused
   settingsFrom: 'title', // where Esc returns to from settings
@@ -428,9 +429,10 @@ function handleEvents(events) {
       case 'checkpoint': sfx.checkpoint(); fx.ping = 1; break;
       case 'tool': sfx.toolPickup(); break;
       case 'repaired': {
-        const { fix } = level().repair;
+        const { fix } = level().repairs[ev.job];
         sfx.repaired();
-        fx.pops.push({ x: fix.tx * TILE + TILE / 2, y: fix.ty * TILE - 16, t: 0, text: 'FIXED' });
+        fx.fixes.push({ x: fix.tx * TILE + TILE / 2, y: fix.ty * TILE + TILE / 2, t: 0 });
+        for (const [, tx, ty] of fix.cells) fx.puffs.push({ x: tx * TILE + TILE / 2, y: ty * TILE + TILE / 2, t: 0 }); // what it just changed
         break;
       }
       case 'exitLocked': {
@@ -488,8 +490,8 @@ function advance(elapsed, next = () => input.consume()) {
   fx.freeze = decay(fx.freeze, 0.15);
   fx.squint = decay(fx.squint, 0.8);
   fx.ping = decay(fx.ping, 0.2);
-  for (const k of ['rings', 'pops', 'dust', 'puffs', 'sparkles']) {
-    const life = { rings: 0.3, pops: 0.9, dust: 0.3, puffs: 0.4, sparkles: 0.5 }[k];
+  for (const k of ['rings', 'pops', 'dust', 'puffs', 'sparkles', 'fixes']) {
+    const life = { rings: 0.3, pops: 0.9, dust: 0.3, puffs: 0.4, sparkles: 0.5, fixes: 0.4 }[k];
     fx[k] = fx[k].filter((q) => (q.t += elapsed) < life);
   }
   if (fx.spook && (fx.spook.t += elapsed) > 0.35) fx.spook = null;
@@ -579,6 +581,7 @@ function staticLayer(lvl, def, layer, ov) {
   // props first: they sit behind the geometry
   for (const pr of def.props ?? []) {
     if (pr.layer && (pr.layer === 'night') !== (layer === NIGHT)) continue;
+    if (NOTEXT && pr.kind === 'sign') continue;
     const draw = () => PROPS[pr.kind]?.(ctx, pr.tx * TILE, pr.ty * TILE, pr.w ?? pr, pr);
     // hung upside down (a prop on a flipped night): mirrored inside its cell. Signs keep flip off.
     if (pr.flip) withCellMirror(ctx, pr.ty, draw);
@@ -635,7 +638,9 @@ function background(layer, act = 0) {
 function drawHazards(lvl, layer, t, ov) {
   for (let ty = 0; ty < lvl.h; ty++) {
     for (let tx = 0; tx < lvl.w; tx++) {
-      if (tileAt(lvl, layer, tx, ty, ov) !== '^') continue;
+      const ch = tileAt(lvl, layer, tx, ty, ov);
+      if (ch === 'w') drawWater(g, tx, ty, t, tileAt(lvl, layer, tx, ty - 1, ov) !== 'w', layer);
+      if (ch !== '^') continue;
       if (layer === DAY) drawRebar(g, tx, ty);
       else drawLaser(g, tx, ty, t, tx === 0 || tileAt(lvl, layer, tx - 1, ty, ov) !== '^', tx === lvl.w - 1 || tileAt(lvl, layer, tx + 1, ty, ov) !== '^', { top: gravitySign(lvl, layer) < 0 });
     }
@@ -662,7 +667,7 @@ function drawTells(lvl, s, layer, t) {
       PROPS.eyes(g, x - 30, up ? y + 26 : y - 50, { t, seed: 7 });
       PROPS.eyes(g, x + 4, up ? y + 40 : y - 64, { t, seed: 3 });
     } else {
-      drawSign(g, x, y - 36, pr.tell.text ?? 'MINE', 'note', 2); // the freaks' sticky note (WRITING.md §5)
+      drawSign(g, x, y - 36, NOTEXT ? '    ' : pr.tell.text ?? 'MINE', 'note', 2); // the freaks' sticky note (WRITING.md §5)
     }
     const text = prankCountdown(pr.nights);
     const spot = countdownSpot(lvl, labels, x, y, measureText(text, 2), gravitySign(lvl, layer) < 0);
@@ -709,14 +714,19 @@ function drawFreakPlans(lvl, boxes, layer) {
   });
 }
 
-// the level's repair: the tool until it's picked up, the broken thing, and the exit's lock
+// the level's repairs: the cable or pipe to what they drive, the tool until it's picked up, the broken thing
 function drawWorkOrder(lvl, s, layer, t) {
-  const job = lvl.repair;
-  if (!job) return;
-  if (!s.repair.tool) drawTool(g, job.tool, t, layer === job.tool.layer);
-  drawRepairSpot(g, job.fix, t, layer === job.fix.layer, s.repair.done);
-  const pose = exitPose(lvl, layer, s.overrides);
-  if (!s.repair.done && pose) drawExitLock(g, lvl.exit.tx, lvl.exit.ty, pose); // none on a shift that walls the exit up
+  lvl.repairs.forEach((job, i) => {
+    const { tool, done } = s.repairs[i];
+    drawJobLink(g, job.fix.link, t, done, layer);
+    if (!tool) drawTool(g, job.tool, t, layer);
+    const cordFrom = job.fix.kind === 'light' ? lightCordFrom(lvl, layer, job.fix.tx, job.fix.ty, s.overrides) : null;
+    drawFixture(g, job.fix, t, layer, done, { cordFrom });
+    if (job.fix.cells.length === 0 && !done) { // a job with no machine locks the exit instead
+      const pose = exitPose(lvl, layer, s.overrides);
+      if (pose) drawExitLock(g, lvl.exit.tx, lvl.exit.ty, pose);
+    }
+  });
 }
 
 function drawDecor(def, layer, t) {
@@ -744,6 +754,9 @@ function drawWorker(s, layer) {
     g.fillRect(x + PARAMS.playerW + 5 * A, y, A, h);
   }
   drawSprite(g, 'worker', workerFrame(p, s.time, fx, sign), p.x, p.y, { flip: p.facing < 0, vflip, palette: layer === NIGHT ? NIGHT_PAL : null });
+  // the tool he's carrying, in his hand on the side he's facing
+  const held = level().repairs.findIndex((job, i) => s.repairs[i].tool && !s.repairs[i].done);
+  if (held >= 0) drawCarriedTool(g, level().repairs[held].tool.kind, p.x + (p.facing < 0 ? -9 : PARAMS.playerW - 2), p.y + (vflip ? 4 : 12), layer);
 }
 
 function drawSpookGag() {
@@ -761,6 +774,7 @@ function drawFx(reduced) {
   const fx = game.fx;
   for (const d of fx.dust) drawDust(g, d.x, d.y, d.t / 0.3, { up: d.up });
   for (const q of fx.puffs) drawPuff(g, q.x, q.y, q.t / 0.4);
+  if (!reduced) for (const q of fx.fixes) drawFixBrackets(g, q.x, q.y, q.t / 0.4, game.state.layer);
   if (!reduced) {
     for (const r of fx.rings) drawShiftRing(g, r.x, r.y, r.t / 0.3, r.layer);
     for (const sp of fx.sparkles) drawSparkle(g, sp.x, sp.y, sp.t / 0.5, sp.seed);
@@ -805,14 +819,24 @@ function drawNoteStrip(text) {
   drawText(g, text, W / 2, top + 7, { scale: 2, color: NOTE_STRIP.ink, align: 'center' });
 }
 
+// the work order at a glance: for each job, the tool, then what it's for, ticked off as they're done
+function drawJobIcons(lvl, s, layer, y) {
+  let x = 14;
+  lvl.repairs.forEach((job, i) => {
+    const { tool, done } = s.repairs[i];
+    plate(x - 4, y - 2, 62, 28, layer);
+    drawSprite(g, `tool-${job.tool.kind}`, 'a', x, y + 1, { palette: layer === NIGHT ? JOB_NIGHT_PAL : null, alpha: tool ? 1 : 0.45 });
+    const fix = `fix-${job.fix.kind}`;
+    drawSprite(g, fix, done ? 'fixed' : 'broken', x + 26, y + 1 + Math.floor((24 - SPRITES[fix].box[1] * A) / 2), { palette: layer === NIGHT ? JOB_NIGHT_PAL : null, alpha: tool || done ? 1 : 0.45 });
+    x += 70;
+  });
+}
+
 function drawHud(lvl, s, layer) {
   const pal = PAL[layer];
   hud(`${game.index + 1}/${levels.length}  ${lvl.name.toUpperCase()}`, 14, 12, layer);
   if (settings.get().timer) hud(`TIME ${s.time.toFixed(2)}`, 14, 40, layer); // the speedrun timer (SETTINGS)
-  if (lvl.repair) {
-    const line = s.repair.done ? 'DONE' : s.repair.tool ? `FIX THE ${lvl.repair.fix.name}` : `GET THE ${lvl.repair.tool.name}`;
-    hud(`WORK ORDER: ${line}`, 14, settings.get().timer ? 64 : 40, layer);
-  }
+  drawJobIcons(lvl, s, layer, settings.get().timer ? 62 : 38);
   // shift indicator: icon + label (not colour alone), on one plate
   const label = layer === DAY ? 'DAY SHIFT' : 'NIGHT SHIFT';
   const lw = measureText(label, 2);
@@ -832,8 +856,8 @@ function drawHud(lvl, s, layer) {
   const over = s.shifts > lvl.par;
   hud(`CLOCK-INS ${s.shifts}  ·  PAR ${lvl.par}`, W - 14, 36, layer, { align: 'right', color: over ? pal.overPar : pal.hud });
   const note = LEVELS[game.index].note;
-  if (game.levelTime < 5 && note) drawNoteStrip(note);
-  if (game.index === 0 && s.shifts === 0) {
+  if (game.levelTime < 5 && note && !NOTEXT) drawNoteStrip(note);
+  if (game.index === 0 && s.shifts === 0 && !NOTEXT) {
     hud(`Press ${keysText(settings.binds().shift, keyLayout)} to change shifts`, W / 2, 140, layer, { align: 'center', scale: 3 });
     hud('Dashed outlines show the other shift', W / 2, 172, layer, { align: 'center', color: pal.hudSoft });
   }
@@ -892,7 +916,7 @@ function drawPlay() {
   else drawWorker(s, layer);
   drawFx(reduced);
   // a memo's text, while you stand by it (in its shift)
-  for (const m of def.props ?? []) {
+  for (const m of NOTEXT ? [] : def.props ?? []) {
     if (m.kind === 'memo' && (!m.layer || (m.layer === 'night') === (layer === NIGHT)) && memoNear(s.player, m)) drawMemoPanel(g, memoLayout(m));
   }
   drawHud(lvl, s, layer);
@@ -969,14 +993,14 @@ function drawCard() {
   drawText(g, lvl.name, cx, 152, { scale: 2, color: ink, align: 'center' });
   px(g, cx - 180, 176, 180, 1, 'rgba(59,45,31,0.4)');
   const rows = [['Clock-ins', String(r.shifts)], ['Par', String(r.par)], ['Time', `${r.time.toFixed(2)}s`], ['Incidents', String(r.deaths)]];
-  if (lvl.repair) rows.push(['Work order', 'DONE']);
+  if (lvl.repairs.length) rows.push(['Work order', 'DONE']);
   rows.forEach(([k, v], i) => {
     drawText(g, k, cx - 170, 190 + i * 28, { scale: 2, color: ink });
     drawText(g, v, cx + 170, 190 + i * 28, { scale: 2, color: ink, align: 'right' });
   });
   const diff = r.shifts - r.par;
   const k = Math.min(1, Math.max(0, (game.screenTime - 0.45) / 0.12));
-  if (game.screenTime > 0.45) drawStamp(g, cx + 70, lvl.repair ? 344 : 330, stampText(diff), diff <= 0 ? '#c0392b' : '#7f6a50', 3, k);
+  if (game.screenTime > 0.45) drawStamp(g, cx + 70, lvl.repairs.length ? 344 : 330, stampText(diff), diff <= 0 ? '#c0392b' : '#7f6a50', 3, k);
   const comment = timecardComment(r);
   drawText(g, comment, cx, 372, { scale: measureText(comment, 2) > 440 ? 1 : 2, color: ink, align: 'center' });
   drawActions(CARD_ACTIONS, CARD_ROW, ink);

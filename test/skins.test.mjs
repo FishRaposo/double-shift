@@ -24,10 +24,10 @@ test('parseLevel: unknown skin kind throws; defaults; prank sound kept', () => {
     pranks: [{ id: 'a', onNight: 1, set: [] }, { id: 'b', onNight: 2, set: [], sound: 'doorThunk' }],
   });
   assert.deepEqual(lvl.skins, [
-    { kind: 'door', tx: 1, ty: 3, w: 1, h: 2, layer: null },
-    { kind: 'pillar', tx: 2, ty: 3, w: 1, h: 4, layer: NIGHT },
-    { kind: 'portrait', tx: 3, ty: 0, w: 3, h: 2, layer: DAY },
-    { kind: 'doorPile', tx: 4, ty: 3, w: 2, h: 3, layer: null },
+    { kind: 'door', tx: 1, ty: 3, w: 1, h: 2, layer: null, sag: false },
+    { kind: 'pillar', tx: 2, ty: 3, w: 1, h: 4, layer: NIGHT, sag: false },
+    { kind: 'portrait', tx: 3, ty: 0, w: 3, h: 2, layer: DAY, sag: false },
+    { kind: 'doorPile', tx: 4, ty: 3, w: 2, h: 3, layer: null, sag: false },
   ]);
   assert.equal(lvl.pranks[0].sound, null);
   assert.equal(lvl.pranks[1].sound, 'doorThunk');
@@ -128,7 +128,7 @@ test('skinPlan: a portrait covers a w×h rect from its top-left cell', () => {
 
 test('art: every skin kind used in LEVELS is known', () => {
   for (const def of LEVELS) for (const sk of def.skins ?? []) assert.ok(SKIN_KINDS.includes(sk.kind), `${def.id}: ${sk.kind}`);
-  assert.deepEqual([...SKIN_KINDS].sort(), ['door', 'doorPile', 'pillar', 'portrait']);
+  assert.deepEqual([...SKIN_KINDS].sort(), ['deck', 'door', 'doorPile', 'pillar', 'portrait', 'shutter']);
 });
 
 test('checkpoint art: drawn the way the shift it saves in holds it (no hanging from nothing)', () => {

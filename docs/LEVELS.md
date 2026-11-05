@@ -93,7 +93,7 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 - **Tutorial prompt** shows until the first shift. Barrier tape and a RENOVATION note dress the shaft.
 - **Freak evidence:** a peeker sits on a night-only stack at col 26, five tiles tall (so it can never touch the player) and footprints lead past the gate.
 
-### 2. Scaffolding: par 1 (act 1)
+### 2. Scaffolding: par 3 (act 1)
 - **Lesson:** use the other shift's geometry to get past a block.
 - **Both:** raised block (cols 16–31 from row 8). **Day only:** scaffolding steps (row 12 cols 6–9, row 10 cols 11–13) and a full-height delivery stack on the ledge (cols 23–24).
 - **Solution:** climb the day scaffolding, shift to night to pass the deliveries.
@@ -173,7 +173,7 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 - **Solution:** night on the spawn floor (bridge) → cross → day and night again on the middle floor (gate lifts, bridge goes) → past col 18 → day and night again on the landing (plank) → cross to the exit. Five clock-ins; checkpoint at col 20.
 - Clock in at the wrong place (e.g. twice before gap A) and the bridge is gone before you cross: the pit resets the pranks (checkpoint rule). A test pins it.
 
-### 13. Employee of the Month: par 3 (act 4, built Nov 3)
+### 13. Employee of the Month: par 4 (act 4, redesigned Nov 5 around its repair: the portrait fills the doorway on both shifts, undo the bracket and it drops flat)
 - **Lesson:** the obstacle and the tool are the same object, moved by each clock-in.
 - **Both shifts:** a ledge 5 up (cols 19–24) blocks the floor; past it, the exit sits in a doorway under a lintel (row 11, cols 28–31), open only from the left at floor level.
 - **Night:** their portrait (3×2, solid, a `portrait` skin: just eyes) hangs in the doorway (cols 26–28), sealing it. Each entry rehangs it: high on the wall (P1), low against the ledge (P2, entry 2), back in the doorway (P3 = P0), and round again for good, so a clock-in too many costs a lap instead of a stuck run. A nail and an unfaded patch mark each spot (new `PROPS.nail`), seen when it isn't there.

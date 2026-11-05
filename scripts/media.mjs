@@ -5,6 +5,7 @@
 //   --review id,id  only a day and a night shot of each level, into <outdir>/review/ (night is set directly:
 //                   a picture of the geometry, not a playable state)
 //   --gray, --cvd   with --review: also grayscale and color-blind (deuteranopia, protanopia, tritanopia) variants
+//   --notext id,id  the show-don't-tell deck: each level with no notes, memos or signs, before and after its repairs
 //   --memo          with --review: also <id>-memo.png, the worker by the level's memo with its panel open
 //   --root DIR      serve DIR instead of the repo (smoke-test the unzipped itch build: no cover, gallery or audio)
 // BROWSER env overrides the browser path (scripts/cdp.mjs starts the browser and serves the game).
@@ -22,8 +23,9 @@ const option = (name) => {
   return v;
 };
 const review = option('--review')?.split(',').filter(Boolean) ?? null;
+const notext = option('--notext')?.split(',').filter(Boolean) ?? null;
 const serveRoot = option('--root');
-const positional = argv.filter((a, i) => !a.startsWith('--') && !['--review', '--root'].includes(argv[i - 1]));
+const positional = argv.filter((a, i) => !a.startsWith('--') && !['--review', '--root', '--notext'].includes(argv[i - 1]));
 const out = resolve(positional[0] || join(root, 'media'));
 mkdirSync(out, { recursive: true });
 
@@ -67,6 +69,30 @@ async function moment(id, event, after, name) {
   } finally {
     await send('Page.removeScriptToEvaluateOnNewDocument', { identifier });
   }
+}
+
+// The show-don't-tell deck: every level with no notes, memos or signs, before and after its repairs, on both shifts.
+async function notextDeck(ids) {
+  const { identifier } = await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.requestAnimationFrame = () => 0;' });
+  for (const id of ids) {
+    await open(`?level=${encodeURIComponent(id)}&autostart&notext`);
+    for (const [when, layer] of [['before', 0], ['before', 1], ['after', 0], ['after', 1]]) {
+      await evaluate(`(async () => {
+        const g = __doubleShift;
+        if (${JSON.stringify(when)} === 'after' && !g.fixedUp) {
+          const { SOLUTIONS } = await import('/test/solutions.mjs');
+          const { inputsFrom } = await import('/test/helpers.mjs');
+          const next = inputsFrom(SOLUTIONS[${JSON.stringify(id)}]);
+          for (let i = 0; i < 120 * 30 && g.screen === 'play' && !g.state.repairs.every((r) => r.done); i++) g.advance(1 / 120, next);
+          g.fixedUp = true;
+        }
+        g.state = { ...g.state, layer: ${layer}, events: [] };
+        g.render();
+      })()`);
+      await shot(`notext/${id}-${when}-${layer ? 'night' : 'day'}.png`);
+    }
+  }
+  await send('Page.removeScriptToEvaluateOnNewDocument', { identifier });
 }
 
 async function shot(name) {
@@ -128,7 +154,8 @@ async function reviewShots(ids) {
 let failed = false;
 try {
   console.log(`Saving to ${out}`);
-  if (review) await reviewShots(review);
+  if (notext) await notextDeck(notext);
+  else if (review) await reviewShots(review);
   else await fullRun();
 } catch (e) {
   failed = true;
@@ -138,6 +165,7 @@ try {
 }
 if (errors.length) { failed = true; console.error('page errors:', errors); }
 if (failed) console.log('FAILED');
+else if (notext) console.log(`ok: text-free deck saved for ${notext.join(', ')}`);
 else if (review) console.log(`ok: review shots saved for ${review.join(', ')}, no page errors`);
 else console.log(`ok: media saved, level 1 cleared with real keys, no page errors${serveRoot ? ` (served from ${serveRoot})` : ''}`);
 process.exit(failed ? 1 : 0);
