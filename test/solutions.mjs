@@ -41,14 +41,15 @@ export const SOLUTIONS = {
     let target = s.layer;
     if (x > 3 && x < 8.6) target = NIGHT; // through the day crates
     else if (x >= 8.6 && x < 15.3) target = DAY; // freeze the lurker, walk past it
-    else if (x >= 15.3 && x < 26.3) target = NIGHT; // out of the tunnel, past the day rebar
-    else if (x >= 26.3) target = DAY; // around the squatter
+    else if (x >= 15.3 && x < 25.9) target = NIGHT; // out of the tunnel, past the day rebar
+    else if (x >= 25.9) target = DAY; // up the steps, past the squatter
     let right = true;
     if (s.layer === NIGHT && x > 20.5 && x < 22.3) {
       const t = s.freakClock % 1.6; // peeker is out for the first 0.8 s of each 1.6 s cycle
       right = t > 0.8 && t < 1.0;
     }
-    return { right, shift: want(s, target) };
+    const jump = s.layer === DAY && (s.player.grounded ? (x > 27.1 && x < 27.7) || (x > 28.8 && x < 29.5) : s.player.vy < 0);
+    return { right, jump, shift: want(s, target) };
   },
   wet: (s) => {
     const x = tx(s);
@@ -129,8 +130,10 @@ export const SOLUTIONS = {
     // hop each riser as it comes (a step face about a tile ahead at foot height), and off the end of the top step
     const ground = Math.round((p.y + PARAMS.playerH) / TILE);
     const riser = isSolidChar(tileAt(L.stairs, s.layer, Math.floor((p.x + PARAMS.playerW) / TILE + 0.9), ground - 1));
-    const shift = (x < 2 && want(s, NIGHT)) || (!p.grounded && x > 23.6 && want(s, DAY));
-    return { right: true, shift, jump: p.grounded ? s.layer === NIGHT && (riser || (x > 21.8 && x < 23.2)) : p.vy < 0 };
+    const shift = (x > 2.2 && x < 3.2 && want(s, NIGHT)) || (!p.grounded && x > 23.8 && want(s, DAY));
+    // a short hop onto the top step, to land by the cable; then a full jump off the end
+    const hold = p.vy < 0 && !(x < 20.6 && p.y < 8.3 * TILE);
+    return { right: true, shift, jump: p.grounded ? s.layer === NIGHT && (riser || (x > 22.6 && x < 23.4)) : hold };
   },
   // one clock-in per room, where the room allows it; then climb the pile of doors (jump at each wall)
   doors: (s) => {
@@ -139,7 +142,8 @@ export const SOLUTIONS = {
     const plan = [[1.5, 3.4, NIGHT], [5, 7.2, DAY], [10, 12.2, NIGHT], [16, 18.6, DAY], [22, 23.4, NIGHT]];
     const due = plan.find(([a, b]) => x >= a && x <= b);
     const shift = !!due && s.layer !== due[2];
-    return { right: true, shift, jump: p.grounded ? x > 24.8 && Math.abs(p.vx) < 1 : p.vy < 0 };
+    const climb = p.grounded && ((x > 24.8 && Math.abs(p.vx) < 1) || (x > 26.6 && x < 27.6) || x > 28.5); // up the pile, then onto the door
+    return { right: true, shift, jump: p.grounded ? climb : p.vy < 0 };
   },
   // night past P0, day past P1, up the day crate, then jump off it and clock in mid-air: entry 2 puts the
   // pillar under you; from its top, jump against the mezzanine

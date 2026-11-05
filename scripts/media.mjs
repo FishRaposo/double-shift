@@ -79,7 +79,9 @@ async function notextDeck(ids) {
     for (const [when, layer] of [['before', 0], ['before', 1], ['after', 0], ['after', 1]]) {
       await evaluate(`(async () => {
         const g = __doubleShift;
+        g.startState ??= g.state; // before the deck turned the shift by hand
         if (${JSON.stringify(when)} === 'after' && !g.fixedUp) {
+          g.state = g.startState;
           const { SOLUTIONS } = await import('/test/solutions.mjs');
           const { inputsFrom } = await import('/test/helpers.mjs');
           const next = inputsFrom(SOLUTIONS[${JSON.stringify(id)}]);

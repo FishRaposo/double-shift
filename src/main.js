@@ -729,6 +729,18 @@ function drawWorkOrder(lvl, s, layer, t) {
   });
 }
 
+// a room with its light out: nothing to see until the repair but the exit's glow
+function drawDarkRooms(lvl, s, layer) {
+  lvl.repairs.forEach((job, i) => {
+    const d = job.fix.dark;
+    if (!d || s.repairs[i].done) return;
+    g.fillStyle = 'rgba(5,6,15,0.95)';
+    g.fillRect(d.x0 * TILE, d.y0 * TILE, (d.x1 - d.x0 + 1) * TILE, (d.y1 - d.y0 + 1) * TILE);
+    const pose = exitPose(lvl, layer, s.overrides);
+    if (pose) drawExit(g, lvl.exit.tx, lvl.exit.ty, layer, pose);
+  });
+}
+
 function drawDecor(def, layer, t) {
   if (layer !== NIGHT) return;
   (def.decor ?? []).forEach((d, i) => {
@@ -912,6 +924,7 @@ function drawPlay() {
     if (b.supervised) drawStatusMark(g, b.x + b.w / 2, b.hang ? b.y + b.h : b.y, b.watched ? 'alert' : 'slack', reduced ? 0 : s.freakClock, alpha, b.hang); // on its clock: a frozen mark stays put
     if (b.kind === 'supervisor') drawTurnTimer(g, b, lvl.freaks[i].period, alpha);
   });
+  drawDarkRooms(lvl, s, layer);
   if (game.fx.spook) drawSpookGag();
   else drawWorker(s, layer);
   drawFx(reduced);
