@@ -94,7 +94,9 @@ SPOOKED! · AAAGH! · NOPE! · EEP! · NOT PAID ENOUGH
 | Prank fires ✅ | hee hee hee |
 | Sticky note tell (day) ✅ | MINE |
 | Prank countdown (both shifts) ✅ | NEXT NIGHT · IN 2 NIGHTS |
-| Work order HUD ✅ *(drafts)* | WORK ORDER: GET THE FUSE · WORK ORDER: FIX THE FUSE BOX · WORK ORDER: DONE |
+| Work order HUD ✅ *(drafts)* | WORK ORDER: OPEN THE SHUTTER, then GET THE FUSE · FIX THE FUSE BOX · DONE |
+| Work order goals ✅ *(drafts)* | OPEN THE SHUTTER · RAISE THE DECK · KILL THE LASERS · DRAIN THE FLOOD · FREE THE FIRE DOOR · LIGHT THE STAIRS · RAISE THE HOIST · HANG A DOOR AS A BRIDGE · STOP THE LEAK · JACK UP THE POST · DROP THE PORTRAIT · CALL THE LIFT · OPEN THE GATE |
+| Work order tags in the level ✅ *(drafts)* | The tool, the broken thing and what it drives each carry a small paper label until the job is done |
 | Work order jobs ✅ *(drafts)* | FUSE / FUSE BOX · WRENCH / LEAKING PIPE · BULB / DEAD LIGHT · OIL CAN / SQUEAKY HINGE · TAPE / LOOSE CABLE |
 | Work order feedback ✅ *(drafts)* | WORK ORDER FIRST (at the locked exit) · FIXED |
 | More tells ✅ (Nov 3: MINE NOW on Inventory's and Stacked's planks, DO NOT TUCH on Stacked's gate, FINDERS KEEPERS on the finale's door) | MINE NOW · DO NOT TUCH · FINDERS KEEPERS · (a drawing of eyes) |

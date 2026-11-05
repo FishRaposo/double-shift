@@ -75,7 +75,8 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 ## 3. Design rules (from GDD §6.3, plus the freaks)
 
 1. The intended solution uses only established mechanics.
-2. Everything needed is observable: echoes show the other shift, hatching shows "only in this shift", tells show pending pranks with a countdown and outlined tiles, tracks show patrols, frozen freaks show where they'll be.
+2. Everything needed is observable and labelled: the art shows the idea, and text names it (work order on the HUD, tags on the tool, the broken thing and what it drives). A level must make sense with its text hidden (`npm run media -- --notext`), but readability comes first, so the text stays in the game.
+   Everything needed is observable: echoes show the other shift, hatching shows "only in this shift", tells show pending pranks with a countdown and outlined tiles, tracks show patrols, frozen freaks show where they'll be.
 3. Every failure has a visible cause.
 4. No reliance on unpredictable physics.
 5. Shifting must matter (the test "cannot win without shifting" enforces this).

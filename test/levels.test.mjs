@@ -222,6 +222,7 @@ test('Structural Integrity: reaching the crate on entry 3 misses the staircase',
 const auditAt = (x, layer, extra = {}) => {
   const s = initState(L.audit);
   s.layer = layer;
+  s.overrides = { [`${NIGHT},12,13`]: '.', [`${DAY},28,13`]: '.', [`${NIGHT},28,13`]: '.' }; // both stations done
   Object.assign(s.player, { x: x * TILE, y: 14 * TILE - 26, vx: 0, vy: 0, grounded: true });
   return Object.assign(s, extra);
 };
@@ -592,7 +593,8 @@ for (const { id } of LEVELS) {
   test(`${id}: the work order sits on the par route, on the two shifts`, () => {
     const { events, state } = play(L[id], SOLUTIONS[id], 120 * 30);
     assert.equal(state.won, true);
-    assert.deepEqual(events.filter((e) => ['tool', 'repaired'].includes(e.type)).map((e) => e.type), ['tool', 'repaired']);
+    assert.equal(events.filter((e) => e.type === 'tool').length, L[id].repairs.length);
+    assert.equal(events.filter((e) => e.type === 'repaired').length, L[id].repairs.length);
     for (const job of L[id].repairs) assert.notEqual(job.tool.layer, job.fix.layer);
     assert.equal(events.filter((e) => e.type === 'exitLocked').length, 0);
   });
@@ -600,7 +602,7 @@ for (const { id } of LEVELS) {
 
 // ---------- repairs that change the level ----------
 
-const REDESIGNED = ['clock', 'scaff', 'closing', 'midair', 'inventory', 'watch', 'stairs', 'doors', 'wet', 'pillar', 'supervisor', 'stacked', 'portrait'];
+const REDESIGNED = ['clock', 'scaff', 'closing', 'midair', 'inventory', 'watch', 'stairs', 'doors', 'wet', 'pillar', 'supervisor', 'stacked', 'portrait', 'daywalker', 'offset', 'audit'];
 
 for (const id of REDESIGNED) {
   test(`${id}: the repair changes the map, and the level can't be won without it`, () => {
@@ -628,4 +630,12 @@ test('Mid-Air: the water drains and the exit is on the basement floor', () => {
   const { state } = play(lvl, SOLUTIONS.midair, 120 * 12);
   assert.equal(state.won, true);
   assert.equal(tileAt(lvl, DAY, 16, 15, state.overrides), '.');
+});
+
+test('work orders: every redesigned job says what it is and what it\'s for', () => {
+  for (const id of REDESIGNED) {
+    for (const job of L[id].repairs) {
+      for (const text of [job.tool.name, job.fix.name, job.fix.goal, job.fix.target]) assert.ok(text, `${id}: a job is missing a label`);
+    }
+  }
 });

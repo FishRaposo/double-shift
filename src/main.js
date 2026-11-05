@@ -432,6 +432,7 @@ function handleEvents(events) {
         const { fix } = level().repairs[ev.job];
         sfx.repaired();
         fx.fixes.push({ x: fix.tx * TILE + TILE / 2, y: fix.ty * TILE + TILE / 2, t: 0 });
+        fx.pops.push({ x: fix.tx * TILE + TILE / 2, y: fix.ty * TILE - 16, t: 0, text: 'FIXED' });
         const every = Math.ceil(fix.cells.length / 16); // what it just changed, a puff here and there
         fix.cells.forEach(([, tx, ty], k) => { if (k % every === 0) fx.puffs.push({ x: tx * TILE + TILE / 2, y: ty * TILE + TILE / 2, t: 0 }); });
         break;
@@ -715,14 +716,31 @@ function drawFreakPlans(lvl, boxes, layer) {
   });
 }
 
+// a paper tag over something in the level; tags that would land on each other stack upwards
+function jobLabel(text, tx, ty, placed) {
+  const half = measureText(text, 2) / 2 + 10;
+  const x = Math.min(W - half, Math.max(half, tx * TILE + TILE / 2));
+  let y = Math.max(HUD_BOTTOM + 14, ty * TILE - 14);
+  while (placed.some((p) => Math.abs(p.x - x) < p.half + half && Math.abs(p.y - y) < 26)) y -= 28;
+  placed.push({ x, y, half });
+  drawSign(g, x, y, text, 'paper', 2);
+}
+
 // the level's repairs: the cable or pipe to what they drive, the tool until it's picked up, the broken thing
 function drawWorkOrder(lvl, s, layer, t) {
+  const placed = [];
   lvl.repairs.forEach((job, i) => {
     const { tool, done } = s.repairs[i];
     drawJobLink(g, job.fix.link, t, done, layer);
     if (!tool) drawTool(g, job.tool, t, layer);
     const cordFrom = job.fix.kind === 'light' ? lightCordFrom(lvl, layer, job.fix.tx, job.fix.ty, s.overrides) : null;
     drawFixture(g, job.fix, t, layer, done, { cordFrom });
+    if (NOTEXT || done) return;
+    // everything in the job says what it is
+    if (!tool) jobLabel(job.tool.name, job.tool.tx, job.tool.ty, placed);
+    jobLabel(job.fix.name, job.fix.tx, job.fix.ty, placed);
+    const end = job.fix.link.at(-1);
+    if (end && job.fix.target) jobLabel(job.fix.target, end[0], end[1], placed);
     if (job.fix.cells.length === 0 && !done) { // a job with no machine locks the exit instead
       const pose = exitPose(lvl, layer, s.overrides);
       if (pose) drawExitLock(g, lvl.exit.tx, lvl.exit.ty, pose);
@@ -834,6 +852,16 @@ function drawNoteStrip(text) {
 
 // the work order at a glance: for each job, the tool, then what it's for, ticked off as they're done
 function drawJobIcons(lvl, s, layer, y) {
+  // in words first: the job in hand and the next step
+  const next = lvl.repairs.findIndex((_, i) => !s.repairs[i].done);
+  if (lvl.repairs.length) {
+    const job = lvl.repairs[next === -1 ? lvl.repairs.length - 1 : next];
+    const goal = job.fix.goal ?? `FIX THE ${job.fix.name}`;
+    hud(`WORK ORDER: ${goal}`, 14, y, layer);
+    y += 24;
+    const step = next === -1 ? 'DONE' : s.repairs[next].tool ? `FIX THE ${job.fix.name}` : `GET THE ${job.tool.name}`;
+    hud(step, 14 + lvl.repairs.length * 70, y + 4, layer);
+  }
   let x = 14;
   lvl.repairs.forEach((job, i) => {
     const { tool, done } = s.repairs[i];

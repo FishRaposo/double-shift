@@ -151,7 +151,7 @@ export const LEVELS = [
     rev: 2,
     repairs: [{
       tool: { tx: 16, ty: 13, layer: 'night', name: 'FUSE', kind: 'fuse' },
-      fix: { tx: 23, ty: 13, layer: 'day', name: 'FUSE BOX', kind: 'fuse', link: [[23, 12], [23, 9], [26, 9]], set: [{ layer: 'day', x0: 26, y0: 10, y1: 13, ch: '.' }, { layer: 'night', x0: 26, y0: 10, y1: 13, ch: '.' }] },
+      fix: { tx: 23, ty: 13, layer: 'day', name: 'FUSE BOX', kind: 'fuse', goal: 'OPEN THE SHUTTER', target: 'SHUTTER', link: [[23, 12], [23, 9], [26, 9]], set: [{ layer: 'day', x0: 26, y0: 10, y1: 13, ch: '.' }, { layer: 'night', x0: 26, y0: 10, y1: 13, ch: '.' }] },
     }],
     skins: [{ kind: 'shutter', tx: 26, ty: 13 }, { kind: 'deck', tx: 12, ty: 14, w: 8, layer: 'night' }],
     par: 2,
@@ -213,7 +213,7 @@ export const LEVELS = [
     rev: 2,
     repairs: [{
       tool: { tx: 4, ty: 13, layer: 'night', name: 'WRENCH', kind: 'wrench' },
-      fix: { tx: 6, ty: 13, layer: 'day', name: 'BOLT', kind: 'bolt', link: [[6, 12], [6, 11], [13, 11]], set: [{ layer: 'day', x0: 13, x1: 15, y0: 12, ch: '.' }, { layer: 'day', x0: 13, x1: 15, y0: 10, ch: '#' }] },
+      fix: { tx: 6, ty: 13, layer: 'day', name: 'BOLT', kind: 'bolt', goal: 'RAISE THE DECK', target: 'SAGGING DECK', link: [[6, 12], [6, 11], [13, 11]], set: [{ layer: 'day', x0: 13, x1: 15, y0: 12, ch: '.' }, { layer: 'day', x0: 13, x1: 15, y0: 10, ch: '#' }] },
     }],
     skins: [{ kind: 'deck', tx: 9, ty: 12, w: 4, layer: 'day' }, { kind: 'deck', tx: 13, ty: 12, w: 3, layer: 'day', sag: true }, { kind: 'deck', tx: 13, ty: 10, w: 3, layer: 'day' }],
     par: 3,
@@ -274,7 +274,7 @@ export const LEVELS = [
     rev: 2,
     repairs: [{
       tool: { tx: 7, ty: 13, layer: 'day', name: 'TAPE', kind: 'tape' },
-      fix: { tx: 18, ty: 13, layer: 'night', name: 'LOOSE CABLE', kind: 'cable', link: [[18, 12], [18, 11], [25, 11]], set: [{ layer: 'night', x0: 19, x1: 25, y0: 13, ch: '.' }] },
+      fix: { tx: 18, ty: 13, layer: 'night', name: 'LOOSE CABLE', kind: 'cable', goal: 'KILL THE LASERS', target: 'LASERS', link: [[18, 12], [18, 11], [25, 11]], set: [{ layer: 'night', x0: 19, x1: 25, y0: 13, ch: '.' }] },
     }],
     par: 2,
     day: [
@@ -330,7 +330,7 @@ export const LEVELS = [
     rev: 2,
     repairs: [{
       tool: { tx: 16, ty: 11, layer: 'day', name: 'WRENCH', kind: 'wrench' },
-      fix: { tx: 28, ty: 13, layer: 'night', name: 'BURST PIPE', kind: 'pipe', link: [[28, 12], [28, 11], [26, 11]], set: [{ layer: 'day', x0: 6, x1: 26, y0: 14, y1: 16, ch: '.' }, { layer: 'night', x0: 6, x1: 26, y0: 14, y1: 16, ch: '.' }] },
+      fix: { tx: 28, ty: 13, layer: 'night', name: 'BURST PIPE', kind: 'pipe', goal: 'DRAIN THE FLOOD', target: 'FLOOD', link: [[28, 12], [28, 11], [26, 11]], set: [{ layer: 'day', x0: 6, x1: 26, y0: 14, y1: 16, ch: '.' }, { layer: 'night', x0: 6, x1: 26, y0: 14, y1: 16, ch: '.' }] },
     }],
     par: 3,
     day: [
@@ -388,7 +388,7 @@ export const LEVELS = [
     rev: 2,
     repairs: [{
       tool: { tx: 17, ty: 13, layer: 'day', name: 'OIL CAN', kind: 'oil' },
-      fix: { tx: 28, ty: 13, layer: 'night', name: 'SQUEAKY HINGE', kind: 'hinge', link: [[28, 12], [29, 12]], set: [{ layer: 'day', x0: 29, y0: 12, y1: 13, ch: '.' }, { layer: 'night', x0: 29, y0: 12, y1: 13, ch: '.' }] },
+      fix: { tx: 28, ty: 13, layer: 'night', name: 'SQUEAKY HINGE', kind: 'hinge', goal: 'FREE THE FIRE DOOR', target: 'FIRE DOOR', link: [[28, 12], [29, 12]], set: [{ layer: 'day', x0: 29, y0: 12, y1: 13, ch: '.' }, { layer: 'night', x0: 29, y0: 12, y1: 13, ch: '.' }] },
     }],
     skins: [{ kind: 'door', tx: 29, ty: 13 }],
     par: 3,
@@ -456,7 +456,7 @@ export const LEVELS = [
     rev: 2,
     repairs: [{
       tool: { tx: 12, ty: 13, layer: 'day', name: 'BULB', kind: 'bulb' },
-      fix: { tx: 25, ty: 13, layer: 'night', name: 'DEAD LIGHT', kind: 'light', link: [[25, 11], [28, 11]], dark: { x0: 27, x1: 31, y0: 5, y1: 13 }, set: [{ layer: 'day', x0: 28, x1: 29, y0: 13, ch: '#' }] },
+      fix: { tx: 25, ty: 13, layer: 'night', name: 'DEAD LIGHT', kind: 'light', goal: 'LIGHT THE STAIRS', target: 'DARK ROOM', link: [[25, 11], [28, 11]], dark: { x0: 27, x1: 31, y0: 5, y1: 13 }, set: [{ layer: 'day', x0: 28, x1: 29, y0: 13, ch: '#' }] },
     }],
     par: 4,
     day: [
@@ -513,7 +513,7 @@ export const LEVELS = [
     rev: 2,
     repairs: [{
       tool: { tx: 2, ty: 13, layer: 'day', name: 'TAPE', kind: 'tape' },
-      fix: { tx: 22, ty: 8, layer: 'night', name: 'SNAPPED CABLE', kind: 'cable', link: [[23, 8], [26, 8]], set: [{ layer: 'day', x0: 24, x1: 29, y0: 13, ch: '.' }, { layer: 'day', x0: 24, x1: 29, y0: 9, ch: '#' }] },
+      fix: { tx: 22, ty: 8, layer: 'night', name: 'SNAPPED CABLE', kind: 'cable', goal: 'RAISE THE HOIST', target: 'HOIST', link: [[23, 8], [26, 8]], set: [{ layer: 'day', x0: 24, x1: 29, y0: 13, ch: '.' }, { layer: 'day', x0: 24, x1: 29, y0: 9, ch: '#' }] },
     }],
     skins: [{ kind: 'deck', tx: 24, ty: 13, w: 6, layer: 'day', sag: true }, { kind: 'deck', tx: 24, ty: 9, w: 6, layer: 'day' }],
     par: 2,
@@ -577,7 +577,7 @@ export const LEVELS = [
     rev: 2,
     repairs: [{
       tool: { tx: 18, ty: 13, layer: 'day', name: 'OIL CAN', kind: 'oil' },
-      fix: { tx: 26, ty: 10, layer: 'night', name: 'LOOSE HINGE', kind: 'hinge', link: [[27, 10], [28, 10]], set: [{ layer: 'night', x0: 28, x1: 29, y0: 10, ch: '#' }] },
+      fix: { tx: 26, ty: 10, layer: 'night', name: 'LOOSE HINGE', kind: 'hinge', goal: 'HANG A DOOR AS A BRIDGE', target: 'BRIDGE GOES HERE', link: [[27, 10], [28, 10]], set: [{ layer: 'night', x0: 28, x1: 29, y0: 10, ch: '#' }] },
     }],
     par: 5,
     // Three doors (cols 4, 15, 24; 4 tall) cut the floor into rooms, and the exit ledge is 6 up. Night entry n
@@ -652,7 +652,7 @@ export const LEVELS = [
     rev: 2,
     repairs: [{
       tool: { tx: 10, ty: 13, layer: 'day', name: 'WRENCH', kind: 'wrench' },
-      fix: { tx: 22, ty: 13, layer: 'night', name: 'LEAKING PIPE', kind: 'pipe', link: [[22, 13], [27, 13]], set: [{ layer: 'day', x0: 27, x1: 27, y0: 0, y1: 13, ch: '.' }, { layer: 'night', x0: 27, x1: 27, y0: 13, y1: 13, ch: '.' }, { layer: 'night', x0: 5, x1: 31, y0: 14, y1: 14, ch: '#' }] },
+      fix: { tx: 22, ty: 13, layer: 'night', name: 'LEAKING PIPE', kind: 'pipe', goal: 'STOP THE LEAK', target: 'LEAK', link: [[22, 13], [27, 13]], set: [{ layer: 'day', x0: 27, x1: 27, y0: 0, y1: 13, ch: '.' }, { layer: 'night', x0: 27, x1: 27, y0: 13, y1: 13, ch: '.' }, { layer: 'night', x0: 5, x1: 31, y0: 14, y1: 14, ch: '#' }] },
     }],
     par: 4,
     props: [
@@ -717,7 +717,7 @@ export const LEVELS = [
     rev: 2,
     repairs: [{
       tool: { tx: 17, ty: 10, layer: 'day', name: 'WRENCH', kind: 'wrench' },
-      fix: { tx: 23, ty: 6, layer: 'night', name: 'JACK', kind: 'bolt', link: [[23, 5], [25, 5]], set: [{ layer: 'day', x0: 25, x1: 25, y0: 5, y1: 6, ch: '.' }, { layer: 'night', x0: 25, x1: 25, y0: 5, y1: 6, ch: '.' }] },
+      fix: { tx: 23, ty: 6, layer: 'night', name: 'JACK', kind: 'bolt', goal: 'JACK UP THE POST', target: 'SAGGING POST', link: [[23, 5], [25, 5]], set: [{ layer: 'day', x0: 25, x1: 25, y0: 5, y1: 6, ch: '.' }, { layer: 'night', x0: 25, x1: 25, y0: 5, y1: 6, ch: '.' }] },
     }],
     par: 3,
     // One pillar, 4 tall: by day it stays at P0 (col 6) and blocks the floor; by night each entry moves it, to
@@ -788,7 +788,7 @@ export const LEVELS = [
     rev: 2,
     repairs: [{
       tool: { tx: 11, ty: 13, layer: 'night', name: 'FUSE', kind: 'fuse' },
-      fix: { tx: 25, ty: 13, layer: 'day', name: 'FUSE BOX', kind: 'fuse', link: [[25, 12], [25, 9], [28, 9]], set: [{ layer: 'day', x0: 28, x1: 28, y0: 10, y1: 13, ch: '.' }, { layer: 'night', x0: 28, x1: 28, y0: 10, y1: 13, ch: '.' }] },
+      fix: { tx: 25, ty: 13, layer: 'day', name: 'FUSE BOX', kind: 'fuse', goal: 'OPEN THE SHUTTER', target: 'SHUTTER', link: [[25, 12], [25, 9], [28, 9]], set: [{ layer: 'day', x0: 28, x1: 28, y0: 10, y1: 13, ch: '.' }, { layer: 'night', x0: 28, x1: 28, y0: 10, y1: 13, ch: '.' }] },
     }],
     skins: [{ kind: 'shutter', tx: 28, ty: 13 }],
     par: 2,
@@ -859,7 +859,7 @@ export const LEVELS = [
     rev: 2,
     repairs: [{
       tool: { tx: 16, ty: 13, layer: 'night', name: 'TAPE', kind: 'tape' },
-      fix: { tx: 22, ty: 13, layer: 'day', name: 'LOOSE CABLE', kind: 'cable', link: [[22, 12], [22, 9], [30, 9]], set: [{ layer: 'day', x0: 30, x1: 30, y0: 10, y1: 13, ch: '.' }, { layer: 'night', x0: 30, x1: 30, y0: 10, y1: 13, ch: '.' }] },
+      fix: { tx: 22, ty: 13, layer: 'day', name: 'LOOSE CABLE', kind: 'cable', goal: 'OPEN THE SHUTTER', target: 'SHUTTER', link: [[22, 12], [22, 9], [30, 9]], set: [{ layer: 'day', x0: 30, x1: 30, y0: 10, y1: 13, ch: '.' }, { layer: 'night', x0: 30, x1: 30, y0: 10, y1: 13, ch: '.' }] },
     }],
     skins: [{ kind: 'shutter', tx: 30, ty: 13 }],
     par: 5,
@@ -957,7 +957,7 @@ export const LEVELS = [
     // bracket; undo it and the picture drops flat. A squatter sits at its foot, so come down on the day shift.
     repairs: [{
       tool: { tx: 15, ty: 9, layer: 'day', name: 'WRENCH', kind: 'wrench' },
-      fix: { tx: 20, ty: 7, layer: 'night', name: 'WIRE BRACKET', kind: 'bolt', link: [[20, 6], [22, 6], [22, 9]], set: [{ layer: 'day', x0: 21, x1: 24, y0: 10, y1: 12, ch: '.' }, { layer: 'night', x0: 21, x1: 24, y0: 10, y1: 12, ch: '.' }] },
+      fix: { tx: 20, ty: 7, layer: 'night', name: 'WIRE BRACKET', kind: 'bolt', goal: 'DROP THE PORTRAIT', target: 'PORTRAIT', link: [[20, 6], [22, 6], [22, 9]], set: [{ layer: 'day', x0: 21, x1: 24, y0: 10, y1: 12, ch: '.' }, { layer: 'night', x0: 21, x1: 24, y0: 10, y1: 12, ch: '.' }] },
     }],
     skins: [{ kind: 'portrait', tx: 21, ty: 10, w: 4, h: 4 }],
     freaks: [{ kind: 'squatter', tx: 20, ty: 13 }],
@@ -1011,7 +1011,12 @@ export const LEVELS = [
     name: 'Broad Daylight',
     act: 4,
     note: 'One of them clocked in for the day shift.',
-    repair: { tool: { tx: 6, ty: 13, layer: 'day', name: 'OIL CAN', kind: 'oil' }, fix: { tx: 19, ty: 13, layer: 'night', name: 'SQUEAKY HINGE', kind: 'hinge' } },
+    rev: 2,
+    repairs: [{
+      tool: { tx: 9, ty: 13, layer: 'night', name: 'FUSE', kind: 'fuse' },
+      fix: { tx: 13, ty: 13, layer: 'day', name: 'FUSE BOX', kind: 'fuse', goal: 'OPEN THE SHUTTER', target: 'SHUTTER', link: [[13, 12], [13, 11], [29, 11]], set: [{ layer: 'day', x0: 29, x1: 29, y0: 10, y1: 13, ch: '.' }, { layer: 'night', x0: 29, x1: 29, y0: 10, y1: 13, ch: '.' }] },
+    }],
+    skins: [{ kind: 'shutter', tx: 29, ty: 13 }],
     par: 5,
     props: [
       { kind: 'memo', tx: 17, ty: 11, text: "Day crew: if you see eyes, no you didn't." },
@@ -1027,40 +1032,40 @@ export const LEVELS = [
     // tunnel the other way round: day pillars at 19 and 27 force night in and out, the lurker
     // inside forces a day freeze. Checkpoint between the two.
     day: [
-      '.......#########...#########....',
-      '.......#########...#########....',
-      '.......#########...#########....',
-      '.......#########...#########....',
-      '.......#########...#########....',
-      '.......#########...#########....',
-      '.......#########...#########....',
-      '.......#########...#########....',
-      '.......#########...#########....',
-      '.......#########...#########....',
-      '.......#########...#########....',
-      '.......#########...#########....',
-      '.......#########...#########....',
-      '..S..............C.#.......#..E.',
+      '.......#########...#########.#..',
+      '.......#########...#########.#..',
+      '.......#########...#########.#..',
+      '.......#########...#########.#..',
+      '.......#########...#########.#..',
+      '.......#########...#########.#..',
+      '.......#########...#########.#..',
+      '.......#########...#########.#..',
+      '.......#########...#########.#..',
+      '.......#########...#########.#..',
+      '.......#########...#########.#..',
+      '.......#########...#########.#..',
+      '.......#########...#########.#..',
+      '..S..............C.#.......#.#E.',
       '################################',
       '################################',
       '################################',
       '################################',
     ],
     night: [
-      '......#.........#..#########....',
-      '......#.........#..#########....',
-      '......#.........#..#########....',
-      '......#.........#..#########....',
-      '......#.........#..#########....',
-      '......#.........#..#########....',
-      '......#.........#..#########....',
-      '......#.........#..#########....',
-      '......#.........#..#########....',
-      '......#.........#..#########....',
-      '......#.........#..#########....',
-      '......#.........#..#########....',
-      '......#.........#..#########....',
-      '......#.........#...............',
+      '......#.........#..#########.#..',
+      '......#.........#..#########.#..',
+      '......#.........#..#########.#..',
+      '......#.........#..#########.#..',
+      '......#.........#..#########.#..',
+      '......#.........#..#########.#..',
+      '......#.........#..#########.#..',
+      '......#.........#..#########.#..',
+      '......#.........#..#########.#..',
+      '......#.........#..#########.#..',
+      '......#.........#..#########.#..',
+      '......#.........#..#########.#..',
+      '......#.........#..#########.#..',
+      '......#.........#............#..',
       '################################',
       '################################',
       '################################',
@@ -1076,7 +1081,12 @@ export const LEVELS = [
     name: 'Floor 3.5',
     act: 4,
     note: "There is no Floor 3 anymore. It's now Floor 3.5.",
-    repair: { tool: { tx: 7, ty: 13, layer: 'day', name: 'TAPE', kind: 'tape' }, fix: { tx: 11, ty: 4, layer: 'night', name: 'LOOSE CABLE', kind: 'cable' } },
+    rev: 2,
+    repairs: [{
+      tool: { tx: 7, ty: 13, layer: 'day', name: 'FUSE', kind: 'fuse' },
+      fix: { tx: 11, ty: 4, layer: 'night', name: 'LIFT PANEL', kind: 'fuse', goal: 'CALL THE LIFT', target: 'LIFT SHAFT', link: [[12, 4], [17, 4], [17, 3]], set: [{ layer: 'day', x0: 14, x1: 20, y0: 2, y1: 2, ch: '#' }] },
+    }],
+    skins: [{ kind: 'deck', tx: 14, ty: 2, w: 7, layer: 'day' }],
     par: 4,
     // The night grid is generated: the day building moved 3 tiles up. Each hop is the same
     // move — jump, and at the apex shift, stepping onto the floor's other-shift copy. The
@@ -1093,8 +1103,8 @@ export const LEVELS = [
     day: [
       '................................',
       '......................E.........',
-      '...........##############.......',
-      '...........##############.......',
+      '...........###.......####.......',
+      '...........###.......####.......',
       '................................',
       '................................',
       '................................',
@@ -1116,7 +1126,14 @@ export const LEVELS = [
     name: 'Night Audit',
     act: 4,
     note: 'Management is doing a walkthrough tonight. So are they.',
-    repair: { tool: { tx: 8, ty: 13, layer: 'day', name: 'FUSE', kind: 'fuse' }, fix: { tx: 25, ty: 13, layer: 'night', name: 'FUSE BOX', kind: 'fuse' } },
+    rev: 2,
+    repairs: [{
+      tool: { tx: 5, ty: 13, layer: 'night', name: 'TAPE', kind: 'tape' },
+      fix: { tx: 8, ty: 13, layer: 'day', name: 'LOOSE CABLE', kind: 'cable', goal: 'OPEN THE GATE', target: 'GATE', link: [[9, 13], [12, 13]], set: [{ layer: 'night', x0: 12, x1: 12, y0: 13, y1: 13, ch: '.' }] },
+    }, {
+      tool: { tx: 15, ty: 13, layer: 'night', name: 'FUSE', kind: 'fuse' },
+      fix: { tx: 24, ty: 13, layer: 'day', name: 'FUSE BOX', kind: 'fuse', goal: 'OPEN THE SHUTTER', target: 'SHUTTER', link: [[24, 12], [24, 8], [28, 8], [28, 12]], set: [{ layer: 'day', x0: 28, x1: 28, y0: 13, y1: 13, ch: '.' }, { layer: 'night', x0: 28, x1: 28, y0: 13, y1: 13, ch: '.' }] },
+    }],
     par: 5,
     // Acts 1-4 on one screen, no new rules, a checkpoint after each beat. Every beat is a 1-tile tunnel under
     // a 4-thick roof (its top 5 up, out of reach), so no beat can be jumped or walked over.
@@ -1129,6 +1146,7 @@ export const LEVELS = [
     //   it works nights, but it answers to the clipboard too, so clock out or wait until it slacks. Their tell
     //   shows from the spawn, just before the roof.
     pranks: [{ id: 'plank', onNight: 3, tell: { tx: 23, ty: 11, text: 'HEXED. NO TUCH' }, set: [{ layer: 'night', x0: 25, x1: 26, y0: 14, ch: '#' }] }],
+    skins: [{ kind: 'shutter', tx: 12, ty: 13, h: 1, layer: 'night' }, { kind: 'shutter', tx: 28, ty: 13, h: 1 }],
     freaks: [
       { kind: 'supervisor', tx: 15, ty: 8, period: 1.6, startFacing: 'right' },
       { kind: 'lurker', tx: 13, ty: 13, range: 1, speed: 40 },
@@ -1157,7 +1175,7 @@ export const LEVELS = [
       '...########.#######.....#######.',
       '...########.#######.....#######.',
       '...########.#######.....#######.',
-      '.S.#^^....C.#######C...C.......E',
+      '.S.#^^....C.#######C...C....#..E',
       '#########################..#####',
       '#########################..#####',
       '#########################..#####',
@@ -1177,7 +1195,7 @@ export const LEVELS = [
       '....#######.#######.....#######.',
       '....#######.#######.....#######.',
       '....#######.#######.....#######.',
-      '.........^......................',
+      '.........^..#...............#...',
       '####~~~~~~###############..#####',
       '#########################..#####',
       '#########################..#####',

@@ -198,7 +198,7 @@ export const SOLUTIONS = {
     }
     // past the day-walker (its reach ends at x 22.83), stop before the pit (24.4): out and back in (entry 3:
     // the plank), then on. The stop starts early enough to absorb a slow reaction.
-    if (x > 22.9 && x < 24.4 && !m.plank) {
+    if (x > 23.3 && x < 24.4 && !m.plank) {
       right = false;
       if (Math.abs(p.vx) < 1) {
         m.ticks = (m.ticks ?? 0) + 1;
