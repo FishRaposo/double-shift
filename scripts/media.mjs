@@ -181,7 +181,7 @@ async function fullRun() {
   await open('');
   await shot('01-title.png');
 
-  // level 1 with real keys: run right, night across the gap, day before the gate, exit
+  // level 1 with real keys: run right, night across the gap, day for the bolt, up the deck, night past the gate, exit
   await press('Space');
   await sleep(500);
   await shot('10-act-card.png'); // the act 1 title card
@@ -196,7 +196,17 @@ async function fullRun() {
   await press('KeyK');
   await until(async () => (await tileX()) > 9);
   await shot('03-clock-in-night.png');
-  await until(async () => (await tileX()) > 20.5);
+  await until(async () => (await tileX()) > 19.2);
+  await press('KeyK');
+  const hop = async (at) => {
+    await until(async () => (await tileX()) > at);
+    await key('keyDown', 'Space');
+    await sleep(320);
+    await key('keyUp', 'Space');
+  };
+  await hop(20.7); // up onto the deck the bolt raised
+  await hop(23);
+  await until(async () => (await tileX()) > 26);
   await press('KeyK');
   await until(async () => (await evaluate('__doubleShift.screen')) === 'card');
   await key('keyUp', 'ArrowRight');
@@ -300,7 +310,7 @@ async function fullRun() {
   await tap(0);
   await sleep(1800); // the act card
   await tap(1);
-  const padState = await evaluate('({ screen: __doubleShift.screen, layer: __doubleShift.state?.layer })');
+  const padState = await evaluate('({ screen: __doubleShift.screen, layer: __doubleShift.state?.layer, index: __doubleShift.index, x: __doubleShift.state?.player.x, shifts: __doubleShift.state?.shifts, time: __doubleShift.state?.time })');
   flow('gamepad: A clocks in from the title, B shifts', padState.screen === 'play' && padState.layer === 1, padState);
 
   // an abandoned attempt doesn't count: clocking in from the title starts the run totals over
@@ -353,9 +363,9 @@ async function fullRun() {
   // the tools and tests aren't in the itch build, so --root stops here
   if (serveRoot) return;
 
-  // the itch page's first shots: a prank as it lands (Inventory's plank moves on the 2nd night clock-in) and the
+  // the itch page's first shots: a prank as it lands (Lost & Found's doors swap on the 1st night clock-in) and the
   // flip (Mind Your Head's first clock-in turns the night over)
-  await moment('inventory', 'prank', 0.14, '19-prank-inventory.png');
+  await moment('doors', 'prank', 0.14, '19-prank-lost-found.png');
   await moment('upside', 'shift', 0.11, '20-flip-mind-your-head.png');
   await moment('midair', 'repaired', 0.2, '21-repair-mid-air.png');
 

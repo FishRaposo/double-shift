@@ -885,6 +885,8 @@ function jobWords(lvl, s) {
   if (done && many) step = `${job.tool.name} IN THE ${job.spots[at].name}`;
   else if (done) step = job.undoes ? 'TOUCH IT TO SWAP' : job.fix.car ? 'CLOCK IN TO MOVE IT' : 'DONE';
   else if (tool) step = many ? `FIT THE ${job.tool.name}` : `FIX THE ${job.fix.name}`;
+  const { when } = job.fix;
+  if (tool && !done && when && tileAt(lvl, when.layer === 'night' ? NIGHT : DAY, when.tx, when.ty, s.overrides) !== when.ch) step = `WAIT FOR THE ${job.fix.target}`;
   const goal = job.fix.goal ?? `FIX THE ${job.fix.name}`;
   return { goal: `WORK ORDER: ${goal}`, step };
 }

@@ -242,11 +242,10 @@ export const SOLUTIONS = {
   },
   ceiling: (s) => {
     const x = tx(s);
-    const plan = [[2, 4, NIGHT], [13.9, 14.9, DAY], [20, 21, NIGHT], [31, 32, DAY]];
+    const plan = [[2, 4, NIGHT], [13.9, 14.9, DAY], [20.8, 21.6, NIGHT], [31, 32, DAY]];
     const due = plan.find(([a, b]) => x >= a && x <= b);
     return { right: true, shift: !!due && s.layer !== due[2] };
   },
-  // under the walkway, clock in and fall up onto it; past the pit, clock out and drop to the floor
   upside: (s) => {
     const x = tx(s);
     return { right: x < 30, left: x > 30.6, shift: (x > 7 && x < 28.4 && want(s, NIGHT)) || (x >= 28.4 && want(s, DAY)) };

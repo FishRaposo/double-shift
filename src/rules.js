@@ -474,8 +474,9 @@ function nextFiring(pr, entries) {
 export function pendingPranks(level, s) {
   const seen = new Set();
   const told = new Set();
+  const stopped = securedPranks(level, s);
   return level.pranks
-    .filter((pr) => !securedPranks(level, s).has(pr.id))
+    .filter((pr) => !stopped.has(pr.id))
     .map((pr) => ({ pr, next: nextFiring(pr, s.nightEntries) }))
     .filter(({ next }) => next !== null)
     .sort((a, b) => a.next - b.next)

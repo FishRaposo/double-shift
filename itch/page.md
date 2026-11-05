@@ -41,7 +41,7 @@ npm run gif -- doors      # media/demo-doors.gif (480×270): Lost & Found's scri
 | Slot | File |
 |---|---|
 | Cover image | `media/cover.png` |
-| Screenshots (in this order) | `demo-doors.gif` (provisional; Fish picks. The GIF goes first: itch plays a GIF screenshot in place), `19-prank-inventory.png` (a prank as it lands), `20-flip-mind-your-head.png` (the flip), `21-repair-mid-air.png` (a repair changing the room), `15-clock-out-night.png`, `07-night-watch-night.png`, `08-night-watch-day.png` (the freaks frozen by day), `03-clock-in-night.png`, `04-timecard.png`, `09-level-select.png`, `01-title.png` |
+| Screenshots (in this order) | `demo-doors.gif` (provisional; Fish picks. The GIF goes first: itch plays a GIF screenshot in place), `19-prank-lost-found.png` (a prank as it lands), `20-flip-mind-your-head.png` (the flip), `21-repair-mid-air.png` (a repair changing the room), `15-clock-out-night.png`, `07-night-watch-night.png`, `08-night-watch-day.png` (the freaks frozen by day), `03-clock-in-night.png`, `04-timecard.png`, `09-level-select.png`, `01-title.png` |
 | Gameplay video or trailer | Leave empty: the field takes a YouTube or Vimeo link, and the GIF already leads the screenshots. Other GIF candidates: `npm run gif -- upside` (the flip), `inventory` (the plank prank), `watch` (frozen freaks); ART.md §8. |
 
 ## 4. Description (paste into the editor; Fish edits the words)
