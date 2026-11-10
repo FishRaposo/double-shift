@@ -217,15 +217,18 @@ async function fullRun() {
   // a full jump by the game's clock, not the wall's: hold until the worker has left the ground and stopped rising
   const rising = () => evaluate('(() => { const p = __doubleShift.state.player; return p.grounded || p.vy < 0; })()');
   const hop = async (at) => {
-    // on the ground and past the mark: a press while still in the air from the last jump would be lost
-    await until(async () => (await tileX()) > at && (await evaluate('__doubleShift.state.player.grounded')));
+    // each jump from a standstill past its mark, so a late frame can't carry the worker under the ledge first
+    await until(async () => (await tileX()) > at);
+    await key('keyUp', 'ArrowRight');
+    await until(async () => evaluate('(() => { const p = __doubleShift.state.player; return p.grounded && p.vx === 0; })()'));
+    await key('keyDown', 'ArrowRight');
     await key('keyDown', 'Space');
     await until(async () => !(await evaluate('__doubleShift.state.player.grounded')), 5000);
     await until(async () => !(await rising()), 5000);
     await key('keyUp', 'Space');
   };
-  await hop(20.4); // up onto the deck the bolt raised
-  await hop(22.6); // and from the deck to the top floor
+  await hop(20.2); // up onto the deck the bolt raised
+  await hop(22.4); // and from the deck to the top floor
   await until(async () => (await tileX()) > 26);
   await key('keyUp', 'ArrowRight'); // the same before the day crew's gate
   await until(async () => (await evaluate('__doubleShift.state.player.vx')) === 0);
