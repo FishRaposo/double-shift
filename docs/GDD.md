@@ -1,7 +1,7 @@
 # DOUBLE SHIFT
 ## Game Design Document
 
-**Version:** 0.6.0  
+**Version:** 0.8.0  
 **Status:** Feature-complete  
 **Project:** Game Off 2026  
 **Theme:** SHIFT  
@@ -42,6 +42,20 @@ This GDD decides *what* the game is. The production docs in this folder decide *
 ---
 
 # 0. Changes
+
+## v0.8
+
+| Change | Why |
+|---|---|
+| **The repair is the level's puzzle, not its lock:** six types of repair, and a puzzle role for every freak (§4.10, §4.11) | Fish, 2026-11-05: the repairs felt tacked on. About 20 of 26 jobs only removed a barrier, and the freaks sat beside the job |
+| **Fiction apart, mechanics together:** the worker and the freaks still don't care about each other, but they share one building, so a bolt can stop a theft and a light can clear a room | Fish, 2026-11-05 |
+
+## v0.7
+
+| Change | Why |
+|---|---|
+| **Work orders:** every level is designed around a repair that changes the map (§4.11) | Fish, 2026-11-05: the platforming gets a real objective, and the worker has a job |
+| **Readability first:** the art shows the idea, and labels name it | Fish: everything clearly labelled, work orders included |
 
 ## v0.6
 
@@ -528,6 +542,7 @@ The freaks act **when the player shifts, not over time**: in the moment of trans
 - Each level may define pranks. A prank fires on the **Nth successful entry into the night shift** and overrides tiles in either layer (remove a plank, add a crate, move a gate).
 - The destination of a shift is validated against the geometry *as it will be after the prank*. If the prank would bury the player, the shift is buffered/rejected per S-08 and the prank waits.
 - Pranks are permanent for the run (a repeating prank fires again every n night entries, so a moved object comes back round), except that **death restores the prank state of the active checkpoint** (§9.3).
+- **Work orders share the building:** every level is built around a repair (§4.11). The freaks don't care about the worker's job, but what's bolted down can't be stolen, and what's lit can't be crept around in.
 - **Tells:** before a prank fires, its target is marked: big glowing eyes at night, a sticky note (MINE) by day, with a countdown under it (NEXT NIGHT, IN 2 NIGHTS) and the tiles it will change outlined. When it fires, the player hears a giggle.
 - Consequence: shift count is a resource. Players plan *when* to clock in and how many times, because each entry changes the night.
 
@@ -548,6 +563,27 @@ Touching an active freak on its own shift (night for most, day for the day-walke
 
 
 ---
+
+## 4.11 Work Orders
+
+**The repair is the level's puzzle, not its lock.** It comes early or midway, and the rest of the level is played in the changed building. If deleting the repair would only make the level shorter, the level fails.
+
+- **The loop:** touch the tool on its shift, touch the broken thing on its shift. No extra button. The level can't be won without it.
+- **Fiction apart, mechanics together.** The worker does the job and the freaks do their own thing; neither cares about the other, and none of it touches the disco. But it's one building: a bolt stops a theft and a light clears a room.
+
+| Type | What it does | The question it asks |
+|---|---|---|
+| **Build** | Adds floor you then platform on | How do I use this new floor? |
+| **Power** | One fuse, several boxes: pull it from one and fit it in another. A box in a wall can be reached from both sides, so the fuse goes through with you | What do I need on, and when? |
+| **Water** | One valve: it drains one place and floods another, and touching it again swaps back | Which route do I need first? |
+| **Machine** | A hoist or trolley that moves one stop per night clock-in, back and forth, carrying whoever stands on it | How many shifts do I spend? |
+| **Light** | The freaks in a lit room scatter | Which room do I clear? |
+| **Secure** | A clamp stops a prank for good, leaving the map as it is at that moment | Do I stop it now, or let it move first? |
+
+**The freaks' puzzle roles:** pranks are the level's timer; a lurker is a clock you stop, with the job on its beat; a peeker's rhythm sits in the jumps; a squatter holds a spot until something clears it; a supervisor splits the room in two; a day-walker with a lurker leaves neither shift safe.
+
+- **Readable:** the broken thing, what it drives and the cable or pipe between them can be seen, and the job in hand is written on the HUD and tagged in the level.
+- A checkpoint saves the job's progress with everything else (§9.3).
 
 # 5. Platforming System
 

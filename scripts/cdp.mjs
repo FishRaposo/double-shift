@@ -107,6 +107,9 @@ export async function startBrowser({ serveRoot = null, profilePrefix = 'ds-cdp-'
     browser = spawn(browserPath, [
       '--headless=new', '--remote-debugging-port=0', `--user-data-dir=${profile}`,
       '--no-first-run', '--autoplay-policy=no-user-gesture-required',
+      // never let the browser decide the page is in the background and stop its frames: the real-key checks run on them
+      '--disable-background-timer-throttling', '--disable-renderer-backgrounding', '--disable-backgrounding-occluded-windows',
+      '--disable-features=CalculateNativeWinOcclusion',
       ...(process.getuid?.() === 0 ? ['--no-sandbox'] : []), // Chromium refuses to sandbox as root (containers)
       'about:blank',
     ], { stdio: 'ignore' });

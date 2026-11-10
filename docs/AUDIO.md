@@ -3,7 +3,7 @@
 Companion to [GDD.md](GDD.md) §11. All audio is synthesized with WebAudio in `src/audio.js`. No audio files, no licensed music.
 
 **At a glance**
-- 26 sound effects are built (§2); the 16-bar theme ships in two synced arrangements that crossfade on every shift (§3).
+- 30 sound effects are built (§2); the 16-bar theme ships in two synced arrangements that crossfade on every shift (§3).
 - Every SFX is ≤ 0.25 s. The shift sound's pitch says where you went: down = night, up = day.
 - Funny, not scary: yelps, giggles, a rubber stamp. `M` mutes.
 
@@ -35,7 +35,7 @@ The original 11, re-voiced 2026-11-02 with filters and a little noise so they si
 | Win | Arpeggio | triangle 523, 659, 784, 1047 Hz, 0.12 s each, 80 ms apart, vol 0.22 |
 | Timecard stamp | Thunk | square 90 → 50 Hz, 0.09 s, vol 0.24, plus noise (450 ms after win) |
 
-The 15 added since (same `SOUNDS` map, main voice only). The level-mechanic sounds were pre-built before their levels shipped:
+The 17 added since (same `SOUNDS` map, main voice only). The level-mechanic sounds were pre-built before their levels shipped:
 
 | Event | Sound | Values |
 |---|---|---|
@@ -114,6 +114,10 @@ Same `voice()` format as §2; every sound ≤ 0.25 s.
 | Day-walker giggle (by day) | `daywalker` | Giggle, pitched up | 4 triangle blips 1100/1300 → 900 Hz, 0.05 s each, 60 ms apart, vol 0.11 |
 | Act-card sting | act cards | Two-chord sting | triangle 392 + 494 Hz, then 523 + 659 Hz, 0.12 s each |
 | Gravity flip (`flip`, every shift in an Upside Down level, under the shift sound) | act 5 | A falling whoomp | sine 300 → 120 Hz, 0.12 s, vol 0.12 |
+| Tool picked up (`toolPickup`) | every level | Two rising notes |
+| Repair done (`repaired`) | every level | A clunk, then two bright notes |
+| Fuse pulled, valve swapped back (`pulled`) | Power, Water | A short falling clunk |
+| Machine stop (`machine`) | Machine | A low grind |
 
 ## 5. Mixing checklist
 

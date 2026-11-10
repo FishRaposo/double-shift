@@ -1,14 +1,14 @@
 # Production Plan
 
-Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-05**.
+Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-10**.
 
 **At a glance**
-- **Next for Fish:** play the full run (all 21 levels), including the Upside Down feel check, the Sticky Keys test and tuning (M0), then playtest round 1 by Nov 8. Repo + CI are done.
-- **The build:** all seven milestone PRs and the cohesion pass (Nov 5) are in ([BUILD.md](BUILD.md) records them). The plan's code is finished; what's left is playing it, tuning, playtests and the itch page.
-- **The game:** 21 levels, five acts of four plus the finale, all built ([CONTENT.md](CONTENT.md), LEVELS.md §5.0).
-- **Level audit (Nov 5, all 21):** every level beatable at par, fair timing (≥ 200/100 ms), no respawn loops, and a random search in both directions finds no win below par; `npm run audit` keeps it that way.
-- **Open P0 items:** tuning (Fish's feel check), the playtest rounds, the itch page (§4). Level select, music, freak art and the media kit are built.
-- **Content freeze:** Nov 22 (§2). Nothing is left to cut: every mechanic shipped.
+- **Next for Fish:** play the rework (all 21 levels) on the `repairs-prototype` branch, with the Upside Down feel check and the Sticky Keys test, and say whether it merges. Then one cold playtest before Nov 22, the copy in WRITING.md, and the itch page (itch/page.md §0 is the list).
+- **The build:** the seven milestone PRs and the cohesion pass are on `main` (the public build). The **rework** (Nov 5–10: six kinds of repair, every level rebuilt so the repair is the puzzle, GDD §4.11) is on `repairs-prototype`, waiting for Fish's play. Nothing merges before that.
+- **The game:** 21 levels, five acts of four plus the finale ([CONTENT.md](CONTENT.md), LEVELS.md §4).
+- **Level audit (Nov 10, all 21):** every level beatable at par, fair timing (≥ 200/100 ms), no respawn loops, every job needed, and a random search in both directions finds no win below par; `npm run audit` keeps it that way. Nobody but the scripts has played the rework yet.
+- **Open P0 items:** Fish's play and tuning, the playtest rounds, the itch page (§4).
+- **Content freeze:** Nov 22 (§2).
 
 ## 1. Where we are
 
@@ -19,11 +19,11 @@ Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-05**.
 | Freaks: lurker, peeker, squatter, supervisor (frozen by day), day-walker (frozen by night) | Built, tested |
 | Levels | **<!-- n:levels -->21<!-- /n --> built** (act 1: 4, act 2: 4, act 3: 4, act 4: 4, act 5: 4, finale: 1), all proven solvable at par and fair. LEVEls built (Nov 3); act 5's other three levels and the finale rework planned (CONTENT.md) |
 | Rendering | **Pixel art** (Nov 2): sprites, animated worker and freaks, pixel tiles and props, pixel font, effects; every asset in `/tools/gallery.html` |
-| Audio | Mix bus, 26 SFX (`lurkerStep` left unwired, AUDIO.md §4.1), **music** (day/night arrangements crossfading on every shift; each act adds a layer) |
+| Audio | Mix bus, 30 SFX (`lurkerStep` left unwired, AUDIO.md §4.1), **music** (day/night arrangements crossfading on every shift; each act adds a layer) |
 | Menus | Title, level select + saved bests, settings (volumes, reduced effects, speedrun timer, controls), act cards, pause, timecard with comment, end screen with totals and the run time |
 | Input | Keyboard (move, jump and shift rebindable) and gamepad (fixed standard mapping) |
-| Release kit | Cover, 19 screenshots and the demo GIF tool (`npm run media`, `npm run gif`); the zipped build passes the browser smoke test |
-| Tests | <!-- n:tests -->411<!-- /n --> passing (`npm test`), including fairness; `npm run audit` clean |
+| Release kit | Cover, 20 screenshots and the demo GIF tool (`npm run media`, `npm run gif`); the zipped build passes the browser smoke test |
+| Tests | <!-- n:tests -->540<!-- /n --> passing (`npm test`), including fairness; `npm run audit` clean |
 | Repo / CI / itch | Public repo [FishRaposo/double-shift](https://github.com/FishRaposo/double-shift), CI green, playable on [GitHub Pages](https://fishraposo.github.io/double-shift/). **No itch page** |
 
 ## 2. Milestones
@@ -34,7 +34,7 @@ The whole game is listed in [CONTENT.md](CONTENT.md): **21 levels, five acts of 
 |---|---|---|
 | **Nov 3** | ~~Build complete~~ | ~~All 21 levels, Upside Down, the finale rework, copy, stretch features, release kit~~ (done, PR #1) |
 | **Nov 5** | ~~Cohesion pass~~ | ~~Every known issue fixed, the route search runs both ways, act 5 rehearses the finale, docs synced~~ (done) |
-| **Nov 8** | **M0 + M1: Feel check and core locked** | Fish has played all 21 levels on Windows. Sticky Keys result recorded. Shift, freeze, prank and the flip feel good. One cold playtest. `PARAMS` frozen except small tweaks. |
+| ~~Nov 8~~ **by Nov 15** | **M0 + M1: Feel check and core locked** (slipped: the rework came first) | Fish has played all 21 levels on Windows. Sticky Keys result recorded. Shift, freeze, prank and the flip feel good. One cold playtest. `PARAMS` frozen except small tweaks. |
 | **Nov 22** | **M3: Content freeze** | Copy and art final, second playtest round done. **No new levels, copy or art after this date.** |
 | **Nov 26** | **M4: Release candidate** | Bug-free on Chrome/Firefox/Edge. itch draft with fresh cover, screenshots, GIF. |
 | **Nov 30** | **M5: Submitted** | itch page public, submitted to the jam, repo linked, played from the itch page itself. |
@@ -44,7 +44,7 @@ The whole game is listed in [CONTENT.md](CONTENT.md): **21 levels, five acts of 
 
 ## 3. Weekly plan
 
-### Now to Nov 8: feel
+### Now to Nov 15: feel
 - Fish plays everything on Windows; record the Sticky Keys result in GDD §3.2.
 - Tuning pass on `PARAMS` (TECH.md §4), then re-prove pars and fairness (`npm test`, `npm run audit`).
 - First cold playtest, with the 5-second test (PLAYTEST.md).

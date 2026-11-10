@@ -4,7 +4,7 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as of 2026-11-05 (after t
 
 **At a glance**
 - **The one rule:** `src/rules.js` decides everything that matters; the screen only draws it (§2).
-- `npm start` to play, `npm test` (<!-- n:tests -->411<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
+- `npm start` to play, `npm test` (<!-- n:tests -->540<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
 - Add a level: grids in `src/levels.js` + a `SOLUTIONS` entry in `test/solutions.mjs` (§6; the full recipe is BUILD.md §2.1).
 - The five added mechanics (wet floor, day-walker, supervisor, offset layer, Upside Down) are built — §6.5 documents them.
 
@@ -157,6 +157,21 @@ One object moved by every night entry (the pillar, the portrait, Ceiling Walker'
 3. Tests first: behavior on it, behavior shifting onto/off it.
 4. Draw it in `drawSolids`/a new draw function.
 
+### 6.4 Work orders
+
+Every level has `repairs: [...]`, each a `tool` and a `fix`, each with `{ tx, ty, layer, name, kind }`. `fix.link` draws the run to what it drives; `fix.goal` and `fix.target` are its HUD and tag words; `area` on a spot is where it can be touched from, when that isn't its own tile (a box in a wall). What it does:
+
+| Type | Data | Rule |
+|---|---|---|
+| Build | `set` | Writes tile overrides, in the prank format |
+| Power | `spots: [...]`, each with its own `set`; `relay: true` if it has to travel | Touching the filled spot pulls the tool and undoes its cells; touching an empty one with the tool fills it. A relay stays the job in hand on the HUD until it is past its first box |
+| Water | `swap: true`, `set` | Touching it again undoes `set`, and again redoes it |
+| Machine | `car: { w, stops }` | Drawn in the grids at its first stop. Each night clock-in moves it a stop, in `tryShift` with the due pranks, so a move that would bury the worker waits; it carries whoever stands on it (`carRide`) |
+| Light | `clears: { x0, x1, y0, y1 }` | `freakBoxes()` marks the freaks in the rectangle `scattered`, and inactive |
+| Secure | `secures: [prankId]` (on a spot, to choose), `when` | `pranksFor()` and `pendingPranks()` skip the pranks a done job holds. `when: { layer, tx, ty, ch }`: it only bites with that tile in place |
+
+`state.repairs[i]` is `{ tool, done, at, armed, since }`: `at` the filled spot, `armed` off until you step away from a spot you just changed, `since` the night entries when it was done. Checkpoints snapshot it with the overrides. Any change waits rather than close on the worker. Events: `tool`, `repaired` and `pulled` (with `job` and `spot`), `machine`.
+
 ### 6.5 Added mechanics (built)
 
 The five added mechanics from [CONTENT.md](CONTENT.md) §3 — all built, tested and shipped in their levels. Each follows the same rules as everything else: pure functions of state and level, no per-object mutable state.
@@ -212,7 +227,7 @@ The five added mechanics from [CONTENT.md](CONTENT.md) §3 — all built, tested
 
 | Command | What it covers |
 |---|---|
-| `npm test` | <!-- n:tests -->411<!-- /n --> tests: GDD §13.7 cases 1–15, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, Upside Down rules (flip, gravity sign, hanging, jump and cut, nudge order, coyote across a flip, hazard band, grid edges, checkpoints, fuzz), every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
+| `npm test` | <!-- n:tests -->540<!-- /n --> tests: GDD §13.7 cases 1–15, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, Upside Down rules (flip, gravity sign, hanging, jump and cut, nudge order, coyote across a flip, hazard band, grid edges, checkpoints, fuzz), every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
 | `npm run check` | Every module parses; every level validates |
 | `npm run audit` | Per level: the slack of every required shift and jump (fails under the act floor), input-lag tolerance 0–150 ms, and a random search for wins below par or without shifting (`scripts/audit-levels.mjs`). |
 | `npm run media` | Real browser (headless Edge/Chrome, no dependencies): plays level 1 with key presses, fails on page errors, a wrong outcome, audio clipping or a slow frame; saves the cover, screenshots and gallery. |

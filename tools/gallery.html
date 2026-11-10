@@ -253,6 +253,13 @@ function draw(t) {
   art.drawPrankCells(g, cellsAt(27, Math.floor(y / 30) + 2).map((c) => ({ ...c, ch: '.' })), (ch) => ch === '.');
   g.restore();
   label('prank tiles: will appear, will go', 660, y + 150);
+  const row = Math.floor(y / 30) + 3;
+  g.save();
+  g.translate(0, y % 30);
+  ['fuse', 'wrench', 'bulb', 'oil', 'tape', 'card'].forEach((kind, i) => art.drawTool(g, { tx: 33 + i, ty: row - 2, kind, layer: DAY }, t, DAY));
+  ['fuse', 'pipe', 'light', 'hinge', 'cable', 'bolt', 'clock', 'valve', 'winch'].forEach((kind, i) => { art.drawFixture(g, { tx: 33 + i, ty: row - 1, kind, layer: DAY }, t, DAY, false); art.drawFixture(g, { tx: 33 + i, ty: row, kind, layer: DAY }, t, DAY, true); });
+  g.restore();
+  label('tools; broken; fixed', 990, y + 150);
   y += 170;
 
   // ---- effects and UI ----

@@ -5,6 +5,7 @@
 //   --review id,id  only a day and a night shot of each level, into <outdir>/review/ (night is set directly:
 //                   a picture of the geometry, not a playable state)
 //   --gray, --cvd   with --review: also grayscale and color-blind (deuteranopia, protanopia, tritanopia) variants
+//   --notext id,id  the show-don't-tell deck: each level with no notes, memos or signs, before and after its repairs
 //   --memo          with --review: also <id>-memo.png, the worker by the level's memo with its panel open
 //   --root DIR      serve DIR instead of the repo (smoke-test the unzipped itch build: no cover, gallery or audio)
 // BROWSER env overrides the browser path (scripts/cdp.mjs starts the browser and serves the game).
@@ -22,8 +23,9 @@ const option = (name) => {
   return v;
 };
 const review = option('--review')?.split(',').filter(Boolean) ?? null;
+const notext = option('--notext')?.split(',').filter(Boolean) ?? null;
 const serveRoot = option('--root');
-const positional = argv.filter((a, i) => !a.startsWith('--') && !['--review', '--root'].includes(argv[i - 1]));
+const positional = argv.filter((a, i) => !a.startsWith('--') && !['--review', '--root', '--notext'].includes(argv[i - 1]));
 const out = resolve(positional[0] || join(root, 'media'));
 mkdirSync(out, { recursive: true });
 
@@ -36,8 +38,17 @@ try {
 }
 const { send, evaluate, open, errors } = page;
 
-const KEYS = { Space: [' ', 32], KeyK: ['k', 75], KeyL: ['l', 76], KeyO: ['o', 79], KeyJ: ['j', 74], Enter: ['Enter', 13], Escape: ['Escape', 27], ArrowRight: ['ArrowRight', 39], ArrowDown: ['ArrowDown', 40] };
-const key = (type, code) => send('Input.dispatchKeyEvent', { type, code, key: KEYS[code][0], windowsVirtualKeyCode: KEYS[code][1] });
+const KEYS = { ArrowLeft: ['ArrowLeft', 37], Space: [' ', 32], KeyK: ['k', 75], KeyL: ['l', 76], KeyO: ['o', 79], KeyJ: ['j', 74], Enter: ['Enter', 13], Escape: ['Escape', 27], ArrowRight: ['ArrowRight', 39], ArrowDown: ['ArrowDown', 40] };
+// A held key repeats, as a real keyboard's does: the game leans on that to pick a hold back up after it lets go of
+// every key (a screen change, a lost focus). Without it a hold can silently end mid-level.
+const heldKeys = new Set();
+const keyEvent = (type, code, autoRepeat = false) => send('Input.dispatchKeyEvent', { type, code, key: KEYS[code][0], windowsVirtualKeyCode: KEYS[code][1], autoRepeat });
+const key = (type, code) => {
+  if (type === 'keyDown') heldKeys.add(code);
+  else heldKeys.delete(code);
+  return keyEvent(type, code);
+};
+setInterval(() => { for (const code of heldKeys) keyEvent('keyDown', code, true).catch(() => {}); }, 33).unref();
 const press = async (code) => { await key('keyDown', code); await sleep(40); await key('keyUp', code); };
 
 // A moment from a level's scripted run (the run the tests prove: test/solutions.mjs), for shots real keys can't
@@ -67,6 +78,32 @@ async function moment(id, event, after, name) {
   } finally {
     await send('Page.removeScriptToEvaluateOnNewDocument', { identifier });
   }
+}
+
+// The show-don't-tell deck: every level with no notes, memos or signs, before and after its repairs, on both shifts.
+async function notextDeck(ids) {
+  const { identifier } = await send('Page.addScriptToEvaluateOnNewDocument', { source: 'window.requestAnimationFrame = () => 0;' });
+  for (const id of ids) {
+    await open(`?level=${encodeURIComponent(id)}&autostart&notext`);
+    for (const [when, layer] of [['before', 0], ['before', 1], ['after', 0], ['after', 1]]) {
+      await evaluate(`(async () => {
+        const g = __doubleShift;
+        g.startState ??= g.state; // before the deck turned the shift by hand
+        if (${JSON.stringify(when)} === 'after' && !g.fixedUp) {
+          g.state = g.startState;
+          const { SOLUTIONS } = await import('/test/solutions.mjs');
+          const { inputsFrom } = await import('/test/helpers.mjs');
+          const next = inputsFrom(SOLUTIONS[${JSON.stringify(id)}]);
+          for (let i = 0; i < 120 * 30 && g.screen === 'play' && !g.state.repairs.every((r) => r.done); i++) g.advance(1 / 120, next);
+          g.fixedUp = true;
+        }
+        g.state = { ...g.state, layer: ${layer}, events: [] };
+        g.render();
+      })()`);
+      await shot(`notext/${id}-${when}-${layer ? 'night' : 'day'}.png`);
+    }
+  }
+  await send('Page.removeScriptToEvaluateOnNewDocument', { identifier });
 }
 
 async function shot(name) {
@@ -128,7 +165,8 @@ async function reviewShots(ids) {
 let failed = false;
 try {
   console.log(`Saving to ${out}`);
-  if (review) await reviewShots(review);
+  if (notext) await notextDeck(notext);
+  else if (review) await reviewShots(review);
   else await fullRun();
 } catch (e) {
   failed = true;
@@ -138,6 +176,7 @@ try {
 }
 if (errors.length) { failed = true; console.error('page errors:', errors); }
 if (failed) console.log('FAILED');
+else if (notext) console.log(`ok: text-free deck saved for ${notext.join(', ')}`);
 else if (review) console.log(`ok: review shots saved for ${review.join(', ')}, no page errors`);
 else console.log(`ok: media saved, level 1 cleared with real keys, no page errors${serveRoot ? ` (served from ${serveRoot})` : ''}`);
 process.exit(failed ? 1 : 0);
@@ -151,7 +190,7 @@ async function fullRun() {
   await open('');
   await shot('01-title.png');
 
-  // level 1 with real keys: run right, night across the gap, day before the gate, exit
+  // level 1 with real keys: run right, night across the gap, day for the bolt, up the deck, night past the gate, exit
   await press('Space');
   await sleep(500);
   await shot('10-act-card.png'); // the act 1 title card
@@ -160,18 +199,63 @@ async function fullRun() {
   await shot('02-clock-in-day.png');
   // real key presses, timed by where the worker actually is (screenshots can stall frames)
   const tileX = () => evaluate('__doubleShift.state ? __doubleShift.state.player.x / 30 : 0');
-  const until = async (cond, ms = 6000) => { const t0 = Date.now(); while (!(await cond()) && Date.now() - t0 < ms) await sleep(15); };
+  // waits are on the game's state with a long limit: a headless browser's frames can crawl, and this checks that
+  // the level can be cleared with real keys, not how fast
+  const until = async (cond, ms = 30000) => { const t0 = Date.now(); while (!(await cond()) && Date.now() - t0 < ms) await sleep(15); };
   await key('keyDown', 'ArrowRight');
   await until(async () => (await tileX()) > 4);
   await press('KeyK');
   await until(async () => (await tileX()) > 9);
   await shot('03-clock-in-night.png');
-  await until(async () => (await tileX()) > 20.5);
-  await press('KeyK');
-  await until(async () => (await evaluate('__doubleShift.screen')) === 'card');
+  // stop past the boards and clock out standing still, so a late frame can't carry the worker past the bolt first
+  await until(async () => (await tileX()) > 18.9);
   await key('keyUp', 'ArrowRight');
+  await until(async () => (await evaluate('__doubleShift.state.player.vx')) === 0);
+  await press('KeyK');
+  await until(async () => (await evaluate('__doubleShift.state.layer')) === 0);
+  await key('keyDown', 'ArrowRight');
+  // a full jump by the game's clock, not the wall's: hold until the worker has left the ground and stopped rising
+  const rising = () => evaluate('(() => { const p = __doubleShift.state.player; return p.grounded || p.vy < 0; })()');
+  const hop = async (at) => {
+    // each jump from a standstill inside [at, at + 0.7]: a late frame can carry the worker past the mark and under
+    // the ledge, so stop, and step back in short taps until the spot is right
+    await until(async () => (await tileX()) > at);
+    await key('keyUp', 'ArrowRight');
+    const still = () => until(async () => evaluate('(() => { const p = __doubleShift.state.player; return p.grounded && p.vx === 0; })()'));
+    await still();
+    for (let i = 0; i < 40; i++) {
+      const x = await tileX();
+      if (x >= at && x <= at + 0.7) break;
+      const dir = x < at ? 'ArrowRight' : 'ArrowLeft';
+      await key('keyDown', dir);
+      await sleep(30);
+      await key('keyUp', dir);
+      await still();
+    }
+    await key('keyDown', 'ArrowRight');
+    await key('keyDown', 'Space');
+    await until(async () => !(await evaluate('__doubleShift.state.player.grounded')), 5000);
+    await until(async () => !(await rising()), 5000);
+    await key('keyUp', 'Space');
+  };
+  await hop(20.2); // up onto the deck the bolt raised
+  await hop(22.4); // and from the deck to the top floor
+  await until(async () => (await tileX()) > 26);
+  await key('keyUp', 'ArrowRight'); // the same before the day crew's gate
+  await until(async () => (await evaluate('__doubleShift.state.player.vx')) === 0);
+  await press('KeyK');
+  await until(async () => (await evaluate('__doubleShift.state.layer')) === 1);
+  await key('keyDown', 'ArrowRight');
+  await until(async () => (await tileX()) > 29.4 || (await evaluate('__doubleShift.screen')) === 'card');
+  await key('keyUp', 'ArrowRight'); // a jump can carry you over the door: come back to it
+  await until(async () => (await evaluate('__doubleShift.screen')) === 'card', 1000);
+  if ((await evaluate('__doubleShift.screen')) !== 'card') {
+    await key('keyDown', 'ArrowLeft');
+    await until(async () => (await evaluate('__doubleShift.screen')) === 'card' || (await tileX()) < 28.5, 5000); // never back off the ledge
+    await key('keyUp', 'ArrowLeft');
+  }
   await sleep(700);
-  const l1 = await evaluate('({ screen: __doubleShift.screen, shifts: __doubleShift.state.shifts, deaths: __doubleShift.state.deaths })');
+  const l1 = await evaluate('({ screen: __doubleShift.screen, shifts: __doubleShift.state.shifts, deaths: __doubleShift.state.deaths, x: __doubleShift.state.player.x / 30, y: __doubleShift.state.player.y / 30, layer: __doubleShift.state.layer })');
   await shot('04-timecard.png');
   if (l1.screen !== 'card') { failed = true; console.error(`level 1 not cleared with real keys: ${JSON.stringify(l1)}`); }
 
@@ -183,7 +267,7 @@ async function fullRun() {
   await sleep(200);
   const x0 = await tileX();
   await key('keyDown', 'ArrowRight'); // skips the card AND is held
-  await sleep(500);
+  await until(async () => (await tileX()) > x0 + 1, 3000);
   await key('keyUp', 'ArrowRight');
   const x1 = await tileX();
   flow('hold Right through the act card moves the worker', x1 > x0 + 1, { x0, x1 });
@@ -266,11 +350,15 @@ async function fullRun() {
   await open('');
   await evaluate("(() => { window.__pad = { id: 'stub', mapping: 'standard', connected: true, axes: [0, 0, 0, 0], buttons: Array.from({ length: 17 }, () => ({ pressed: false, value: 0 })) }; navigator.getGamepads = () => [window.__pad]; })()");
   await sleep(300); // the page's first frames
-  const tap = async (i) => { await evaluate(`window.__pad.buttons[${i}].pressed = true`); await sleep(150); await evaluate(`window.__pad.buttons[${i}].pressed = false`); await sleep(150); };
-  await tap(0);
-  await sleep(1800); // the act card
-  await tap(1);
-  const padState = await evaluate('({ screen: __doubleShift.screen, layer: __doubleShift.state?.layer })');
+  // held until the game has seen it (a frame can be late), then let go
+  const tap = async (i, seen) => { await evaluate(`window.__pad.buttons[${i}].pressed = true`); await until(async () => evaluate(seen), 15000); await evaluate(`window.__pad.buttons[${i}].pressed = false`); await sleep(150); };
+  await tap(0, "__doubleShift.screen !== 'title'");
+  // the act card runs out on the game's clock, and a headless browser's frames can crawl: wait for the level itself
+  // (B pressed on the card would skip it, which spends no clock-in)
+  await until(async () => (await evaluate('__doubleShift.screen')) === 'play', 30000);
+  await sleep(100);
+  await tap(1, '__doubleShift.state?.layer === 1');
+  const padState = await evaluate('({ screen: __doubleShift.screen, layer: __doubleShift.state?.layer, index: __doubleShift.index, x: __doubleShift.state?.player.x, shifts: __doubleShift.state?.shifts, time: __doubleShift.state?.time })');
   flow('gamepad: A clocks in from the title, B shifts', padState.screen === 'play' && padState.layer === 1, padState);
 
   // an abandoned attempt doesn't count: clocking in from the title starts the run totals over
@@ -323,10 +411,11 @@ async function fullRun() {
   // the tools and tests aren't in the itch build, so --root stops here
   if (serveRoot) return;
 
-  // the itch page's first shots: a prank as it lands (Inventory's plank moves on the 2nd night clock-in) and the
+  // the itch page's first shots: a prank as it lands (Lost & Found's doors swap on the 1st night clock-in) and the
   // flip (Mind Your Head's first clock-in turns the night over)
-  await moment('inventory', 'prank', 0.14, '19-prank-inventory.png');
+  await moment('doors', 'prank', 0.14, '19-prank-lost-found.png');
   await moment('upside', 'shift', 0.11, '20-flip-mind-your-head.png');
+  await moment('midair', 'repaired', 0.2, '21-repair-mid-air.png');
 
   // asset gallery + offline audio loudness check (peaks before the master gain; must not clip)
   await open('tools/gallery.html', 1280, 2100);

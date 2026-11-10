@@ -100,6 +100,8 @@ Goal: every tester finds the worker and the exit in every shot and names the shi
 **While they play,** besides §3:
 - Act 2: do they connect a door vanishing to their own clock-in (Lost & Found)?
 - Act 3: do they read the wet floor's slide, and the supervisor's clipboard: its wedge and pips, "!" as danger, "z" as safe?
+- Any act: do they know the job from the HUD and tags, and see what the repair changed? Does it feel like the point of the level or a chore? Did anyone miss a tool and have to double back?
+- Power and Machine levels: do they work out that the fuse comes with them, and that the hoist moves without them? Secure levels: do they read the tell and choose when to bolt, or bolt by accident?
 - Any act: do they use a patrol's floor track and a peeker's rattle before contact?
 - Act 4: are they surprised one freak works days? Does Floor 3.5's half-storey make sense?
 - Act 5, **the flip:** their first reaction on Mind Your Head, the time to their first deliberate flip, whether they say "upside down", and whether they find the flip-as-brake on Falling Up.

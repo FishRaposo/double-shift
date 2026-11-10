@@ -3,7 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { LEVELS, ACTS, FINALE_ACT } from '../src/levels.js';
 import {
-  levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, actLabel, endSummary, selectClick, canvasScale, CARD, TAB, SELECT_BOUNDS,
+  placeTag, hudFloor, HUD_BOTTOM, levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, actLabel, endSummary, selectClick, canvasScale, CARD, TAB, SELECT_BOUNDS,
   memoPanel, memoNear, MEMO,
 } from '../src/layout.js';
 import { wrapText, measureText } from '../src/font.js';
@@ -175,4 +175,19 @@ test('endSummary: the run total counts every second played, abandoned attempts a
   const results = [{ shifts: 2, par: 2, time: 3 }];
   assert.equal(endSummary(LEVELS, results, [10, 60]).time, 70);
   assert.equal(endSummary(LEVELS, results).time, 3, 'no timing kept: the clearing runs');
+});
+
+test('job tags: on screen, clear of the HUD, and never on each other', () => {
+  const box = { right: 430, bottom: 90 };
+  assert.equal(hudFloor(box, 100), 90);
+  assert.equal(hudFloor(box, 500), HUD_BOTTOM);
+  const placed = [];
+  const a = placeTag(placed, box, 160, 345, 20, 960);
+  assert.equal(a.y, 104, 'its left edge is under the work order, though its centre is not far from it');
+  const b = placeTag(placed, box, 160, 345, 20, 960);
+  assert.equal(b.y, 132, 'with no room above, the next one stacks downwards');
+  const c = placeTag(placed, box, 160, 345, 300, 960);
+  const d = placeTag(placed, box, 160, 345, 300, 960);
+  assert.deepEqual([c.y, d.y], [300, 272]);
+  assert.equal(placeTag([], box, 200, 950, 200, 960).x, 850, 'kept on screen');
 });

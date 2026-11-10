@@ -32,14 +32,14 @@ export const NIGHT = 1;
 // Skins are object art drawn over ordinary solid tiles (src/skins.js decides which); the rules only validate
 // them. Default sizes in tiles: a door is 1×2, a pillar 1×4, a portrait 3×2; the door pile is 2 wide and at most
 // h (3) doors high.
-export const SKIN_KINDS = Object.freeze(['door', 'pillar', 'portrait', 'doorPile']);
-const SKIN_SIZE = { door: [1, 2], pillar: [1, 4], portrait: [3, 2], doorPile: [2, 3] };
+export const SKIN_KINDS = Object.freeze(['door', 'pillar', 'portrait', 'doorPile', 'shutter', 'deck']);
+const SKIN_SIZE = { door: [1, 2], pillar: [1, 4], portrait: [3, 2], doorPile: [2, 3], shutter: [1, 4], deck: [3, 1] };
 
 // The cells a skin must have inside the grid: doors and pillars stand on their bottom cell (ty) and a portrait
 // hangs from its top-left cell. A pile's h is only a cap (skinPlan stops counting at the top of the grid), so
 // only its bottom row has to fit.
 function skinCells(sk) {
-  if (sk.kind === 'portrait') return { x0: sk.tx, x1: sk.tx + sk.w - 1, y0: sk.ty, y1: sk.ty + sk.h - 1 };
+  if (sk.kind === 'portrait' || sk.kind === 'deck') return { x0: sk.tx, x1: sk.tx + sk.w - 1, y0: sk.ty, y1: sk.ty + sk.h - 1 };
   const h = sk.kind === 'doorPile' ? 1 : sk.h;
   return { x0: sk.tx, x1: sk.tx + sk.w - 1, y0: sk.ty - h + 1, y1: sk.ty };
 }
@@ -48,7 +48,35 @@ function skinCells(sk) {
 
 // A level is { name, par, day: string[], night: string[] } — or `offset` or `upsideDown: true`, plus an optional
 // `nightPatch`, instead of `night`: those generate the night grid from the day one.
-// Legend: '#' solid, '^' hazard, 'S' spawn, 'E' exit, 'C' checkpoint, '.' empty.
+// A level's work orders (`repairs`): pick up the tool on its shift, then fix the broken thing on its
+// shift. Both are touched, like a checkpoint: no extra button. `fix.set` is what the repair changes, in the prank
+// format: the shutter rises, the water drains. `fix.link` is the run of cable or pipe the art draws from the broken
+// thing to what it drives; `goal` and `target` are its words on the HUD and the tag. What the repair does after that
+// is the level's puzzle (docs/GDD.md §4.11):
+// `area` { x0, x1, y0, y1 }, on any spot: where it can be touched from, when that isn't just its own tile. A box in a
+// wall can be reached from both sides of it.
+//   build    `set` alone: the change stays.
+//   power    `spots`: one tool, several sockets, each with its own `set`. Touching the filled one pulls the tool and
+//            undoes its `set`; touching an empty one with the tool fills it.
+//            `relay: true`: it has to travel, so the HUD keeps it in hand until it's past its first box.
+//   water    `swap: true`: touching it again undoes `set`, and again redoes it.
+//   machine  `car: { w, stops: [[tx, ty], ...] }`: a platform, drawn in the grids at its first stop, that moves one stop
+//            per night clock-in once repaired, back and forth, and carries whoever stands on it.
+//   light    `clears: { x0, x1, y0, y1 }`: once repaired, the freaks in that rectangle scatter.
+//   secure   `secures: [prankId]`: once repaired, those pranks stop, and the map stays as they left it. On each of several
+//            `spots`, so that one bolt has to choose. `when: { layer, tx, ty, ch }`: it only bites with that tile in place.
+function parseRepair(def, job) {
+  const at = ({ layer, ...rest }, what) => {
+    if (layer !== 'day' && layer !== 'night') throw new Error(`${def.name}: the repair's ${what} needs a layer, 'day' or 'night'`);
+    return { ...rest, layer: layer === 'day' ? DAY : NIGHT };
+  };
+  const spot = (s) => { const f = at(s, 'fix'); return { ...f, cells: expandCells(f.set ?? []), link: f.link ?? [] }; };
+  const spots = (job.fix.spots ?? [job.fix]).map((s) => spot({ ...job.fix, spots: undefined, ...s }));
+  const fix = { ...spots[0], cells: spots.flatMap((s) => s.cells), secures: spots.flatMap((s) => s.secures ?? []) };
+  return { tool: at(job.tool, 'tool'), fix, spots, undoes: !!job.fix.swap || spots.length > 1 };
+}
+
+// Legend: '#' solid, '^' hazard, 'w' water (a hazard filling its tile), 'S' spawn, 'E' exit, 'C' checkpoint, '.' empty.
 // S, E and C are shared between shifts and may be written in either grid.
 export function parseLevel(def) {
   const { day } = def;
@@ -110,7 +138,7 @@ export function parseLevel(def) {
     if (sk.layer !== undefined && sk.layer !== 'day' && sk.layer !== 'night') throw new Error(`${def.name}: skin layer must be 'day' or 'night' (or left out for both)`);
     const [dw, dh] = SKIN_SIZE[sk.kind];
     const layer = sk.layer === 'night' ? NIGHT : sk.layer === 'day' ? DAY : null;
-    const out = { kind: sk.kind, tx: sk.tx, ty: sk.ty, w: sk.w ?? dw, h: sk.h ?? dh, layer };
+    const out = { kind: sk.kind, tx: sk.tx, ty: sk.ty, w: sk.w ?? dw, h: sk.h ?? dh, layer, sag: !!sk.sag };
     const c = skinCells(out);
     if (!(c.x0 >= 0 && c.x1 < w && c.y0 >= 0 && c.y1 < h)) throw new Error(`${def.name}: skin ${sk.kind} at ${sk.tx},${sk.ty} is outside the grid`);
     return out;
@@ -142,6 +170,7 @@ export function parseLevel(def) {
     pranks,
     freaks,
     skins,
+    repairs: (def.repairs ?? []).map((job) => parseRepair(def, job)),
     offset: def.offset ?? null,
     upsideDown: !!def.upsideDown, // the night is the day turned over, gravity included (gravitySign)
     nightGenerated: !def.night, // the night grid was generated from the day one (offset, upside down)
@@ -215,6 +244,8 @@ const EPS = 1e-6;
 
 // '#' is ordinary solid, '~' is wet floor (solid but low friction). Rules and
 // renderer share this so they can't disagree about what counts as ground.
+export const isHazardChar = (ch) => ch === '^' || ch === 'w';
+
 export function isSolidChar(ch) {
   return ch === '#' || ch === '~';
 }
@@ -242,7 +273,13 @@ export function overlapsHazard(level, layer, x, y, w = PARAMS.playerW, h = PARAM
   const up = gravitySign(level, layer) < 0;
   for (let ty = y0; ty <= y1; ty++) {
     for (let tx = x0; tx <= x1; tx++) {
-      if (tileAt(level, layer, tx, ty, ov) !== '^') continue;
+      const ch = tileAt(level, layer, tx, ty, ov);
+      if (ch === 'w') { // water: the whole tile, less a lip at the surface, which a flipped night turns over
+        const lip = 8 + EPS;
+        if (y + h > ty * TILE + (up ? 0 : lip) && y < (ty + 1) * TILE - (up ? lip : 0)) return true;
+        continue;
+      }
+      if (ch !== '^') continue;
       if (up) {
         const bottom = ty * TILE + hz;
         if (y < bottom - EPS && y + h > ty * TILE) return true;
@@ -311,6 +348,14 @@ export function watchedClock(side, sup, t) {
   return side === sup.startDir ? startSide : t - startSide;
 }
 
+// A freak in a room a Light job has lit: it scatters. The clipboard is management, and stays.
+function lit(level, s, f) {
+  return f.kind !== 'supervisor' && level.repairs.some((job, i) => {
+    const r = job.fix.clears;
+    return r && s.repairs[i].done && f.tx >= r.x0 && f.tx <= r.x1 && f.ty >= r.y0 && f.ty <= r.y1;
+  });
+}
+
 export function freakBoxes(level, s) {
   const sup = level.freaks.find((f) => f.kind === 'supervisor');
   const facing = sup ? supervisorFacing(sup, s.freakClock) : 0;
@@ -326,6 +371,7 @@ export function freakBoxes(level, s) {
     let popIn = 0; // seconds until a ducked peeker pops out, on its own clock
     let supervised = false;
     let watched = false;
+    const scattered = lit(level, s, f);
     if (f.kind === 'supervisor') {
       face = facing;
       turnIn = (Math.floor(s.freakClock / f.period) + 1) * f.period - s.freakClock;
@@ -351,7 +397,8 @@ export function freakBoxes(level, s) {
         popIn = up ? 0 : f.period - m;
       }
     }
-    return { id: f.id, kind: f.kind, shift: f.shift, x, y, w: FREAK.w, h: FREAK.h, active, facing: face, turnIn, hang, dir, popIn, supervised, watched };
+    if (scattered) active = false;
+    return { id: f.id, kind: f.kind, shift: f.shift, x, y, w: FREAK.w, h: FREAK.h, active, scattered, facing: face, turnIn, hang, dir, popIn, supervised, watched };
   });
 }
 
@@ -382,6 +429,10 @@ export function standableSpot(level, layer, tx, ty, ov = NO_OV) {
   return isGrounded(level, layer, pos, ov) ? pos : null;
 }
 
+// `at`: the spot holding the tool. `armed`: off until you step away from a spot you just changed, so it can't flicker.
+// `since`: the night entries when it was repaired, which a machine's stop counts from.
+const freshJob = () => ({ tool: false, done: false, at: null, armed: true, since: 0 });
+
 export function initState(level) {
   const layer = level.spawnLayer;
   const pos = spawnPoint(level.spawn.tx, level.spawn.ty, gravitySign(level, layer));
@@ -394,7 +445,8 @@ export function initState(level) {
     shiftPending: 0, // seconds left on a buffered shift request
     shifts: 0, // successful shifts this run (the timecard)
     deaths: 0,
-    checkpoint: { ...pos, layer, id: null, overrides: {}, nightEntries: 0 },
+    checkpoint: { ...pos, layer, id: null, overrides: {}, nightEntries: 0, repairs: level.repairs.map(freshJob) },
+    repairs: level.repairs.map(freshJob), // the level's work orders, in order
     won: false,
     time: 0,
     nightEntries: 0, // successful shifts into night: the freaks act on these
@@ -423,7 +475,9 @@ function nextFiring(pr, entries) {
 export function pendingPranks(level, s) {
   const seen = new Set();
   const told = new Set();
+  const stopped = securedPranks(level, s);
   return level.pranks
+    .filter((pr) => !stopped.has(pr.id))
     .map((pr) => ({ pr, next: nextFiring(pr, s.nightEntries) }))
     .filter(({ next }) => next !== null)
     .sort((a, b) => a.next - b.next)
@@ -439,11 +493,77 @@ export function pendingPranks(level, s) {
       const tell = pr.tell && cells.length > 0 && !told.has(spot) ? pr.tell : null;
       if (tell) told.add(spot);
       return { id: pr.id, nights: next - s.nightEntries, tell, cells };
-    });
+    })
+    .concat(pendingCars(level, s));
 }
 
-function pranksFor(level, entry) {
-  return level.pranks.filter((pr) => pr.onNight === entry || (pr.every > 0 && entry > pr.onNight && (entry - pr.onNight) % pr.every === 0));
+// The pranks a finished Secure job has stopped.
+export function securedPranks(level, s) {
+  return new Set(level.repairs.flatMap((job, i) => (s.repairs[i].done ? job.spots[s.repairs[i].at ?? 0].secures ?? [] : [])));
+}
+
+function pranksFor(level, entry, s) {
+  const stopped = s ? securedPranks(level, s) : new Set();
+  return level.pranks.filter((pr) => !stopped.has(pr.id) && (pr.onNight === entry || (pr.every > 0 && entry > pr.onNight && (entry - pr.onNight) % pr.every === 0)));
+}
+
+// ---------- machines ----------
+
+// Which stop a car is at, `moves` clock-ins after its repair: out along its stops and back.
+export function carStop(car, moves) {
+  const last = car.stops.length - 1;
+  const d = moves % (2 * last);
+  return d <= last ? d : 2 * last - d;
+}
+
+const carCells = (car, stop, ch = '#') => [DAY, NIGHT].flatMap((layer) => Array.from({ length: car.w }, (_, dx) => [layer, car.stops[stop][0] + dx, car.stops[stop][1], ch]));
+
+// The running cars and where this night entry takes them.
+function carMoves(level, s, entry) {
+  return level.repairs.flatMap((job, i) => {
+    const { car } = job.fix;
+    if (!car || !s.repairs[i].done) return [];
+    const moves = entry - s.repairs[i].since;
+    return [{ job: i, car, from: carStop(car, moves - 1), to: carStop(car, moves) }];
+  });
+}
+
+function withCars(ov, moves) {
+  if (moves.length === 0) return ov;
+  const next = { ...ov };
+  for (const { car, from, to } of moves) {
+    for (const [layer, tx, ty, ch] of carCells(car, from, '.')) next[`${layer},${tx},${ty}`] = ch;
+    for (const [layer, tx, ty, ch] of carCells(car, to)) next[`${layer},${tx},${ty}`] = ch;
+  }
+  return next;
+}
+
+// How far a car carries the worker: only when they stand on it.
+function carRide(level, s, moves) {
+  const p = s.player;
+  const sign = gravitySign(level, s.layer);
+  const row = Math.floor((sign > 0 ? p.y + PARAMS.playerH + 1 : p.y - 1) / TILE);
+  for (const { car, from, to } of moves) {
+    const [tx, ty] = car.stops[from];
+    if (p.grounded && row === ty && p.x < (tx + car.w) * TILE && p.x + PARAMS.playerW > tx * TILE) {
+      return [(car.stops[to][0] - tx) * TILE, (car.stops[to][1] - ty) * TILE];
+    }
+  }
+  return [0, 0];
+}
+
+// Each running car's next stop, shown like a prank's tiles: `cells` where it will be after the next clock-in.
+function pendingCars(level, s) {
+  return carMoves(level, s, s.nightEntries + 1).map(({ job, car, to }) => ({
+    id: `car-${job}`, nights: 1, tell: null,
+    cells: carCells(car, to).map(([layer, tx, ty, ch]) => ({ layer, tx, ty, ch })).filter((c) => tileAt(level, c.layer, c.tx, c.ty, s.overrides) !== c.ch),
+  }));
+}
+
+function withoutCells(ov, cells) {
+  const next = { ...ov };
+  for (const [layer, tx, ty] of cells) delete next[`${layer},${tx},${ty}`];
+  return next;
 }
 
 function withPranks(ov, pranks) {
@@ -455,10 +575,10 @@ function withPranks(ov, pranks) {
 
 // The tile overrides after `entries` night clock-ins: each entry's due pranks applied in order, as tryShift does.
 // The fairness test uses it to check respawn spots that only a prank creates.
-export function overridesAfter(level, entries) {
+export function overridesAfter(level, entries, repaired = false) {
   let ov = {};
   for (let e = 1; e <= entries; e++) ov = withPranks(ov, pranksFor(level, e));
-  return ov;
+  return repaired ? withPranks(ov, level.repairs.map((job) => job.spots[0])) : ov; // each job at its first spot: one state that can really happen
 }
 
 // Attempt the pending shift. Order: clean → corner nudge → keep buffering.
@@ -467,9 +587,11 @@ function tryShift(level, s) {
   const p = s.player;
   const target = 1 - s.layer;
   const entry = target === NIGHT ? s.nightEntries + 1 : null;
-  const due = entry ? pranksFor(level, entry) : [];
-  const ov = withPranks(s.overrides, due);
-  const blocked = (x, y) => overlapsSolid(level, target, x, y, undefined, undefined, ov);
+  const due = entry ? pranksFor(level, entry, s) : [];
+  const cars = entry ? carMoves(level, s, entry) : [];
+  const ov = withCars(withPranks(s.overrides, due), cars);
+  const [rideX, rideY] = carRide(level, s, cars);
+  const blocked = (x, y) => overlapsSolid(level, target, x + rideX, y + rideY, undefined, undefined, ov);
   let dx = 0;
   let dy = 0;
   if (blocked(p.x, p.y)) {
@@ -484,8 +606,8 @@ function tryShift(level, s) {
     if (!hit) return false;
     [dx, dy] = hit;
   }
-  p.x += dx;
-  p.y += dy;
+  p.x += dx + rideX;
+  p.y += dy + rideY;
   s.layer = target;
   s.shifts += 1;
   s.shiftPending = 0;
@@ -501,6 +623,7 @@ function tryShift(level, s) {
   }
   s.events.push({ type: 'shift', layer: target, nudged: dx !== 0 || dy !== 0, x: p.x, y: p.y }); // where it happened: a death later this tick moves the player
   for (const pr of due) s.events.push({ type: 'prank', id: pr.id });
+  for (const { job, car, to } of cars) s.events.push({ type: 'machine', job, tx: car.stops[to][0], ty: car.stops[to][1] });
   return true;
 }
 
@@ -510,6 +633,42 @@ function approach(v, target, amount) {
   if (v < target) return Math.min(v + amount, target);
   if (v > target) return Math.max(v - amount, target);
   return v;
+}
+
+// A new list, never an edit in place: the checkpoint can be holding this one.
+function setJob(s, i, change) {
+  s.repairs = s.repairs.map((job, k) => (k === i ? { ...job, ...change } : job));
+}
+
+function touches(p, { tx, ty, area: a = { x0: tx, x1: tx, y0: ty, y1: ty } }) {
+  for (let y = a.y0; y <= a.y1; y++) for (let x = a.x0; x <= a.x1; x++) if (overlapsTile(p, x, y)) return true;
+  return false;
+}
+
+// The tool, then its spots. Any change waits rather than close on the worker, until they step clear.
+function touchJob(level, s, job, i) {
+  const p = s.player;
+  const state = s.repairs[i];
+  if (!state.tool) {
+    if (s.layer === job.tool.layer && overlapsTile(p, job.tool.tx, job.tool.ty)) {
+      setJob(s, i, { tool: true });
+      s.events.push({ type: 'tool', job: i });
+    }
+    return;
+  }
+  const spot = job.spots.findIndex((f) => s.layer === f.layer && touches(p, f));
+  if (spot === -1) {
+    if (!state.armed) setJob(s, i, { armed: true });
+    return;
+  }
+  if (!state.armed || (state.done && (!job.undoes || spot !== state.at))) return;
+  const { cells, when } = job.spots[spot];
+  if (when && !state.done && tileAt(level, when.layer === 'night' ? NIGHT : DAY, when.tx, when.ty, s.overrides) !== when.ch) return;
+  const next = state.done ? withoutCells(s.overrides, cells) : withPranks(s.overrides, [{ cells }]);
+  if (overlapsSolid(level, s.layer, p.x, p.y, undefined, undefined, next)) return;
+  s.overrides = next;
+  setJob(s, i, { done: !state.done, at: state.done ? null : spot, armed: false, since: s.nightEntries });
+  s.events.push({ type: state.done ? 'pulled' : 'repaired', job: i, spot });
 }
 
 function die(level, s, cause, by) {
@@ -527,6 +686,7 @@ function die(level, s, cause, by) {
   // GDD §9.3: level objects return to the checkpoint's state, so a prank can never softlock a run
   s.overrides = s.checkpoint.overrides;
   s.nightEntries = s.checkpoint.nightEntries;
+  s.repairs = s.checkpoint.repairs;
   s.shiftPending = 0;
   p.grounded = isGrounded(level, s.layer, p, s.overrides);
   s.events.push({ type: 'respawn' });
@@ -641,10 +801,11 @@ export function step(level, prev, input = NO_INPUT, dt = DT) {
       const there = here ? null : standableSpot(level, 1 - s.layer, c.tx, c.ty, s.overrides);
       if (!here && !there) continue;
       const layer = here ? s.layer : 1 - s.layer;
-      s.checkpoint = { ...(here ?? there), layer, id: c.id, overrides: s.overrides, nightEntries: s.nightEntries };
+      s.checkpoint = { ...(here ?? there), layer, id: c.id, overrides: s.overrides, nightEntries: s.nightEntries, repairs: s.repairs };
       s.events.push({ type: 'checkpoint', id: c.id });
     }
   }
+  level.repairs.forEach((job, i) => touchJob(level, s, job, i));
   if (overlapsTile(p, level.exit.tx, level.exit.ty)) {
     s.won = true;
     s.events.push({ type: 'win', shifts: s.shifts, par: level.par });

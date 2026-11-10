@@ -5,6 +5,28 @@ import { ACTS, FINALE_ACT } from './levels.js';
 import { TILE, PARAMS } from './rules.js';
 import { wrapText, measureText, CAP } from './font.js';
 
+// The HUD's top rows, and the work order's block under them at the top left (`box`: its right edge and bottom).
+// Notes, countdowns and tags keep out of both: `hudFloor` is the lowest the HUD reaches over a thing's left edge.
+export const HUD_BOTTOM = 62;
+export const hudFloor = (box, left) => (left < box.right ? box.bottom : HUD_BOTTOM);
+
+// A paper tag over something in the level (cx, cy): kept on screen and clear of the HUD. Tags that would land on
+// each other stack upwards, then down from the top once there's no more room above.
+export function placeTag(placed, box, textW, cx, cy, screenW) {
+  const half = textW / 2 + 10;
+  const x = Math.min(screenW - half, Math.max(half, cx));
+  const top = hudFloor(box, x - half) + 14;
+  const hits = (y) => placed.some((p) => Math.abs(p.x - x) < p.half + half && Math.abs(p.y - y) < 26);
+  let y = Math.max(top, cy);
+  let step = -28;
+  while (hits(y)) {
+    if (y + step < top) step = 28;
+    y += step;
+  }
+  placed.push({ x, y, half });
+  return { x, y };
+}
+
 // `?level=` accepts a level id (`?level=offset`) or a 1-based position (`?level=11`). An id is stable when
 // levels are inserted; a position isn't. Numbers clamp to the list; anything else starts at the first level.
 export function levelIndex(defs, param) {

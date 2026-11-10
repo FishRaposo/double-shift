@@ -1,12 +1,21 @@
 # itch.io page kit
 
-Everything needed to create the *Double Shift* page on itch.io, in the order the itch dashboard asks for it. Settings come from [RELEASE.md](../docs/RELEASE.md) §2. **Fish writes the final description words**; the draft below is checked against the current build (<!-- n:levels -->21<!-- /n --> levels, <!-- n:tests -->411<!-- /n --> tests, level select, pixel art and music). The paste-ready description in §4 carries no markers, so check its numbers by hand before pasting (the release refresh does).
+Everything needed to create the *Double Shift* page on itch.io, in the order the itch dashboard asks for it. Settings come from [RELEASE.md](../docs/RELEASE.md) §2. **Fish writes the final description words**; the draft below is checked against the current build (<!-- n:levels -->21<!-- /n --> levels, <!-- n:tests -->540<!-- /n --> tests, level select, pixel art and music). The paste-ready description in §4 carries no markers, so check its numbers by hand before pasting (the release refresh does).
+
+## 0. What's left, in order (Fish)
+
+1. **Play the rework**: `npm start`, all 21 levels, on the `repairs-prototype` branch. Say what's wrong; fixes go on the branch. It merges to `main` (the public build) only on your yes.
+2. **Sticky Keys and feel check** on Windows while you play (PRODUCTION.md M0), then one cold playtest with someone else before Nov 22 (PLAYTEST.md).
+3. **Copy, before Nov 22:** edit the level notes, memos and job words in [WRITING.md](../docs/WRITING.md). They're drafts.
+4. **This page:** edit the description in §4 and pick the lead GIF in §3 (candidates are in `media/`).
+5. **itch, by Nov 30:** create the page as a Draft from §2, upload `double-shift-web.zip`, play it from the page in Chrome and Firefox, go Public, and submit to the jam with the repo URL and the AI disclosure (RELEASE.md §5).
+6. **After:** the itch link goes in the README, devlog #1, and the title-search check an hour later (§5).
 
 ## 1. Build the files
 
 ```bash
 npm run zip      # double-shift-web.zip: index.html + src/ at the archive root
-npm run media    # media/cover.png (1260×1000) + 19 screenshots (960×540) + the asset gallery, via headless Edge/Chrome
+npm run media    # media/cover.png (1260×1000) + 20 screenshots (960×540) + the asset gallery, via headless Edge/Chrome
 npm run gif -- doors      # media/demo-doors.gif (480×270): Lost & Found's scripted run, a prank on every clock-in
 ```
 
@@ -41,8 +50,8 @@ npm run gif -- doors      # media/demo-doors.gif (480×270): Lost & Found's scri
 | Slot | File |
 |---|---|
 | Cover image | `media/cover.png` |
-| Screenshots (in this order) | `demo-doors.gif` (provisional; Fish picks. The GIF goes first: itch plays a GIF screenshot in place), `19-prank-inventory.png` (a prank as it lands), `20-flip-mind-your-head.png` (the flip), `15-clock-out-night.png`, `07-night-watch-night.png`, `08-night-watch-day.png` (the freaks frozen by day), `03-clock-in-night.png`, `04-timecard.png`, `09-level-select.png`, `01-title.png` |
-| Gameplay video or trailer | Leave empty: the field takes a YouTube or Vimeo link, and the GIF already leads the screenshots. Other GIF candidates: `npm run gif -- upside` (the flip), `inventory` (the plank prank), `watch` (frozen freaks); ART.md §8. |
+| Screenshots (in this order) | `demo-doors.gif` (provisional; Fish picks. The GIF goes first: itch plays a GIF screenshot in place), `19-prank-lost-found.png` (a prank as it lands), `20-flip-mind-your-head.png` (the flip), `21-repair-mid-air.png` (a repair changing the room), `15-clock-out-night.png`, `07-night-watch-night.png`, `08-night-watch-day.png` (the freaks frozen by day), `03-clock-in-night.png`, `04-timecard.png`, `09-level-select.png`, `01-title.png` |
+| Gameplay video or trailer | Leave empty: the field takes a YouTube or Vimeo link, and the GIF already leads the screenshots. Other GIF candidates: `npm run gif -- upside` (the flip), `stairs` (the hoist), `closing` (one fuse, two boxes), `watch` (the light clears the corridor); ART.md §8. |
 
 ## 4. Description (paste into the editor; Fish edits the words)
 
@@ -50,7 +59,7 @@ npm run gif -- doors      # media/demo-doors.gif (480×270): Lost & Found's scri
 >
 > You're covering a double shift, day and night, in the same building, at the same time. Press **Shift** to step between them, even mid-jump. The day crew's scaffolding catches you; the night's gate isn't down yet.
 >
-> But clocking in has a cost. Clock into the night a second time and the plank you crossed on is gone, moved over the next pit. Nobody knows what the freaks are. They giggle. They leave notes. And they only move at night, so step into the day shift and they freeze mid-stride. (Well. Most of them.)
+> But clocking in has a cost. Clock into the night a second time and the plank over the next pit is gone. Unless you bolted it down first. Nobody knows what the freaks are. They giggle. They leave notes. And they only move at night, so step into the day shift and they freeze mid-stride. (Well. Most of them.)
 >
 > Finish each level clocking in as few times as possible. Your timecard is watching.
 >
@@ -71,10 +80,10 @@ npm run gif -- doors      # media/demo-doors.gif (480×270): Lost & Found's scri
 >
 > *On Windows, hammering Shift can open Sticky Keys. Use K, or turn off the Sticky Keys shortcut.*
 >
-> **What's in this build:** 21 levels in five acts and a finale, from your first clock-in to the last, including an act where the night shift is upside down. Every prank and patrol shows what it's about to do. Gamepad support, rebindable controls and a speedrun timer. Made for GitHub Game Off 2026 (theme: SHIFT).
+> **What's in this build:** 21 levels in five acts and a finale, from your first clock-in to the last, including an act where the night shift is upside down. Every level has a job to do, and the job is the puzzle: one fuse for two shutters, a valve that floods one room to drain another, a hoist that only moves when you clock in, a bolt for the thing they were about to steal. Every prank and patrol shows what it's about to do. Gamepad support, rebindable controls and a speedrun timer. Made for GitHub Game Off 2026 (theme: SHIFT).
 >
 > **How it was made**
-> Designed by Vinícius Raposo for GitHub Game Off 2026. Built with AI assistance (Claude) to his design document, with draft text from the same place, then tested like production software: the gameplay rules are a pure module, the game has 411 automated tests, and every level is proven solvable at par by a scripted run. No engine, no assets: the pixel art, the pixel font and the music are all drawn and synthesized by code, code that was also written with AI assistance. No generated images or audio were used. Source: https://github.com/FishRaposo/double-shift
+> Designed by Vinícius Raposo for GitHub Game Off 2026. Built with AI assistance (Claude) to his design document, with draft text from the same place, then tested like production software: the gameplay rules are a pure module, the game has 540 automated tests, and every level is proven solvable at par by a scripted run. No engine, no assets: the pixel art, the pixel font and the music are all drawn and synthesized by code, code that was also written with AI assistance. No generated images or audio were used. Source: https://github.com/FishRaposo/double-shift
 >
 > If you enjoyed it, a follow or a small donation helps.
 
