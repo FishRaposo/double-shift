@@ -217,10 +217,21 @@ async function fullRun() {
   // a full jump by the game's clock, not the wall's: hold until the worker has left the ground and stopped rising
   const rising = () => evaluate('(() => { const p = __doubleShift.state.player; return p.grounded || p.vy < 0; })()');
   const hop = async (at) => {
-    // each jump from a standstill past its mark, so a late frame can't carry the worker under the ledge first
+    // each jump from a standstill inside [at, at + 0.7]: a late frame can carry the worker past the mark and under
+    // the ledge, so stop, and step back in short taps until the spot is right
     await until(async () => (await tileX()) > at);
     await key('keyUp', 'ArrowRight');
-    await until(async () => evaluate('(() => { const p = __doubleShift.state.player; return p.grounded && p.vx === 0; })()'));
+    const still = () => until(async () => evaluate('(() => { const p = __doubleShift.state.player; return p.grounded && p.vx === 0; })()'));
+    await still();
+    for (let i = 0; i < 40; i++) {
+      const x = await tileX();
+      if (x >= at && x <= at + 0.7) break;
+      const dir = x < at ? 'ArrowRight' : 'ArrowLeft';
+      await key('keyDown', dir);
+      await sleep(30);
+      await key('keyUp', dir);
+      await still();
+    }
     await key('keyDown', 'ArrowRight');
     await key('keyDown', 'Space');
     await until(async () => !(await evaluate('__doubleShift.state.player.grounded')), 5000);
