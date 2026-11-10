@@ -39,7 +39,16 @@ try {
 const { send, evaluate, open, errors } = page;
 
 const KEYS = { ArrowLeft: ['ArrowLeft', 37], Space: [' ', 32], KeyK: ['k', 75], KeyL: ['l', 76], KeyO: ['o', 79], KeyJ: ['j', 74], Enter: ['Enter', 13], Escape: ['Escape', 27], ArrowRight: ['ArrowRight', 39], ArrowDown: ['ArrowDown', 40] };
-const key = (type, code) => send('Input.dispatchKeyEvent', { type, code, key: KEYS[code][0], windowsVirtualKeyCode: KEYS[code][1] });
+// A held key repeats, as a real keyboard's does: the game leans on that to pick a hold back up after it lets go of
+// every key (a screen change, a lost focus). Without it a hold can silently end mid-level.
+const heldKeys = new Set();
+const keyEvent = (type, code, autoRepeat = false) => send('Input.dispatchKeyEvent', { type, code, key: KEYS[code][0], windowsVirtualKeyCode: KEYS[code][1], autoRepeat });
+const key = (type, code) => {
+  if (type === 'keyDown') heldKeys.add(code);
+  else heldKeys.delete(code);
+  return keyEvent(type, code);
+};
+setInterval(() => { for (const code of heldKeys) keyEvent('keyDown', code, true).catch(() => {}); }, 33).unref();
 const press = async (code) => { await key('keyDown', code); await sleep(40); await key('keyUp', code); };
 
 // A moment from a level's scripted run (the run the tests prove: test/solutions.mjs), for shots real keys can't
@@ -190,34 +199,45 @@ async function fullRun() {
   await shot('02-clock-in-day.png');
   // real key presses, timed by where the worker actually is (screenshots can stall frames)
   const tileX = () => evaluate('__doubleShift.state ? __doubleShift.state.player.x / 30 : 0');
-  const until = async (cond, ms = 6000) => { const t0 = Date.now(); while (!(await cond()) && Date.now() - t0 < ms) await sleep(15); };
+  // waits are on the game's state with a long limit: a headless browser's frames can crawl, and this checks that
+  // the level can be cleared with real keys, not how fast
+  const until = async (cond, ms = 30000) => { const t0 = Date.now(); while (!(await cond()) && Date.now() - t0 < ms) await sleep(15); };
   await key('keyDown', 'ArrowRight');
   await until(async () => (await tileX()) > 4);
   await press('KeyK');
   await until(async () => (await tileX()) > 9);
   await shot('03-clock-in-night.png');
-  await until(async () => (await tileX()) > 19.2);
+  // stop past the boards and clock out standing still, so a late frame can't carry the worker past the bolt first
+  await until(async () => (await tileX()) > 18.9);
+  await key('keyUp', 'ArrowRight');
+  await until(async () => (await evaluate('__doubleShift.state.player.vx')) === 0);
   await press('KeyK');
+  await until(async () => (await evaluate('__doubleShift.state.layer')) === 0);
+  await key('keyDown', 'ArrowRight');
+  // a full jump by the game's clock, not the wall's: hold until the worker has left the ground and stopped rising
+  const rising = () => evaluate('(() => { const p = __doubleShift.state.player; return p.grounded || p.vy < 0; })()');
   const hop = async (at) => {
-    await until(async () => (await tileX()) > at);
+    // on the ground and past the mark: a press while still in the air from the last jump would be lost
+    await until(async () => (await tileX()) > at && (await evaluate('__doubleShift.state.player.grounded')));
     await key('keyDown', 'Space');
-    await sleep(320);
+    await until(async () => !(await evaluate('__doubleShift.state.player.grounded')), 5000);
+    await until(async () => !(await rising()), 5000);
     await key('keyUp', 'Space');
   };
-  await until(async () => (await tileX()) > 20.2); // the fix is behind you: stop, so a slow frame can't miss the jump
-  await key('keyUp', 'ArrowRight');
-  await sleep(250);
-  await key('keyDown', 'ArrowRight');
-  await hop(0); // up onto the deck the bolt raised
-  await hop(23);
+  await hop(20.4); // up onto the deck the bolt raised
+  await hop(22.6); // and from the deck to the top floor
   await until(async () => (await tileX()) > 26);
+  await key('keyUp', 'ArrowRight'); // the same before the day crew's gate
+  await until(async () => (await evaluate('__doubleShift.state.player.vx')) === 0);
   await press('KeyK');
+  await until(async () => (await evaluate('__doubleShift.state.layer')) === 1);
+  await key('keyDown', 'ArrowRight');
   await until(async () => (await tileX()) > 29.4 || (await evaluate('__doubleShift.screen')) === 'card');
   await key('keyUp', 'ArrowRight'); // a jump can carry you over the door: come back to it
   await until(async () => (await evaluate('__doubleShift.screen')) === 'card', 1000);
   if ((await evaluate('__doubleShift.screen')) !== 'card') {
     await key('keyDown', 'ArrowLeft');
-    await until(async () => (await evaluate('__doubleShift.screen')) === 'card', 1500);
+    await until(async () => (await evaluate('__doubleShift.screen')) === 'card' || (await tileX()) < 28.5, 5000); // never back off the ledge
     await key('keyUp', 'ArrowLeft');
   }
   await sleep(700);
@@ -233,7 +253,7 @@ async function fullRun() {
   await sleep(200);
   const x0 = await tileX();
   await key('keyDown', 'ArrowRight'); // skips the card AND is held
-  await sleep(500);
+  await until(async () => (await tileX()) > x0 + 1, 3000);
   await key('keyUp', 'ArrowRight');
   const x1 = await tileX();
   flow('hold Right through the act card moves the worker', x1 > x0 + 1, { x0, x1 });
@@ -316,11 +336,14 @@ async function fullRun() {
   await open('');
   await evaluate("(() => { window.__pad = { id: 'stub', mapping: 'standard', connected: true, axes: [0, 0, 0, 0], buttons: Array.from({ length: 17 }, () => ({ pressed: false, value: 0 })) }; navigator.getGamepads = () => [window.__pad]; })()");
   await sleep(300); // the page's first frames
-  const tap = async (i) => { await evaluate(`window.__pad.buttons[${i}].pressed = true`); await sleep(150); await evaluate(`window.__pad.buttons[${i}].pressed = false`); await sleep(150); };
-  await tap(0);
-  for (let i = 0; i < 80 && (await evaluate('__doubleShift.screen')) !== 'play'; i++) await sleep(50); // the act card
+  // held until the game has seen it (a frame can be late), then let go
+  const tap = async (i, seen) => { await evaluate(`window.__pad.buttons[${i}].pressed = true`); await until(async () => evaluate(seen), 15000); await evaluate(`window.__pad.buttons[${i}].pressed = false`); await sleep(150); };
+  await tap(0, "__doubleShift.screen !== 'title'");
+  // the act card runs out on the game's clock, and a headless browser's frames can crawl: wait for the level itself
+  // (B pressed on the card would skip it, which spends no clock-in)
+  await until(async () => (await evaluate('__doubleShift.screen')) === 'play', 30000);
   await sleep(100);
-  await tap(1);
+  await tap(1, '__doubleShift.state?.layer === 1');
   const padState = await evaluate('({ screen: __doubleShift.screen, layer: __doubleShift.state?.layer, index: __doubleShift.index, x: __doubleShift.state?.player.x, shifts: __doubleShift.state?.shifts, time: __doubleShift.state?.time })');
   flow('gamepad: A clocks in from the title, B shifts', padState.screen === 'play' && padState.layer === 1, padState);
 

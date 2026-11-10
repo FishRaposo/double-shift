@@ -1285,6 +1285,48 @@ test('secure: a repaired clamp stops its prank for good, and its tell with it', 
   assert.equal(tileAt(lvl, DAY, 0, 0, s.overrides), '.');
 });
 
+// ---------- a death undoes what the checkpoint didn't see ----------
+
+const night = (rows) => rows.map((r) => r.replace(/[SE^]/g, '.'));
+
+test('power: a death puts the fuse back in the socket the checkpoint saw', () => {
+  const day = ['..........', '..........', '..........', '.S...C..^E', '##########'];
+  const lvl = level(day, night(day), { repairs: [{ tool: FUSE, fix: { name: 'BOX', kind: 'fuse', layer: 'day', spots: [{ tx: 4, ty: 3, set: wall(0) }, { tx: 7, ty: 3, set: wall(1) }] } }] });
+  let s = walkTo(lvl, initState(lvl), 5.8); // fitted in the first socket, then the checkpoint
+  assert.equal(s.checkpoint.repairs[0].at, 0);
+  s = leftTo(lvl, s, 4.4);
+  assert.equal(s.repairs[0].done, false, 'pulled');
+  for (let i = 0; i < 400 && s.deaths === 0; i++) s = step(lvl, s, RIGHT); // into the second socket, then the rebar
+  assert.equal(s.deaths, 1);
+  assert.deepEqual([s.repairs[0].done, s.repairs[0].at], [true, 0]);
+  assert.equal(tileAt(lvl, DAY, 0, 0, s.overrides), '#');
+  assert.equal(tileAt(lvl, DAY, 1, 0, s.overrides), '.');
+});
+
+test('water: a death turns the valve back to how the checkpoint saw it', () => {
+  const day = ['..........', '..........', '..........', '.S.C...^.E', '##########'];
+  const lvl = level(day, night(day), { repairs: [{ tool: FUSE, fix: { tx: 5, ty: 3, name: 'VALVE', kind: 'valve', layer: 'day', swap: true, set: wall(0) } }] });
+  let s = initState(lvl);
+  for (let i = 0; i < 400 && s.deaths === 0; i++) { s = step(lvl, s, RIGHT); if (s.repairs[0].done) assert.equal(tileAt(lvl, DAY, 0, 0, s.overrides), '#'); }
+  assert.equal(s.deaths, 1);
+  assert.deepEqual([s.repairs[0].tool, s.repairs[0].done], [true, false], 'the wrench was saved, the turn was not');
+  assert.equal(tileAt(lvl, DAY, 0, 0, s.overrides), '.');
+});
+
+test('machine: a death sends the car back to the stop the checkpoint saw', () => {
+  const day = ['..........', '..........', '..........', '..........', '......##..', '..........', '.S...C.^.E', '##########'];
+  const lvl = level(day, night(day), LIFT);
+  let s = walkTo(lvl, initState(lvl), 5.4); // repaired at 4, saved at 5
+  assert.equal(s.checkpoint.repairs[0].done, true);
+  s = round(lvl, s);
+  assert.equal(tileAt(lvl, DAY, 6, 2, s.overrides), '#', 'one clock-in: the car is up');
+  for (let i = 0; i < 400 && s.deaths === 0; i++) s = step(lvl, s, RIGHT);
+  assert.equal(s.deaths, 1);
+  assert.equal(s.nightEntries, 0);
+  assert.equal(tileAt(lvl, DAY, 6, 4, s.overrides), '#');
+  assert.equal(tileAt(lvl, DAY, 6, 2, s.overrides), '.');
+});
+
 test("work order: a position needs a layer", () => {
   assert.throws(() => level(JOB_DAY, JOB_NIGHT, { repairs: [{ tool: { tx: 1, ty: 1 }, fix: { tx: 2, ty: 1, layer: 'day' } }] }), /needs a layer/);
 });

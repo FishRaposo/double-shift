@@ -499,7 +499,7 @@ export function pendingPranks(level, s) {
 
 // The pranks a finished Secure job has stopped.
 export function securedPranks(level, s) {
-  return new Set(level.repairs.flatMap((job, i) => (s.repairs[i].done ? job.spots[s.repairs[i].at].secures ?? [] : [])));
+  return new Set(level.repairs.flatMap((job, i) => (s.repairs[i].done ? job.spots[s.repairs[i].at ?? 0].secures ?? [] : [])));
 }
 
 function pranksFor(level, entry, s) {
@@ -578,7 +578,7 @@ function withPranks(ov, pranks) {
 export function overridesAfter(level, entries, repaired = false) {
   let ov = {};
   for (let e = 1; e <= entries; e++) ov = withPranks(ov, pranksFor(level, e));
-  return repaired ? withPranks(ov, level.repairs.map((job) => job.fix)) : ov;
+  return repaired ? withPranks(ov, level.repairs.map((job) => job.spots[0])) : ov; // each job at its first spot: one state that can really happen
 }
 
 // Attempt the pending shift. Order: clean → corner nudge → keep buffering.
