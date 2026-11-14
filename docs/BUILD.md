@@ -331,6 +331,10 @@ The steps:
 - `npm run gif -- <id>` writes `media/demo-<id>.gif` at 480×270 (`--full`: 960×540, `demo-<id>-full.gif`), the same bytes every time: the page imports the level's scripted policy from `test/solutions.mjs` and runs it through the game's own `advance()` and `render()` on a fixed clock, one frame per 1/25 s. It stops 1.5 s after the timecard comes up or at `--seconds` (8), loops forever, and keeps under 3 MB (else 20 fps, then 6 s). Measured: `upside` 0.09 MB, `doors` 0.50 MB (`--full` 1.12 MB).
 - Checks: the page's run matches the tests' (shifts, deaths, time), the exit shows at the run's moment in the GIF (a long frame steps `advance()` in pieces: it runs at most 12 ticks a call), and Chromium's decoder reads every frame back as encoded. The dependency-free encoder (`scripts/gif-encode.mjs`) is tested in `test/gif.test.mjs` against a reference GIF reader. The browser helper is shared with `media.mjs` (`scripts/cdp.mjs`).
 
+### T26 · Colour-blind and grayscale readability *(✅ built 2026-11-14)*
+- All 21 levels were reviewed in grayscale and simulated deuteranopia, protanopia and tritanopia (`npm run media -- --review <ids> --gray --cvd`). Three cues leaned on hue and were changed in `src/art.js`, always on (no new setting): the night laser is a 2-px beam with a pale dashed core (`HAZARD.laserCore`) and a stronger glow; the unsaved punch clock face is dark `#6b7480` (saved stays `#ffd23f`); the prank tell outline is 2 px thick with long dashes, unlike the 1-px echo outline.
+- All three are drawn per frame or in the existing layers, not moved into the static cache. `test/palette.test.mjs` checks the laser core (≥ 4.5:1 on the night sky) and the clock faces.
+
 ## 5. Known gotchas
 - **Offset and Upside Down levels generate their night grid:** don't also give `night`.
 - **Checkpoints only save where you can stand.** A `C` over a pit in one shift saves in the other or not at all.

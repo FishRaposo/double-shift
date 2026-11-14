@@ -56,7 +56,7 @@ Then:
 | Platforms | HTML5 only |
 | Genre | Platformer (puzzle elements described in tags/description, not repeated as genre) |
 | Languages | English only |
-| Accessibility | Tick only what exists. The build has a **reduced effects** setting (no screen flashes, rings, sparkles, shaking or flicker) and adjustable music/sound volume; tick itch's matching options if offered (e.g. reduced motion / flashing). The four actions can be **rebound** (SETTINGS > CONTROLS). No colour-blind mode yet. |
+| Accessibility | Tick only what exists. The build has a **reduced effects** setting (no screen flashes, rings, sparkles, shaking or flicker) and adjustable music/sound volume; tick itch's matching options if offered (e.g. reduced motion / flashing). The four actions can be **rebound** (SETTINGS > CONTROLS). No separate colour-blind mode: all 21 levels were reviewed on 2026-11-14 in grayscale and simulated deuteranopia, protanopia and tritanopia, and the cues that depended on hue are always on (the laser has a pale dashed core, the saved punch clock is bright against a dark unsaved one, the prank tell has a heavier outline than the echo). |
 | Community | Comments |
 | Theme | Background `#0b1029`, text `#d9f6ff`, links `#5ff2ff`; embed background `#0b1029` (ART.md §8) |
 | Visibility | Draft → play it on the page once → **Public** (the publish date is fixed at that click) |

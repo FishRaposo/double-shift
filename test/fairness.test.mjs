@@ -3,7 +3,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { LEVELS } from '../src/levels.js';
-import { initState, standableSpot, TILE, PARAMS, DAY, NIGHT, freakBoxes } from '../src/rules.js';
+import { initState, standableSpot, overlapsHazard, overridesAfter, TILE, PARAMS, DAY, NIGHT, freakBoxes } from '../src/rules.js';
 import { inputWindows, level, patrolBoxes, respawnSpots, spotInPatrol, WINDOW_FLOOR } from './helpers.mjs';
 import { SOLUTIONS, L } from './solutions.mjs';
 
@@ -39,6 +39,25 @@ test('fairness: a checkpoint that only a prank makes standable is still checked 
   assert.ok(before.length === 1 && before[0].at.includes('after 1 night'), 'the spot exists only once the prank lays the floor');
   assert.ok(spotInPatrol(before[0], boxes), 'and it sits in the lurker\'s patrol, so the level check would fail');
 });
+
+// A respawn that is already inside a laser's band would kill you again on the next tick, forever.
+for (const def of LEVELS) {
+  test(`${def.name}: no spawn or checkpoint save stands in a hazard, in any prank state`, () => {
+    const lvl = L[def.id];
+    const start = initState(lvl).checkpoint;
+    assert.equal(overlapsHazard(lvl, start.layer, start.x, start.y), false, 'the spawn is in a hazard');
+    const last = Math.max(0, ...lvl.pranks.map((pr) => pr.onNight + 2 * (pr.every ?? 0)));
+    for (let entries = 0; entries <= last; entries++) {
+      const ov = overridesAfter(lvl, entries);
+      for (const { tx, ty } of lvl.checkpoints) {
+        for (const layer of [DAY, NIGHT]) {
+          const p = standableSpot(lvl, layer, tx, ty, ov);
+          assert.ok(!p || !overlapsHazard(lvl, layer, p.x, p.y, undefined, undefined, ov), `checkpoint ${tx},${ty} (layer ${layer}, ${entries} night entries) is in a hazard`);
+        }
+      }
+    }
+  });
+}
 
 // A freak patrolling over the exit lets you dash in past it at the right moment (a Wet Floor skip).
 for (const def of LEVELS) {

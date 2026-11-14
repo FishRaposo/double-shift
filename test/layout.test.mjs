@@ -15,6 +15,10 @@ test('levelIndex: ids, numbers, junk', () => {
   assert.equal(levelIndex(LEVELS, '0'), 0, 'numbers before the start clamp to the first level');
   assert.equal(levelIndex(LEVELS, 'nope'), 0);
   assert.equal(levelIndex(LEVELS, null), 0);
+  assert.equal(levelIndex(LEVELS, ''), 0, '?level= with nothing after it');
+  assert.equal(levelIndex(LEVELS, '-4'), 0);
+  assert.equal(levelIndex(LEVELS, '2.9'), 1, 'a fraction reads as its whole part');
+  assert.equal(levelIndex(LEVELS, 'NaN'), 0);
 });
 
 // The finished game: five acts of four plus the finale, with its longest planned names (docs/LEVELS.md §5.0).

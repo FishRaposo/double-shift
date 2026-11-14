@@ -39,6 +39,8 @@ export const NOTE_STRIP = { paper: C.paper, ink: C.paperInk, border: '#c9ad84' }
 export const HAZARD = {
   rebarBase: '#6a2c12', rebar: ['#b04a20', '#8f3a18'],
   laser: '#ff3b5c', laserDim: '#e8324f', laserGlow: '255,59,92', emitter: '#ff9db0',
+  // the beam's pale segments: they carry the laser in grayscale (brightness and dashes, not hue), ≥ 4.5:1 on the night sky
+  laserCore: '#fff0f3', laserCoreDim: '#ffc2cd',
 };
 
 // fill an art-pixel rectangle: (x, y) in screen px, w/h in art px
@@ -412,8 +414,12 @@ export function drawLaser(g, tx, ty, t, leftEnd, rightEnd, { top = false } = {})
   const y = base - 4 * A;
   const Y = mirrorIn(ty, top);
   const on = Math.sin(t * 18 + tx) > -0.3;
-  px(g, x, Y(y - A, 3), 15, 3, `rgba(${HAZARD.laserGlow},${on ? 0.28 : 0.14})`);
-  px(g, x, Y(y, 1), 15, 1, on ? HAZARD.laser : HAZARD.laserDim);
+  px(g, x, Y(y - 2 * A, 4), 15, 4, `rgba(${HAZARD.laserGlow},${on ? 0.4 : 0.2})`);
+  // a 2-px beam: red, with a pale core in dashes (3 on, 2 off; 15 is a multiple of 5, so it runs on across tiles)
+  px(g, x, Y(y - A, 2), 15, 2, on ? HAZARD.laser : HAZARD.laserDim);
+  for (let i = 0; i < 15; i++) {
+    if (i % 5 < 3) px(g, x + i * A, Y(y - A, 2), 1, 2, on ? HAZARD.laserCore : HAZARD.laserCoreDim);
+  }
   for (const [end, ex] of [[leftEnd, x], [rightEnd, x + 13 * A]]) {
     if (!end) continue;
     px(g, ex, Y(base - HZ * A, HZ), 2, HZ, HAZARD.emitter);
@@ -506,11 +512,12 @@ export function drawCheckpoint(g, tx, ty, on, ping = 0, { hang = false } = {}) {
     for (let i = -r; i <= r; i++) {
       if (i * i + j * j > r * r + 1) continue;
       const edge = i * i + j * j > (r - 1) * (r - 1) + 1;
-      px(g, fx + i * A - A / 2, fy + j * A - A / 2, 1, 1, edge ? '#2a2018' : on ? '#ffd23f' : '#d6dbe0');
+      px(g, fx + i * A - A / 2, fy + j * A - A / 2, 1, 1, edge ? '#2a2018' : on ? '#ffd23f' : '#6b7480');
     }
   }
-  px(g, fx - A / 2, fy - 2 * A - A / 2, 1, 2, '#2a2018'); // hands
-  px(g, fx - A / 2, fy - A / 2, 2, 1, '#2a2018');
+  const hand = on ? '#2a2018' : '#f4f6f8'; // hands: dark on the lit face, light on the dim one
+  px(g, fx - A / 2, fy - 2 * A - A / 2, 1, 2, hand);
+  px(g, fx - A / 2, fy - A / 2, 2, 1, hand);
   px(g, x + 3 * A, by + 8 * A, 6, 1, '#1b1209'); // the card slot
   if (on) {
     // a timecard punched in, sticking out of the top
@@ -685,11 +692,13 @@ export function drawPrankCells(g, cells, isEmpty, { alpha = 1, color = TELL } = 
       g.globalAlpha = prev * alpha;
     }
     g.fillStyle = color;
-    for (let i = 0; i < TILE; i += 3 * A) {
-      if (!has.has(`${c.tx},${c.ty - 1}`)) g.fillRect(x + i, y, 2 * A, A);
-      if (!has.has(`${c.tx},${c.ty + 1}`)) g.fillRect(x + i, y + TILE - A, 2 * A, A);
-      if (!has.has(`${c.tx - 1},${c.ty}`)) g.fillRect(x, y + i, A, 2 * A);
-      if (!has.has(`${c.tx + 1},${c.ty}`)) g.fillRect(x + TILE - A, y + i, A, 2 * A);
+    // a heavy outline: 2 art px thick, 6-on 2-off dashes (the echo is 1 px thick with 3-on 2-off), so it differs by shape too
+    for (let i = 0; i < TILE; i += 8 * A) {
+      const n = Math.min(6 * A, TILE - i);
+      if (!has.has(`${c.tx},${c.ty - 1}`)) g.fillRect(x + i, y, n, 2 * A);
+      if (!has.has(`${c.tx},${c.ty + 1}`)) g.fillRect(x + i, y + TILE - 2 * A, n, 2 * A);
+      if (!has.has(`${c.tx - 1},${c.ty}`)) g.fillRect(x, y + i, 2 * A, n);
+      if (!has.has(`${c.tx + 1},${c.ty}`)) g.fillRect(x + TILE - 2 * A, y + i, 2 * A, n);
     }
   }
   g.globalAlpha = prev;

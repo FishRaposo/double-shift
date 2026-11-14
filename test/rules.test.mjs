@@ -1117,3 +1117,40 @@ test('overridesAfter: the tile overrides after N night clock-ins, pranks applied
   assert.equal(s.nightEntries, 4);
   assert.deepEqual(s.overrides, R.overridesAfter(lvl, 4));
 });
+
+test('a death on the tick you reach the exit is a death, not a win (the hazard check runs before the exit)', () => {
+  // the exit cell is open by day and a laser at night: clocking in while standing in it
+  const day = ['..........', '..........', '..E.......', '..........', '.S........', '##########'];
+  const night = ['..........', '..........', '..^.......', '..........', '..........', '##########'];
+  const lvl = level(day, night);
+  let s = initState(lvl);
+  s.player.x = 2 * TILE + 6;
+  s.player.y = 2 * TILE + 4; // body inside the laser's band of the exit cell
+  s = step(lvl, s, SHIFT);
+  assert.equal(s.won, false);
+  assert.equal(s.events.some((e) => e.type === 'win'), false);
+  assert.equal(s.events.some((e) => e.type === 'death' && e.cause === 'hazard'), true);
+  assert.equal(s.deaths, 1);
+});
+
+test('a repeating prank refires after a death: the respawn restores the checkpoint\'s night-entry count too', () => {
+  const lvl = level(OPEN.map((r, y) => (y === 6 ? '.S..C...E.' : r)), BLANK, {
+    pranks: [{ id: 'p', onNight: 1, every: 2, set: [{ layer: 'night', x0: 6, y0: 5, ch: '#' }] }],
+  });
+  let s = step(lvl, initState(lvl), SHIFT); // entry 1: the prank fires
+  s = step(lvl, s, SHIFT); // back to day
+  place(s, 4, 6);
+  s = step(lvl, s, NO_INPUT); // onto the checkpoint
+  assert.equal(s.checkpoint.id, '4,6');
+  assert.equal(s.checkpoint.nightEntries, 1);
+  s = step(lvl, s, SHIFT); // entry 2
+  s = step(lvl, s, SHIFT);
+  s = step(lvl, s, SHIFT); // entry 3: the repeat fires
+  assert.equal(s.nightEntries, 3);
+  s.player.y = lvl.h * TILE + 61; // fall out
+  s = step(lvl, s, NO_INPUT);
+  assert.equal(s.deaths, 1);
+  assert.equal(s.nightEntries, 1);
+  assert.deepEqual(s.overrides, R.overridesAfter(lvl, 1));
+  assert.equal(pendingPranks(lvl, s)[0].nights, 2, 'the next lap is two night entries away again');
+});

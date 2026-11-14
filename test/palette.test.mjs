@@ -93,6 +93,15 @@ test('readability: hazards stand out from the sky in every color they flicker th
   for (const c of [HAZARD.laser, HAZARD.laserDim]) for (const sky of SKIES[NIGHT]) atLeast(contrast(solid(c), sky), 3, `laser ${c}`);
 });
 
+test('readability: the laser\'s pale core holds ≥ 4.5:1 on the night sky, so the beam reads in grayscale', () => {
+  for (const c of [HAZARD.laserCore, HAZARD.laserCoreDim]) for (const sky of SKIES[NIGHT]) atLeast(contrast(solid(c), sky), 4.5, `laser core ${c}`);
+});
+
+test('readability: a saved punch clock differs from an unsaved one by brightness, not only hue (≥ 2:1)', () => {
+  atLeast(contrast(solid('#ffd23f'), solid('#6b7480')), 2, 'saved vs unsaved clock face');
+  atLeast(contrast(solid('#f4f6f8'), solid('#6b7480')), 3, 'unsaved face vs its hands');
+});
+
 test('readability: freak eyes on the freak body (≥ 4.5:1)', () => {
   atLeast(contrast(solid(C.freakEye), solid(C.freak)), 4.5, 'eyes');
 });

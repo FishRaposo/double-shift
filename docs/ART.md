@@ -70,9 +70,9 @@ Graphics is a rated jam category. Simple shapes score well when they look *chose
 | Element | Value |
 |---|---|
 | Rebar (day hazard) | spikes `#b04a20` / `#8f3a18` in alternating rows on a `#6a2c12` base (`HAZARD` in `src/art.js`; darkened Nov 3 to hold 3:1 on the low sky band) |
-| Laser (night hazard) | beam `#ff3b5c` (dimmer `#e8324f` as it flickers) with a `rgba(255,59,92,0.14–0.28)` glow, emitters `#ff9db0` with white tips |
+| Laser (night hazard) | beam 2 art px thick, `#ff3b5c` (dimmer `#e8324f` as it flickers) with a pale dashed core (3 on, 2 off) `#fff0f3` (`#ffc2cd` when dim, ≥ 4.5:1 on the night sky: it carries the beam in grayscale) and a `rgba(255,59,92,0.2–0.4)` glow, emitters `#ff9db0` with white tips |
 | Exit door day / night | `#3d7a4a` / `#1f6b47`, 1 art px frame and knob `#9dffb8`; lit sign box `#2bdc6a` above the door with `EXIT` in `#06210f` (pixel font, scale 1) |
-| Checkpoint (punch clock) | box `#3a4048` with a `#9aa3ad` front, card slot `#1b1209`; clock face `#d6dbe0` off / `#ffd23f` on, rim and hands `#2a2018`; once taken, a timecard `#f7efdc` with a `#c0392b` stripe in the top; post `#6b5a48`, foot `#4a3b2c` |
+| Checkpoint (punch clock) | box `#3a4048` with a `#9aa3ad` front, card slot `#1b1209`; clock face `#6b7480` off (hands `#f4f6f8`) / `#ffd23f` on (hands `#2a2018`), rim `#2a2018`; once taken, a timecard `#f7efdc` with a `#c0392b` stripe in the top; post `#6b5a48`, foot `#4a3b2c` |
 | Freak body | `#05060f` with a `#5ff2ff` rim drawn into the sprite (cream `#fbecc9` for the day-walker); the supervisor's visor `#2bdc6a`; the day-walker's hard hat `#ff8a1c` (orange: it's out on the worker's shift, so it wears none of the worker's colors, tested) and shades `#3a4048` with white glints |
 | Freak eyes | `#ffec5a`; decor and tell eyes add a glow `rgba(255,236,90,0.25)` |
 | Sticky note | `#ffe96b` sized to its text, text `#5a3d10` in the pixel font, a strip of tape on top |
@@ -105,7 +105,7 @@ Behind everything, one motif per act (§6). Every color stays ≤ 1.35:1 against
 | Decor eyes | Small and dim, no glow: they're just watching. The big glowing pair always means a prank with a countdown | Size, glow |
 | Peeker hidden | Dark slot + small eyes; for the last 0.35 s before it pops, the slot rattles, the eyes open and a "!" shows | Shape + mark |
 | Patrol route | Dashed red-orange track on the floor with end stops, on both shifts; a slacking freak's track is faint. Eyes look the way it's walking | Dashes + end stops |
-| Pending prank | Night: two pairs of eyes near the target. Day: yellow MINE note. Both: a countdown under it (NEXT NIGHT, IN 2 NIGHTS) and the tiles it will change outlined (yellow by night, rust by day): tinted = something will be here, crossed = it will be gone. A tile shows only its next change; a repeating prank keeps its tell while its next lap changes something | Eyes / note shape, text, dashes + crosses |
+| Pending prank | Night: two pairs of eyes near the target. Day: yellow MINE note. Both: a countdown under it (NEXT NIGHT, IN 2 NIGHTS) and the tiles it will change outlined (yellow by night, rust by day; a heavy 2-px outline with long 6-on 2-off dashes, where the other shift's echo is a thin 1-px one): tinted = something will be here, crossed = it will be gone. A tile shows only its next change; a repeating prank keeps its tell while its next lap changes something | Eyes / note shape, text, dashes + crosses |
 | Wet floor `~` | Solid fill + sheen lines; a WET FLOOR sign nearby | **Wavy top edge** instead of a straight one |
 | Supervisor facing | Head and clipboard turned to the watched side; eyes only on that side; a scanline wedge from its eyes to the far end of the watched patrols; over its head, on a dark plate, an arrow for the watched side and four pips running out until it turns (white for the last 0.35 s) | Shape, wedge, arrow, pip count |
 | Watched vs. slacking freak | Watched: normal, with a bobbing yellow "!" (dangerous). Slacking: eyes closed to lines, silhouette still and dimmed, a drifting "z" (harmless). Both marks also show by day | "!" vs. "z", closed eyes, no jitter |
@@ -189,7 +189,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
   | 4 Lights Out | No windows: three rows of fluorescent fixtures with dim tubes and light cones | The fixtures are dead; three twin-head emergency lights glow down the wall, and two EXIT pictogram signs |
   | 5 Upside Down | Lamps hanging between the windows, light cones under them | The whole backdrop upside down |
   | Finale | Dawn: the low sky warms to pink in three steps, the sun's rim on the horizon | The moon, low |
-- Checkpoint (Nov 3): a punch clock on a post, a metal box with a clock face and a card slot (`checkpointRect`, always on screen, tested). Grey face when unset; once taken the face lights `#ffd23f` and a timecard sticks out of the top. The face swells on the ping.
+- Checkpoint (Nov 3): a punch clock on a post, a metal box with a clock face and a card slot (`checkpointRect`, always on screen, tested). Dark grey face when unset (clearly darker than the lit one in grayscale); once taken the face lights `#ffd23f` and a timecard sticks out of the top. The face swells on the ping.
 - Exit (Nov 3): the lit EXIT sign sits above the door, or beside it when there's no room above, and never leaves the screen (`exitRects`, tested).
 - Barrier tape (Nov 3): a cordon of two stanchions standing on the floor with striped tape sagging between their tops, never a line across a gap at floor height (it read as a bridge).
 - Solids: day = brick courses; night = inset panel seams.
