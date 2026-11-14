@@ -399,6 +399,7 @@ function handleEvents(events) {
       case 'land': sfx.land(); fx.land = 0.1; fx.dust.push(feetDust(ev)); break;
       case 'wetStop': sfx.wetStop(); break;
       case 'peek': sfx.peekerBoing(); break; // a peeker popped out on your shift
+      case 'grip': sfx.peekerScratch(); break; // its rattle starts: a peeker is about to pop out
       case 'supervisorTurn': sfx.supervisorTurn(); break;
       case 'death':
         if (ev.cause === 'spooked') {
@@ -551,13 +552,22 @@ function memoLayout(m) {
 // the other shift's echo, solids, hatching, props and the exit. Returns { canvas, portraits, hangs }: portraits
 // blink, so drawPlay() draws them per frame from this list, and each checkpoint's pose (hanging or standing)
 // is worked out here once (same cache key, no per-frame tile scans). The key carries the level's revision
-// (CLOCKOUT_CLASSIC shares Clock Out's id) and the overrides as text, made once per overrides object: states
-// are immutable snapshots, so one object never changes its text.
+// (CLOCKOUT_CLASSIC shares Clock Out's id) and the overrides as text. step() clones the state every tick, so the
+// object is new each tick but equal to the last one almost always: a shallow compare against the last overrides
+// (a handful of entries) reuses its text, and the JSON is rebuilt only when the overrides really changed.
 const staticCache = new Map();
-const overrideText = new WeakMap();
+let lastOv = null;
+let lastOvText = '';
+function sameOverrides(a, b) {
+  if (a === b) return true;
+  const ka = Object.keys(a);
+  if (ka.length !== Object.keys(b).length) return false;
+  for (const k of ka) if (a[k] !== b[k]) return false;
+  return true;
+}
 function staticLayer(lvl, def, layer, ov) {
-  let ovText = overrideText.get(ov);
-  if (ovText === undefined) { ovText = JSON.stringify(ov); overrideText.set(ov, ovText); }
+  if (lastOv === null || !sameOverrides(ov, lastOv)) { lastOvText = JSON.stringify(ov); lastOv = ov; }
+  const ovText = lastOvText;
   const key = `${def.id}#${def.rev ?? 1}:${layer}:${ovText}`;
   const hit = staticCache.get(key);
   if (hit) return hit;

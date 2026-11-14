@@ -16,11 +16,11 @@ const isResult = (r) => r && Number.isFinite(r.shifts) && Number.isFinite(r.time
 function load(storage) {
   try {
     const data = JSON.parse(storage?.getItem(KEY) ?? 'null');
-    const best = {};
+    const best = Object.create(null); // ids like `constructor` or `__proto__` are plain keys, not Object.prototype
     for (const [id, r] of Object.entries(data?.best ?? {})) if (isResult(r)) best[id] = r;
     return { best };
   } catch {
-    return { best: {} };
+    return { best: Object.create(null) };
   }
 }
 

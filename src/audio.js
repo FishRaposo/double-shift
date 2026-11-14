@@ -159,6 +159,7 @@ export const SOUNDS = {
   sting: [392, 494].map((f) => ({ type: 'triangle', f0: f, dur: 0.12, vol: 0.12 })).concat([523, 659].map((f) => ({ type: 'triangle', f0: f, dur: 0.18, vol: 0.12, delay: 0.13 }))),
   // level mechanics
   peekerBoing: [{ type: 'sine', f0: 300, f1: 600, dur: 0.05, vol: 0.08 }],
+  peekerScratch: [{ type: 'noise', dur: 0.03, vol: 0.035, filter: { type: 'bandpass', f0: 2000 }, q: 3 }], // the rattle starts: a peeker is about to pop out
   flip: [{ type: 'sine', f0: 300, f1: 120, dur: 0.12, vol: 0.12 }], // under every shift in an Upside Down level: gravity turns over
   lurkerStep: [{ type: 'noise', dur: 0.02, vol: 0.04, filter: { type: 'lowpass', freq: 300 } }],
   wetSqueak: [{ type: 'square', f0: 900, f1: 1300, dur: 0.08, vol: 0.06, vibrato: 6, filter: { type: 'lowpass', freq: 3000 } }],
@@ -195,5 +196,6 @@ export const sfx = {
   supervisorTurn: () => { playSound('clipboardTick'); playSound('turnWhoosh'); },
   offsetRumble: () => playSound('offsetRumble'),
   peekerBoing: () => playSound('peekerBoing'),
+  peekerScratch: () => playSound('peekerScratch'),
   flip: () => playSound('flip'),
 };

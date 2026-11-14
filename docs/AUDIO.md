@@ -3,7 +3,7 @@
 Companion to [GDD.md](GDD.md) §11. All audio is synthesized with WebAudio in `src/audio.js`. No audio files, no licensed music.
 
 **At a glance**
-- 26 sound effects are built (§2); the 16-bar theme ships in two synced arrangements that crossfade on every shift (§3).
+- 27 sound effects are built (§2); the 16-bar theme ships in two synced arrangements that crossfade on every shift (§3).
 - Every SFX is ≤ 0.25 s. The shift sound's pitch says where you went: down = night, up = day.
 - Funny, not scary: yelps, giggles, a rubber stamp. `M` mutes.
 
@@ -95,7 +95,7 @@ The act follows the level being played (menus play act 1's) and changes from the
 | Lurker footsteps *(not wired)* | Very quiet ticks while you're on night. Decided against on 2026-11-03: it clutters the mix. |
 | Freaks freeze (shift to day) | Optional "record scratch" micro-sound layered under the shift blip |
 | Prank shimmer | Layered under the giggle when a prank fires: 3–4 quick sine pings, high (~1.5–2.5 kHz), very quiet. The "how did they do that?" half of the joke. |
-| Peeker hands *(not built)* | A tiny scratch (filtered noise, 0.03 s) when a peeker grips the ledge. Needs a decision first (checked 2026-11-14): a ducked peeker has no "hands on the ledge" phase in the rules or the art, only a 0.35 s eyes-wide rattle (`PEEK_WARN` in `src/art.js`) before it pops out, and the rules emit no event for it. |
+| Peeker rattle scratch ✅ | Built 2026-11-14: a tiny scratch (band-pass noise around 2 kHz, 0.03 s, vol 0.035, `peekerScratch`) on the rules' `grip` event, which fires once per cycle when the 0.35 s eyes-wide rattle starts (`PEEK_WARN`, now in `src/rules.js`), `PEEK_WARN` before the boing. Fish's listening check is open. |
 | Wet floor slide | Squeak on hard stop |
 | Menu move / select | Soft clicks |
 

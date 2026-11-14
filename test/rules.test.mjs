@@ -1,7 +1,7 @@
 // GDD §13.7 collision/shift edge cases, plus S-rules. Each runs headless against src/rules.js.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { step, initState, NO_INPUT, DAY, NIGHT, TILE, DT, PARAMS, isEmbedded, isSolidChar, overlapsSolid, freakBoxes, pendingPranks, tileAt, supervisorFacing, watchedClock } from '../src/rules.js';
+import { step, initState, NO_INPUT, DAY, NIGHT, TILE, DT, PARAMS, PEEK_WARN, isEmbedded, isSolidChar, overlapsSolid, freakBoxes, pendingPranks, tileAt, supervisorFacing, watchedClock } from '../src/rules.js';
 import { level, stepN, place, play } from './helpers.mjs';
 
 const OPEN = [
@@ -361,6 +361,17 @@ test('death restores prank state to the checkpoint (no prank softlocks)', () => 
   assert.equal(tileAt(lvl, NIGHT, 6, 6, s.overrides), '.');
 });
 
+test('a shift whose prank kills you on the same tick reports no prank (the respawn rolled it back)', () => {
+  const lvl = level(OPEN, BLANK, {
+    pranks: [{ id: 'p', onNight: 1, set: [{ layer: 'night', x0: 1, y0: 6, ch: '^' }] }],
+  });
+  const s = step(lvl, initState(lvl), SHIFT); // no checkpoint: the respawn restores the initial state
+  assert.ok(s.events.some((e) => e.type === 'death'), 'the prank spike kills on the shift tick');
+  assert.equal(s.nightEntries, 0);
+  assert.equal(tileAt(lvl, NIGHT, 1, 6, s.overrides), '.');
+  assert.ok(!s.events.some((e) => e.type === 'prank'), 'no prank event for a prank that was undone');
+});
+
 test('freaks freeze while you are on day shift', () => {
   const lvl = level(OPEN, BLANK, { freaks: [{ kind: 'lurker', tx: 5, ty: 6, range: 3, speed: 60 }] });
   let s = initState(lvl);
@@ -409,6 +420,25 @@ test('a peeker popping out on your shift emits one peek event per cycle (and non
   let dayPeeks = 0;
   for (let i = 0; i < 120 * 2; i++) { s = step(lvl, s); dayPeeks += s.events.filter((e) => e.type === 'peek').length; }
   assert.equal(dayPeeks, 0);
+});
+
+test('a peeker rattling on your shift emits one grip event per cycle, PEEK_WARN before the peek (none while frozen)', () => {
+  const lvl = level(OPEN, BLANK, { freaks: [{ kind: 'peeker', tx: 8, ty: 1, period: 1, duty: 0.5 }] });
+  let s = step(lvl, initState(lvl), SHIFT); // onto night: its clock runs
+  const log = [];
+  for (let i = 0; i < 120 * 2.5; i++) {
+    s = step(lvl, s);
+    for (const e of s.events) if (e.type === 'grip' || e.type === 'peek') log.push({ ...e, t: s.freakClock });
+  }
+  const grips = log.filter((e) => e.type === 'grip');
+  const peeks = log.filter((e) => e.type === 'peek');
+  assert.equal(grips.length, 2, 'once per cycle');
+  assert.deepEqual({ type: grips[0].type, id: grips[0].id }, { type: 'grip', id: 'freak0' });
+  assert.ok(Math.abs(peeks[0].t - grips[0].t - PEEK_WARN) < 0.02, 'grip leads peek by PEEK_WARN');
+  s = step(lvl, s, SHIFT); // to day: frozen
+  let dayGrips = 0;
+  for (let i = 0; i < 120 * 2; i++) { s = step(lvl, s); dayGrips += s.events.filter((e) => e.type === 'grip').length; }
+  assert.equal(dayGrips, 0);
 });
 
 test('a patrolling lurker reports the way it is walking', () => {

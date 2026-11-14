@@ -4,7 +4,7 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as of 2026-11-05 (after t
 
 **At a glance**
 - **The one rule:** `src/rules.js` decides everything that matters; the screen only draws it (§2).
-- `npm start` to play, `npm test` (<!-- n:tests -->437<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
+- `npm start` to play, `npm test` (<!-- n:tests -->441<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
 - Add a level: grids in `src/levels.js` + a `SOLUTIONS` entry in `test/solutions.mjs` (§6; the full recipe is BUILD.md §2.1).
 - The five added mechanics (wet floor, day-walker, supervisor, offset layer, Upside Down) are built — §6.5 documents them.
 
@@ -100,6 +100,7 @@ Shift happens first so a shift and a jump on the same tick see the new world (GD
 | `wetStop` | — | A wet-floor slide decelerated to zero |
 | `supervisorTurn` | `id`, `facing` | A supervisor changed facing (once per window) |
 | `peek` | `id` | A peeker popped out (hidden last tick, out this tick) while you're on its shift; the boing |
+| `grip` | `id` | A peeker's rattle starts (`popIn` crosses below `PEEK_WARN`, once per cycle, on its shift and not while the supervisor looks away); the scratch. An event only, no rule reads it |
 
 ### 3.5 Public API
 `TILE` (30), `DT`, `PARAMS`, `DAY`, `NIGHT`, `FREAK` ({w:20,h:22}), `SKIN_KINDS`, `pendingPranks(level, state)` (what the tells show: nights left, the tiles that will change), `parseLevel(def)`, `initState(level)`, `step(level, state, input)`, `NO_INPUT`, `tileAt(level, layer, tx, ty, overrides)` (outside the grid: side walls, a solid ceiling and an open floor, the other way up on a flipped layer), `overlapsSolid(...)`, `overlapsHazard(...)` (the hazard band is on the floor side of the tile: the bottom 45 %, or the top 45 % on a flipped layer), `freakBoxes(level, state)` (boxes also carry `hang`, `dir`, `popIn`, `supervised`, `watched` for the telegraphs) (each box has `hang`: true for a freak of a flipped shift, which hangs from the solid above its cell), `pendingPranks(level, state)` (what the tells show: nights left and the tiles that will change), `isSolidChar(ch)`, `supervisorFacing(f, t)`, `watchedClock(side, sup, t)`, `isEmbedded(level, state)`, `gravitySign(level, layer)` (−1 only on the night of an `upsideDown` level), `spawnPoint(tx, ty, sign = 1)` (standing on the cell's floor, or hanging under the cell above), `standableSpot(level, layer, tx, ty, ov)` (that spot when it's free and grounded under the layer's gravity, else null; checkpoints and the fairness test use it). Death events carry `cause`, `by` (freak kind) and `layer` (the shift you died in).
@@ -212,7 +213,7 @@ The five added mechanics from [CONTENT.md](CONTENT.md) §3 — all built, tested
 
 | Command | What it covers |
 |---|---|
-| `npm test` | <!-- n:tests -->437<!-- /n --> tests: GDD §13.7 cases 1–15, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, Upside Down rules (flip, gravity sign, hanging, jump and cut, nudge order, coyote across a flip, hazard band, grid edges, checkpoints, fuzz), every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
+| `npm test` | <!-- n:tests -->441<!-- /n --> tests: GDD §13.7 cases 1–15, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, Upside Down rules (flip, gravity sign, hanging, jump and cut, nudge order, coyote across a flip, hazard band, grid edges, checkpoints, fuzz), every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
 | `npm run check` | Every module parses; every level validates |
 | `npm run audit` | Per level: the slack of every required shift and jump (fails under the act floor), input-lag tolerance 0–150 ms, and a random search for wins below par or without shifting (`scripts/audit-levels.mjs`). |
 | `npm run media` | Real browser (headless Edge/Chrome, no dependencies): plays level 1 with key presses, fails on page errors, a wrong outcome, audio clipping or a slow frame; saves the cover, screenshots and gallery. |

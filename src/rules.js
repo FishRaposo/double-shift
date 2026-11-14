@@ -289,6 +289,7 @@ const solidAt = (level, s, layer, x, y) => overlapsSolid(level, layer, x, y, und
 // night shift: switch to day and every freak freezes mid-stride.
 
 export const FREAK = Object.freeze({ w: 20, h: 22 });
+export const PEEK_WARN = 0.35; // seconds of rattle before a peeker pops out (art.js draws it, `grip` event marks its start)
 
 function pingpong(d, len) {
   if (len <= 0) return 0;
@@ -525,6 +526,9 @@ function die(level, s, cause, by) {
   p.rising = false;
   s.layer = s.checkpoint.layer;
   // GDD §9.3: level objects return to the checkpoint's state, so a prank can never softlock a run
+  // a prank fired by this tick's shift went with the night entry it came from: the respawn undoes it, so the
+  // screen must not celebrate it (no giggle, no sparkles)
+  if (s.checkpoint.nightEntries < s.nightEntries) s.events = s.events.filter((e) => e.type !== 'prank');
   s.overrides = s.checkpoint.overrides;
   s.nightEntries = s.checkpoint.nightEntries;
   s.shiftPending = 0;
@@ -563,6 +567,11 @@ export function step(level, prev, input = NO_INPUT, dt = DT) {
     if (before) {
       freakBoxes(level, s).forEach((b, i) => {
         if (b.kind === 'peeker' && b.active && !before[i].active) s.events.push({ type: 'peek', id: b.id });
+        // the rattle starts: popIn crosses below PEEK_WARN (a peeker the supervisor isn't watching stays quiet)
+        const b0 = before[i];
+        if (b.kind === 'peeker' && b.popIn > 0 && b.popIn < PEEK_WARN && (b0.popIn === 0 || b0.popIn >= PEEK_WARN) && (!b.supervised || b.watched)) {
+          s.events.push({ type: 'grip', id: b.id });
+        }
       });
     }
   } else s.dayClock += dt;
