@@ -24,6 +24,14 @@ test('two presses between physics ticks are queued, not dropped', () => {
   assert.equal(inp.consume().shiftPressed, false);
 });
 
+test('a shift tapped and released before the tick still fires once, and leaves nothing held', () => {
+  const inp = createInput();
+  inp.keyDown(down('KeyK'));
+  inp.keyUp(down('KeyK'));
+  assert.equal(inp.consume().shiftPressed, true);
+  assert.equal(inp.consume().shiftPressed, false);
+});
+
 test('K and right Shift are shift binds too', () => {
   const inp = createInput();
   inp.keyDown(down('KeyK'));
