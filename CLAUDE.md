@@ -59,3 +59,51 @@ Doc rules from `docs/INDEX.md`:
 - Every number in a doc (tuning values, sizes, test counts, pars) must match the code — update docs in the same change as the code. Test counts, level counts and source line counts are wrapped in `<!-- n:KEY -->N<!-- /n -->` markers: run `npm run counts -- --write` before committing (CI runs `npm run counts`).
 - Mark unbuilt things *(planned)* or *(stretch)*; never describe a planned feature as existing.
 - In-game copy lives in `docs/WRITING.md` as drafts for Fish (the designer) to edit.
+
+## Model routing and delegation
+
+This session is the orchestrator (Opus by default). Plan, delegate, integrate
+and review. Do a step yourself only when writing the brief would take longer
+than doing it, or the step can't be specified without the whole picture.
+
+The full policy is the `model-effort-ladder` skill in
+`.claude/skills/model-effort-ladder/`. Load it before choosing a model or
+effort for a step, writing or changing a sub-agent file, or handling a
+refusal; this section is the short version. The skill carries a "Refresh"
+date: when a model or price changes, update the skill first, then this section
+and the agent files.
+
+Delegate by default (agent files in `.claude/agents/`):
+- `scout` (Haiku, read-only): search, file triage, reading and summarising,
+  extraction, classification, fan-out across independent files or cases,
+  mechanical steps with an exact spec. Not code changes.
+- `builder` (Sonnet): code changes and bug fixes against a written spec, docs,
+  analysis, drafting, first-pass review. Anything that must run `npm test`.
+- `consultant` (Fable): not active yet. Do not use until this line is removed.
+  Until then, raise the orchestrator's effort (`high`, then `xhigh`) instead.
+
+Every brief stands alone: goal, exact inputs (files, paths, data), constraints,
+output format, how to verify, when to stop. Run independent steps in parallel
+and dependent steps in order; don't fan out a single dependent chain.
+
+Review every sub-agent result before using it. On failure: re-delegate with a
+sharper brief, then at one effort level higher, then move it up a model
+(scout -> builder -> do it yourself).
+
+Never spawn an agent without a pinned model; an unpinned agent inherits the
+session's model. Stay at `high` effort or below unless a measured test shows a
+gain.
+
+When you change code that can be run, built, or type-checked, run a real
+check that exercises the change before reporting it done: the project's
+tests, type-checker, or build, or the changed command itself. A syntax-only
+check, or a check command that failed to start, does not count; if all
+that is missing is the project's declared dependencies, install them with
+its own package manager and lockfile (e.g. npm install, pip
+install -r requirements.txt), never via sudo or the system package manager,
+unless told not to. Only if no real check can run here, say which one you
+did not run and why instead of reporting the change as done.
+
+Here the real check is `npm test`; `npm run check` is syntax-only and does not
+count on its own. Add `npm run audit` after any change to a level or to
+`PARAMS`, and `npm run counts` after any change to docs or a counted number.
