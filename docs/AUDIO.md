@@ -95,7 +95,7 @@ The act follows the level being played (menus play act 1's) and changes from the
 | Lurker footsteps *(not wired)* | Very quiet ticks while you're on night. Decided against on 2026-11-03: it clutters the mix. |
 | Freaks freeze (shift to day) | Optional "record scratch" micro-sound layered under the shift blip |
 | Prank shimmer | Layered under the giggle when a prank fires: 3–4 quick sine pings, high (~1.5–2.5 kHz), very quiet. The "how did they do that?" half of the joke. |
-| Peeker hands *(not built)* | A tiny scratch (filtered noise, 0.03 s) when a peeker grips the ledge |
+| Peeker hands *(not built)* | A tiny scratch (filtered noise, 0.03 s) when a peeker grips the ledge. Needs a decision first (checked 2026-11-14): a ducked peeker has no "hands on the ledge" phase in the rules or the art, only a 0.35 s eyes-wide rattle (`PEEK_WARN` in `src/art.js`) before it pops out, and the rules emit no event for it. |
 | Wet floor slide | Squeak on hard stop |
 | Menu move / select | Soft clicks |
 
