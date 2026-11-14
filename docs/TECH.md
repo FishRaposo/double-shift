@@ -240,7 +240,18 @@ jobs:
       # the suite runs once: its TAP output is kept, and the doc counts read the test count from it
       - run: set -o pipefail; node --test --test-reporter=tap test/*.test.mjs | tee tap.txt
       - run: npm run counts -- --tap tap.txt
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with: { node-version: 22 }
+      # per-level fairness: input slack, lag tolerance, a below-par random search in both directions (3-5 min)
+      - run: npm run audit
 ```
+
+The `audit` job runs in parallel with `test`, so a tuning or level change that breaks fairness fails CI.
 
 GitHub Pages serves `main` (root) at <https://fishraposo.github.io/double-shift/>; `.nojekyll` disables Jekyll processing. Every push to `main` updates the public build, so anything pushed must be playable.
 

@@ -1,9 +1,9 @@
 # Production Plan
 
-Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-05**.
+Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-14**.
 
 **At a glance**
-- **Next for Fish:** play the full run (all 21 levels), including the Upside Down feel check, the Sticky Keys test and tuning (M0), then playtest round 1 by Nov 8. Repo + CI are done.
+- **Next for Fish:** the Nov 8 milestone (M0 + M1) was **missed and is still open**: play the full run (all 21 levels), including the Upside Down feel check, the Sticky Keys test and tuning (M0), then one cold playtest (M1). New date: to be set by Fish. Repo + CI are done.
 - **The build:** all seven milestone PRs and the cohesion pass (Nov 5) are in ([BUILD.md](BUILD.md) records them). The plan's code is finished; what's left is playing it, tuning, playtests and the itch page.
 - **The game:** 21 levels, five acts of four plus the finale, all built ([CONTENT.md](CONTENT.md), LEVELS.md §5.0).
 - **Level audit (Nov 5, all 21):** every level beatable at par, fair timing (≥ 200/100 ms), no respawn loops, and a random search in both directions finds no win below par; `npm run audit` keeps it that way.
@@ -17,7 +17,7 @@ Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-05**.
 | Core rules (move, jump, shift, buffer/nudge, coyote, jump buffer) | Built, tested |
 | Pranks (Nth night entry, tells, checkpoint restore) | Built, tested |
 | Freaks: lurker, peeker, squatter, supervisor (frozen by day), day-walker (frozen by night) | Built, tested |
-| Levels | **<!-- n:levels -->21<!-- /n --> built** (act 1: 4, act 2: 4, act 3: 4, act 4: 4, act 5: 4, finale: 1), all proven solvable at par and fair. LEVEls built (Nov 3); act 5's other three levels and the finale rework planned (CONTENT.md) |
+| Levels | **<!-- n:levels -->21<!-- /n --> built** (act 1: 4, act 2: 4, act 3: 4, act 4: 4, act 5: 4, finale: 1), all proven solvable at par and fair (all built by Nov 3; CONTENT.md) |
 | Rendering | **Pixel art** (Nov 2): sprites, animated worker and freaks, pixel tiles and props, pixel font, effects; every asset in `/tools/gallery.html` |
 | Audio | Mix bus, 26 SFX (`lurkerStep` left unwired, AUDIO.md §4.1), **music** (day/night arrangements crossfading on every shift; each act adds a layer) |
 | Menus | Title, level select + saved bests, settings (volumes, reduced effects, speedrun timer, controls), act cards, pause, timecard with comment, end screen with totals and the run time |
@@ -34,7 +34,7 @@ The whole game is listed in [CONTENT.md](CONTENT.md): **21 levels, five acts of 
 |---|---|---|
 | **Nov 3** | ~~Build complete~~ | ~~All 21 levels, Upside Down, the finale rework, copy, stretch features, release kit~~ (done, PR #1) |
 | **Nov 5** | ~~Cohesion pass~~ | ~~Every known issue fixed, the route search runs both ways, act 5 rehearses the finale, docs synced~~ (done) |
-| **Nov 8** | **M0 + M1: Feel check and core locked** | Fish has played all 21 levels on Windows. Sticky Keys result recorded. Shift, freeze, prank and the flip feel good. One cold playtest. `PARAMS` frozen except small tweaks. |
+| ~~Nov 8~~ date to be set by Fish | **M0 + M1: Feel check and core locked** (**missed, open as of Nov 14**) | Fish has played all 21 levels on Windows. Sticky Keys result recorded. Shift, freeze, prank and the flip feel good. One cold playtest. `PARAMS` frozen except small tweaks. |
 | **Nov 22** | **M3: Content freeze** | Copy and art final, second playtest round done. **No new levels, copy or art after this date.** |
 | **Nov 26** | **M4: Release candidate** | Bug-free on Chrome/Firefox/Edge. itch draft with fresh cover, screenshots, GIF. |
 | **Nov 30** | **M5: Submitted** | itch page public, submitted to the jam, repo linked, played from the itch page itself. |
@@ -44,7 +44,7 @@ The whole game is listed in [CONTENT.md](CONTENT.md): **21 levels, five acts of 
 
 ## 3. Weekly plan
 
-### Now to Nov 8: feel
+### Now (Nov 8 target missed; new date to be set by Fish): feel
 - Fish plays everything on Windows; record the Sticky Keys result in GDD §3.2.
 - Tuning pass on `PARAMS` (TECH.md §4), then re-prove pars and fairness (`npm test`, `npm run audit`).
 - First cold playtest, with the 5-second test (PLAYTEST.md).
@@ -115,7 +115,7 @@ Priority: **P0** = the game doesn't ship without it. **P1** = expected in the ja
 | A6 | ~~Settings menu~~ Done Nov 2 | P1 |
 | A7 | ~~Level select + save, reachable from the title screen so raters can jump to the freak levels~~ Done Nov 2: act starts always open, saved bests | **P0** (was P1; GDD §1.8) |
 | A8 | ~~Timecard comments, end-screen totals~~ Done Nov 2 | P1 |
-| A9 | Cover 1260×1000, screenshots, demo GIF (`npm run media`, `npm run gif`) | P0 |
+| A9 | Cover 1260×1000, screenshots, demo GIF: the tools are built and produce them (`npm run media`, `npm run gif`); what remains is rendering the final set from the release candidate (Nov 23–30) | P0 |
 | A10 | ~~Act title cards~~ Done Nov 2 | P1 |
 
 ### Infrastructure and release
@@ -136,9 +136,9 @@ Priority: **P0** = the game doesn't ship without it. **P1** = expected in the ja
 | ~~Camera~~ | Single-screen rooms vs scrolling levels with camera | **Decided Nov 3: single-screen rooms.** Every planned level fits 32×18, which keeps puzzles readable at a glance and both maps fully visible. | — |
 | Freeze scope | Freeze everything on Nov 22, or let stretch features that don't touch levels land until Nov 26 | Let them land until Nov 26 if every gate passes, else cut them (timer → gamepad → rebinding → music layers). In the plan; Fish can overrule. | Nov 22 |
 | ~~Finale in level select~~ | Always open (like every act start) vs locked until act 5 is cleared | **Decided Nov 3 (Fish): always open.** | — |
-| Primary shift bind | Shift vs K | Decided by the Sticky Keys test | Nov 8 |
+| Primary shift bind | Shift vs K | Decided by the Sticky Keys test | Open (was Nov 8); date to be set by Fish |
 | Subtitle | *The Freaks Come Out at Night* vs none | Keep: it's the tone in one line and helps itch title search | Nov 22 |
-| Freak size | 20×22 (current) vs worker-sized or bigger | Decide after first playtest | Nov 8 |
+| Freak size | 20×22 (current) vs worker-sized or bigger | Decide after first playtest | Open (was Nov 8); date to be set by Fish |
 | ~~Design partner involvement~~ | **Decided 2026-11-01: code-drawn only for the jam**, polished as a deliberate style (GDD §10.1, ART.md §1.1) | — | Closed |
 
 ## 6. Definition of done (jam build)

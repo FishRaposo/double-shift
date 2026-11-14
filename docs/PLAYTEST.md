@@ -12,8 +12,8 @@ Companion to [GDD.md](GDD.md) §19. Playtests answer questions the tests can't: 
 
 | Round | When | Build | Who | Focus |
 |---|---|---|---|---|
-| 0 | by Nov 8 | All 21 levels | Fish | Feel, Sticky Keys, tuning |
-| 1 | by Nov 8 (M1) | All 21 levels | 1–2 people who haven't seen it | Do they get Shift, echoes, freezing, pranks without help? |
+| 0 | by Nov 8 (missed, open as of Nov 14; date to be set by Fish) | All 21 levels | Fish | Feel, Sticky Keys, tuning |
+| 1 | by Nov 8 (M1; missed, open as of Nov 14; date to be set by Fish) | All 21 levels | 1–2 people who haven't seen it | Do they get Shift, echoes, freezing, pranks without help? |
 | 2 | by Nov 22 (M3) | Full run: every level still in after the cut dates (up to 21) | 2–3 new people | Pacing across five acts and the finale, how readable the Upside Down flip is on first sight, difficulty curve, new mechanics readable on first sight, jokes landing |
 | 3 | Nov 26 (M4) | itch draft page | 1 person, their own machine | Loads, runs, controls, nothing broken |
 

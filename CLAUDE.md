@@ -57,6 +57,7 @@ The jam rules and how they apply are in `docs/RELEASE.md` §0, and the category-
 Doc rules from `docs/INDEX.md`:
 - GDD decides *what*, other docs decide *how*; if they disagree, the GDD wins and the other doc gets fixed.
 - Every number in a doc (tuning values, sizes, test counts, pars) must match the code — update docs in the same change as the code. Test counts, level counts and source line counts are wrapped in `<!-- n:KEY -->N<!-- /n -->` markers: run `npm run counts -- --write` before committing (CI runs `npm run counts`).
+- CI also runs `npm run audit` as its own job, so a tuning or level change that breaks fairness fails the build.
 - Mark unbuilt things *(planned)* or *(stretch)*; never describe a planned feature as existing.
 - In-game copy lives in `docs/WRITING.md` as drafts for Fish (the designer) to edit.
 

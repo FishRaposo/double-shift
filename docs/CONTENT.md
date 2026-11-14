@@ -116,7 +116,7 @@ Specs: [AUDIO.md](AUDIO.md).
 | SND-1 | 11 core SFX (shift ×2, rejected, jump, land, death, spooked, prank giggle, checkpoint, win, stamp) | Everything | — | AUDIO §2 | ✅ |
 | SND-2 | Music: one theme, day + night arrangements in sync, crossfade on shift | Audio score | P0 | AUDIO §3 | ✅ |
 | SND-3 | Act layers: an extra part added to the music per act | Pacing | *stretch*, approved Nov 3 | AUDIO §3.1 | ✅ (Nov 3: `layersFor`) |
-| SND-4 | Peeker boing, freeze scratch, prank shimmer (lurker steps built but left unwired; peeker scratch not built) | Act 2+ | P1 | AUDIO §4 | ✅ |
+| SND-4 | Peeker boing, freeze scratch, prank shimmer (lurker steps built but left unwired; peeker scratch not built: it needs a distinct "hands" tell first, AUDIO §4) | Act 2+ | P1 | AUDIO §4 | ✅ boing, freeze, shimmer; peeker scratch *(not built)* |
 | SND-5 | UI move/select clicks | Menus | P1 | AUDIO §4 | ✅ |
 | SND-6 | Wet-floor squeak (hard stop) | `wet` | C | AUDIO §4.1 | ✅ |
 | SND-7 | Door-steal thunk (layered on the prank giggle) | `doors` | B | AUDIO §4.1 | ✅ in its level |
