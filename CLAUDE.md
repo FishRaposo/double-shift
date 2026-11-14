@@ -66,6 +66,13 @@ This session is the orchestrator (Opus by default). Plan, delegate, integrate
 and review. Do a step yourself only when writing the brief would take longer
 than doing it, or the step can't be specified without the whole picture.
 
+The full policy is the `model-effort-ladder` skill in
+`.claude/skills/model-effort-ladder/`. Load it before choosing a model or
+effort for a step, writing or changing a sub-agent file, or handling a
+refusal; this section is the short version. The skill carries a "Refresh"
+date: when a model or price changes, update the skill first, then this section
+and the agent files.
+
 Delegate by default (agent files in `.claude/agents/`):
 - `scout` (Haiku, read-only): search, file triage, reading and summarising,
   extraction, classification, fan-out across independent files or cases,
