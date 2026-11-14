@@ -4,32 +4,13 @@
 // - a random search, in both directions, for wins with fewer clock-ins than par, or with no shifting at all
 // Usage: npm run audit [-- level-id]
 import { LEVELS } from '../src/levels.js';
-import { step, initState } from '../src/rules.js';
-import { inputWindows, recordInputs, searchBelowPar, WINDOW_FLOOR as floor } from '../test/helpers.mjs';
+import { delayed, inputWindows, recordInputs, searchBelowPar, WINDOW_FLOOR as floor } from '../test/helpers.mjs';
 import { SOLUTIONS, L } from '../test/solutions.mjs';
 
 const only = process.argv[2];
 if (only && !LEVELS.some((l) => l.id === only)) {
   console.error(`no level with id "${only}"`);
   process.exit(1);
-}
-
-function delayed(lvl, policy, ticks) {
-  let s = initState(lvl);
-  const mem = {};
-  const queue = [];
-  let pj = false;
-  let ps = false;
-  for (let f = 0; f < 120 * 40 && !s.won; f++) {
-    queue.push(policy(s, mem, f) || {});
-    const w = queue.length > ticks ? queue.shift() : {};
-    const input = { left: !!w.left, right: !!w.right, jumpHeld: !!w.jump, jumpPressed: !!w.jump && !pj, shiftPressed: !!w.shift && !ps };
-    pj = !!w.jump;
-    ps = !!w.shift;
-    s = step(lvl, s, input);
-    if (s.deaths > 0) return false;
-  }
-  return s.won;
 }
 
 let problems = 0;

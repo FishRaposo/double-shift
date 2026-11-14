@@ -4,13 +4,24 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { LEVELS } from '../src/levels.js';
 import { initState, standableSpot, overlapsHazard, overridesAfter, TILE, PARAMS, DAY, NIGHT, freakBoxes } from '../src/rules.js';
-import { inputWindows, level, patrolBoxes, respawnSpots, spotInPatrol, WINDOW_FLOOR } from './helpers.mjs';
+import { delayed, inputWindows, level, patrolBoxes, respawnSpots, spotInPatrol, WINDOW_FLOOR } from './helpers.mjs';
 import { SOLUTIONS, L } from './solutions.mjs';
 
 for (const def of LEVELS) {
   test(`${def.name}: every required shift and jump has ≥ ${WINDOW_FLOOR(def.act)} ms of slack`, () => {
     const tight = inputWindows(L[def.id], SOLUTIONS[def.id]).filter((w) => w.ms < WINDOW_FLOOR(def.act));
     assert.deepEqual(tight.map((w) => `${w.kind} at ${w.at.toFixed(2)} s: ${w.ms} ms`), []);
+  });
+}
+
+// Input lag: the scripted run with every input arriving late still wins without a death. Acts 1-2 tolerate 100 ms,
+// acts 3-6 50 ms (`npm run audit` prints 0-150 ms).
+const LAG_MS = (act) => (act <= 2 ? 100 : 50);
+for (const def of LEVELS) {
+  test(`${def.name}: the scripted run still wins when every input is ${LAG_MS(def.act)} ms late`, () => {
+    for (let ms = 0; ms <= LAG_MS(def.act); ms += 25) {
+      assert.ok(delayed(L[def.id], SOLUTIONS[def.id], Math.round((ms * 120) / 1000)), `fails at ${ms} ms late`);
+    }
   });
 }
 
