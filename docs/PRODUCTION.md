@@ -19,11 +19,11 @@ Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-14**.
 | Freaks: lurker, peeker, squatter, supervisor (frozen by day), day-walker (frozen by night) | Built, tested |
 | Levels | **<!-- n:levels -->21<!-- /n --> built** (act 1: 4, act 2: 4, act 3: 4, act 4: 4, act 5: 4, finale: 1), all proven solvable at par and fair (all built by Nov 3; CONTENT.md) |
 | Rendering | **Pixel art** (Nov 2): sprites, animated worker and freaks, pixel tiles and props, pixel font, effects; every asset in `/tools/gallery.html` |
-| Audio | Mix bus, 26 SFX (`lurkerStep` left unwired, AUDIO.md §4.1), **music** (day/night arrangements crossfading on every shift; each act adds a layer) |
+| Audio | Mix bus, 27 SFX (`lurkerStep` left unwired, AUDIO.md §4.1), **music** (day/night arrangements crossfading on every shift; each act adds a layer) |
 | Menus | Title, level select + saved bests, settings (volumes, reduced effects, speedrun timer, controls), act cards, pause, timecard with comment, end screen with totals and the run time |
 | Input | Keyboard (move, jump and shift rebindable) and gamepad (fixed standard mapping) |
 | Release kit | Cover, 19 screenshots and the demo GIF tool (`npm run media`, `npm run gif`); the zipped build passes the browser smoke test |
-| Tests | <!-- n:tests -->437<!-- /n --> passing (`npm test`), including fairness; `npm run audit` clean |
+| Tests | <!-- n:tests -->441<!-- /n --> passing (`npm test`), including fairness; `npm run audit` clean |
 | Repo / CI / itch | Public repo [FishRaposo/double-shift](https://github.com/FishRaposo/double-shift), CI green, playable on [GitHub Pages](https://fishraposo.github.io/double-shift/). **No itch page** |
 
 ## 2. Milestones

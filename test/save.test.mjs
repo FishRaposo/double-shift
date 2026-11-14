@@ -53,6 +53,30 @@ test('corrupt or malformed saved data is ignored, not trusted', () => {
   assert.equal(save.cleared('scaff'), true, 'valid entry kept');
 });
 
+test('ids that name Object.prototype members record and read back like any other id', () => {
+  for (const id of ['constructor', '__proto__', 'toString', 'hasOwnProperty']) {
+    const storage = memoryStorage();
+    const save = createSave(storage);
+    assert.equal(save.best(id), null, `${id}: nothing before a record`);
+    assert.equal(save.cleared(id), false);
+    assert.equal(save.record(id, r(2, 3)), true, `${id}: first result is a new best`);
+    assert.deepEqual(save.best(id), r(2, 3));
+    assert.equal(save.record(id, r(3, 1)), false);
+    assert.deepEqual(createSave(storage).best(id), r(2, 3), `${id}: survives a reload`);
+  }
+  assert.equal(createSave(memoryStorage()).best('clock'), null, 'and other ids are untouched');
+});
+
+test('a stored save with prototype-named keys loads safely', () => {
+  const stored = '{"best":{"__proto__":{"shifts":1,"time":2,"deaths":0},"constructor":{"shifts":3,"time":4,"deaths":1},"clock":{"shifts":5,"time":6,"deaths":0}}}';
+  const save = createSave(memoryStorage({ 'double-shift.progress.v1': stored }));
+  assert.deepEqual(save.best('__proto__'), r(1, 2));
+  assert.deepEqual(save.best('constructor'), r(3, 4, 1));
+  assert.deepEqual(save.best('clock'), r(5, 6));
+  assert.equal(({}).shifts, undefined, 'Object.prototype was not polluted');
+  assert.equal(createSave(memoryStorage({ 'double-shift.progress.v1': '{"best":{"constructor":{"shifts":"x"}}}' })).best('constructor'), null, 'a malformed one is still dropped');
+});
+
 test('level select: act starts are always open; other levels open after the previous one is cleared', () => {
   const save = createSave(memoryStorage());
   const open = () => LEVELS.map((_, i) => isUnlocked(LEVELS, i, save));

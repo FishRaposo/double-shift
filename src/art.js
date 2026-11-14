@@ -5,7 +5,7 @@
 import { ART, C, SPRITES, drawSprite, drawEyes, eyesOpen } from './sprites.js';
 import { drawText, measureText } from './font.js';
 
-import { TILE, DAY, NIGHT, tileAt, isSolidChar } from './rules.js';
+import { TILE, DAY, NIGHT, PEEK_WARN, tileAt, isSolidChar } from './rules.js';
 
 export { TILE, DAY, NIGHT };
 const A = ART;
@@ -618,7 +618,6 @@ function drawGlowEyes(g, cx, y, { t = 0, seed = 0 } = {}) {
 
 // ---------- telegraphs: what a freak or prank is about to do (docs/ART.md §3) ----------
 
-const PEEK_WARN = 0.35; // seconds of rattle before a peeker pops out
 const DANGER = '#ff6a4d';
 const TELL = '#ffd23f';
 
