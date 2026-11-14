@@ -123,4 +123,5 @@ Same `voice()` format as §2; every sound ≤ 0.25 s.
 - [ ] Spook + death tint + giggle at once: still readable.
 - [ ] Music under SFX: shift blip always audible over the night organ.
 - [ ] Mute works on every screen.
+- [ ] Peeker rattle scratch (`peekerScratch`, built 2026-11-14): audible before the boing, quiet under the music, not annoying when two peekers rattle close together.
 - [x] Settings volumes persist (`createSettings`, `src/save.js`).
