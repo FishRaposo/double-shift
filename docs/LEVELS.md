@@ -26,6 +26,8 @@ Companion to [GDD.md](GDD.md) §6 and §8. Tile = 30 px. Levels are 32×18 tiles
 
 **Fairness floor (Fish, 2026-11-02), enforced by `test/fairness.test.mjs`:** every shift and jump the scripted solution needs must have **≥ 200 ms** of slack in acts 1–2 and **≥ 100 ms** in acts 3–6, the finale included (one press moved earlier/later, everything else unchanged, still wins). At a full run 200 ms ≈ 1.8 tiles: leave about 2 tiles where both shifts are safe to switch in. The same tests check that no spawn or checkpoint sits in a freak's patrol and that no freak patrols over the exit.
 
+**Input lag floor, enforced by `test/fairness.test.mjs`:** the scripted run, with every input arriving late (`delayed` in `test/helpers.mjs`), must still win without a death at 0, 25, 50, 75 and 100 ms in acts 1–2 and at 0, 25 and 50 ms in acts 3–6. The policies hold a jump until the apex and press each shift once, so a late press is not a failed one.
+
 `npm run audit` prints, per level: the slack of every required input, how much input lag the solution tolerates, and a random search for wins below par or without shifting. Run it after any level or `PARAMS` change.
 
 **Re-verify all of this after any `PARAMS` change** (`npm test` re-proves every par).
@@ -254,7 +256,7 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 - **Room 2 (act 2, cols 12–21):** a day wall (col 15); the door they take on the 2nd clock-in (col 16, telegraphed; Lost & Found's door skin, then its empty frame); a lurker in the tunnel; the far wall (col 21) is night-only, so clock out before the lurker and walk through its frozen outline. Checkpoint at col 13.
 - **Room 3 (act 3, cols 22–26):** stop on the dry floor (checkpoint, col 22) and clock in; the supervisor watches one tunnel at a time, and its clock only runs at night, so wait there, hanging, until the clipboard turns away from this tunnel, then slide over the waxed ceiling past its lurker before it turns back.
 - **Room 4 (acts 4–5, cols 27–31):** the 3rd clock-in took the step at the top of the shaft and walled up the time clock (telegraphed, and the tell stays up until the 4th puts them back): clock out on the dry floor short of the day-walker, in again (the 4th puts both back), and fall up the shaft to the time clock. Checkpoint at col 27. By day the time clock sits in a pocket, so a clock-out mid-rise can't reach it either.
-- **Margin:** clock-ins 250–617 ms; no win below par in the two-way audit.
+- **Margin:** clock-ins 300–617 ms; input lag up to 150 ms still wins; no win below par in the two-way audit.
 - **Ending:** the timecard, then the end screen (WRITING.md §8).
 - **The classic version** stays in `src/levels.js` as `CLOCKOUT_CLASSIC` (not in `LEVELS`), proven at par 7 by `SOLUTIONS_EXTRA.clockoutClassic`. Bringing it back would also need a memo and new room tests. Its rooms: a pit with a night stone and a higher day stone (mid-air shifts); `watch`'s tunnel with day crates and a lurker; the time clock on a ledge whose night step they take on clock-in 3 and return on 4.
 

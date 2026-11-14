@@ -198,3 +198,29 @@ export function spotInPatrol(p, boxes) {
   return boxes.find((b) => p.x < b.x + b.w && p.x + PARAMS.playerW > b.x && p.y < b.y + b.h && p.y + PARAMS.playerH > b.y);
 }
 
+
+// The scripted policy replayed as a player who reacts `ticks` ticks (1 tick = 1000/120 ms) late to everything.
+// Returns true if it still wins without dying; with `info` (an object) it fills in where it ended.
+export function delayed(lvl, policy, ticks, info = {}) {
+  let s = initState(lvl);
+  const mem = {};
+  const queue = [];
+  let pj = false;
+  let ps = false;
+  for (let f = 0; f < 120 * 40 && !s.won; f++) {
+    queue.push(policy(s, mem, f) || {});
+    const w = queue.length > ticks ? queue.shift() : {};
+    const input = { left: !!w.left, right: !!w.right, jumpHeld: !!w.jump, jumpPressed: !!w.jump && !pj, shiftPressed: !!w.shift && !ps };
+    pj = !!w.jump;
+    ps = !!w.shift;
+    s = step(lvl, s, input);
+    if (s.deaths > 0) {
+      info.at = f;
+      info.state = s;
+      return false;
+    }
+  }
+  info.at = 120 * 40;
+  info.state = s;
+  return s.won;
+}

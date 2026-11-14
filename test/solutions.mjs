@@ -6,18 +6,39 @@ import { tx } from './helpers.mjs';
 
 export const L = Object.fromEntries(LEVELS.map((l) => [l.id, parseLevel(l)]));
 const want = (s, layer) => s.layer !== layer;
+// One press per shift: ask once, then wait to see the world change (however late the press lands) before asking
+// again. A policy that holds `shift` down while its target flips between two shifts loses the second press.
+const pressShift = (s, mem, target) => {
+  if (s.layer === target) {
+    mem.sentFrom = null;
+    return false;
+  }
+  if (mem.sentFrom === s.layer) return false;
+  mem.sentFrom = s.layer;
+  return true;
+};
+
+// Jump like a player who holds the key until the apex: `start` says "jump now" (it may come a little early, in the
+// air: the game buffers a press for 100 ms); once asked, the key stays down until the player has risen and begun to
+// fall, however late the press lands.
+const holdJump = (s, mem, start) => {
+  if (start) mem.jump = true;
+  if (mem.jump && !s.player.grounded && s.player.vy < 0) mem.up = true;
+  if (mem.up && s.player.vy >= 0) mem.jump = mem.up = false;
+  return !!mem.jump;
+};
 
 export const SOLUTIONS = {
   clock: (s) => ({ right: true, shift: (tx(s) > 4 && tx(s) < 20 && want(s, NIGHT)) || (tx(s) > 20.5 && want(s, DAY)) }),
-  scaff: (s) => ({
+  scaff: (s, mem) => ({
     right: true,
-    jump: s.player.grounded ? [4.0, 9.6, 13.6].some((a) => tx(s) > a && tx(s) < a + 0.6) : s.player.vy < 0,
+    jump: holdJump(s, mem, [3.4, 8.6, 12.4].some((a) => tx(s) > a && tx(s) < a + 0.6)),
     shift: tx(s) > 19 && want(s, NIGHT),
   }),
   closing: (s) => ({ right: true, shift: (tx(s) > 10.4 && tx(s) < 18 && want(s, NIGHT)) || (tx(s) > 19.4 && want(s, DAY)) }),
-  midair: (s) => {
+  midair: (s, mem) => {
     const x = tx(s);
-    const jump = s.player.grounded ? [5.0, 10.4, 16.4, 22.4].some((a) => x > a && x < a + 0.5) : s.player.vy < 0;
+    const jump = holdJump(s, mem, [5.0, 10.2, 15.8, 22.4].some((a) => x > a && x < a + 0.5));
     let target = DAY;
     if (x > 6 && x < 13) target = NIGHT;
     else if (x >= 13 && x < 19) target = DAY;
@@ -25,13 +46,13 @@ export const SOLUTIONS = {
     else if (x >= 25) target = s.layer;
     return { right: true, jump, shift: want(s, target) };
   },
-  inventory: (s) => {
+  inventory: (s, mem) => {
     const x = tx(s);
     let target = s.layer;
     if (s.nightEntries === 0 && x > 4) target = NIGHT;
     else if (s.nightEntries === 1 && x > 16.5 && x < 17.5) target = DAY; // step out between the pits...
     else if (s.nightEntries === 1 && x >= 17.5) target = NIGHT; // ...and back in: the plank has moved
-    return { right: true, shift: want(s, target) };
+    return { right: true, shift: pressShift(s, mem, target) };
   },
   watch: (s) => {
     const x = tx(s);
@@ -74,12 +95,12 @@ export const SOLUTIONS = {
   clockout: (s, m) => {
     const x = tx(s);
     switch (s.shifts) {
-      case 0: return { right: true, shift: x >= 2.5 };
+      case 0: return { right: true, shift: x >= 1.5 };
       case 1: {
         // hanging at the peeker: wait until the clipboard looks away from this room, then cross without stopping
         const sup = freakBoxes(L.clockout, s).find((b) => b.kind === 'supervisor');
         if (sup.facing === 1 && sup.turnIn >= 0.9) m.past = true;
-        return { right: x < 4.4 || !!m.past, shift: x >= 9.6 };
+        return { right: x < 3.4 || !!m.past, shift: x >= 9.6 };
       }
       case 2: return { right: true, shift: x >= 13 };
       case 3: return { right: true, shift: x >= 16.4 };
@@ -109,12 +130,12 @@ export const SOLUTIONS = {
     const sup = freakBoxes(L.supervisor, s).find((b) => b.kind === 'supervisor');
     let right = true;
     let target = s.layer;
-    if (s.layer === DAY && x > 7.5 && x < 8.4) target = NIGHT; // clock in short of the lurker's reach
+    if (s.layer === DAY && x > 5.5 && x < 6.5) target = NIGHT; // clock in well short of the lurker's reach: the wait below is on the night side
     if (s.layer === NIGHT) {
       // left tunnel: cross only while the clipboard points right, with a full window left
-      if (x > 7.2 && x < 8.5 && (sup.facing !== 1 || sup.turnIn < 1.2)) right = false;
+      if (x > 6.2 && x < 9.5 && (sup.facing !== 1 || sup.turnIn < 1.2)) right = false;
       // the nook: wait for the left watch before the right tunnel
-      if (x > 16 && x < 18.6 && (sup.facing !== -1 || sup.turnIn < 1.2)) right = false;
+      if (x > 16 && x < 19.5 && (sup.facing !== -1 || sup.turnIn < 1.2)) right = false;
       if (x > 24.5 && x < 26.3) target = DAY; // the night wall: clock back out
     }
     return { right, shift: want(s, target) };
