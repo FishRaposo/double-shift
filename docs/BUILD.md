@@ -1,9 +1,9 @@
 # Build Guide (for agents)
 
-How the 21-level jam game was built, and how to change it. The protocol and recipes below apply to any new work; the task cards in §4 are the record of what was built, with its decisions. Updated 2026-11-05.
+How the 21-level jam game was built, and how to change it. The protocol and recipes below apply to any new work; the task cards in §4 are the record of what was built, with its decisions. Updated 2026-11-14.
 
 **At a glance**
-- **What's left:** nothing in the plan. All 25 task cards are built, and the Nov 5 cohesion pass closed the audit's findings. New work is playtest fixes, tuning and the itch page.
+- **What's left:** nothing in the plan. All 30 task cards are built (T27–T30 are the Nov 14 bug hunt, small fixes, lag floor and release-kit rehearsal), and the Nov 5 cohesion pass closed the audit's findings. New work is playtest fixes, tuning and the itch page; what only Fish can do is listed in [PRODUCTION.md](PRODUCTION.md) ("Next for Fish").
 - **Read first:** `CLAUDE.md`, then this guide's §1 (protocol) and §2 (recipes). The specs live in [LEVELS.md](LEVELS.md) §4–5.3 and [TECH.md](TECH.md) §6.5.
 - **Done means:** `npm test`, `npm run check`, `npm run audit` and `npm run media` all pass, and the docs are synced (§1.3).
 
@@ -334,6 +334,26 @@ The steps:
 ### T26 · Colour-blind and grayscale readability *(✅ built 2026-11-14)*
 - All 21 levels were reviewed in grayscale and simulated deuteranopia, protanopia and tritanopia (`npm run media -- --review <ids> --gray --cvd`). Three cues leaned on hue and were changed in `src/art.js`, always on (no new setting): the night laser is a 2-px beam with a pale dashed core (`HAZARD.laserCore`) and a stronger glow; the unsaved punch clock face is dark `#6b7480` (saved stays `#ffd23f`); the prank tell outline is 2 px thick with long dashes, unlike the 1-px echo outline.
 - All three are drawn per frame or in the existing layers, not moved into the static cache. `test/palette.test.mjs` checks the laser core (≥ 4.5:1 on the night sky) and the clock faces.
+
+### T27 · Bug hunt *(✅ done 2026-11-14)*
+- The pure modules were reviewed against GDD §13.7 and fuzzed: all 21 levels, plus 9000 random small levels. No bug a player can reach was found.
+- Rules that were correct but unguarded got tests: death beats win on the same tick; a repeating prank refires after a respawn; no spawn or checkpoint stands in a hazard in any prank state (`test/fairness.test.mjs`); a shift tapped between ticks fires once; `levelIndex` with junk input.
+
+### T28 · Small fixes from the hunt *(✅ done 2026-11-14)*
+- A `grip` event when a peeker's rattle starts (`PEEK_WARN`, 0.35 s before it pops; the constant now lives in `src/rules.js`), played as the new `peekerScratch` sound (AUDIO.md §4.1).
+- A prank fired by the shift that also kills you no longer reports a `prank` event (the prank is rolled back, so the giggle was wrong).
+- The static layer's cache key in `src/main.js` is rebuilt only when the overrides change. Saved bests live in a prototype-less object (`src/save.js`).
+
+### T29 · Input-lag floor and the audit in CI *(✅ done 2026-11-14)*
+- `npm run audit` showed six levels failing with late inputs. Every cause was the scripted policy in `test/solutions.mjs`, not the level: the jump released early in `scaff` and `midair`; the shift held across two presses in `inventory`; wait zones at a patrol's edge in `supervisor` and `clockout`. The policies were fixed; no level, par or `PARAMS` changed.
+- New per-level test in `test/fairness.test.mjs`: the solution wins with every input up to 100 ms late in acts 1–2 and up to 50 ms late in acts 3–6 (LEVELS.md §1).
+- CI runs `npm run audit` as its own job (TECH.md §8).
+
+### T30 · Release-kit rehearsal *(✅ done 2026-11-14, Chromium only)*
+- `npm run gif` replayed the scripted runs of all 21 levels in the real page; each matched the tests' run (par, 0 deaths).
+- `npm run media` rendered the cover, 19 screenshots and the gallery sheet with no page errors; the loudest music peak was 0.415.
+- `npm run zip` built `double-shift-web.zip` (about 84 KB); the unzipped copy passed `npm run media -- --root`.
+- Fish chose `upside` for the demo GIF (`npm run gif -- upside`). The final render still comes from the release candidate (RELEASE.md §5). Firefox and Edge could not be checked here: only Chromium is available.
 
 ## 5. Known gotchas
 - **Offset and Upside Down levels generate their night grid:** don't also give `night`.

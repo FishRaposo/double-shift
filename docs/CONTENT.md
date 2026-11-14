@@ -101,7 +101,7 @@ Specs: [ART.md](ART.md). Palette rule: existing colors only, unless a color gets
 | ART-13 | UI screens: title with level select ✅, level select ✅, settings, act cards, timecard with comment, end screen with totals, credits | Shell | P0–P1 | ART §7.1 | ✅ (credits Nov 3; level select laid out for six rows) |
 | ART-14 | Cover image 1260×1000 | itch | P0 | ART §8 | ✅ (`npm run media`; act 5 hint added Nov 3) |
 | ART-15 | Screenshots 960×540 | itch | P0 | ART §8 | ✅ 19 shots, a prank and the flip first (refresh when levels change) |
-| ART-16 | Demo GIF ≤ 10 s | itch | P1 | ART §8 | tool ✅ (`npm run gif -- <id>`); Fish picks the level and uploads |
+| ART-16 | Demo GIF ≤ 10 s | itch | P1 | ART §8 | tool ✅ (`npm run gif -- <id>`); level chosen: `upside` (`npm run gif -- upside`); rehearsed 2026-11-14 for all 21 levels; final render from the release candidate, Fish uploads |
 | ART-17 | Devlog images (before/after readability, a prank GIF) | Devlogs | P2 | ART §8 | gallery capture ✅; devlog images planned |
 | ART-20 | Identity and readability pass: text on plates and paper strips, hatched rims, one silhouette per freak kind, glowing eyes, freaks and the subtitle on the title, punch-clock checkpoint, exit sign always on screen, barrier-tape cordon, the ending's wave, whole-pixel scaling | Every level, shell | P0 | ART §3, §3.1, §5–§7 | ✅ (Nov 3) |
 | ART-21 | Per-act backdrops: one quiet motif per act behind everything | Every level | P1 | ART §2, §6 | ✅ (Nov 3) |
@@ -142,4 +142,4 @@ Specs and drafts: [WRITING.md](WRITING.md). Fish writes the final words.
 | TXT-6 | UI strings: level select, settings, credits, Sticky Keys joke | WRITING §2.1 | ✅ in the build; drafts for Fish |
 | TXT-7 | Ending (`clockout`) | WRITING §8 | ✅ (credits built Nov 3) |
 | TXT-8 | itch description refresh when levels ship | [itch/page.md](../itch/page.md) §4 | ✅ for 21 levels |
-| TXT-9 | Devlog #1 (launch), #2 (post-jam) | RELEASE §5–6 | planned |
+| TXT-9 | Devlog #1 (launch), #2 (post-jam) | RELEASE §5–6 | #1: plain draft in WRITING §10 (with three X post drafts), not in Fish's voice; Fish rewrites and publishes. #2 planned |

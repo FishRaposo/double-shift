@@ -182,4 +182,34 @@ Unused, kept for later: "Efficient. Suspiciously efficient."
 
 ## 9. itch page copy
 
-Lives in [itch/page.md](../itch/page.md) §4. Fish writes the final version.
+Lives in [itch/page.md](../itch/page.md) §4. Fish writes the final version. The devlog and X post drafts are in §10.
+
+## 10. Devlog #1 and X post drafts *(DRAFT for Fish; written 2026-11-14)*
+
+**Plain factual draft, not yet in Fish's voice; rewrite before publishing.** Every claim below is backed by the code or the tests (the counts are kept in sync by `npm run counts`). Nobody has playtested the game yet, so there are no claims about fun or player reactions. Fish fills the bracketed link and picks one GIF (the chosen level is `upside`).
+
+### 10.1 Devlog #1: what it is, how it was made
+
+> **Double Shift: devlog #1**
+>
+> *Double Shift* is a puzzle-platformer for GitHub Game Off 2026 (theme: SHIFT). You work the day shift and the night shift in the same building at the same time, and the Shift key moves you between them, even mid-jump. Every time you clock into the night, the freaks move something. When you go back to the day, they freeze. Each level has a par for clock-ins. There are <!-- n:levels -->21<!-- /n --> levels: five acts of four plus a finale, including an act where the night is the day's map turned upside down, with gravity pointing up.
+>
+> **How it was made.** Plain JavaScript on one canvas. No engine, no dependencies, no asset files. All the art is drawn in code and all the sound and music is synthesized with WebAudio. The game rules are one pure module with no DOM and no clock: `step(level, state, input)` returns the next state at a fixed 120 Hz, so the same inputs always give the same result.
+>
+> Every level has a scripted solution that the tests replay. It has to win at par or better with no deaths, and running and jumping without shifting must not win. The demo GIFs are those same runs, played by the game on a fixed clock.
+>
+> **Some numbers from the repo today:**
+> - <!-- n:tests -->462<!-- /n --> automated tests.
+> - Every input a level requires has at least 200 ms of slack in acts 1-2 and at least 100 ms in acts 3-6.
+> - The scripted solutions still win with every input up to 100 ms late in acts 1-2 and up to 50 ms late in acts 3-6.
+> - <!-- n:levels -->21<!-- /n --> levels, each proven winnable at par by a scripted run.
+>
+> **AI disclosure.** Designed by Vinícius Raposo. Built with AI assistance (Claude) to his design document, with draft text from the same place. The code, including the code that draws the art and synthesizes the sound, was written with AI assistance. No generated images or audio were used.
+>
+> Play: [itch link]. Source: https://github.com/FishRaposo/double-shift
+
+### 10.2 X post drafts (each under 240 characters; Fish writes the final words and puts the link in the first reply)
+
+1. > Double Shift: a puzzle-platformer where you work the day and night shift at once. Shift between them, even mid-jump. Every night clock-in, the freaks move something. <!-- n:levels -->21<!-- /n --> levels. Made for #GitHubGameOff.
+2. > No engine, no dependencies, no asset files. Double Shift's art is drawn in code and its sound is synthesized. The rules are a pure function, so the tests replay a scripted solution of every level. #GitHubGameOff
+3. > The demo GIFs for Double Shift are the tests' own scripted runs, played by the game on a fixed clock. Built with AI assistance (Claude), to a human design. #GitHubGameOff
