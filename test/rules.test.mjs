@@ -1236,6 +1236,19 @@ test('work order: a job with a `when` touched before its moment says NOT YET onc
   assert.equal(s.repairs[0].done, true);
 });
 
+test('a freak with a `when` is only there while its tile is: absent, it neither spooks nor shows', () => {
+  const lvl = level(OPEN, BLANK, { freaks: [{ kind: 'squatter', tx: 5, ty: 6, when: { layer: 'day', tx: 8, ty: 2, ch: '#' } }] });
+  const walk = (s) => { for (let i = 0; i < 240 && !s.deaths && s.player.x / TILE < 7; i++) s = step(lvl, s, RIGHT); return s; };
+  let s = step(lvl, initState(lvl), SHIFT);
+  assert.equal(freakBoxes(lvl, s)[0].absent, true);
+  assert.equal(walk(s).deaths, 0, 'walked straight through where it would sit');
+  s = step(lvl, initState(lvl), SHIFT);
+  s.overrides = { ...s.overrides, [`${DAY},8,2`]: '#' };
+  assert.equal(freakBoxes(lvl, s)[0].absent, false);
+  assert.equal(walk(s).deaths, 1);
+  assert.throws(() => level(OPEN, OPEN, { freaks: [{ kind: 'squatter', tx: 1, ty: 1, when: { layer: 'dusk', tx: 0, ty: 0, ch: '#' } }] }), /when/);
+});
+
 test('Lost & Found: the clamp refuses the doors until a night has brought them down as bridges', () => {
   const lvl = R.parseLevel(LEVELS.find((l) => l.id === 'doors'));
   let s = initState(lvl);

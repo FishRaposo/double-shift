@@ -216,14 +216,32 @@ export const SOLUTIONS = {
     const jump = s.player.grounded ? x < 21.6 : s.player.vy < 0;
     return { right: true, jump, shift: want(s, target) };
   },
-  portrait: steady((s) => {
+  portrait: steady((s, m) => {
     const x = tx(s);
-    let target = NIGHT;
-    if (x > 11 && x < 16.6) target = DAY; // onto the day shelf) target = DAY; // onto the day shelf, mid-air
-    if (x > 25.3) target = DAY;
-    if (x < 3.6) target = DAY;
-    const jump = s.player.grounded && ((x > 5 && x < 5.7) || (x > 9.4 && x < 10.2) || (x > 25.6 && x < 26.2));
-    return { right: x < 28.6, jump, shift: want(s, target) };
+    const y = s.player.y / TILE;
+    const g = s.player.grounded;
+    const job = s.repairs[0];
+    switch (s.shifts) {
+      case 0: return { right: true, shift: x > 3 }; // in: it's rehung on the low hook, and the doorway clears
+      case 1: // through the doorway's tunnel at night, up onto the crate, and out there
+        if (y > 12.5) return { right: true, jump: g && x > 11.6 && x < 12.4 };
+        return { right: x < 13.15, left: x > 13.45, shift: g && x > 12.95 && x < 13.6 };
+      case 2: // up the portrait to the shelf for the bulb, off its far end, and in at the day wall
+        if (!job.tool) {
+          if (!g && y < 12 && x > 14.6 && !m.onM) return {}; // let go mid-air: land on the near end of the portrait
+          if (g && y > 10 && y < 11) m.onM = true;
+          return { right: true, jump: g && ((y > 12 && x > 13.1) || (y > 10 && y < 11)) };
+        }
+        return { right: x < 20.2, left: x > 20.6, shift: g && y > 12.5 && x > 19.9 && x < 20.7 };
+      case 3: // the spotlight, through the lit tunnel, onto the crate, and out
+        if (!job.done) return { right: x < 20.2, left: x > 20.6 }; // stand in the spotlight
+        if (y > 12.5 && x < 26) return { right: true, jump: g && x > 24.2 && x < 25.2 };
+        return { right: x < 26.2, left: x > 26.5, shift: g && x > 25.95 && x < 26.6 };
+      default: // up the portrait from the crate, then a run along its top and up onto the ledge
+        if (g && y < 11 && x < 25.2) m.onTop = true; // standing on the portrait
+        if (!m.onTop) return { left: x > 23.6, jump: g && x > 25.4 };
+        return { right: true, jump: g && y < 11 && x > 23.2 && x < 24.6 };
+    }
   }),
   audit: (s, m) => {
     const p = s.player;

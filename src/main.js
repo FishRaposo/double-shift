@@ -739,7 +739,9 @@ function countdownSpot(lvl, labels, tellX, tellY, w, flipped, box) {
 
 // what each freak is up to, drawn under the freaks themselves
 function drawFreakPlans(lvl, boxes, layer) {
-  boxes.forEach((b, i) => {
+  const gone = (b) => b.scattered || b.absent;
+  boxes.forEach((b, i) => { // the full list, so box i is freak i
+    if (gone(b)) return;
     const f = lvl.freaks[i];
     const live = layer === b.shift;
     if ((b.kind === 'lurker' || b.kind === 'daywalker') && f.range > 0) {
@@ -749,7 +751,7 @@ function drawFreakPlans(lvl, boxes, layer) {
     }
     if (b.kind === 'supervisor') {
       // the wedge reaches the far end of the watched side's patrols
-      const side = (w, j) => w.supervised && Math.sign(lvl.freaks[j].tx - f.tx) === b.facing;
+      const side = (w, j) => !gone(w) && w.supervised && Math.sign(lvl.freaks[j].tx - f.tx) === b.facing;
       const edges = boxes.flatMap((w, j) => {
         if (!side(w, j)) return [];
         const x0 = lvl.freaks[j].tx * TILE + (TILE - w.w) / 2;
@@ -1020,9 +1022,9 @@ function drawPlay() {
   const box = jobHudBox(lvl, s);
   const taken = drawTells(lvl, s, layer, t, box);
   const boxes = freakBoxes(lvl, s);
-  drawFreakPlans(lvl, boxes.filter((b) => !b.scattered), layer);
+  drawFreakPlans(lvl, boxes, layer);
   boxes.forEach((b, i) => {
-    if (b.scattered) return;
+    if (b.scattered || b.absent) return; // lit away, or not sitting here right now
     // eyes point where it's going; the clipboard's gaze is the tell
     const look = b.kind === 'supervisor' ? b.facing : b.dir;
     // supervisors squint just before they turn: the readable anticipation cue

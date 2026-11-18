@@ -370,6 +370,12 @@ The steps:
 - A level's data now gives `min`, the proven fewest clock-ins (the old par, unchanged). The par a player sees is `min + 1` (`PAR_SLACK` and `parOf()` in `src/rules.js`), on the HUD, the timecard, the level select and the end screen. Hitting the fewest now stamps UNDER PAR!.
 - The proofs didn't loosen: the scripted solution must still win in `min`, and the audit's random search must still find nothing below `min`. Saved bests are clock-in counts, so they carry over; only their stamp against par changes.
 
+### T34 · Employee of the Month rehung, and jokes that don't explain themselves *(✅ done 2026-11-18, Fish's call)*
+- Fish found the level weak (a bulb errand, a squatter that was never a threat) and liked the portrait. Rebuilt (`rev: 4`, fewest 4, par 5) around the portrait being rehung on every night entry round three hooks: the doorway, low on room B's wall, under the exit ledge (`relocations` now takes `layer: 'day'`). By day it's solid where it hangs: a wall in the doorway, a step elsewhere (to the bulb's shelf, to the exit). By night its sitter sits in that frame, under a night-only column that leaves a one-tile tunnel, so it can't be jumped. The light scatters the sitter on the last hook so you can pass it at night; without it, the way round is two more laps.
+- New rule: a freak may carry `when` (TECH.md §6.5), present only while that tile is as given; absent freaks don't spook and aren't drawn. Freaks stay a pure function of the state. `drawFreakPlans` now walks the full box list, so box i is freak i (it was filtered before, which could misalign the plans after a scattered freak).
+- The scripted run: slack ≥ 167 ms per input, and it still wins with every input 150 ms late; the audit finds nothing below 4.
+- Copy (WRITING.md §1): never explain the joke. Rewritten: the portrait's note and memo, Wet Floor's note and memo, and the Structural Integrity, Night Audit, Mind Your Head and Clock Out memos. WRITING.md §3 and §6.1 were synced to the build (the rework had changed several).
+
 ## 5. Known gotchas
 - **Offset and Upside Down levels generate their night grid:** don't also give `night`.
 - **Checkpoints only save where you can stand.** A `C` over a pit in one shift saves in the other or not at all.

@@ -14,6 +14,7 @@ Companion to [GDD.md](GDD.md) §1.6 and §10.5. Every line of text in the game l
 - **What the freaks are stays undefined** (GDD §4.8): nocturnal, and they live to annoy you. Never give them a species, origin or explanation, not even in a joke. They write like smug hoarders who think they're ancient and powerful: grand claims, bad spelling, about very small things. Energy reference: Sableye (Pokémon), a giggling trickster that loves its own pranks (GDD §4.8). It's internal only: never name it or quote it in game text.
 - Management is **clueless**: memos that blame the night crew, the day crew, the pigeons.
 - Jokes are short. A line that needs a second line isn't ready.
+- **Never explain the joke** (Fish, 2026-11-18). No second sentence that spells out the first, no bracketed stage directions ("[photo is just eyes]"); the art carries it. A note that tells you how something works is a hint, not a joke, and stays.
 - Original jokes only (GDD §10.5).
 
 ## 2. Title and UI
@@ -57,21 +58,21 @@ In the order of the 21-level game (LEVELS.md §5.0). ✅ = in the build.
 
 | Level | Note |
 |---|---|
-| 1 Clock In ✅ | Gap in the floor by day. The night crew laid planks. |
-| 2 Scaffolding ✅ | The day crew put up a wall. It stops at the end of their shift. |
-| 3 Closing Time ✅ | One fuse for the whole floor. Budget cuts. |
-| 4 Mid-Air ✅ | One valve, two rooms. Somebody is getting wet. |
-| 5 Inventory ✅ | Every time you clock in, something gets moved. Unless it is bolted down. |
-| 6 Night Watch ✅ | Something is in the tunnel. It stops by day. Mind where you left it. |
-| 7 Under Renovation (`stairs`) ✅ | They built a staircase. It leads nowhere. They're very proud. |
-| 8 Lost & Found (`doors`) ✅ | The freaks have stolen every door. Not the keys. The doors. |
-| 9 Wet Floor (`wet`) ✅ | Someone waxed the floors. Nobody on the payroll waxes floors. |
-| 10 Structural Integrity (`pillar`) ✅ | They moved a load-bearing pillar. The building is somehow fine. |
-| 11 Night Management (`supervisor`) ✅ | One of them has a clipboard now. It supervises the others. |
-| 12 Stacked (`stacked`) ✅ | They've been busy. |
-| 13 Employee of the Month (`portrait`) ✅ | They installed a portrait of themselves. It blocks the exit. |
+| 1 Clock In (`clock`) ✅ | Gap in the floor by day. The night crew laid planks. |
+| 2 Scaffolding (`scaff`) ✅ | The day crew put up a wall. It stops at the end of their shift. |
+| 3 Closing Time (`closing`) ✅ | One fuse for the whole floor. Budget cuts. |
+| 4 Mid-Air (`midair`) ✅ | One valve, two rooms. Somebody is getting wet. |
+| 5 Inventory (`inventory`) ✅ | Every time you clock in, something gets moved. Unless it is bolted down. |
+| 6 Night Watch (`watch`) ✅ | Something is in the tunnel. It stops by day. Mind where you left it. |
+| 7 Under Renovation (`stairs`) ✅ | The hoist moves one stop every time you clock in. |
+| 8 Lost & Found (`doors`) ✅ | They swap the doors every night. Bolt them when you like where they are. |
+| 9 Wet Floor (`wet`) ✅ | Someone waxed the floors. |
+| 10 Structural Integrity (`pillar`) ✅ | They moved a load-bearing pillar. Jack it under the beam. |
+| 11 Night Management (`supervisor`) ✅ | The clipboard only keeps one side busy at a time. |
+| 12 Stacked (`stacked`) ✅ | They left a schedule. One wrench. Choose. |
+| 13 Employee of the Month (`portrait`) ✅ | Employee of the Month. Every month. |
 | 14 Broad Daylight (`daywalker`) ✅ | One of them clocked in for the day shift. |
-| 15 Floor 3.5 (`offset`) ✅ | There is no Floor 3 anymore. It's now Floor 3.5. |
+| 15 Floor 3.5 (`offset`) ✅ | There is no Floor 3 anymore. The lift only moves when you clock in. |
 | 16 Night Audit (`audit`) ✅ | Management is doing a walkthrough tonight. So are they. |
 | 17 Mind Your Head (`upside`) ✅ | They flipped the night shift. Mind your head. |
 | 18 Falling Up (`fallup`) ✅ | The floor is up there now. So is the water. |
@@ -79,7 +80,7 @@ In the order of the 21-level game (LEVELS.md §5.0). ✅ = in the build.
 | 20 Head Over Heels (`heels`) ✅ | Up is a matter of opinion now. |
 | 21 Clock Out (`clockout`) ✅ | Almost done. One of everything. Don't look at the vents. |
 
-Notes 7, 8, 10, 11, 13 and 15 come from Fish's idea pool (2026-11-02). 8 and 15 are unchanged; 7, 10, 11 and 13 are lightly trimmed to fit one line at scale 2 (14 px tall) (his full lines are the "Fiction" lines in LEVELS.md §5). Act 5 is Fish's Upside Down idea (LEVELS.md §5.2). *Freight* ("The crates were stacked properly. They were.") is kept for post-jam.
+Synced to the build on 2026-11-18 (the repairs rework had changed several). Earlier drafts came from Fish's idea pool (2026-11-02); his full lines are the "Fiction" lines in LEVELS.md §5. Act 5 is Fish's Upside Down idea (LEVELS.md §5.2). *Freight* ("The crates were stacked properly. They were.") is kept for post-jam.
 
 ## 4. Spook lines (random on freak contact) ✅
 
@@ -126,15 +127,12 @@ SPOOKED! · AAAGH! · NOPE! · EEP! · NOT PAID ENOUGH
 
 ## 6. Notice board memos ✅ (Nov 3: one per level, §6.1)
 
-A memo is a scrap of paper pinned to the wall (`memo` prop); while the worker stands within 2 tiles of it, its text shows on a paper panel above it (scale 2, at most 360 px wide; `memoPanel` in `src/layout.js`). Tests pin that every level has one, that the scripted route passes close enough to read it, and that its panel never covers the exit, a tell or a sign.
+A memo is a scrap of paper pinned to the wall (`memo` prop); while the worker stands within 2 tiles of it, its text shows on a paper panel above it (scale 2, at most 360 px wide; `memoPanel` in `src/layout.js`). Tests pin that every level has one, that the scripted route passes close enough to read it, and that its panel never covers the exit, a tell, a sign or the job.
 
 - "To the night crew: please stop moving the planks. — Management"
 - "To the day crew: we do not have a night crew. — Night Management"
 - "Lost: one (1) plank. If found, please return to the pit."
 - "Reminder: the vents are not a break room."
-- "Pest control visit cancelled. Pest control would like to not talk about it."
-- "Employee of the Month: [photo is just eyes]"
-- "Overtime is mandatory. So are the freaks, apparently."
 - "Whoever keeps drawing circles in chalk on the loading dock: stop."
 - "Break room: all snacks have been taken. The wrappers have been arranged in a circle. With candles."
 - "Do not leave shiny objects unattended."
@@ -149,21 +147,21 @@ A memo is a scrap of paper pinned to the wall (`memo` prop); while the worker st
 | `midair` | "Please report blinking in the dark to nobody." |
 | `inventory` | "Lost: one (1) plank. If found, please return to the pit." |
 | `watch` | "Reminder: the vents are not a break room." |
-| `stairs` | "Who approved the staircase. — Facilities" |
-| `doors` | "Doors are now available at Lost & Found. Please take only your own door." |
-| `wet` | "Floors were waxed at 3 AM. We do not employ anyone at 3 AM." |
-| `pillar` | "Structural survey: fine. Somehow. — Engineering" |
-| `supervisor` | "We did not hire a night supervisor. — HR" |
-| `stacked` | "Whoever keeps drawing circles in chalk on the loading dock: stop." |
-| `offset` | "The elevator now stops at 3.5. Do not press 3.5." |
+| `stairs` | "The hoist runs on the night clock. Do not ask who winds it." |
+| `doors` | "Lost & Found is not responsible for doors." |
+| `wet` | "Who waxed the floors at 3 AM? — Facilities" |
+| `pillar` | "Structural survey: fine. — Engineering" |
+| `supervisor` | "Mgmt reminder: work when watched. Do not work when not watched." |
+| `stacked` | "Schedule of works. Do not ask whose." |
+| `portrait` | "Please do not move the portrait. — Management" |
 | `daywalker` | "Day crew: if you see eyes, no you didn't." |
-| `portrait` | "Employee of the Month: [photo is just eyes]" |
-| `audit` | "Pest control visit cancelled. Pest control would like to not talk about it." (from §6) |
-| `upside` | "Ceiling inspection passed. The ceiling is now the floor. — Facilities" *(new draft)* |
-| `fallup` | "Gravity will be restored after the renovation. — Facilities" *(new draft)* |
-| `ceiling` | "To the night crew: please stop moving the planks. — Management" (from §6) |
-| `heels` | "To the day crew: we do not have a night crew. — Night Management" (from §6) |
-| `clockout` | "Overtime is mandatory. So are the freaks, apparently." |
+| `offset` | "The elevator now stops at 3.5. Do not press 3.5." |
+| `audit` | "Pest control visit cancelled by pest control." |
+| `upside` | "Ceiling inspection: passed. Floor inspection: pending. — Facilities" |
+| `fallup` | "Gravity will be restored after the renovation. — Facilities" |
+| `ceiling` | "To the night crew: please stop moving the planks. — Management" |
+| `heels` | "To the day crew: we do not have a night crew. — Night Management" |
+| `clockout` | "Overtime is mandatory. — Management" |
 
 ## 7. Timecard comments ✅
 
@@ -204,7 +202,7 @@ Lives in [itch/page.md](../itch/page.md) §4. Fish writes the final version. The
 > Every level has a scripted solution that the tests replay. It has to win at par or better with no deaths, and running and jumping without shifting must not win. The demo GIFs are those same runs, played by the game on a fixed clock.
 >
 > **Some numbers from the repo today:**
-> - <!-- n:tests -->594<!-- /n --> automated tests.
+> - <!-- n:tests -->598<!-- /n --> automated tests.
 > - Every input a level requires has at least 200 ms of slack in acts 1-2 and at least 100 ms in acts 3-6.
 > - The scripted solutions still win with every input up to 100 ms late in acts 1-2 and up to 50 ms late in acts 3-6.
 > - <!-- n:levels -->21<!-- /n --> levels, each proven winnable at par by a scripted run.

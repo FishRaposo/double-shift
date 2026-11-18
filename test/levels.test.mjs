@@ -50,6 +50,49 @@ for (const def of LEVELS) {
   });
 }
 
+// Employee of the Month: the portrait is rehung round three hooks, one move per night entry. By day it's solid where
+// it hangs; by night its sitter sits there instead (a squatter with a `when` on the hook's day tile).
+const hookAt = (s) => [9, 14, 22].find((x) => tileAt(L.portrait, DAY, x, 11, s.overrides) === '#');
+const nightEntries = (n) => {
+  let s = initState(L.portrait);
+  for (let i = 0; i < n; i++) { s = step(L.portrait, s, { ...NO_INPUT, shiftPressed: true }); s = step(L.portrait, s, NO_INPUT); s = step(L.portrait, s, { ...NO_INPUT, shiftPressed: true }); s = step(L.portrait, s, NO_INPUT); }
+  return s;
+};
+
+test('Employee of the Month: one hook per night entry, round the loop for good, and its sitter goes with it', () => {
+  assert.deepEqual([0, 1, 2, 3, 4, 5, 6, 7].map((n) => hookAt(nightEntries(n))), [9, 14, 22, 9, 14, 22, 9, 14]);
+  for (const n of [0, 1, 2, 3]) {
+    const s = nightEntries(n);
+    const here = freakBoxes(L.portrait, s).filter((b) => !b.absent).map((b) => Math.floor(b.x / TILE));
+    assert.deepEqual(here, [hookAt(s) + 1], `night ${n}: one sitter, in the frame where the portrait hangs`);
+  }
+});
+
+test('Employee of the Month: while it hangs in the doorway, the doorway is shut on both shifts', () => {
+  const { state: day } = play(L.portrait, () => ({ right: true }), 120 * 4);
+  assert.ok(day.player.x / TILE < 9, 'by day the portrait is a wall');
+  const s = nightEntries(3); // back in the doorway
+  let n = { ...s, layer: NIGHT };
+  for (let f = 0; f < 120 * 4 && !n.deaths; f++) n = step(L.portrait, n, { ...NO_INPUT, right: true, jumpHeld: f % 20 < 10, jumpPressed: f % 20 === 0 });
+  assert.equal(n.deaths, 1, 'by night its sitter is in the doorway, and the tunnel is too low to jump it');
+});
+
+test('Employee of the Month: past the day wall at night with the portrait on the last hook, the sitter gets you unless it is lit', () => {
+  const run = (light) => {
+    let s = nightEntries(2); // hung under the exit ledge
+    s.player.x = 20 * TILE + 6;
+    s.player.y = 13 * TILE;
+    s.layer = NIGHT;
+    if (light) s.repairs = [{ ...s.repairs[0], tool: true, done: true, at: 0, armed: false }];
+    for (let f = 0; f < 120 * 2 && !s.deaths && s.player.x / TILE < 24.5; f++) s = step(L.portrait, s, { ...NO_INPUT, right: true });
+    return s;
+  };
+  assert.equal(run(false).deaths, 1);
+  const lit = run(true);
+  assert.equal(lit.deaths, 0);
+  assert.ok(lit.player.x / TILE >= 24.5, 'through the tunnel');
+});
+
 test('Broad Daylight: staying on day through the tunnel gets you spooked by the day-walker', () => {
   const { events } = play(L.daywalker, () => ({ right: true }), 120 * 8);
   assert.ok(events.some((e) => e.type === 'death' && e.cause === 'spooked' && e.by === 'daywalker'));

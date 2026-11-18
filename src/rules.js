@@ -160,6 +160,7 @@ export function parseLevel(def) {
     duty: f.duty ?? 1,
     phase: f.phase ?? 0,
     startDir: f.startFacing === 'left' ? -1 : 1, // supervisor: first facing
+    when: freakWhen(def, f), // present only while that tile is as given: a sitter that follows what it sits in
   }));
   return {
     name: def.name,
@@ -355,6 +356,19 @@ export function watchedClock(side, sup, t) {
   return side === sup.startDir ? startSide : t - startSide;
 }
 
+// `when: { layer, tx, ty, ch }` on a freak: it's only there while that tile is as given (under the overrides),
+// like a job's `when`. Employee of the Month's sitter sits wherever the portrait hangs. Still a pure function of
+// the state: nothing about the freak itself changes.
+function freakWhen(def, f) {
+  if (f.when === undefined) return null;
+  const w = f.when;
+  if (!w || (w.layer !== 'day' && w.layer !== 'night') || !Number.isInteger(w.tx) || !Number.isInteger(w.ty) || typeof w.ch !== 'string' || w.ch.length !== 1) {
+    throw new Error(`${def.name}: a freak's when is { layer: 'day'|'night', tx, ty, ch }`);
+  }
+  return { layer: w.layer === 'night' ? NIGHT : DAY, tx: w.tx, ty: w.ty, ch: w.ch };
+}
+const present = (level, s, f) => !f.when || tileAt(level, f.when.layer, f.when.tx, f.when.ty, s.overrides) === f.when.ch;
+
 // A freak in a room a Light job has lit: it scatters. The clipboard is management, and stays.
 function lit(level, s, f) {
   return f.kind !== 'supervisor' && level.repairs.some((job, i) => {
@@ -378,7 +392,8 @@ export function freakBoxes(level, s) {
     let popIn = 0; // seconds until a ducked peeker pops out, on its own clock
     let supervised = false;
     let watched = false;
-    const scattered = lit(level, s, f);
+    const absent = !present(level, s, f);
+    const scattered = !absent && lit(level, s, f);
     if (f.kind === 'supervisor') {
       face = facing;
       turnIn = (Math.floor(s.freakClock / f.period) + 1) * f.period - s.freakClock;
@@ -404,8 +419,8 @@ export function freakBoxes(level, s) {
         popIn = up ? 0 : f.period - m;
       }
     }
-    if (scattered) active = false;
-    return { id: f.id, kind: f.kind, shift: f.shift, x, y, w: FREAK.w, h: FREAK.h, active, scattered, facing: face, turnIn, hang, dir, popIn, supervised, watched };
+    if (scattered || absent) active = false;
+    return { id: f.id, kind: f.kind, shift: f.shift, x, y, w: FREAK.w, h: FREAK.h, active, scattered, absent, facing: face, turnIn, hang, dir, popIn, supervised, watched };
   });
 }
 

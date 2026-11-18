@@ -30,11 +30,11 @@ export const ACTS = { 1: 'Renovation', 2: 'Overtime', 3: 'Graveyard Shift', 4: '
 // FINALE · <level name> instead of ACT 6.
 export const FINALE_ACT = 6;
 
-// One object moved by every night entry around a loop of places (the pillar, the portrait, a plank): entry `first`
+// One object moved by every night entry around a loop of places (the portrait, by day; a plank): entry `first`
 // (default 1) takes it from `start` to loop[0], each later entry to the next place, round the loop for good (the
 // lap's moves repeat with `every`). So a clock-in too many costs a lap, never the level (pillar and portrait have
 // no death to reset them). Every move has a tell at its destination.
-function relocations(id, { start, loop, rect, sound, first = 1 }) {
+function relocations(id, { start, loop, rect, sound, first = 1, layer = 'night' }) {
   return Array.from({ length: loop.length + 1 }, (_, i) => {
     const from = i === 0 ? start : loop[(i - 1) % loop.length];
     const to = loop[i % loop.length];
@@ -45,7 +45,7 @@ function relocations(id, { start, loop, rect, sound, first = 1 }) {
       ...(i > 0 ? { every: loop.length } : {}),
       tell: { tx: Math.floor((r.x0 + (r.x1 ?? r.x0)) / 2), ty: r.y0 },
       ...(sound ? { sound } : {}),
-      set: [{ layer: 'night', ...rect(from), ch: '.' }, { layer: 'night', ...r, ch: '#' }],
+      set: [{ layer, ...rect(from), ch: '.' }, { layer, ...r, ch: '#' }],
     };
   });
 }
@@ -746,7 +746,7 @@ export const LEVELS = [
     id: 'wet',
     name: 'Wet Floor',
     act: 3,
-    note: 'Someone waxed the floors. Nobody on the payroll waxes floors.',
+    note: 'Someone waxed the floors.',
     rev: 3,
     freaks: [{ kind: 'lurker', tx: 13, ty: 13, range: 3, speed: 55 }],
     repairs: [
@@ -773,7 +773,7 @@ export const LEVELS = [
     ],
     min: 4,
     props: [
-      { kind: 'memo', tx: 2, ty: 11, text: 'Floors were waxed at 3 AM. We do not employ anyone at 3 AM.', w: 150 },
+      { kind: 'memo', tx: 2, ty: 11, text: 'Who waxed the floors at 3 AM? — Facilities', w: 150 },
       { kind: 'wetFloorSign', tx: 7, ty: 9, layer: 'night' },
       { kind: 'footprints', tx: 12, ty: 9, layer: 'night' },
       { kind: 'footprints', tx: 13, ty: 9, layer: 'night' },
@@ -886,7 +886,7 @@ export const LEVELS = [
       { kind: 'pillar', tx: 13, ty: 13, h: 5, layer: 'night' },
     ],
     props: [
-      { kind: 'memo', tx: 4, ty: 12, text: 'Structural survey: fine. Somehow. — Engineering', w: 200 },
+      { kind: 'memo', tx: 4, ty: 12, text: 'Structural survey: fine. — Engineering', w: 200 },
       { kind: 'noticeBoard', tx: 2, ty: 10, layer: 'day' },
       { kind: 'sign', tx: 7, ty: 7, text: 'LOAD BEARING', style: 'paper', layer: 'day' },
       { kind: 'pallet', tx: 10, ty: 13, layer: 'day' },
@@ -1102,63 +1102,84 @@ export const LEVELS = [
     id: 'portrait',
     name: 'Employee of the Month',
     act: 4,
-    note: 'They hung a portrait of themselves. At night it sits in the door.',
-    rev: 3,
-    freaks: [{ kind: 'squatter', tx: 22, ty: 13 }],
+    note: 'Employee of the Month. Every month.',
+    rev: 4,
+    // The portrait is rehung on every night entry, round three hooks for good: the doorway (D, cols 9-11), low on
+    // room B's wall (M, cols 14-16) and under the exit ledge (H, cols 22-24). By day it's solid: a wall in the
+    // doorway, a step anywhere else. By night its sitter sits in the empty frame, under a night-only column that
+    // leaves a one-tile tunnel, so it can't be jumped. Route: in (it moves to M) and through the doorway; out on
+    // the crate, up the portrait to the shelf for the bulb; in at the day wall (it moves to H) and light H's
+    // corner so its sitter scatters; through the tunnel onto the crate, out, and up the portrait to the exit.
+    pranks: relocations('portrait', { layer: 'day', start: [9, 11], loop: [[14, 11], [22, 11], [9, 11]], rect: ([x, y]) => ({ x0: x, x1: x + 2, y0: y, y1: y + 2 }) }),
+    freaks: [
+      { kind: 'squatter', tx: 10, ty: 13, when: { layer: 'day', tx: 9, ty: 11, ch: '#' } },
+      { kind: 'squatter', tx: 15, ty: 13, when: { layer: 'day', tx: 14, ty: 11, ch: '#' } },
+      { kind: 'squatter', tx: 23, ty: 13, when: { layer: 'day', tx: 22, ty: 11, ch: '#' } },
+    ],
     repairs: [
       {
-        tool: { tx: 15, ty: 9, layer: 'day', name: 'BULB', kind: 'bulb' },
+        tool: { tx: 18, ty: 8, layer: 'day', name: 'BULB', kind: 'bulb' },
         fix: {
-          tx: 19,
+          tx: 20,
           ty: 13,
           layer: 'night',
           name: 'SPOTLIGHT',
           kind: 'light',
           goal: 'LIGHT THE PORTRAIT',
-          target: 'DOORWAY',
-          link: [[19, 12], [19, 11], [21, 11]],
-          clears: { x0: 21, x1: 24, y0: 10, y1: 13 },
+          target: 'PORTRAIT',
+          link: [[20, 12], [20, 10], [23, 10]],
+          clears: { x0: 22, x1: 24, y0: 11, y1: 13 },
         },
       },
     ],
-    skins: [{ kind: 'portrait', tx: 21, ty: 10, w: 4, h: 4, layer: 'day' }],
+    skins: [
+      { kind: 'portrait', tx: 9, ty: 11, w: 3, h: 3, layer: 'day' },
+      { kind: 'portrait', tx: 14, ty: 11, w: 3, h: 3, layer: 'day' },
+      { kind: 'portrait', tx: 22, ty: 11, w: 3, h: 3, layer: 'day' },
+    ],
     min: 4,
-    props: [{ kind: 'memo', tx: 3, ty: 11, text: 'Employee of the Month: [photo is just eyes]', w: 200 }],
+    props: [
+      { kind: 'memo', tx: 4, ty: 12, text: 'Please do not move the portrait. — Management', w: 200 },
+      { kind: 'plaque', tx: 6, ty: 10, layer: 'day' },
+      { kind: 'nail', tx: 9, ty: 11, layer: 'day' },
+      { kind: 'nail', tx: 14, ty: 11, layer: 'day' },
+      { kind: 'nail', tx: 22, ty: 11, layer: 'day' },
+    ],
     day: [
-      '.....................###########',
-      '.....................###########',
-      '.....................###########',
-      '.....................###########',
-      '.....................###########',
-      '.....................###########',
-      '.....................###########',
-      '.....................###########',
-      '.....................###########',
-      '.....................###########',
-      '.............#####...####.......',
-      '.....................####.......',
-      '.....................####.......',
-      '..S..................####..#.E..',
+      '.....................#..........',
+      '.....................#..........',
+      '.....................#..........',
+      '.....................#..........',
+      '.....................#..........',
+      '.........###.........#..........',
+      '.........###.........#..........',
+      '.........###.........#..........',
+      '.........###.........#........E.',
+      '.........###.....###.#.....#####',
+      '.........###.........#.....#####',
+      '.........###.........#.....#####',
+      '.........###.........#.....#####',
+      '..S......###.#.....C.#....######',
       '################################',
       '################################',
       '################################',
       '################################',
     ],
     night: [
-      '.....................###########',
-      '.....................###########',
-      '.....................###########',
-      '.....................###########',
-      '.....................###########',
-      '.....................###########',
-      '.....................###########',
-      '.....................###########',
-      '.....................###########',
-      '.....................###########',
-      '.....................####.#.....',
-      '.....................####.#.....',
-      '.......#####.........####.#.....',
-      '...........................#....',
+      '..............##......##........',
+      '..............##......##........',
+      '..............##......##........',
+      '..............##......##........',
+      '..............##......##........',
+      '.........###..##......##........',
+      '.........###..##......##........',
+      '.........###..##......##........',
+      '.........###..##......##......E.',
+      '.........###..##.###..##...#####',
+      '.........###..##......##...#####',
+      '.........##...##......##...#####',
+      '.........##...##......##...#####',
+      '..S..........#.....C......######',
       '################################',
       '################################',
       '################################',
@@ -1340,7 +1361,7 @@ export const LEVELS = [
       { kind: 'squatter', tx: 29, ty: 13 },
     ],
     props: [
-      { kind: 'memo', tx: 11, ty: 11, text: 'Pest control visit cancelled. Pest control would like to not talk about it.' },
+      { kind: 'memo', tx: 11, ty: 11, text: 'Pest control visit cancelled by pest control.' },
       { kind: 'sign', tx: 7, ty: 7, text: 'INSPECTION', style: 'paper', layer: 'day' },
       { kind: 'noticeBoard', tx: 21, ty: 10, layer: 'day' },
       { kind: 'mopBucket', tx: 7, ty: 13, layer: 'night' },
@@ -1412,7 +1433,7 @@ export const LEVELS = [
     min: 2,
     upsideDown: true,
     props: [
-      { kind: 'memo', tx: 5, ty: 13, text: 'Ceiling inspection passed. The ceiling is now the floor. — Facilities', layer: 'day' },
+      { kind: 'memo', tx: 5, ty: 13, text: 'Ceiling inspection: passed. Floor inspection: pending. — Facilities', layer: 'day' },
       { kind: 'sign', tx: 13, ty: 8, text: 'MIND YOUR HEAD', style: 'note', layer: 'day' },
       { kind: 'noticeBoard', tx: 19, ty: 12, layer: 'day' },
       { kind: 'mug', tx: 13, ty: 12, layer: 'night', flip: true },
@@ -1754,7 +1775,7 @@ export const LEVELS = [
       { kind: 'daywalker', tx: 30, ty: 13, range: 1, speed: 45 },
     ],
     props: [
-      { kind: 'memo', tx: 10, ty: 12, w: 160, text: 'Overtime is mandatory. So are the freaks, apparently.', layer: 'day' },
+      { kind: 'memo', tx: 10, ty: 12, w: 160, text: 'Overtime is mandatory. — Management', layer: 'day' },
       { kind: 'sign', tx: 4, ty: 9, text: 'LAST SHIFT', style: 'paper', layer: 'day' },
       { kind: 'coatRack', tx: 11, ty: 13, layer: 'day' },
       { kind: 'vent', tx: 20, ty: 8, layer: 'day' },

@@ -105,7 +105,7 @@ Every level is built on one rule: **the repair is the level's puzzle, not its lo
 | 10 | Structural Integrity (`pillar`) | 5 | Secure | Repeating prank | The jack only bites with the pillar under the beam, and it has to stay for the next clock-in |
 | 11 | Night Management (`supervisor`) | 2 | Power | Supervisor, lurkers | Two tunnels, one each side of the clipboard, and the fuse goes through with you |
 | 12 | Stacked (`stacked`) | 3 | Secure | Three pranks | Three things are scheduled and there is one bolt: read them and choose |
-| 13 | Employee of the Month (`portrait`) | 4 | Light | Squatter | By day the portrait fills the doorway, by night its sitter does; the spotlight clears it |
+| 13 | Employee of the Month (`portrait`) | 4 | Light | Its sitter (a squatter per hook) | Rehung on every clock-in round three hooks: a wall in the doorway, a step anywhere else, and its sitter sits where it hangs. Light the last hook's corner to get past it at night |
 | 14 | Broad Daylight (`daywalker`) | 5 | Machine | Day-walker, lurker | A beat on each shift in the tunnel, and every clock-in past them moves the hoist |
 | 15 | Floor 3.5 (`offset`) | 6 | Machine | Peeker | The lift is a trolley across the top-floor gap, and it only runs on a clock-in |
 | 16 | Night Audit (`audit`) | 5 | Build, Secure, Light | Several | The exam: a gate, a plank and a tunnel, one job per stretch |
@@ -200,6 +200,7 @@ The specs the levels in acts 2–4 were built from, in the §5.0 order (manifest
 - **Constraints:** tells for all three positions are visible from the start (eyes/notes at P1–P3).
 
 ### Employee of the Month (`portrait`, #13): target par 3–4 (act 4, tier B) ✅ built Nov 3 at par 3 (§4)
+- **Rebuilt Nov 18 (`rev: 4`, fewest 4, par 5):** back to the rehung portrait, now by day, with its sitter in the frame by night (a squatter with a `when` on the hook's day tile) and the bulb on a shelf only the portrait reaches. §4 is the truth; the lines below are the Nov 3 version.
 - **Lesson:** the obstacle and the tool are the same object, moved by each clock-in.
 - **Fiction:** "The freaks have installed a portrait of themselves. It blocks the exit."
 - **Night:** a big portrait (a solid block, about 2×3 tiles) hangs in front of the exit doorway.

@@ -41,7 +41,7 @@ What each level's repair is, with its par: [LEVELS.md](LEVELS.md) §4. §5–5.3
 | 10 | 3 | Structural Integrity | `pillar` | A pillar moves each night clock-in | B | ✅ |
 | 11 | 3 | Night Management | `supervisor` | Supervisor freak: watched freaks work, the rest slack off | C | ✅ |
 | 12 | 3 | Stacked | `stacked` | Several queued pranks; the order of clock-ins | A | ✅ |
-| 13 | 4 · Lights Out | Employee of the Month | `portrait` | The portrait blocks the exit and is rehung each clock-in | B | ✅ |
+| 13 | 4 · Lights Out | Employee of the Month | `portrait` | The portrait is rehung each clock-in: a wall in the doorway, a step elsewhere, its sitter in the frame by night | B | ✅ |
 | 14 | 4 | Broad Daylight | `daywalker` | Day-walker freak: you must freeze it | C | ✅ |
 | 15 | 4 | Floor 3.5 | `offset` | Offset layer: night is the day map half a storey up | C | ✅ |
 | 16 | 4 | Night Audit | `audit` | Acts 1–4 exam on one screen; no new rules | B | ✅ |
