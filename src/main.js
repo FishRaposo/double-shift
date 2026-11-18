@@ -1,7 +1,7 @@
 // Double Shift — browser shell: input capture, fixed-step loop, rendering.
 // Draws only what src/rules.js decided. Art lives in sprites.js (characters) and art.js (everything else).
 
-import { step, initState, parseLevel, tileAt, isSolidChar, isHazardChar, freakBoxes, pendingPranks, securedPranks, gravitySign, TILE, DT, DAY, NIGHT, PARAMS, FREAK } from './rules.js';
+import { step, initState, parseLevel, tileAt, isSolidChar, isHazardChar, freakBoxes, pendingPranks, securedPranks, gravitySign, TILE, DT, DAY, NIGHT, PARAMS, FREAK, parOf } from './rules.js';
 import { LEVELS, ACTS, FINALE_ACT } from './levels.js';
 import { createInput } from './input.js';
 import { createPad, readPads, padMenuKey } from './pad.js';
@@ -1223,9 +1223,9 @@ function drawSelect() {
       .forEach((line, k) => drawText(g, line, c.x + CARD.pad, c.y + 34 + k * 10, { scale: 1, color: ink }));
     if (!open) drawText(g, 'NOT YET', c.x + c.w - CARD.pad, c.y + 10, { scale: 1, color: ink, align: 'right' });
     else if (best) {
-      const diff = best.shifts - def.par;
+      const diff = best.shifts - parOf(def);
       drawStamp(g, c.x + c.w - 40, c.y + 22, stampText(diff, { short: true }), diff <= 0 ? '#c0392b' : '#7f6a50', 1);
-    } else drawText(g, `PAR ${def.par}`, c.x + c.w - CARD.pad, c.y + 10, { scale: 1, color: ink, align: 'right' });
+    } else drawText(g, `PAR ${parOf(def)}`, c.x + c.w - CARD.pad, c.y + 10, { scale: 1, color: ink, align: 'right' });
   });
   // detail bar: the selected level in full
   const d = detailRect;
@@ -1234,7 +1234,7 @@ function drawSelect() {
   const selOpen = isUnlocked(LEVELS, game.selected, save);
   drawPanel(g, d.x, d.y, d.w, d.h, true);
   drawText(g, `${game.selected + 1}. ${sel.name.toUpperCase()}`, d.x + 12, d.y + 11, { scale: 2, color: C.paperInk });
-  const status = !selOpen ? 'NOT YET' : selBest ? `BEST ${selBest.shifts} · PAR ${sel.par}` : `PAR ${sel.par}`;
+  const status = !selOpen ? 'NOT YET' : selBest ? `BEST ${selBest.shifts} · PAR ${parOf(sel)}` : `PAR ${parOf(sel)}`;
   drawText(g, status, d.x + d.w - 12, d.y + 11, { scale: 2, color: C.paperInk, align: 'right' });
   drawText(g, game.padLast ? 'D-pad: choose · A: clock in · B: back' : 'Arrows: choose · SPACE or click: clock in · Esc: back', W / 2, H - 22, { scale: 2, color: pal.hudSoft, halo: pal.halo, align: 'center' });
 }

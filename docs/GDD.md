@@ -25,7 +25,7 @@
 | Shift rules | Same spot, momentum kept, instant, no cooldown, one shift per key press, separate geometry per shift, a blocked shift nudges ≤ 4 px → waits 80 ms → is refused | §3.3 (S-01…S-08) |
 | The other shift | Shown as dashed outlines; geometry that exists only in your current shift is hatched; nothing on the other shift moves | §4.6, §7 |
 | The freaks | Undefined, nocturnal, out to annoy you. Pranks fire on the Nth night clock-in; visible freaks (lurker, peeker, squatter, supervisor) freeze by day, and the day-walker freezes by night. Never chase, always telegraphed. | §4.8–4.10 |
-| Score | Timecard: clock-ins vs. par (the fewest shifts the scripted solution and the audit found, proven by tests) | §15.3 |
+| Score | Timecard: clock-ins vs. par (one more than the fewest shifts the scripted solution and the audit found, proven by tests) | §15.3 |
 | Tone | Mock horror: petty monsters, deadpan worker, no gore, no jump scares | §10.5 |
 | Look and sound | Crisp pixel art on a 2-px grid, a hand-made pixel font, a spooky-goofy theme whose day/night arrangements crossfade on every shift; all made in code (built 2026-11-02) | §10, §11, ART.md, AUDIO.md |
 | Levels | **21: five acts of four plus the finale.** <!-- n:levels -->21<!-- /n --> built, with act 5 Upside Down (night flipped, gravity up) and the finale rework. All five new mechanics shipped, Upside Down last | §8.2, [CONTENT.md](CONTENT.md) |
@@ -1581,12 +1581,12 @@ Timing should not interfere with the default puzzle-solving experience.
 
 ## 15.3 Shift Par (the timecard)
 
-**Decision (v0.2): in scope for the jam.** Track successful shifts per level. Each level has a **par**: the fewest shifts the scripted solution and the audit found. The level-complete screen is a timecard showing clock-ins vs. par.
+**Decision (v0.2): in scope for the jam.** Track successful shifts per level. Each level has a **par**: one more than the fewest shifts the scripted solution and the audit found (Fish, 2026-11-18: a clock-in to spare, so par is a fair target rather than the perfect route). The fewest itself stamps UNDER PAR. The level-complete screen is a timecard showing clock-ins vs. par.
 
 - Rejected or buffered-then-expired shifts do not count.
 - Every entry into night may trigger a prank (§4.9), so par is a puzzle about *when* to clock in, not only how often.
 - A death does not reset the count since the last checkpoint; restarting the level (R) does.
-- Par is verified by a scripted solution per level, run in tests, so par can never be lower than what is achievable.
+- The fewest (`min` in the level data) is verified by a scripted solution per level, run in tests, and the audit's random search finds nothing below it; par is `min + 1` (`PAR_SLACK` in `src/rules.js`).
 
 Fewest-shifts and fastest completion reward different strategies. The timer stays optional; par is the primary replay hook.
 

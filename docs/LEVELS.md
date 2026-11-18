@@ -39,7 +39,7 @@ Companion to [GDD.md](GDD.md) §6 and §8. Tile = 30 px. Levels are 32×18 tiles
   id: 'inventory',              // used by tests (SOLUTIONS key)
   name: 'Inventory',
   note: 'Every time you clock in, something gets moved.',   // shown for 5 s at level start
-  par: 3,                       // fewest shifts found; proven by test
+  min: 3,                       // fewest shifts found, proven by test; the par shown is min + 1 (PAR_SLACK)
   act: 2,                       // act number; ACTS in src/levels.js names it. First level of each act is always open in level select
   spawnLayer: 0,                // optional, default DAY
   day:   [ 18 strings of 32 chars ... ],
@@ -91,7 +91,7 @@ Outside the grid: left/right walls and the ceiling are solid; below the grid is 
 
 Every level is built on one rule: **the repair is the level's puzzle, not its lock.** The types and the freaks' roles are in the GDD (§4.10, §4.11). `test/levels.test.mjs` enforces the shape: every job is needed, the first repair lands within 70% of the scripted run, at least one shift and one jump follow it (a flipped level's falling counts), and each type does what it says. Those tests stop the old shape coming back; they can't prove a level is fun.
 
-| # | Level (id) | Par | Repair | Freaks | The puzzle |
+| # | Level (id) | Fewest (par = +1) | Repair | Freaks | The puzzle |
 |---|---|---|---|---|---|
 | 1 | Clock In (`clock`) | 3 | Build | None | Cross on the night boards, fix the deck, and climb it to the top floor |
 | 2 | Scaffolding (`scaff`) | 4 | Build | None | The deck and the wall beside it are the day crew's: jump off the deck and clock in mid-air |

@@ -366,6 +366,10 @@ The steps:
 - Memo panels keep off the job: tool, fixtures and the target's tag, as well as the exit, tells and signs (`test/art.test.mjs`). Moved or narrowed: `scaff`, `closing`, `wet`, `fallup`, `ceiling`, `heels`. Clock Out is exempt: no spot on its screen clears everything (searched); its day-only panel is open 0.34 s on the par route.
 - Left for Fish (design calls, not bugs): Mid-Air and Structural Integrity have no failure state; Head Over Heels spends about half its expert run walking back; Night Watch brings in three freaks at once; Night Audit and Clock Out stand still waiting on the supervisor; the exits in Head Over Heels, Floor 3.5 and Clock Out sit by the HUD next to tells.
 
+### T33 · Par with a clock-in to spare *(✅ done 2026-11-18, Fish's call)*
+- A level's data now gives `min`, the proven fewest clock-ins (the old par, unchanged). The par a player sees is `min + 1` (`PAR_SLACK` and `parOf()` in `src/rules.js`), on the HUD, the timecard, the level select and the end screen. Hitting the fewest now stamps UNDER PAR!.
+- The proofs didn't loosen: the scripted solution must still win in `min`, and the audit's random search must still find nothing below `min`. Saved bests are clock-in counts, so they carry over; only their stamp against par changes.
+
 ## 5. Known gotchas
 - **Offset and Upside Down levels generate their night grid:** don't also give `night`.
 - **Checkpoints only save where you can stand.** A `C` over a pit in one shift saves in the other or not at all.

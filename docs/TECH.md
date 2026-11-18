@@ -96,7 +96,7 @@ Shift happens first so a shift and a jump on the same tick see the new world (GD
 | `death` | `cause`: `hazard` \| `spooked` \| `fall`, `by` (killer kind), `x`, `y` | Before respawn |
 | `respawn` | — | After death, same tick |
 | `checkpoint` | `id` | New checkpoint taken |
-| `win` | `shifts`, `par` | Exit reached |
+| `win` | `shifts`, `par` (`min + 1`) | Exit reached |
 | `wetStop` | — | A wet-floor slide decelerated to zero |
 | `supervisorTurn` | `id`, `facing` | A supervisor changed facing (once per window) |
 | `peek` | `id` | A peeker popped out (hidden last tick, out this tick) while you're on its shift; the boing |
@@ -130,7 +130,7 @@ Derived metrics for level design are in [LEVELS.md](LEVELS.md) §1. **Any change
 
 ## 5. Level format
 
-See [LEVELS.md](LEVELS.md) §2 for the full format. Summary: `{ id, name, act, note, par, day: [...], night: [...], pranks?, freaks?, skins?, decor?, props?, spawnLayer?, rev? }` — or `offset: { dx, dy }` or `upsideDown: true`, with `nightPatch?`, instead of `night` (§6.5). Act names are `ACTS` in `src/levels.js`; the finale is act `FINALE_ACT` (6). Grids must be equal size; the current game uses 32×18 (exactly one screen).
+See [LEVELS.md](LEVELS.md) §2 for the full format. Summary: `{ id, name, act, note, min, day: [...], night: [...], pranks?, freaks?, skins?, decor?, props?, spawnLayer?, rev? }` — or `offset: { dx, dy }` or `upsideDown: true`, with `nightPatch?`, instead of `night` (§6.5). Act names are `ACTS` in `src/levels.js`; the finale is act `FINALE_ACT` (6). Grids must be equal size; the current game uses 32×18 (exactly one screen).
 
 - **Skins** (`skins: [{ kind: 'door'|'pillar'|'portrait'|'doorPile', tx, ty, w?, h?, layer? }]`) are object art over ordinary solid tiles; `parseLevel` validates them like every other field (the kind is one of `SKIN_KINDS`, `layer` is `'day'`, `'night'` or left out for both, the covered cells are inside the grid, doors and pillars are 1 wide and the pile 2) and fills default sizes (door 1×2, pillar 1×4, portrait 3×2, pile 2 wide and at most `h` = 3 doors high). The pure `skinPlan(level, layer, ov)` in `src/skins.js` reads the tiles under each skin under the current prank overrides: all solid draws the object, all empty draws what's left (a door's empty frame, a pillar's crack) but only if the object stood there (the level built it there or a prank has written those tiles), mixed draws nothing. Doors and pillars stand on their bottom cell; a portrait hangs from its top-left cell; the pile counts solid rows up from its bottom row, never more than `h` (so a platform above it isn't drawn as doors).
 - **Prank sounds:** a prank may name a `sound` (a `SOUNDS` entry, e.g. `doorThunk`) played with the giggle when it fires.
@@ -139,7 +139,7 @@ See [LEVELS.md](LEVELS.md) §2 for the full format. Summary: `{ id, name, act, n
 
 ### 6.1 Add a level
 1. Write the grids and metadata in `src/levels.js` (or generate with a script; widths must match).
-2. Add a scripted solution policy to `SOLUTIONS` in `test/solutions.mjs` (a level kept outside `LEVELS`, like `CLOCKOUT_CLASSIC`, gets its policy in `SOLUTIONS_EXTRA` and its own tests). A reworked level keeps its id and takes `rev: N` (default 1), so old bests don't count against it. `test/levels.test.mjs` asserts it wins at ≤ par with zero deaths and that running/jumping without shifting can't win; `test/fairness.test.mjs` checks the timing slack of every required input, respawns outside patrols and the exit clear of freaks.
+2. Add a scripted solution policy to `SOLUTIONS` in `test/solutions.mjs` (a level kept outside `LEVELS`, like `CLOCKOUT_CLASSIC`, gets its policy in `SOLUTIONS_EXTRA` and its own tests). A reworked level keeps its id and takes `rev: N` (default 1), so old bests don't count against it. `test/levels.test.mjs` asserts it wins in ≤ `min` clock-ins (par is `min + 1`) with zero deaths and that running/jumping without shifting can't win; `test/fairness.test.mjs` checks the timing slack of every required input, respawns outside patrols and the exit clear of freaks.
 3. `npm test`, `npm run check`, `npm run audit -- <id>`, `npm run media -- --review <id>`, play it. BUILD.md §2.1 has the full recipe.
 
 ### 6.2 Add a prank
@@ -230,7 +230,7 @@ The five added mechanics from [CONTENT.md](CONTENT.md) §3 — all built, tested
 |---|---|
 | `npm test` | <!-- n:tests -->594<!-- /n --> tests: GDD §13.7 cases 1–15, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, Upside Down rules (flip, gravity sign, hanging, jump and cut, nudge order, coyote across a flip, hazard band, grid edges, checkpoints, fuzz), every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
 | `npm run check` | Every module parses; every level validates |
-| `npm run audit` | Per level: the slack of every required shift and jump (fails under the act floor), input-lag tolerance 0–150 ms, and a random search for wins below par or without shifting (`scripts/audit-levels.mjs`). |
+| `npm run audit` | Per level: the slack of every required shift and jump (fails under the act floor), input-lag tolerance 0–150 ms, and a random search for wins below the fewest (`min`) or without shifting (`scripts/audit-levels.mjs`). |
 | `npm run media` | Real browser (headless Edge/Chrome, no dependencies): plays level 1 with key presses, fails on page errors, a wrong outcome, audio clipping or a slow frame; saves the cover, screenshots and gallery. |
 | `npm run gif -- <id>` | A demo GIF of the level's scripted run; fails if the page's run differs from the tests' (shifts, deaths, time, or the exit showing at the wrong moment of the GIF), Chromium decodes a frame differently, or the file stays over 3 MB. |
 

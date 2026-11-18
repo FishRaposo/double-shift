@@ -2,7 +2,7 @@
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { LEVELS, CLOCKOUT_CLASSIC } from '../src/levels.js';
-import { DAY, NIGHT, TILE, NO_INPUT, PARAMS, overridesAfter, initState, step, tileAt, supervisorFacing, parseLevel, freakBoxes, gravitySign } from '../src/rules.js';
+import { DAY, NIGHT, TILE, NO_INPUT, PARAMS, overridesAfter, initState, step, tileAt, supervisorFacing, parseLevel, freakBoxes, gravitySign, PAR_SLACK } from '../src/rules.js';
 import { play, tx, inputsFrom, recordInputs, searchBelowPar } from './helpers.mjs';
 import { skinPlan } from '../src/skins.js';
 import { memoNear, memoPanel } from '../src/layout.js';
@@ -33,10 +33,11 @@ test('every level has a scripted solution', () => {
 });
 
 for (const def of LEVELS) {
-  test(`${def.name}: completable at par (${def.par}) with no deaths`, () => {
+  test(`${def.name}: completable in its fewest clock-ins (${def.min}) with no deaths, one under par`, () => {
     const { state, events } = play(L[def.id], SOLUTIONS[def.id], 120 * 30);
     assert.equal(state.won, true);
-    assert.ok(state.shifts <= def.par, `took ${state.shifts} shifts, par ${def.par}`);
+    assert.ok(state.shifts <= def.min, `took ${state.shifts} shifts, fewest ${def.min}`);
+    assert.equal(L[def.id].par, def.min + PAR_SLACK, 'par leaves a clock-in to spare');
     assert.equal(events.filter((e) => e.type === 'death').length, 0);
   });
 
@@ -59,13 +60,13 @@ test('Broad Daylight: the day-walker cannot be jumped (the tunnel roof stops you
   assert.ok(events.some((e) => e.type === 'death' && e.by === 'daywalker'));
 });
 
-test('Clock Out (classic): still wins at par 7', () => {
+test('Clock Out (classic): still wins in 7 clock-ins', () => {
   const lvl = parseLevel(CLOCKOUT_CLASSIC);
   const { state } = play(lvl, SOLUTIONS_EXTRA.clockoutClassic);
   assert.equal(state.won, true);
   assert.equal(state.deaths, 0);
-  assert.ok(state.shifts <= CLOCKOUT_CLASSIC.par, `${state.shifts} clock-ins`);
-  assert.equal(CLOCKOUT_CLASSIC.par, 7);
+  assert.ok(state.shifts <= CLOCKOUT_CLASSIC.min, `${state.shifts} clock-ins`);
+  assert.equal(CLOCKOUT_CLASSIC.min, 7);
 });
 
 test('Clock Out (classic): without the fourth clock-in the step stays gone and the time clock is out of reach', () => {
@@ -255,7 +256,7 @@ test('Falling Up: no brake from the floor (a clock-in at the foot of the wall ne
       return { right: true, jump, shift: [a, b].some((w) => x > w && x < w + 0.35) };
     };
     const { state } = play(lvl, policy, 120 * 8);
-    assert.ok(!(state.won && state.shifts < lvl.par), `won with ${state.shifts} clock-ins (shift windows ${a}, ${b})`);
+    assert.ok(!(state.won && state.shifts < lvl.min), `won with ${state.shifts} clock-ins (shift windows ${a}, ${b})`);
   }
 });
 
@@ -339,8 +340,8 @@ for (const def of LEVELS) {
 }
 
 for (const def of LEVELS) {
-  test(`${def.name}: a random search both ways finds no win below par`, () => {
-    assert.ok(searchBelowPar(L[def.id], def.par, 120) >= def.par);
+  test(`${def.name}: a random search both ways finds no win below its fewest clock-ins`, () => {
+    assert.ok(searchBelowPar(L[def.id], def.min, 120) >= def.min);
   });
 }
 

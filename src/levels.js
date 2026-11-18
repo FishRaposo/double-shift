@@ -1,7 +1,8 @@
 // Double Shift — levels. Two equal-size ASCII grids per level.
 // Legend: # solid, ^ hazard, ~ wet floor (solid, slick), S spawn, E exit, C checkpoint, . empty.
-// S, E and C are shared between shifts. `par` = the scripted solution's clock-ins (test/solutions.mjs);
-// the tests also check fair timing and that no route wins below par (npm run audit).
+// S, E and C are shared between shifts. `min` = the fewest clock-ins that win: the scripted solution's
+// (test/solutions.mjs), and the tests check that no route wins with fewer (npm run audit). The par a player
+// sees is one more (`parOf` in src/rules.js): a clock-in to spare.
 //
 // pranks: what the freaks change on the Nth entry into night (`onNight`; `every` repeats it). `set` rectangles
 //         override tiles; `tell` is where the warning (eyes at night, a note by day, `text` for its words, and a
@@ -57,7 +58,7 @@ export const CLOCKOUT_CLASSIC = {
   name: 'Clock Out',
   act: FINALE_ACT,
   note: "Almost done. Don't look at the vents.",
-  par: 7,
+  min: 7,
   props: [
     { kind: 'timeClock', tx: 30, ty: 9 },
     { kind: 'coatRack', tx: 29, ty: 9, layer: 'day' },
@@ -163,7 +164,7 @@ export const LEVELS = [
       },
     ],
     skins: [{ kind: 'deck', tx: 11, ty: 14, w: 8, layer: 'night' }, { kind: 'deck', tx: 22, ty: 12, w: 3 }],
-    par: 3,
+    min: 3,
     day: [
       '................................',
       '................................',
@@ -237,7 +238,7 @@ export const LEVELS = [
       },
     ],
     skins: [{ kind: 'deck', tx: 11, ty: 11, w: 6, layer: 'day' }],
-    par: 4,
+    min: 4,
     day: [
       '.................#..............',
       '.................#..............',
@@ -316,7 +317,7 @@ export const LEVELS = [
       },
     ],
     skins: [{ kind: 'shutter', tx: 12, ty: 13 }],
-    par: 2,
+    min: 2,
     day: [
       '............#...................',
       '............#...................',
@@ -398,7 +399,7 @@ export const LEVELS = [
         },
       },
     ],
-    par: 3,
+    min: 3,
     decor: [{ kind: 'eyes', tx: 19, ty: 4 }, { kind: 'eyes', tx: 7, ty: 8 }],
     day: [
       '................................',
@@ -461,7 +462,7 @@ export const LEVELS = [
       },
     ],
     skins: [{ kind: 'deck', tx: 7, ty: 14, w: 8, layer: 'night' }, { kind: 'deck', tx: 20, ty: 14, w: 7, layer: 'night' }],
-    par: 3,
+    min: 3,
     pranks: [{ id: 'plank', onNight: 2, tell: { tx: 23, ty: 13, text: 'MINE NOW' }, set: [{ layer: 'night', x0: 20, x1: 26, y0: 14, ch: '.' }] }],
     day: [
       '................................',
@@ -536,7 +537,7 @@ export const LEVELS = [
         },
       },
     ],
-    par: 4,
+    min: 4,
     day: [
       '........######....########......',
       '........######....########......',
@@ -606,7 +607,7 @@ export const LEVELS = [
         },
       },
     ],
-    par: 5,
+    min: 5,
     day: [
       '...........#####................',
       '...........#####................',
@@ -673,7 +674,7 @@ export const LEVELS = [
       { kind: 'deck', tx: 8, ty: 9, w: 5, layer: 'night' },
       { kind: 'deck', tx: 19, ty: 9, w: 5, layer: 'night' },
     ],
-    par: 6,
+    min: 6,
     pranks: [
       {
         id: 'down',
@@ -770,7 +771,7 @@ export const LEVELS = [
         },
       },
     ],
-    par: 4,
+    min: 4,
     props: [
       { kind: 'memo', tx: 2, ty: 11, text: 'Floors were waxed at 3 AM. We do not employ anyone at 3 AM.', w: 150 },
       { kind: 'wetFloorSign', tx: 7, ty: 9, layer: 'night' },
@@ -843,7 +844,7 @@ export const LEVELS = [
         },
       },
     ],
-    par: 5,
+    min: 5,
     pranks: [
       {
         id: 'pillar1',
@@ -979,7 +980,7 @@ export const LEVELS = [
       },
     ],
     skins: [{ kind: 'shutter', tx: 14, ty: 13, h: 3 }, { kind: 'shutter', tx: 24, ty: 13, h: 3 }],
-    par: 2,
+    min: 2,
     day: [
       '........................#.......',
       '........................#.......',
@@ -1044,7 +1045,7 @@ export const LEVELS = [
         },
       },
     ],
-    par: 3,
+    min: 3,
     skins: [{ kind: 'deck', tx: 6, ty: 14, w: 8, layer: 'night' }, { kind: 'deck', tx: 19, ty: 14, w: 8, layer: 'night' }],
     pranks: [
       { id: 'bridge', onNight: 1, tell: { tx: 9, ty: 13, text: 'YOU ARE WELCOME' }, set: [{ layer: 'night', x0: 6, x1: 13, y0: 14, ch: '#' }] },
@@ -1121,7 +1122,7 @@ export const LEVELS = [
       },
     ],
     skins: [{ kind: 'portrait', tx: 21, ty: 10, w: 4, h: 4, layer: 'day' }],
-    par: 4,
+    min: 4,
     props: [{ kind: 'memo', tx: 3, ty: 11, text: 'Employee of the Month: [photo is just eyes]', w: 200 }],
     day: [
       '.....................###########',
@@ -1187,7 +1188,7 @@ export const LEVELS = [
         },
       },
     ],
-    par: 5,
+    min: 5,
     props: [
       { kind: 'memo', tx: 4, ty: 11, text: "Day crew: if you see eyes, no you didn't." },
       { kind: 'sign', tx: 8, ty: 8, text: 'DAY SHIFT', style: 'paper', layer: 'day' },
@@ -1257,7 +1258,7 @@ export const LEVELS = [
         },
       },
     ],
-    par: 6,
+    min: 6,
     offset: { dx: 0, dy: -3 },
     nightPatch: [{ x0: 11, x1: 18, y0: 11, ch: '^' }, { x0: 14, x1: 15, y0: 2, ch: '#' }],
     props: [
@@ -1328,7 +1329,7 @@ export const LEVELS = [
         },
       },
     ],
-    par: 5,
+    min: 5,
     pranks: [{ id: 'plank', onNight: 3, tell: { tx: 23, ty: 11, text: 'HEXED. NO TUCH' }, set: [{ layer: 'night', x0: 25, x1: 26, y0: 14, ch: '.' }] }],
     skins: [{ kind: 'shutter', tx: 12, ty: 13, h: 1, layer: 'night' }],
     freaks: [
@@ -1408,7 +1409,7 @@ export const LEVELS = [
         },
       },
     ],
-    par: 2,
+    min: 2,
     upsideDown: true,
     props: [
       { kind: 'memo', tx: 5, ty: 13, text: 'Ceiling inspection passed. The ceiling is now the floor. — Facilities', layer: 'day' },
@@ -1469,7 +1470,7 @@ export const LEVELS = [
         },
       },
     ],
-    par: 4,
+    min: 4,
     upsideDown: true,
     nightPatch: [{ x0: 12, x1: 17, y0: 12, ch: '^' }, { x0: 31, y0: 13, ch: '#' }, { x0: 17, y0: 13, y1: 17, ch: '#' }],
     props: [
@@ -1513,7 +1514,7 @@ export const LEVELS = [
         fix: { tx: 18, ty: 13, layer: 'day', name: 'CLAMP', kind: 'bolt', goal: 'BOLT THE PLANK DOWN', target: 'PLANK', secures: ['plank'], link: [[18, 12], [18, 11], [22, 11]] },
       },
     ],
-    par: 4,
+    min: 4,
     upsideDown: true,
     nightPatch: [
       { x0: 5, x1: 12, y0: 11, ch: '#' },
@@ -1585,7 +1586,7 @@ export const LEVELS = [
       },
     ],
     skins: [{ kind: 'shutter', tx: 26, ty: 13, h: 1, layer: 'night' }, { kind: 'shutter', tx: 9, ty: 4, h: 1, layer: 'night' }],
-    par: 7,
+    min: 7,
     upsideDown: true,
     nightPatch: [{ x0: 20, x1: 27, y0: 3, ch: '#' }, { x0: 26, y0: 13, ch: '#' }],
     pranks: [
@@ -1722,7 +1723,7 @@ export const LEVELS = [
         },
       },
     ],
-    par: 7,
+    min: 7,
     upsideDown: true,
     nightPatch: [
       { x0: 30, x1: 31, y0: 12, ch: '.' },

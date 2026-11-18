@@ -4,6 +4,10 @@
 
 export const TILE = 30;
 export const DT = 1 / 120; // fixed timestep, seconds
+// Par is a level's proven fewest clock-ins (`min`) plus this: a clock-in to spare, so par is a fair target and
+// the fewest is UNDER PAR.
+export const PAR_SLACK = 1;
+export const parOf = (def) => (def.min ?? 0) + PAR_SLACK;
 
 export const PARAMS = Object.freeze({
   playerW: 18,
@@ -46,7 +50,7 @@ function skinCells(sk) {
 
 // ---------- level parsing ----------
 
-// A level is { name, par, day: string[], night: string[] } — or `offset` or `upsideDown: true`, plus an optional
+// A level is { name, min, day: string[], night: string[] } — or `offset` or `upsideDown: true`, plus an optional
 // `nightPatch`, instead of `night`: those generate the night grid from the day one.
 // A level's work orders (`repairs`): pick up the tool on its shift, then fix the broken thing on its
 // shift. Both are touched, like a checkpoint: no extra button. `fix.set` is what the repair changes, in the prank
@@ -159,7 +163,8 @@ export function parseLevel(def) {
   }));
   return {
     name: def.name,
-    par: def.par,
+    min: def.min ?? 0, // the fewest clock-ins that win
+    par: parOf(def),
     rev: def.rev ?? 1, // a reworked level's revision: saves ignore bests from another one (save.js)
     w,
     h,
