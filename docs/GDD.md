@@ -892,7 +892,7 @@ A linear progression is sufficient.
 | Level | Focus | Intended Lesson | Fiction | Tier |
 |---|---|---|---|---|
 | 13. Employee of the Month ✅ | Obstacle as tool | Rehung every clock-in: a wall in the doorway, a step elsewhere; by night its sitter sits in the frame | Employee of the Month. Every month. | B |
-| 14. Broad Daylight ✅ | Day-walker freak | Each shift freezes the other shift's freaks; you must freeze it | One of them works days now | C |
+| 14. Broad Daylight ✅ | Day-walker freak | A dumbwaiter to a corridor: the lurker works the landing by night, the day-walker further on by day; each shift freezes the other's | One of them works days now | C |
 | 15. Floor 3.5 ✅ | Offset layer | Shift at the apex to climb between floors | Night is half a storey up | C |
 | 16. Night Audit ✅ | Acts 1–4 exam | Everything so far, one screen, no new rules | Management's walkthrough; so is theirs | B |
 

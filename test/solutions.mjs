@@ -9,12 +9,17 @@ const want = (s, layer) => s.layer !== layer;
 // One press per shift: ask once, then wait to see the world change (however late the press lands) before asking
 // again. A policy that holds `shift` down while its target flips between two shifts loses the second press.
 const pressShift = (s, mem, target) => {
+  if (mem.held) { // the key was down last tick: let go first, or the next press is lost
+    mem.held = false;
+    return false;
+  }
   if (s.layer === target) {
     mem.sentFrom = null;
     return false;
   }
   if (mem.sentFrom === s.layer) return false;
   mem.sentFrom = s.layer;
+  mem.held = true;
   return true;
 };
 
@@ -40,7 +45,7 @@ const holdJump = (s, mem, start) => {
 export const steady = (policy, { jumps = true } = {}) => (s, mem, f) => {
   const own = (mem.own ??= {});
   const out = policy(s, own, f) || {};
-  const shift = out.shift ? pressShift(s, mem, s.layer === DAY ? NIGHT : DAY) : (s.layer !== mem.sentFrom && (mem.sentFrom = null), false);
+  const shift = out.shift ? pressShift(s, mem, s.layer === DAY ? NIGHT : DAY) : ((mem.held = false), s.layer !== mem.sentFrom && (mem.sentFrom = null), false);
   const jump = jumps ? holdJump(s, mem, !!out.jump && s.player.grounded) : !!out.jump;
   return { ...out, shift, jump };
 };
@@ -150,13 +155,19 @@ export const SOLUTIONS = {
   },
   daywalker: steady((s, m) => {
     const x = tx(s);
-    const job = s.repairs[0];
-    if (!job.done) return { right: true, shift: want(s, x > 7.4 ? NIGHT : DAY) };
-    if (x < 19.4) return { right: true, shift: want(s, x > 10 && x < 14.3 ? DAY : NIGHT) };
-    const stop = s.nightEntries - job.since;
-    if (stop === 1 && x < 22.4) return { right: true, jump: s.player.grounded ? x > 19.8 : s.player.vy < 0 };
-    if (stop === 1) return s.player.grounded ? { shift: (m.p = !m.p) } : {};
-    return { right: true, shift: want(s, x > 26.4 ? NIGHT : s.layer) };
+    const y = s.player.y / TILE;
+    const g = s.player.grounded;
+    switch (s.shifts) {
+      case 0: return { right: true, shift: x > 4.6 }; // in for the grease
+      case 1: return { right: true, shift: x > 9.4 }; // out for the pulley
+      case 2: // onto the car, and in: it takes you up
+        return { right: x < 15.3, left: x > 15.6, shift: g && x > 15.1 && x < 15.8 };
+      case 3: // arrived by night, the lurker at the landing: a beat on the car, then out for day
+        m.t = g && y < 8 ? (m.t ?? 0) + 1 : 0;
+        return { shift: m.t > 40 };
+      case 4: return { right: x < 22.1, left: x > 22.5, shift: g && x > 21.8 && x < 22.6 }; // past the frozen lurker
+      default: return { right: true, jump: g && x > 28.6 }; // past the frozen day-walker, and up the step to the exit
+    }
   }),
   supervisor: (s, m) => {
     const x = tx(s);

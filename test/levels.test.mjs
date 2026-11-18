@@ -110,14 +110,24 @@ test('Employee of the Month: past the day wall at night with the portrait on the
   assert.ok(lit.player.x / TILE >= 24.5, 'through the tunnel');
 });
 
-test('Broad Daylight: staying on day through the tunnel gets you spooked by the day-walker', () => {
-  const { events } = play(L.daywalker, () => ({ right: true }), 120 * 8);
-  assert.ok(events.some((e) => e.type === 'death' && e.cause === 'spooked' && e.by === 'daywalker'));
-});
-
-test('Broad Daylight: the day-walker cannot be jumped (the tunnel roof stops you)', () => {
-  const { events } = play(L.daywalker, (s, m, f) => ({ right: true, jump: f % 30 < 15 }), 120 * 8);
-  assert.ok(events.some((e) => e.type === 'death' && e.by === 'daywalker'));
+// Broad Daylight: the dumbwaiter only moves on a night clock-in, so you arrive at the lurker's landing by night
+const atTheTop = (layer) => {
+  const lvl = L.daywalker;
+  let s = initState(lvl);
+  s.repairs = [{ ...s.repairs[0], tool: true, done: true, at: 0, armed: false, since: 0 }];
+  s.overrides = { ...s.overrides };
+  for (const [l, , , ch] of lvl.repairs[0].spots[0].cells ?? []) void l, void ch; // (the car is the job's own cells)
+  s.player.x = 23 * TILE - 9; // just off the landing, in the corridor
+  s.player.y = 7 * TILE;
+  s.layer = layer;
+  return s;
+};
+test('Broad Daylight: in the corridor, each shift wakes one freak and freezes the other', () => {
+  const walk = (layer) => { let s = atTheTop(layer); s.player.x = 17 * TILE + 6; for (let f = 0; f < 120 * 3 && !s.deaths && !s.won; f++) s = step(L.daywalker, s, { ...NO_INPUT, right: true }); return s; };
+  const night = walk(NIGHT);
+  assert.equal(night.deaths, 1, 'by night the lurker at the landing gets you');
+  const day = walk(DAY);
+  assert.equal(day.deaths, 1, 'by day you pass the lurker, and the day-walker gets you');
 });
 
 test('Clock Out (classic): still wins in 7 clock-ins', () => {
