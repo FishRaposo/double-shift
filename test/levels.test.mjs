@@ -50,6 +50,18 @@ for (const def of LEVELS) {
   });
 }
 
+test('Scaffolding: the bracket is fixed by day, and the scaffold it holds stands at night only', () => {
+  const { state } = play(L.scaff, (s) => ({ right: !s.repairs[0].done }), 120 * 3);
+  assert.equal(state.repairs[0].done, true);
+  for (const [x, y] of [[12, 12], [17, 10]]) {
+    assert.equal(tileAt(L.scaff, NIGHT, x, y, state.overrides), '#', `a board at ${x},${y} by night`);
+    assert.equal(tileAt(L.scaff, DAY, x, y, state.overrides), '.', `nothing at ${x},${y} by day`);
+  }
+  // staying on the night shift up the boards never reaches the tower: the day crew's ledge is the way on
+  const night = play(L.scaff, (s) => (s.shifts === 0 ? { right: true, shift: s.repairs[0].done && s.player.x / TILE > 9.2 } : { right: true, jump: s.player.grounded }), 120 * 8);
+  assert.equal(night.state.won, false);
+});
+
 // Employee of the Month: the portrait is rehung round three hooks, one move per night entry. By day it's solid where
 // it hangs; by night its sitter sits there instead (a squatter with a `when` on the hook's day tile).
 const hookAt = (s) => [9, 14, 22].find((x) => tileAt(L.portrait, DAY, x, 11, s.overrides) === '#');
@@ -411,6 +423,25 @@ test('distribution: every level has its type, each type repeats, and only the fi
   for (const type of ['build', 'power', 'water', 'machine', 'light', 'secure']) assert.ok(count(type) >= 2, type);
   const quiet = LEVELS.filter((d) => L[d.id].freaks.length === 0 && L[d.id].pranks.length === 0).map((d) => d.id);
   assert.deepEqual(quiet, ['clock', 'scaff', 'midair']);
+});
+
+// Every level is its own job: no two share a work order, or the same tool for the same broken thing. Clock Out is
+// one of everything, so it's left out.
+test('uniqueness: no two levels share a work order or a tool-and-fixture pair', { todo: 'green once every duplicate is reworked (BUILD.md T35)' }, () => {
+  const goals = new Map();
+  const pairs = new Map();
+  const clashes = [];
+  for (const def of LEVELS) {
+    if (def.id === 'clockout') continue;
+    for (const job of L[def.id].repairs) {
+      const pair = `${job.tool.name} → ${job.spots.map((f) => f.name).join('/')}`;
+      if (goals.has(job.fix.goal)) clashes.push(`${def.id} and ${goals.get(job.fix.goal)}: ${job.fix.goal}`);
+      if (pairs.has(pair)) clashes.push(`${def.id} and ${pairs.get(pair)}: ${pair}`);
+      goals.set(job.fix.goal, def.id);
+      pairs.set(pair, def.id);
+    }
+  }
+  assert.deepEqual(clashes, []);
 });
 
 test('Clock Out: one job of every type, room by room', () => {

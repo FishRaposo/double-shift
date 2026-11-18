@@ -59,7 +59,7 @@ In the order of the 21-level game (LEVELS.md §5.0). ✅ = in the build.
 | Level | Note |
 |---|---|
 | 1 Clock In (`clock`) ✅ | Gap in the floor by day. The night crew laid planks. |
-| 2 Scaffolding (`scaff`) ✅ | The day crew put up a wall. It stops at the end of their shift. |
+| 2 Scaffolding (`scaff`) ✅ | The day crew builds it. The night crew uses it. |
 | 3 Closing Time (`closing`) ✅ | One fuse for the whole floor. Budget cuts. |
 | 4 Mid-Air (`midair`) ✅ | One valve, two rooms. Somebody is getting wet. |
 | 5 Inventory (`inventory`) ✅ | Every time you clock in, something gets moved. Unless it is bolted down. |
@@ -142,7 +142,7 @@ A memo is a scrap of paper pinned to the wall (`memo` prop); while the worker st
 | Level | Memo |
 |---|---|
 | `clock` | "Mind the gap. Seriously. — Renovation" |
-| `scaff` | "Deliveries go on the ledge. Not on the scaffolding. Not on the ledge either. — Receiving" |
+| `scaff` | "Scaffold: day crew only. — Facilities" |
 | `closing` | "Lasers are for security, not for jumping over. — Night Management" |
 | `midair` | "Please report blinking in the dark to nobody." |
 | `inventory` | "Lost: one (1) plank. If found, please return to the pit." |
@@ -202,7 +202,7 @@ Lives in [itch/page.md](../itch/page.md) §4. Fish writes the final version. The
 > Every level has a scripted solution that the tests replay. It has to win at par or better with no deaths, and running and jumping without shifting must not win. The demo GIFs are those same runs, played by the game on a fixed clock.
 >
 > **Some numbers from the repo today:**
-> - <!-- n:tests -->598<!-- /n --> automated tests.
+> - <!-- n:tests -->600<!-- /n --> automated tests.
 > - Every input a level requires has at least 200 ms of slack in acts 1-2 and at least 100 ms in acts 3-6.
 > - The scripted solutions still win with every input up to 100 ms late in acts 1-2 and up to 50 ms late in acts 3-6.
 > - <!-- n:levels -->21<!-- /n --> levels, each proven winnable at par by a scripted run.

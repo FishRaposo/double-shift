@@ -775,8 +775,12 @@ function drawWorkOrder(lvl, s, layer, t) {
       drawFixture(g, spot, t, layer, on, { cordFrom });
       // what this one would change, for the job in hand and anything that can still be swapped
       if (on || (i !== jobInHand(lvl, s) && !job.undoes)) return;
-      const cells = spot.cells.map(([l, tx, ty, ch]) => ({ layer: l, tx, ty, ch })).filter((c) => c.layer === layer && tileAt(lvl, layer, c.tx, c.ty, s.overrides) !== c.ch);
-      if (cells.length) drawPrankCells(g, cells, (ch) => !isSolidChar(ch) && !isHazardChar(ch), { alpha: 0.8, color: layer === NIGHT ? '#9dffb8' : '#3d7a4a' });
+      // what changes on this shift reads strongest; what changes on the other one shows faintly, so a job that
+      // builds something for the other shift says where
+      for (const l of [layer, layer === NIGHT ? DAY : NIGHT]) {
+        const cells = spot.cells.map(([cl, tx, ty, ch]) => ({ layer: cl, tx, ty, ch })).filter((c) => c.layer === l && tileAt(lvl, l, c.tx, c.ty, s.overrides) !== c.ch);
+        if (cells.length) drawPrankCells(g, cells, (ch) => !isSolidChar(ch) && !isHazardChar(ch), { alpha: l === layer ? 0.8 : 0.35, color: layer === NIGHT ? '#9dffb8' : '#3d7a4a' });
+      }
     });
   });
 }

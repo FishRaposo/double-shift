@@ -94,7 +94,7 @@ Every level is built on one rule: **the repair is the level's puzzle, not its lo
 | # | Level (id) | Fewest (par = +1) | Repair | Freaks | The puzzle |
 |---|---|---|---|---|---|
 | 1 | Clock In (`clock`) | 3 | Build | None | Cross on the night boards, fix the deck, and climb it to the top floor |
-| 2 | Scaffolding (`scaff`) | 4 | Build | None | The deck and the wall beside it are the day crew's: jump off the deck and clock in mid-air |
+| 2 | Scaffolding (`scaff`) | 2 | Build | None | Fix the bracket by day and the scaffold it holds stands at night only: up the night boards to a stub both shifts share, clock out there, and the day crew's ledge goes on to the tower |
 | 3 | Closing Time (`closing`) | 2 | Power | Peeker | One fuse: fit it in the shutter box, pull it from the far side, fit it in the laser box |
 | 4 | Mid-Air (`midair`) | 3 | Water | None | Climb out mid-air; the valve floods where you came from and drains where you are going |
 | 5 | Inventory (`inventory`) | 3 | Secure | Prank | Bolt the far plank before the second night |

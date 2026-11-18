@@ -22,7 +22,10 @@ const pressShift = (s, mem, target) => {
 // air: the game buffers a press for 100 ms); once asked, the key stays down until the player has risen and begun to
 // fall, however late the press lands.
 const holdJump = (s, mem, start) => {
-  if (mem.air && s.player.grounded) mem.jump = mem.up = mem.air = false; // landed (a bumped head never rises)
+  if (mem.air && s.player.grounded) { // landed (a bumped head never rises): let go for a tick, so the next jump is a new press
+    mem.jump = mem.up = mem.air = false;
+    return false;
+  }
   if (start) mem.jump = true;
   if (mem.jump && !s.player.grounded) mem.air = true;
   if (mem.jump && !s.player.grounded && s.player.vy < 0) mem.up = true;
@@ -51,14 +54,15 @@ export const SOLUTIONS = {
   }),
   scaff: steady((s) => {
     const x = tx(s);
-    const flying = !s.player.grounded && x > 15.2;
-    let target = DAY;
-    if (x > 3.6 && x < 6.4) target = NIGHT; // the wrench is on the night shift
-    else if (flying && x < 25) target = NIGHT; // off the deck and through where the wall was
-    else if (x > 16 && x < 25) target = NIGHT;
-    else if (x >= 25) target = DAY; // past the night wall
-    const jump = s.player.grounded && ((x > 8.4 && x < 9.1) || (x > 13.8 && x < 14.6));
-    return { right: true, jump, shift: want(s, target) };
+    const y = s.player.y / TILE;
+    const g = s.player.grounded;
+    if (s.shifts === 0) return { right: true, shift: s.repairs[0].done && g && x > 9.2 }; // hammer, bracket, then in
+    if (s.shifts === 1) { // up the night boards to the stub, and out on it
+      if (y < 8 && x > 21.5) return { right: x < 22.6, left: x > 23.6, shift: g && x > 22.3 && x < 24.2 };
+      return { right: true, jump: g && ((y > 12.5 && x > 10) || (y > 10.5 && y < 11.5 && x > 13.4) || (y > 8.5 && y < 9.5 && x > 19.2)) };
+    }
+    // the day crew's ledge, the tower, and stop at the exit
+    return { right: x < 31.1, jump: g && ((y < 8 && y > 6.5 && x > 24.4) || (y < 6 && y > 4.5 && x > 28.6)) };
   }),
   closing: (s, m) => {
     const x = tx(s);
