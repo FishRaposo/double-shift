@@ -210,7 +210,7 @@ export const LEVELS = [
     name: 'Scaffolding',
     act: 1,
     props: [
-      { kind: 'memo', tx: 9, ty: 12, text: 'Deliveries go on the ledge. Not on the scaffolding. Not on the ledge either. — Receiving' },
+      { kind: 'memo', tx: 7, ty: 11, w: 150, text: 'Deliveries go on the ledge. Not on the scaffolding. Not on the ledge either. — Receiving' },
       { kind: 'pallet', tx: 3, ty: 13, layer: 'day' },
       { kind: 'crate', tx: 4, ty: 13, layer: 'day' },
       { kind: 'sign', tx: 2, ty: 9, text: 'DELIVERIES', style: 'paper' },
@@ -284,7 +284,7 @@ export const LEVELS = [
     name: 'Closing Time',
     act: 1,
     props: [
-      { kind: 'memo', tx: 8, ty: 11, text: 'Lasers are for security, not for jumping over. — Night Management' },
+      { kind: 'memo', tx: 8, ty: 11, text: 'Lasers are for security, not for jumping over. — Night Management', w: 180 },
       { kind: 'sign', tx: 16, ty: 7, text: 'CLOSING TIME', style: 'paper' },
       { kind: 'sign', tx: 22, ty: 10, text: 'LASERS', style: 'red', layer: 'night' },
     ],
@@ -662,7 +662,9 @@ export const LEVELS = [
     repairs: [
       {
         tool: { tx: 2, ty: 13, layer: 'day', name: 'WRENCH', kind: 'wrench' },
-        fix: { tx: 4, ty: 11, layer: 'day', name: 'CLAMP', kind: 'bolt', goal: 'BOLT THE DOORS IN PLACE', target: 'DOORS', secures: ['down', 'up'], link: [[4, 10], [4, 9], [8, 9]] },
+        fix: { tx: 4, ty: 11, layer: 'day', name: 'CLAMP', kind: 'bolt', goal: 'BOLT THE DOORS IN PLACE', target: 'DOORS', secures: ['down', 'up'], link: [[4, 10], [4, 9], [8, 9]],
+          // it only bites with the doors down as bridges: bolting them up in the roof would leave the run stuck
+          when: { layer: 'night', tx: 6, ty: 14, ch: '#' } },
       },
     ],
     skins: [
@@ -770,7 +772,7 @@ export const LEVELS = [
     ],
     par: 4,
     props: [
-      { kind: 'memo', tx: 3, ty: 11, text: 'Floors were waxed at 3 AM. We do not employ anyone at 3 AM.' },
+      { kind: 'memo', tx: 2, ty: 11, text: 'Floors were waxed at 3 AM. We do not employ anyone at 3 AM.', w: 150 },
       { kind: 'wetFloorSign', tx: 7, ty: 9, layer: 'night' },
       { kind: 'footprints', tx: 12, ty: 9, layer: 'night' },
       { kind: 'footprints', tx: 13, ty: 9, layer: 'night' },
@@ -1471,7 +1473,7 @@ export const LEVELS = [
     upsideDown: true,
     nightPatch: [{ x0: 12, x1: 17, y0: 12, ch: '^' }, { x0: 31, y0: 13, ch: '#' }, { x0: 17, y0: 13, y1: 17, ch: '#' }],
     props: [
-      { kind: 'memo', tx: 16, ty: 5, text: 'Gravity will be restored after the renovation. — Facilities', layer: 'day' },
+      { kind: 'memo', tx: 16, ty: 4, text: 'Gravity will be restored after the renovation. — Facilities', layer: 'day' },
       { kind: 'sign', tx: 3, ty: 11, text: 'THIS WAY UP', style: 'note', layer: 'day' },
       { kind: 'noticeBoard', tx: 7, ty: 10, layer: 'day' },
       { kind: 'vent', tx: 6, ty: 4, layer: 'night', flip: true },
@@ -1524,7 +1526,7 @@ export const LEVELS = [
     pranks: [{ id: 'plank', onNight: 2, tell: { tx: 25, ty: 11, text: 'MINE' }, set: [{ layer: 'night', x0: 22, x1: 29, y0: 11, ch: '.' }] }],
     freaks: [{ kind: 'supervisor', tx: 18, ty: 4, period: 2, startFacing: 'left' }, { kind: 'lurker', tx: 16, ty: 12, range: 1, speed: 40 }],
     props: [
-      { kind: 'memo', tx: 17, ty: 12, text: 'To the night crew: please stop moving the planks. — Management', layer: 'day' },
+      { kind: 'memo', tx: 17, ty: 12, text: 'To the night crew: please stop moving the planks. — Management', w: 220, layer: 'day' },
       { kind: 'sign', tx: 2, ty: 10, text: "IT'S FINE", style: 'note', layer: 'day' },
       { kind: 'noticeBoard', tx: 21, ty: 10, layer: 'day' },
       { kind: 'footprints', tx: 13, ty: 12, layer: 'night', flip: true },
@@ -1598,7 +1600,7 @@ export const LEVELS = [
       { kind: 'lurker', tx: 13, ty: 4, range: 1, speed: 45 },
     ],
     props: [
-      { kind: 'memo', tx: 20, ty: 12, text: 'To the day crew: we do not have a night crew. — Night Management', layer: 'day' },
+      { kind: 'memo', tx: 19, ty: 13, text: 'To the day crew: we do not have a night crew. — Night Management', layer: 'day' },
       { kind: 'sign', tx: 24, ty: 9, text: 'HARD HAT AREA', style: 'paper', layer: 'day' },
       { kind: 'noticeBoard', tx: 11, ty: 10, layer: 'day' },
       { kind: 'hardHat', tx: 24, ty: 13, layer: 'night', flip: true },

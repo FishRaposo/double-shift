@@ -13,7 +13,7 @@ import { drawText, measureText, wrapText } from './font.js';
 import { drawSprite, drawEyes, eyesOpen, workerFrame, spriteRect, ART, SPRITES, C, JOB_NIGHT_PAL } from './sprites.js';
 import {
   PAL, PROPS, drawBackground, drawSolidTile, drawHatch, drawEchoEdges, drawRebar, drawLaser, drawHazardEcho,
-  drawWaterEcho, drawExit, drawCheckpoint, drawSign, drawFreak, drawTool, drawCarriedTool, drawFixture, drawJobLink, drawFixBrackets, drawWater, drawStatusMark, drawPatrol, drawGaze, drawTurnTimer, drawPrankCells,
+  drawWaterEcho, drawExit, exitRects, drawCheckpoint, drawSign, drawFreak, drawTool, drawCarriedTool, drawFixture, drawJobLink, drawFixBrackets, drawWater, drawStatusMark, drawPatrol, drawGaze, drawTurnTimer, drawPrankCells,
   drawShiftRing, drawDust, drawPuff, drawSparkle, drawPanel,
   drawStamp, drawLogo, drawWetTile, drawSkin, shouldHatch, withCellMirror, PLATE, NOTE_STRIP, px, drawMemoPanel,
 } from './art.js';
@@ -443,6 +443,12 @@ function handleEvents(events) {
         fix.cells.forEach(([, tx, ty], k) => { if (k % every === 0) fx.puffs.push({ x: tx * TILE + TILE / 2, y: ty * TILE + TILE / 2, t: 0 }); });
         break;
       }
+      case 'refused': { // a job with a `when` touched before its moment: nothing changes, and it says so
+        const fix = level().repairs[ev.job].spots[ev.spot];
+        sfx.shiftFail();
+        fx.pops.push({ x: fix.tx * TILE + TILE / 2, y: fix.ty * TILE - 16, t: 0, text: 'NOT YET' });
+        break;
+      }
       case 'pulled': {
         const fix = level().repairs[ev.job].spots[ev.spot];
         sfx.pulled();
@@ -683,6 +689,7 @@ function drawTells(lvl, s, layer, t, box) {
     }
   }
   const labels = [];
+  const taken = []; // where the notes and countdowns went ({ x, y, half }, as placeTag keeps them), for the job's tags
   for (const pr of pending) {
     if (!pr.tell) continue;
     const x = pr.tell.tx * TILE + TILE / 2;
@@ -694,19 +701,26 @@ function drawTells(lvl, s, layer, t, box) {
       PROPS.eyes(g, x + 4, up ? y + 40 : y - 64, { t, seed: 3 });
     } else {
       const note = NOTEXT ? '    ' : pr.tell.text ?? 'MINE';
-      drawSign(g, x, Math.max(y - 36, hudFloor(box, x - measureText(note, 2) / 2 - 8) + 14), note, 'note', 2); // the sticky note (WRITING.md §5), below the work order
+      const noteY = Math.max(y - 36, hudFloor(box, x - measureText(note, 2) / 2 - 8) + 14);
+      drawSign(g, x, noteY, note, 'note', 2); // the sticky note (WRITING.md §5), below the work order
+      taken.push({ x, y: noteY, half: measureText(note, 2) / 2 + 8, fixed: true });
     }
     const text = prankCountdown(pr.nights);
-    const spot = countdownSpot(lvl, labels, x, y, measureText(text, 2), gravitySign(lvl, layer) < 0, box);
+    const w = measureText(text, 2);
+    const spot = countdownSpot(lvl, labels, x, y, w, gravitySign(lvl, layer) < 0, box);
     hud(text, spot.x, spot.y, layer, { align: 'center', color: layer === NIGHT ? '#ffd23f' : '#5a3d10' });
+    taken.push({ x: spot.x, y: spot.y + 9, half: w / 2 + 4, fixed: true });
   }
   // what the job stopped: the note comes down and says so
   const stopped = securedPranks(lvl, s);
   for (const pr of lvl.pranks) {
     if (!stopped.has(pr.id) || !pr.tell || NOTEXT) continue;
     const x = pr.tell.tx * TILE + TILE / 2;
-    drawSign(g, x, Math.max(pr.tell.ty * TILE - 21, hudFloor(box, x - 50) + 14), 'BOLTED', 'green', 2);
+    const y = Math.max(pr.tell.ty * TILE - 21, hudFloor(box, x - 50) + 14);
+    drawSign(g, x, y, 'BOLTED', 'green', 2);
+    taken.push({ x, y, half: measureText('BOLTED', 2) / 2 + 8, fixed: true });
   }
+  return taken;
 }
 
 
@@ -776,12 +790,16 @@ function drawLitRooms(lvl, s) {
 }
 
 // everything in the job in hand says what it is, on top of the level so that nothing can hide the words
-function drawJobTags(lvl, s, box) {
+// `taken`: what's already written there (the tells' notes and countdowns), so a tag never lands on top of one; the
+// exit's door and sign are kept clear too.
+function drawJobTags(lvl, s, box, layer, taken = []) {
   const open = jobInHand(lvl, s);
   const i = open === -1 ? lvl.repairs.findLastIndex((job) => job.undoes) : open; // a swap stays labelled once it's on
   if (NOTEXT || i === -1) return;
   const { tool, spots } = lvl.repairs[i];
-  const placed = [];
+  const exit = exitPose(lvl, layer, s.overrides); // null while this shift walls it up
+  const rects = exit ? Object.values(exitRects(lvl.exit.tx, lvl.exit.ty, exit)) : [];
+  const placed = [...taken, ...rects.map((r) => ({ x: r.x + r.w / 2, y: r.y + r.h / 2, half: r.w / 2, fixed: true }))];
   const tag = (text, tx, ty) => {
     const { x, y } = placeTag(placed, box, measureText(text, 2), tx * TILE + TILE / 2, ty * TILE - 14, W);
     drawSign(g, x, y, text, 'paper', 2);
@@ -1000,7 +1018,7 @@ function drawPlay() {
   drawLitRooms(lvl, s);
   drawWorkOrder(lvl, s, layer, t);
   const box = jobHudBox(lvl, s);
-  drawTells(lvl, s, layer, t, box);
+  const taken = drawTells(lvl, s, layer, t, box);
   const boxes = freakBoxes(lvl, s);
   drawFreakPlans(lvl, boxes.filter((b) => !b.scattered), layer);
   boxes.forEach((b, i) => {
@@ -1015,7 +1033,7 @@ function drawPlay() {
     if (b.supervised) drawStatusMark(g, b.x + b.w / 2, b.hang ? b.y + b.h : b.y, b.watched ? 'alert' : 'slack', reduced ? 0 : s.freakClock, alpha, b.hang); // on its clock: a frozen mark stays put
     if (b.kind === 'supervisor') drawTurnTimer(g, b, lvl.freaks[i].period, alpha);
   });
-  drawJobTags(lvl, s, box);
+  drawJobTags(lvl, s, box, layer, taken);
   if (game.fx.spook) drawSpookGag();
   else drawWorker(s, layer);
   drawFx(reduced);

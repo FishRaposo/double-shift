@@ -232,7 +232,7 @@ test('art: a prop stuck to a flipped night ceiling has a ceiling there that no p
   }
 });
 
-test('memos: a memo panel never covers the exit, a tell or a sign', () => {
+test('memos: a memo panel never covers the exit, a tell, a sign or the job', () => {
   const overlap = (a, b) => a.x < b.x + b.w && a.x + a.w > b.x && a.y < b.y + b.h && a.y + a.h > b.y;
   for (const def of LEVELS) {
     const m = (def.props ?? []).find((p) => p.kind === 'memo');
@@ -254,6 +254,15 @@ test('memos: a memo panel never covers the exit, a tell or a sign', () => {
       const cx = pr.tell.tx * 30 + 15;
       const tell = { x: Math.min(cx - noteW / 2, cx - 45), y: pr.tell.ty * 30 - 40, w: Math.max(noteW, 90), h: 120 }; // the note above it, the eyes either side
       assert.ok(!overlap(panel, tell), `${def.id}: the memo covers ${pr.id}'s tell`);
+    }
+    // the job's things too: the tool, every broken fixture and what it drives (its tag), on either shift. Clock Out
+    // is the exception: one of every job fills its screen, and no spot for its memo clears them all (searched
+    // 2026-11-17); its panel is day-only and opens for under a second on the way to the first box.
+    for (const job of def.id === 'clockout' ? [] : lvl.repairs) {
+      for (const it of [job.tool, ...job.spots, ...job.spots.filter((q) => q.target && q.link.length).map((q) => ({ tx: q.link.at(-1)[0], ty: q.link.at(-1)[1], name: q.target }))]) {
+        const cell = { x: it.tx * 30 - 15, y: it.ty * 30 - 30, w: 60, h: 60 }; // the thing and its tag above it
+        assert.ok(!overlap(panel, cell), `${def.id}: the memo covers the ${it.name}`);
+      }
     }
   }
 });

@@ -64,7 +64,8 @@ function skinCells(sk) {
 //            per night clock-in once repaired, back and forth, and carries whoever stands on it.
 //   light    `clears: { x0, x1, y0, y1 }`: once repaired, the freaks in that rectangle scatter.
 //   secure   `secures: [prankId]`: once repaired, those pranks stop, and the map stays as they left it. On each of several
-//            `spots`, so that one bolt has to choose. `when: { layer, tx, ty, ch }`: it only bites with that tile in place.
+//            `spots`, so that one bolt has to choose. `when: { layer, tx, ty, ch }`: it only bites with that tile in place (before
+//            then a touch says `refused`, once).
 function parseRepair(def, job) {
   const at = ({ layer, ...rest }, what) => {
     if (layer !== 'day' && layer !== 'night') throw new Error(`${def.name}: the repair's ${what} needs a layer, 'day' or 'night'`);
@@ -664,7 +665,12 @@ function touchJob(level, s, job, i) {
   }
   if (!state.armed || (state.done && (!job.undoes || spot !== state.at))) return;
   const { cells, when } = job.spots[spot];
-  if (when && !state.done && tileAt(level, when.layer === 'night' ? NIGHT : DAY, when.tx, when.ty, s.overrides) !== when.ch) return;
+  if (when && !state.done && tileAt(level, when.layer === 'night' ? NIGHT : DAY, when.tx, when.ty, s.overrides) !== when.ch) {
+    // not yet: it says so once per touch (step off and back on to try again)
+    setJob(s, i, { armed: false });
+    s.events.push({ type: 'refused', job: i, spot });
+    return;
+  }
   const next = state.done ? withoutCells(s.overrides, cells) : withPranks(s.overrides, [{ cells }]);
   if (overlapsSolid(level, s.layer, p.x, p.y, undefined, undefined, next)) return;
   s.overrides = next;

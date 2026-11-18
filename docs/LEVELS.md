@@ -100,7 +100,7 @@ Every level is built on one rule: **the repair is the level's puzzle, not its lo
 | 5 | Inventory (`inventory`) | 3 | Secure | Prank | Bolt the far plank before the second night |
 | 6 | Night Watch (`watch`) | 4 | Light | Lurker, squatter | The bulb is on a lurker's beat; the light clears the corridor past it |
 | 7 | Under Renovation (`stairs`) | 5 | Machine | Lurker | The hoist moves a stop per clock-in, wherever you are: be there when it comes |
-| 8 | Lost & Found (`doors`) | 6 | Secure | Pranks, lurker | The doors swap every night: bolt them when they are where you want them |
+| 8 | Lost & Found (`doors`) | 6 | Secure | Pranks, lurker | The doors swap every night: bolt them when they are where you want them (the clamp says NOT YET until a night has brought them down as bridges) |
 | 9 | Wet Floor (`wet`) | 4 | Water | Lurker | Fetch the wrench from the lurker's corridor, turn the leak onto it, and ride the wax out above |
 | 10 | Structural Integrity (`pillar`) | 5 | Secure | Repeating prank | The jack only bites with the pillar under the beam, and it has to stay for the next clock-in |
 | 11 | Night Management (`supervisor`) | 2 | Power | Supervisor, lurkers | Two tunnels, one each side of the clipboard, and the fuse goes through with you |

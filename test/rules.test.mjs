@@ -3,6 +3,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { step, initState, NO_INPUT, DAY, NIGHT, TILE, DT, PARAMS, PEEK_WARN, isEmbedded, isSolidChar, overlapsHazard, overlapsSolid, freakBoxes, pendingPranks, tileAt, supervisorFacing, watchedClock } from '../src/rules.js';
 import { level, stepN, place, play } from './helpers.mjs';
+import { LEVELS } from '../src/levels.js';
 
 const OPEN = [
   '..........',
@@ -1215,6 +1216,43 @@ test('work order: a repair changes the map, and waits rather than close on the w
   const onMe = level(JOB_DAY, JOB_NIGHT, job(4));
   s = walkTo(onMe, initState(onMe), 4);
   assert.equal(s.repairs[0].done, false, 'not while you stand in it');
+});
+
+test('work order: a job with a `when` touched before its moment says NOT YET once, then bites on a fresh touch', () => {
+  const job = { repairs: [{ tool: { tx: 2, ty: 5, layer: 'day', name: 'A', kind: 'wrench' }, fix: { tx: 4, ty: 5, layer: 'day', name: 'B', kind: 'bolt', when: { layer: 'day', tx: 8, ty: 3, ch: '#' }, set: [{ layer: 'day', x0: 7, y0: 2, ch: '#' }] } }] };
+  const lvl = level(JOB_DAY, JOB_NIGHT, job);
+  let s = initState(lvl);
+  let refusals = 0;
+  for (let i = 0; i < 600 && s.player.x / TILE < 4.6; i++) { s = step(lvl, s, RIGHT); refusals += s.events.filter((e) => e.type === 'refused').length; }
+  assert.equal(s.repairs[0].done, false);
+  assert.equal(refusals, 1, 'one NOT YET per touch, not one per tick');
+  s.overrides = { ...s.overrides, [`${DAY},8,3`]: '#' }; // its moment comes
+  s = stepN(lvl, s, 10);
+  assert.equal(s.repairs[0].done, false, 'standing on it still does nothing: step off and back on');
+  s = place(s, 6, 5);
+  s = step(lvl, s, NO_INPUT);
+  s = place(s, 4, 5);
+  s = step(lvl, s, NO_INPUT);
+  assert.equal(s.repairs[0].done, true);
+});
+
+test('Lost & Found: the clamp refuses the doors until a night has brought them down as bridges', () => {
+  const lvl = R.parseLevel(LEVELS.find((l) => l.id === 'doors'));
+  let s = initState(lvl);
+  s = place(s, 2, 13);
+  s = step(lvl, s, NO_INPUT); // the wrench
+  assert.equal(s.repairs[0].tool, true);
+  s = place(s, 4, 11);
+  s = step(lvl, s, NO_INPUT); // the clamp, before any clock-in: the doors are up in the roof
+  assert.equal(s.repairs[0].done, false);
+  assert.equal(s.events.some((e) => e.type === 'refused'), true);
+  s = step(lvl, step(lvl, s, SHIFT), NO_INPUT);
+  s = step(lvl, step(lvl, s, SHIFT), NO_INPUT); // night 1 and back: the doors are bridges now
+  s = place(s, 2, 11);
+  s = step(lvl, s, NO_INPUT);
+  s = place(s, 4, 11);
+  s = step(lvl, s, NO_INPUT);
+  assert.equal(s.repairs[0].done, true);
 });
 
 test('work order: the tool and the broken thing only count on their own shift', () => {

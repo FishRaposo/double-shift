@@ -195,3 +195,13 @@ test('job tags: on screen, clear of the HUD, and never on each other', () => {
   assert.deepEqual([c.y, d.y], [300, 272]);
   assert.equal(placeTag([], box, 200, 950, 200, 960).x, 850, 'kept on screen');
 });
+
+test('job tags: a tell or the exit in the way is stepped round sideways, and only a tag in the way stacks', () => {
+  const box = { right: 0, bottom: 0 };
+  const tell = { x: 285, y: 368, half: 98, fixed: true }; // a tell's sticky note
+  const a = placeTag([tell], box, 80, 380, 376, 960);
+  assert.equal(a.y, 376, 'it stays at its thing\'s height');
+  assert.ok(Math.abs(a.x - 380) <= 90 && Math.abs(a.x - tell.x) >= tell.half + 50, 'beside the note, not on it');
+  const wall = [{ x: 380, y: 376, half: 400, fixed: true }]; // nothing within reach sideways
+  assert.notEqual(placeTag(wall, box, 80, 380, 376, 960).y, 376, 'then it stacks as before');
+});

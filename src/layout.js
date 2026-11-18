@@ -11,12 +11,24 @@ export const HUD_BOTTOM = 62;
 export const hudFloor = (box, left) => (left < box.right ? box.bottom : HUD_BOTTOM);
 
 // A paper tag over something in the level (cx, cy): kept on screen and clear of the HUD. Tags that would land on
-// each other stack upwards, then down from the top once there's no more room above.
+// each other stack upwards, then down from the top once there's no more room above. Something already written
+// there that isn't a tag (`fixed`: a tell's note, the exit) is stepped round sideways first, up to 90 px, so the
+// tag stays beside its thing instead of climbing away from it.
 export function placeTag(placed, box, textW, cx, cy, screenW) {
   const half = textW / 2 + 10;
-  const x = Math.min(screenW - half, Math.max(half, cx));
+  const clampX = (v) => Math.min(screenW - half, Math.max(half, v));
+  const hitsAt = (x, y) => placed.filter((p) => Math.abs(p.x - x) < p.half + half && Math.abs(p.y - y) < 26);
+  let x = clampX(cx);
+  const y0 = Math.max(hudFloor(box, x - half) + 14, cy);
+  const blockers = hitsAt(x, y0);
+  if (blockers.length && blockers.every((p) => p.fixed)) {
+    for (const dx of [10, -10, 20, -20, 30, -30, 45, -45, 60, -60, 75, -75, 90, -90]) {
+      const nx = clampX(cx + dx);
+      if (!hitsAt(nx, Math.max(hudFloor(box, nx - half) + 14, cy)).length) { x = nx; break; }
+    }
+  }
   const top = hudFloor(box, x - half) + 14;
-  const hits = (y) => placed.some((p) => Math.abs(p.x - x) < p.half + half && Math.abs(p.y - y) < 26);
+  const hits = (y) => hitsAt(x, y).length > 0;
   let y = Math.max(top, cy);
   let step = -28;
   while (hits(y)) {
