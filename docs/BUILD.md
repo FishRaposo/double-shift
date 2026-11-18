@@ -376,6 +376,42 @@ The steps:
 - The scripted run: slack ≥ 167 ms per input, and it still wins with every input 150 ms late; the audit finds nothing below 4.
 - Copy (WRITING.md §1): never explain the joke. Rewritten: the portrait's note and memo, Wet Floor's note and memo, and the Structural Integrity, Night Audit, Mind Your Head and Clock Out memos. WRITING.md §3 and §6.1 were synced to the build (the rework had changed several).
 
+### T35 · Every level its own job, with stakes *(✅ done 2026-11-18, Fish's call: rework everything flagged)*
+- **Guard:** `test/levels.test.mjs` fails if two levels share a work order or a tool-and-fixture pair (Clock Out, one of everything, is exempt). It listed 14 clashes when it went in; there are none now.
+- **Rebuilt:** Scaffolding (a scaffold fixed by day that stands at night only), Broad Daylight (a dumbwaiter to a corridor where the lurker and the day-walker take turns), Employee of the Month (T34).
+- **Stakes added:** Mid-Air (a pit under the hops), Structural Integrity (a pit under the pillar's last spot); both pinned by a test that makes the mistake.
+- **Own jobs (new tool sprites: hammer, valve key, battery, grease, crank, sandbag, ratchet):** Mid-Air VALVE KEY, Night Management BATTERY → CHARGER, Lost & Found SPANNER → DOOR BOLT, Floor 3.5 CRANK → STUCK GEAR, Night Audit SANDBAG → HOLD-DOWN and LAMP → TUNNEL LAMP, Falling Up SPANNER → STOPCOCK, Ceiling Walker RATCHET → CEILING LATCH (latched hanging on the flipped night), Head Over Heels BREAKER.
+- **Less standing still:** Night Audit 1.2 → 0.9 s (a 1.2 s supervisor period opened a 3-clock-in skip, so the period stayed); Clock Out 1.8 → 1.2 s (period 2 → 1.4 s).
+- **Night Watch:** the squatter is cut; it teaches one kind of freak (two lurkers). A single lurker made the light unnecessary in every layout tried.
+- **Smaller than planned, and why:** Falling Up and Ceiling Walker kept their layouts (Falling Up's mid-fall brake was already its own idea; Ceiling Walker's change is where and how you bolt). Head Over Heels kept its loop: its "backtracking" was the top corridor, new ground (the figure counted left-moving ticks). The idle and random-death tests in the plan weren't added: idle counts the scripted run's own pauses (letting go mid-air, a beat on a car), and random players rarely reach a level's real danger, so both would measure the policy, not the level. Targeted tests pin each new failure instead.
+- **Policy helpers:** `pressShift` lets go for a tick after every press, `holdJump` lets go on landing, so no two presses merge into one held key.
+
+| # | Level | The one idea | Stakes | Run (s) | Idle (s) | Fewest / par |
+|---|---|---|---|---|---|---|
+| 1 | Clock In | Night planks over a day gap; build the deck | Gap | 3.3 | 0.0 | 3 / 4 |
+| 2 | Scaffolding | Built by day, stands at night; change over where the shifts meet | None (act 1 teaching) | 3.5 | 0.3 | 2 / 3 |
+| 3 | Closing Time | One fuse carried through two boxes | Lasers | 3.3 | 0.0 | 2 / 3 |
+| 4 | Mid-Air | Shift mid-jump; the valve floods one room, drains the other | Pit, water | 3.0 | 0.0 | 3 / 4 |
+| 5 | Inventory | First prank: bolt the plank before night 2 | Pit | 3.3 | 0.1 | 3 / 4 |
+| 6 | Night Watch | Day freezes the lurker; light clears the corridor | Lurkers | 3.5 | 0.1 | 4 / 5 |
+| 7 | Under Renovation | Ride the hoist a stop per clock-in | Lurker, pit | 3.2 | 0.2 | 5 / 6 |
+| 8 | Lost & Found | Wanted pranks: bolt the doors when they're bridges | Pits | 5.6 | 1.5 | 6 / 7 |
+| 9 | Wet Floor | Slide at night, grip by day; turn the leak onto the lurker | Lasers, lurker | 6.7 | 0.0 | 4 / 5 |
+| 10 | Structural Integrity | Jack the pillar when it's under the beam | Pit | 3.6 | 0.0 | 5 / 6 |
+| 11 | Night Management | Watched freaks work; carry the battery through both tunnels | Lurkers | 4.3 | 0.6 | 2 / 3 |
+| 12 | Stacked | Three pranks, one bolt: choose | Pits | 3.5 | 0.2 | 3 / 4 |
+| 13 | Employee of the Month | The portrait, rehung each clock-in: wall or step; its sitter by night | Sitters | 5.5 | 1.1 | 4 / 5 |
+| 14 | Broad Daylight | Arrive by night; each shift freezes the other's freak | Lurker, day-walker | 3.9 | 0.3 | 5 / 6 |
+| 15 | Floor 3.5 | The night is half a storey up: shift at the apex | Lasers, pit, peeker | 2.6 | 0.2 | 6 / 7 |
+| 16 | Night Audit | The exam: three jobs, three stretches | Everything | 4.2 | 0.9 | 5 / 6 |
+| 17 | Mind Your Head | The night is upside down | Pit, squatter | 3.5 | 0.2 | 2 / 3 |
+| 18 | Falling Up | Brake a fall by flipping; empty the tank into the pit | Lasers, peeker, pit | 3.8 | 0.0 | 4 / 5 |
+| 19 | Ceiling Walker | Latch the plank hanging upside down | Pits, lurker | 3.4 | 0.0 | 4 / 5 |
+| 20 | Head Over Heels | Every shift flips gravity and swaps which freak works | Freaks | 6.5 | 0.0 | 7 / 8 |
+| 21 | Clock Out | One of every job | Everything | 5.1 | 1.2 | 7 / 8 |
+
+Run and idle are the scripted run's (an expert's); idle counts ticks with no movement input, mid-air included. Lost & Found's idle is the two clock-ins it asks for at the spawn. Not checked here: how any of it plays for a person (PLAYTEST.md rounds 1–2).
+
 ## 5. Known gotchas
 - **Offset and Upside Down levels generate their night grid:** don't also give `night`.
 - **Checkpoints only save where you can stand.** A `C` over a pit in one shift saves in the other or not at all.
