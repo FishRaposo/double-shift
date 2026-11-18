@@ -62,6 +62,19 @@ test('Scaffolding: the bracket is fixed by day, and the scaffold it holds stands
   assert.equal(night.state.won, false);
 });
 
+test('Structural Integrity: jump off the crates on the wrong night and the pit under the pillar takes you', () => {
+  let s = initState(L.pillar); // no night entries yet: the pillar is nowhere near the beam
+  s.player.x = 18 * TILE + 6;
+  s.player.y = 10 * TILE;
+  let died = false;
+  for (let f = 0; f < 120 * 3 && !died; f++) {
+    const air = !s.player.grounded;
+    s = step(L.pillar, s, { ...NO_INPUT, right: true, jumpHeld: f < 30, jumpPressed: f === 0, shiftPressed: air && s.layer === DAY });
+    died = s.events.some((e) => e.type === 'death');
+  }
+  assert.ok(died, 'clocked in mid-jump with no pillar under the beam: a fall');
+});
+
 test('Mid-Air: a missed mid-air shift falls into the pit under the hops', () => {
   const { events } = play(L.midair, (s) => ({ right: true, jump: s.player.grounded && tx(s) > 3.2 && tx(s) < 3.9 }), 120 * 4);
   assert.ok(events.some((e) => e.type === 'death'));

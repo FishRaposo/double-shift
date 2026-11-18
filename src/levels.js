@@ -1595,12 +1595,12 @@ export const LEVELS = [
     rev: 3,
     repairs: [
       {
-        tool: { tx: 12, ty: 13, layer: 'night', name: 'FUSE', kind: 'fuse' },
+        tool: { tx: 12, ty: 13, layer: 'night', name: 'BREAKER', kind: 'fuse' },
         fix: {
-          name: 'FUSE BOX',
+          name: 'BREAKER BOX',
           kind: 'fuse',
           layer: 'night',
-          goal: 'ONE FUSE, TWO CORRIDORS',
+          goal: 'ONE BREAKER, TWO CORRIDORS',
           spots: [
             {
               tx: 26,
@@ -1781,7 +1781,7 @@ export const LEVELS = [
     freaks: [
       { kind: 'peeker', tx: 6, ty: 13, period: 1.2, duty: 0.6 },
       { kind: 'squatter', tx: 24, ty: 13 },
-      { kind: 'supervisor', tx: 23, ty: 4, period: 2, startFacing: 'left' },
+      { kind: 'supervisor', tx: 23, ty: 4, period: 1.4, startFacing: 'left' },
       { kind: 'lurker', tx: 25, ty: 13, range: 1, speed: 45 },
       { kind: 'daywalker', tx: 30, ty: 13, range: 1, speed: 45 },
     ],

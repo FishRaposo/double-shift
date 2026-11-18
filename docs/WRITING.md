@@ -96,7 +96,7 @@ SPOOKED! · AAAGH! · NOPE! · EEP! · NOT PAID ENOUGH
 | Sticky note tell (day) ✅ | MINE |
 | Prank countdown (both shifts) ✅ | NEXT NIGHT · IN 2 NIGHTS |
 | Work order HUD ✅ *(drafts)* | WORK ORDER: OPEN THE SHUTTER, then GET THE FUSE · FIX THE FUSE BOX · DONE |
-| Work order goals ✅ *(drafts)* | RAISE THE DECK · ONE FUSE: TAKE IT WITH YOU · SEND THE WATER BACK · BOLT THE PLANK DOWN · LIGHT THE CORRIDOR · FREE THE HOIST · FREE THE DUMBWAITER · BOLT THE DOORS IN PLACE · TURN THE LEAK ASIDE · JACK UP THE PILLAR · ONE BATTERY, TWO SHUTTERS · ONE BOLT: STOP THE RIGHT ONE · LIGHT THE PORTRAIT · FREE THE LIFT · OPEN THE GATE · WEIGH THE PLANK DOWN · LIGHT THE LAST TUNNEL · CHANGE THE CEILING LIGHT · EMPTY THE TANK INTO THE PIT · LATCH THE PLANK UPSIDE DOWN · ONE FUSE, TWO CORRIDORS · LIGHT THE LOW TUNNEL · BOLT THE LAST STEP DOWN · SEND THE LEAK DOWN · SLIDE THE HATCH ASIDE · FIX THE TIME CLOCK |
+| Work order goals ✅ *(drafts)* | RAISE THE DECK · ONE FUSE: TAKE IT WITH YOU · SEND THE WATER BACK · BOLT THE PLANK DOWN · LIGHT THE CORRIDOR · FREE THE HOIST · FREE THE DUMBWAITER · BOLT THE DOORS IN PLACE · TURN THE LEAK ASIDE · JACK UP THE PILLAR · ONE BATTERY, TWO SHUTTERS · ONE BOLT: STOP THE RIGHT ONE · LIGHT THE PORTRAIT · FREE THE LIFT · OPEN THE GATE · WEIGH THE PLANK DOWN · LIGHT THE LAST TUNNEL · CHANGE THE CEILING LIGHT · EMPTY THE TANK INTO THE PIT · LATCH THE PLANK UPSIDE DOWN · ONE BREAKER, TWO CORRIDORS · LIGHT THE LOW TUNNEL · BOLT THE LAST STEP DOWN · SEND THE LEAK DOWN · SLIDE THE HATCH ASIDE · FIX THE TIME CLOCK |
 | Work order tags in the level ✅ *(drafts)* | The tool, the broken thing and what it drives each carry a small paper label until the job is done |
 | Work order jobs ✅ *(drafts)* | FUSE / FUSE BOX · WRENCH / LEAKING PIPE · BULB / DEAD LIGHT · OIL CAN / SQUEAKY HINGE · TAPE / LOOSE CABLE |
 | Work order feedback ✅ *(drafts)* | FIXED · OFF · BOLTED · CLOCK IN TO MOVE IT · TOUCH IT TO SWAP · TAKE THE FUSE WITH YOU · WAIT FOR THE PILLAR |
@@ -202,7 +202,7 @@ Lives in [itch/page.md](../itch/page.md) §4. Fish writes the final version. The
 > Every level has a scripted solution that the tests replay. It has to win at par or better with no deaths, and running and jumping without shifting must not win. The demo GIFs are those same runs, played by the game on a fixed clock.
 >
 > **Some numbers from the repo today:**
-> - <!-- n:tests -->600<!-- /n --> automated tests.
+> - <!-- n:tests -->601<!-- /n --> automated tests.
 > - Every input a level requires has at least 200 ms of slack in acts 1-2 and at least 100 ms in acts 3-6.
 > - The scripted solutions still win with every input up to 100 ms late in acts 1-2 and up to 50 ms late in acts 3-6.
 > - <!-- n:levels -->21<!-- /n --> levels, each proven winnable at par by a scripted run.
