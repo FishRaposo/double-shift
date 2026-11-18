@@ -1,15 +1,14 @@
 # Production Plan
 
-Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-14**.
+Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-17**.
 
 **At a glance**
-- **Next for Fish (only a human can do these):** the Nov 8 milestone (M0 + M1) was **missed and is still open**. Play all 21 levels on Windows, including the Upside Down feel check; run the Sticky Keys test and pick the primary shift bind; decide freak size; tune the movement feel (G1); then playtest rounds 0–2 ([PLAYTEST.md](PLAYTEST.md)). Also: the listening checks in [AUDIO.md](AUDIO.md) §5 (including the new `peekerScratch`); a look at the new laser, checkpoint and prank-tell art in `closing` at night; the subtitle decision; the final edit of the in-game copy and the devlog (a plain draft is in [WRITING.md](WRITING.md) §10); Firefox and Edge checks; creating the itch page from [itch/page.md](../itch/page.md); the jam submission. Two rules to confirm while playing: death beats win on the same tick, and walking back onto an earlier checkpoint overwrites the later one. New date for M0 + M1: to be set by Fish. Repo + CI are done.
-- **The build:** all seven milestone PRs and the cohesion pass (Nov 5) are in ([BUILD.md](BUILD.md) records them). The plan's code is finished; what's left is playing it, tuning, playtests and the itch page.
-- **The game:** 21 levels, five acts of four plus the finale, all built ([CONTENT.md](CONTENT.md), LEVELS.md §5.0).
-- **Level audit (Nov 5, all 21):** every level beatable at par, fair timing (≥ 200/100 ms), no respawn loops, and a random search in both directions finds no win below par; `npm run audit` keeps it that way, and CI runs it as its own job (since Nov 14). On Nov 14 the scripted solutions were also made to win with inputs up to 100 ms late (acts 1–2) or 50 ms late (acts 3–6).
-- **Nov 14:** bug hunt (no player-reachable bug found; unguarded rules now have tests), small fixes, and a rehearsal of the release kit in headless Chromium (BUILD.md T27–T30).
-- **Open P0 items:** tuning (Fish's feel check), the playtest rounds, the itch page (§4). Level select, music, freak art and the media kit are built.
-- **Content freeze:** Nov 22 (§2). Nothing is left to cut: every mechanic shipped.
+- **Next for Fish (only a human can do these):** the Nov 8 milestone (M0 + M1) was **missed and is still open**. Play all 21 levels of the rework on Windows, including the Upside Down feel check; run the Sticky Keys test and pick the primary shift bind; tune the movement feel (G1); then one cold playtest before Nov 22 ([PLAYTEST.md](PLAYTEST.md)). Also: the listening checks in [AUDIO.md](AUDIO.md) §5 (including `peekerScratch`); the subtitle decision; the final edit of the in-game copy and the devlog ([WRITING.md](WRITING.md)); Firefox and Edge checks; the itch page and the jam submission (itch/page.md §0 is the list). Two rules to confirm while playing: death beats win on the same tick, and walking back onto an earlier checkpoint overwrites the later one.
+- **The build:** the seven milestone PRs, the cohesion pass and the Nov 14 close-out are in, and the **rework** (Nov 5–10: six kinds of repair, every level rebuilt so the repair is the puzzle, GDD §4.11) was merged into `main` (the public build) on Nov 17 ([BUILD.md](BUILD.md) records them).
+- **The game:** 21 levels, five acts of four plus the finale ([CONTENT.md](CONTENT.md), LEVELS.md §4).
+- **Level audit (all 21, re-run on the merge):** every level beatable at par, fair timing (≥ 200/100 ms), no respawn loops, every job needed, and a random search in both directions finds no win below par; the scripted solutions also win with inputs up to 100 ms late (acts 1–2) or 50 ms late (acts 3–6). `npm run audit` keeps it that way, and CI runs it as its own job. Nobody but the scripts has played the rework yet.
+- **Open P0 items:** Fish's play and tuning, the playtest rounds, the itch page (§4).
+- **Content freeze:** Nov 22 (§2).
 
 ## 1. Where we are
 
@@ -20,11 +19,11 @@ Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-14**.
 | Freaks: lurker, peeker, squatter, supervisor (frozen by day), day-walker (frozen by night) | Built, tested |
 | Levels | **<!-- n:levels -->21<!-- /n --> built** (act 1: 4, act 2: 4, act 3: 4, act 4: 4, act 5: 4, finale: 1), all proven solvable at par and fair (all built by Nov 3; CONTENT.md) |
 | Rendering | **Pixel art** (Nov 2): sprites, animated worker and freaks, pixel tiles and props, pixel font, effects; every asset in `/tools/gallery.html` |
-| Audio | Mix bus, 27 SFX (`lurkerStep` left unwired by decision on 2026-11-03, AUDIO.md §4.1; `peekerScratch` added 2026-11-14, listening check open), **music** (day/night arrangements crossfading on every shift; each act adds a layer) |
+| Audio | Mix bus, 31 SFX (`lurkerStep` left unwired, AUDIO.md §4.1; `peekerScratch` added 2026-11-14, listening check open), **music** (day/night arrangements crossfading on every shift; each act adds a layer) |
 | Menus | Title, level select + saved bests, settings (volumes, reduced effects, speedrun timer, controls), act cards, pause, timecard with comment, end screen with totals and the run time |
 | Input | Keyboard (move, jump and shift rebindable) and gamepad (fixed standard mapping) |
-| Release kit | Cover, 19 screenshots and the demo GIF tool (`npm run media`, `npm run gif`); rehearsed 2026-11-14 in headless Chromium: all 21 scripted runs replay in the real page, the cover, 19 screenshots and the gallery sheet render with no page errors, and the zipped build (about 84 KB) passes the smoke test. Final render at release. Not checked: Firefox, Edge |
-| Tests | <!-- n:tests -->462<!-- /n --> passing (`npm test`), including fairness; `npm run audit` clean (also a CI job) |
+| Release kit | Cover, 20 screenshots and the demo GIF tool (`npm run media`, `npm run gif`); the zipped build passes the browser smoke test |
+| Tests | <!-- n:tests -->591<!-- /n --> passing (`npm test`), including fairness and input lag; `npm run audit` clean (also a CI job) |
 | Repo / CI / itch | Public repo [FishRaposo/double-shift](https://github.com/FishRaposo/double-shift), CI green, playable on [GitHub Pages](https://fishraposo.github.io/double-shift/). **No itch page** |
 
 ## 2. Milestones

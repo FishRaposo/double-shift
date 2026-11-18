@@ -74,8 +74,8 @@ Rules: no synonyms, no engine/tool tags, no repeating the genre or platform, no 
 
 ### Media (ART.md §8)
 - [x] Cover 1260×1000: `npm run media` → `media/cover.png` (drawn by `tools/cover.html`; act 5's hanging lurker added Nov 3)
-- [x] Screenshots: `npm run media` → 19 shots in `media/` (`01`–`20`; `11` is the asset gallery), led by a prank as it lands and the flip; upload order in itch/page.md §3
-- [ ] Demo GIF: `npm run gif -- upside` → `media/demo-upside.gif` (level chosen by Fish; ART.md §8 has the other candidates); upload it first in the screenshot list. *(Rehearsed 2026-11-14: all 21 levels' runs replayed in the real page and matched the tests; render the final file from the release candidate.)*
+- [x] Screenshots: `npm run media` → 20 shots in `media/` (`01`–`21`; `11` is the asset gallery), led by a prank as it lands, the flip and a repair; upload order in itch/page.md §3
+- [ ] Demo GIF: `npm run gif -- upside` → `media/demo-upside.gif` (level chosen by Fish; ART.md §8 has the other candidates); upload it first in the screenshot list. Render the final file from the release candidate.
 
 ## 3. Getting indexed
 

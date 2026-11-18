@@ -178,15 +178,15 @@ export function respawnSpots(lvl) {
   const last = Math.max(0, ...lvl.pranks.map((pr) => pr.onNight + 2 * (pr.every ?? 0)));
   const seen = new Set();
   const spots = [{ x: start.x, y: start.y, at: 'spawn' }];
-  for (let entries = 0; entries <= last; entries++) {
-    const ov = overridesAfter(lvl, entries);
+  for (let entries = 0; entries <= last * 2 + 1; entries++) {
+    const ov = overridesAfter(lvl, entries >> 1, entries % 2 === 1); // and each state with the repairs done
     for (const { tx, ty } of lvl.checkpoints) {
       for (const layer of [DAY, NIGHT]) {
         const pos = standableSpot(lvl, layer, tx, ty, ov);
         const key = pos && `${pos.x},${pos.y}`;
         if (!pos || seen.has(key)) continue;
         seen.add(key);
-        spots.push({ ...pos, at: `${tx},${ty}${entries ? ` after ${entries} night entries` : ''}` });
+        spots.push({ ...pos, at: `${tx},${ty}${entries >> 1 ? ` after ${entries >> 1} night entries` : ''}` });
       }
     }
   }

@@ -100,7 +100,7 @@ Write the tests first in `test/rules.test.mjs`, using tiny ASCII levels: `level(
 
 ## 3. How it was built
 
-All seven milestone PRs landed by Nov 3 in PR #1: foundations (T17, T18, T14, T1, T15), the quality and identity pass (T19–T21), Upside Down (T7, T8, T13), tier B (T2–T6), act 5 and the finale (T9–T12, T22), copy and stretch (T23, T24), release (T25, T16). The Nov 5 cohesion pass then added the two-way route search, the telegraphs and the rehearsal of the finale in act 5.
+All seven milestone PRs landed by Nov 3 in PR #1: foundations (T17, T18, T14, T1, T15), the quality and identity pass (T19–T21), Upside Down (T7, T8, T13), tier B (T2–T6), act 5 and the finale (T9–T12, T22), copy and stretch (T23, T24), release (T25, T16). The Nov 5 cohesion pass then added the two-way route search, the telegraphs and the rehearsal of the finale in act 5, and all 21 levels were redesigned around repairs that change the map (LEVELS.md §4).
 
 ## 4. Task cards
 
@@ -354,6 +354,10 @@ The steps:
 - `npm run media` rendered the cover, 19 screenshots and the gallery sheet with no page errors; the loudest music peak was 0.415.
 - `npm run zip` built `double-shift-web.zip` (about 84 KB); the unzipped copy passed `npm run media -- --root`.
 - Fish chose `upside` for the demo GIF (`npm run gif -- upside`). The final render still comes from the release candidate (RELEASE.md §5). Firefox and Edge could not be checked here: only Chromium is available.
+
+### T31 · The rework merged into `main` *(✅ done 2026-11-17)*
+- `repairs-prototype` (the repairs rework of all 21 levels) was merged into `main`, which already had T26–T30. The rules, art and audio merged cleanly; the docs took the rework's level descriptions and kept `main`'s decisions (the `upside` GIF, the audit CI job, `peekerScratch`). The release-kit rehearsal in T30 was on the old levels, so it has to be redone on the rework.
+- T29's lag floor failed on eight reworked policies. Again the cause was the scripted policies, not the levels. A wrapper in `test/solutions.mjs`, `steady()`, now sends each shift once per layer and holds a jump started on the ground until the apex or the landing (a bumped head never rises). Take-off and drop points were moved where a late input still lands: `clock`, `scaff`, `midair`, `doors` (a run-up to the clamp's ledge), `portrait` and `offset`. `stairs` steadies only its shifts. No level, par or `PARAMS` changed; every required input keeps its 200/100 ms of slack.
 
 ## 5. Known gotchas
 - **Offset and Upside Down levels generate their night grid:** don't also give `night`.
