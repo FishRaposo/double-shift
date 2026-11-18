@@ -1325,7 +1325,7 @@ export const LEVELS = [
     name: 'Night Audit',
     act: 4,
     note: 'Management is doing a walkthrough tonight. So are they.',
-    rev: 3,
+    rev: 4,
     repairs: [
       {
         tool: { tx: 5, ty: 13, layer: 'night', name: 'TAPE', kind: 'tape' },
@@ -1342,16 +1342,16 @@ export const LEVELS = [
         },
       },
       {
-        tool: { tx: 15, ty: 13, layer: 'night', name: 'WRENCH', kind: 'wrench' },
-        fix: { tx: 24, ty: 13, layer: 'day', name: 'CLAMP', kind: 'bolt', goal: 'BOLT THE PLANK DOWN', target: 'PLANK', secures: ['plank'], link: [[24, 12], [25, 12]] },
+        tool: { tx: 15, ty: 13, layer: 'night', name: 'SANDBAG', kind: 'sandbag' },
+        fix: { tx: 24, ty: 13, layer: 'day', name: 'HOLD-DOWN', kind: 'bolt', goal: 'WEIGH THE PLANK DOWN', target: 'PLANK', secures: ['plank'], link: [[24, 12], [25, 12]] },
       },
       {
-        tool: { tx: 20, ty: 13, layer: 'night', name: 'BULB', kind: 'bulb' },
+        tool: { tx: 20, ty: 13, layer: 'night', name: 'LAMP', kind: 'bulb' },
         fix: {
           tx: 27,
           ty: 13,
           layer: 'night',
-          name: 'DEAD LIGHT',
+          name: 'TUNNEL LAMP',
           kind: 'light',
           goal: 'LIGHT THE LAST TUNNEL',
           target: 'TUNNEL',

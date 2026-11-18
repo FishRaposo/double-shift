@@ -270,8 +270,8 @@ export const SOLUTIONS = {
       // the supervisor works one side at a time: at each tunnel's mouth, wait until its lurker slacks with time
       // to spare, then go through without stopping (the left lurker reaches x 14.83, the right one from 16.57)
       const sup = freakBoxes(L.audit, s).find((b) => b.kind === 'supervisor');
-      if (x < 11.5 && !m.goA) right = m.goA = sup.facing === 1 && sup.turnIn > 0.75;
-      else if (x >= 14.95 && !m.goB) right = m.goB = sup.facing === -1 && sup.turnIn > 0.75;
+      if (x < 11.5 && !m.goA) right = m.goA = sup.facing === 1 && sup.turnIn > 0.5;
+      else if (x >= 14.95 && !m.goB) right = m.goB = sup.facing === -1 && sup.turnIn > 0.5;
     }
     // past the day-walker (its reach ends at x 22.83), stop before the pit (24.4): out for the clamp and back in
     // (entry 3, when they would have had the plank). The stop starts early enough to absorb a slow reaction.
@@ -279,8 +279,8 @@ export const SOLUTIONS = {
       right = false;
       if (Math.abs(p.vx) < 1) {
         m.ticks = (m.ticks ?? 0) + 1;
-        shift = (m.ticks > 12 && m.ticks < 16 && s.layer === NIGHT) || (m.ticks > 45 && m.ticks < 49 && s.layer === DAY);
-        if (m.ticks > 80 && s.nightEntries >= 3) m.plank = true;
+        shift = (m.ticks > 4 && m.ticks < 8 && s.layer === NIGHT) || (m.ticks > 24 && m.ticks < 28 && s.layer === DAY);
+        if (m.ticks > 40 && s.nightEntries >= 3) m.plank = true;
       }
     }
     return { right, shift };

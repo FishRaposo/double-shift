@@ -108,7 +108,7 @@ Every level is built on one rule: **the repair is the level's puzzle, not its lo
 | 13 | Employee of the Month (`portrait`) | 4 | Light | Its sitter (a squatter per hook) | Rehung on every clock-in round three hooks: a wall in the doorway, a step anywhere else, and its sitter sits where it hangs. Light the last hook's corner to get past it at night |
 | 14 | Broad Daylight (`daywalker`) | 5 | Machine | Lurker, day-walker | A dumbwaiter up to a corridor where a lurker works the landing by night and the day-walker further on by day. The car only moves on a night clock-in, so you arrive by night: wait for day to pass the lurker, then clock in again to pass the day-walker |
 | 15 | Floor 3.5 (`offset`) | 6 | Machine | Peeker | The lift (CRANK → STUCK GEAR) is a trolley across the top-floor gap, and it only runs on a clock-in |
-| 16 | Night Audit (`audit`) | 5 | Build, Secure, Light | Several | The exam: a gate, a plank and a tunnel, one job per stretch |
+| 16 | Night Audit (`audit`) | 5 | Build, Secure, Light | Several | The exam: a gate (TAPE → LOOSE CABLE), a plank (SANDBAG → HOLD-DOWN) and a tunnel (LAMP → TUNNEL LAMP), one job per stretch |
 | 17 | Mind Your Head (`upside`) | 2 | Light | Squatter | Change the light from the ceiling; the squatter in the low lane past it scatters |
 | 18 | Falling Up (`fallup`) | 4 | Water | Peeker | Turn the valve mid-fall, and the leak goes back down the pit |
 | 19 | Ceiling Walker (`ceiling`) | 4 | Secure | Supervisor, prank | Bolt the far plank by day, under the clipboard’s tunnel |
