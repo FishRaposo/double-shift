@@ -1480,15 +1480,15 @@ export const LEVELS = [
     rev: 3,
     repairs: [
       {
-        tool: { tx: 17, ty: 5, layer: 'day', name: 'WRENCH', kind: 'wrench' },
+        tool: { tx: 17, ty: 5, layer: 'day', name: 'SPANNER', kind: 'wrench' },
         fix: {
           tx: 25,
           ty: 15,
           layer: 'night',
-          name: 'VALVE',
+          name: 'STOPCOCK',
           kind: 'valve',
-          goal: 'TURN THE LEAK ASIDE',
-          target: 'LEAK',
+          goal: 'EMPTY THE TANK INTO THE PIT',
+          target: 'TANK',
           link: [[26, 15], [29, 15], [29, 13]],
           set: [
             { layer: 'day', x0: 29, y0: 4, y1: 13, ch: '.' },
@@ -1538,11 +1538,12 @@ export const LEVELS = [
     name: 'Ceiling Walker',
     act: 5,
     note: "Something is walking on the ceiling. It's fine.",
-    rev: 3,
+    rev: 4,
     repairs: [
       {
-        tool: { tx: 16, ty: 13, layer: 'day', name: 'WRENCH', kind: 'wrench' },
-        fix: { tx: 18, ty: 13, layer: 'day', name: 'CLAMP', kind: 'bolt', goal: 'BOLT THE PLANK DOWN', target: 'PLANK', secures: ['plank'], link: [[18, 12], [18, 11], [22, 11]] },
+        // the latch is on the ceiling's side: you reach it hanging from the walkway on the flipped night
+        tool: { tx: 3, ty: 13, layer: 'day', name: 'RATCHET', kind: 'ratchet' },
+        fix: { tx: 8, ty: 12, layer: 'night', name: 'CEILING LATCH', kind: 'bolt', goal: 'LATCH THE PLANK UPSIDE DOWN', target: 'PLANK', secures: ['plank'], link: [[9, 12], [22, 12]] },
       },
     ],
     min: 4,

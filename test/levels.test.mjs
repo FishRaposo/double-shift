@@ -442,7 +442,7 @@ test('distribution: every level has its type, each type repeats, and only the fi
 
 // Every level is its own job: no two share a work order, or the same tool for the same broken thing. Clock Out is
 // one of everything, so it's left out.
-test('uniqueness: no two levels share a work order or a tool-and-fixture pair', { todo: 'green once every duplicate is reworked (BUILD.md T35)' }, () => {
+test('uniqueness: no two levels share a work order or a tool-and-fixture pair', () => {
   const goals = new Map();
   const pairs = new Map();
   const clashes = [];

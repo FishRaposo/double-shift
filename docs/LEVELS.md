@@ -110,8 +110,8 @@ Every level is built on one rule: **the repair is the level's puzzle, not its lo
 | 15 | Floor 3.5 (`offset`) | 6 | Machine | Peeker | The lift (CRANK → STUCK GEAR) is a trolley across the top-floor gap, and it only runs on a clock-in |
 | 16 | Night Audit (`audit`) | 5 | Build, Secure, Light | Several | The exam: a gate (TAPE → LOOSE CABLE), a plank (SANDBAG → HOLD-DOWN) and a tunnel (LAMP → TUNNEL LAMP), one job per stretch |
 | 17 | Mind Your Head (`upside`) | 2 | Light | Squatter | Change the light from the ceiling; the squatter in the low lane past it scatters |
-| 18 | Falling Up (`fallup`) | 4 | Water | Peeker | Turn the valve mid-fall, and the leak goes back down the pit |
-| 19 | Ceiling Walker (`ceiling`) | 4 | Secure | Supervisor, prank | Bolt the far plank by day, under the clipboard’s tunnel |
+| 18 | Falling Up (`fallup`) | 4 | Water | Peeker | Turn the stopcock (SPANNER → STOPCOCK) mid-fall, and the tank empties into the pit; brake a fall by flipping and rise across it |
+| 19 | Ceiling Walker (`ceiling`) | 4 | Secure | Supervisor, prank | The latch is on the ceiling's side: hang from the walkway on the flipped night to latch the far plank before they take it, under the clipboard's tunnel |
 | 20 | Head Over Heels (`heels`) | 7 | Power | Day-walkers, lurkers | One fuse for the floor corridor and the ceiling corridor: take it up the shaft |
 | 21 | Clock Out (`clockout`) | 7 | All six | All | One fuse through two shutters, a light for the low tunnel, a clamp on the last step, the valve, the winch, then the time clock |
 
