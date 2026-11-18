@@ -669,8 +669,8 @@ export const LEVELS = [
     freaks: [{ kind: 'lurker', tx: 28, ty: 13, range: 1, speed: 45 }],
     repairs: [
       {
-        tool: { tx: 2, ty: 13, layer: 'day', name: 'WRENCH', kind: 'wrench' },
-        fix: { tx: 4, ty: 11, layer: 'day', name: 'CLAMP', kind: 'bolt', goal: 'BOLT THE DOORS IN PLACE', target: 'DOORS', secures: ['down', 'up'], link: [[4, 10], [4, 9], [8, 9]],
+        tool: { tx: 2, ty: 13, layer: 'day', name: 'SPANNER', kind: 'wrench' },
+        fix: { tx: 4, ty: 11, layer: 'day', name: 'DOOR BOLT', kind: 'bolt', goal: 'BOLT THE DOORS IN PLACE', target: 'DOORS', secures: ['down', 'up'], link: [[4, 10], [4, 9], [8, 9]],
           // it only bites with the doors down as bridges: bolting them up in the roof would leave the run stuck
           when: { layer: 'night', tx: 6, ty: 14, ch: '#' } },
       },
@@ -832,7 +832,7 @@ export const LEVELS = [
     name: 'Structural Integrity',
     act: 3,
     note: 'They moved a load-bearing pillar. Jack it under the beam.',
-    rev: 3,
+    rev: 4,
     repairs: [
       {
         tool: { tx: 13, ty: 13, layer: 'day', name: 'WRENCH', kind: 'wrench' },
@@ -913,10 +913,10 @@ export const LEVELS = [
       '......#...........#..###########',
       '......#..........##..###########',
       '.S....#..........##..###########',
-      '################################',
-      '################################',
-      '################################',
-      '################################',
+      '###################..###########',
+      '###################..###########',
+      '###################..###########',
+      '###################..###########',
     ],
     night: [
       '.....................###########',
@@ -933,10 +933,10 @@ export const LEVELS = [
       '......#..............###########',
       '......#..............###########',
       '......#..............###########',
-      '################################',
-      '################################',
-      '################################',
-      '################################',
+      '###################..###########',
+      '###################..###########',
+      '###################..###########',
+      '###################..###########',
     ],
   },
   {
@@ -956,17 +956,17 @@ export const LEVELS = [
     ],
     repairs: [
       {
-        tool: { tx: 6, ty: 13, layer: 'day', name: 'FUSE', kind: 'fuse' },
+        tool: { tx: 6, ty: 13, layer: 'day', name: 'BATTERY', kind: 'battery' },
         fix: {
-          name: 'FUSE BOX',
+          name: 'CHARGER',
           kind: 'fuse',
           layer: 'night',
-          goal: 'ONE FUSE, TWO SHUTTERS',
+          goal: 'ONE BATTERY, TWO SHUTTERS',
           spots: [
             {
               tx: 14,
               ty: 10,
-              name: 'BOX ONE',
+              name: 'CHARGER ONE',
               target: 'SHUTTER',
               area: { x0: 13, x1: 15, y0: 12, y1: 13 },
               link: [[14, 10], [14, 11]],
@@ -975,7 +975,7 @@ export const LEVELS = [
             {
               tx: 24,
               ty: 10,
-              name: 'BOX TWO',
+              name: 'CHARGER TWO',
               target: 'SHUTTER',
               area: { x0: 23, x1: 25, y0: 12, y1: 13 },
               link: [[24, 10], [24, 11]],

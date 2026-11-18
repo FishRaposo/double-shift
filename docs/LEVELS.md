@@ -102,8 +102,8 @@ Every level is built on one rule: **the repair is the level's puzzle, not its lo
 | 7 | Under Renovation (`stairs`) | 5 | Machine | Lurker | The hoist moves a stop per clock-in, wherever you are: be there when it comes |
 | 8 | Lost & Found (`doors`) | 6 | Secure | Pranks, lurker | The doors swap every night: bolt them when they are where you want them (the clamp says NOT YET until a night has brought them down as bridges) |
 | 9 | Wet Floor (`wet`) | 4 | Water | Lurker | Fetch the wrench from the lurker's corridor, turn the leak onto it, and ride the wax out above |
-| 10 | Structural Integrity (`pillar`) | 5 | Secure | Repeating prank | The jack only bites with the pillar under the beam, and it has to stay for the next clock-in |
-| 11 | Night Management (`supervisor`) | 2 | Power | Supervisor, lurkers | Two tunnels, one each side of the clipboard, and the fuse goes through with you |
+| 10 | Structural Integrity (`pillar`) | 5 | Secure | Repeating prank | The jack only bites with the pillar under the beam, and it has to stay for the next clock-in; jump off the crates on the wrong night and the pit under its last spot takes you |
+| 11 | Night Management (`supervisor`) | 2 | Power | Supervisor, lurkers | Two tunnels, one each side of the clipboard, and the battery goes through with you to the second charger |
 | 12 | Stacked (`stacked`) | 3 | Secure | Three pranks | Three things are scheduled and there is one bolt: read them and choose |
 | 13 | Employee of the Month (`portrait`) | 4 | Light | Its sitter (a squatter per hook) | Rehung on every clock-in round three hooks: a wall in the doorway, a step anywhere else, and its sitter sits where it hangs. Light the last hook's corner to get past it at night |
 | 14 | Broad Daylight (`daywalker`) | 5 | Machine | Day-walker, lurker | A beat on each shift in the tunnel, and every clock-in past them moves the hoist |
