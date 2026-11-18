@@ -96,9 +96,9 @@ Every level is built on one rule: **the repair is the level's puzzle, not its lo
 | 1 | Clock In (`clock`) | 3 | Build | None | Cross on the night boards, fix the deck, and climb it to the top floor |
 | 2 | Scaffolding (`scaff`) | 2 | Build | None | Fix the bracket by day and the scaffold it holds stands at night only: up the night boards to a stub both shifts share, clock out there, and the day crew's ledge goes on to the tower |
 | 3 | Closing Time (`closing`) | 2 | Power | Peeker | One fuse: fit it in the shutter box, pull it from the far side, fit it in the laser box |
-| 4 | Mid-Air (`midair`) | 3 | Water | None | Climb out mid-air; the valve floods where you came from and drains where you are going |
+| 4 | Mid-Air (`midair`) | 3 | Water | None | Climb out mid-air over a pit; the valve (its own VALVE KEY) floods where you came from and drains where you are going |
 | 5 | Inventory (`inventory`) | 3 | Secure | Prank | Bolt the far plank before the second night |
-| 6 | Night Watch (`watch`) | 4 | Light | Lurker, squatter | The bulb is on a lurker's beat; the light clears the corridor past it |
+| 6 | Night Watch (`watch`) | 4 | Light | Two lurkers | One kind of freak: freeze the first by day to walk through its outline to the bulb; the light clears the second from the corridor |
 | 7 | Under Renovation (`stairs`) | 5 | Machine | Lurker | The hoist moves a stop per clock-in, wherever you are: be there when it comes |
 | 8 | Lost & Found (`doors`) | 6 | Secure | Pranks, lurker | The doors swap every night: bolt them when they are where you want them (the clamp says NOT YET until a night has brought them down as bridges) |
 | 9 | Wet Floor (`wet`) | 4 | Water | Lurker | Fetch the wrench from the lurker's corridor, turn the leak onto it, and ride the wax out above |
@@ -130,7 +130,7 @@ Five acts of four, then the finale. Each act introduces one idea, practises it, 
 | 3 | 1 | Closing Time (`closing`) | Per-shift hazards and walls; first frozen outline (harmless) | ✅ |
 | 4 | 1 | Mid-Air (`midair`) | Shift during a jump; eyes in the dark | ✅ |
 | 5 | **2 · Overtime** (the freaks show up) | Inventory (`inventory`) | **First prank**: a clock-in changes the night | ✅ |
-| 6 | 2 | Night Watch (`watch`) | **First visible freaks**: lurker, peeker, squatter; day freezes them | ✅ |
+| 6 | 2 | Night Watch (`watch`) | **First visible freaks**: lurkers, and day freezes them | ✅ |
 | 7 | 2 | Under Renovation (`stairs`) | Height from one shift carries into the other | ✅ |
 | 8 | 2 | Lost & Found (`doors`) | **Wanted pranks**; act 2's combination (pranks + a lurker) | ✅ |
 | 9 | **3 · Graveyard Shift** (they get organized) | Wet Floor (`wet`) | **Wet floor**: slide at night, grip by day | ✅ |
@@ -150,7 +150,7 @@ Five acts of four, then the finale. Each act introduces one idea, practises it, 
 **Freak and mechanic ladder** (first seen → first required):
 - **Freak evidence:** eyes and footprints in act 1, a harmless frozen peeker in Closing Time.
 - **Pranks:** single in 5, wanted in 8, moving an object in 10, queued in 12.
-- **Visible freaks:** lurker, peeker and squatter in 6; the supervisor in 11; the day-walker in 14; a freak on the ceiling in 19.
+- **Visible freaks:** lurkers in 6 (the peeker is met frozen in 3); the supervisor in 11; the squatter in 13; the day-walker in 14; a freak on the ceiling in 19.
 - **New rules, one per act from act 3:** wax in 9, offset in 15, upside down in 17.
 - **Act 4 previews act 5:** Floor 3.5 already says "the building isn't where it was", so the flip in 17 is the next step, not a jump.
 

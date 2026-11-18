@@ -377,10 +377,10 @@ export const LEVELS = [
       { kind: 'barrierTape', tx: 20, ty: 12, w: 2, layer: 'day' },
     ],
     note: 'One valve, two rooms. Somebody is getting wet.',
-    rev: 3,
+    rev: 4,
     repairs: [
       {
-        tool: { tx: 12, ty: 10, layer: 'night', name: 'WRENCH', kind: 'wrench' },
+        tool: { tx: 12, ty: 10, layer: 'night', name: 'VALVE KEY', kind: 'key' },
         fix: {
           tx: 18,
           ty: 8,
@@ -425,9 +425,9 @@ export const LEVELS = [
       '...............####....#........',
       '.......###.....####wwww#wwwwwwww',
       '..S............####wwww#ww#wwEww',
-      '################################',
-      '################################',
-      '################################',
+      '#####..........#################',
+      '#####..........#################',
+      '#####..........#################',
     ],
     night: [
       '................................',
@@ -445,9 +445,9 @@ export const LEVELS = [
       '...............####.............',
       '...............####wwwwwwwwwwwww',
       '...............####wwwwwww#ww.ww',
-      '################################',
-      '################################',
-      '################################',
+      '#####..........#################',
+      '#####..........#################',
+      '#####..........#################',
     ],
   },
   {
@@ -523,10 +523,9 @@ export const LEVELS = [
       { kind: 'mug', tx: 3, ty: 13, layer: 'day' },
     ],
     note: 'Something is in the tunnel. It stops by day. Mind where you left it.',
-    rev: 3,
+    rev: 4,
     freaks: [
       { kind: 'lurker', tx: 8, ty: 13, range: 4, speed: 55 },
-      { kind: 'squatter', tx: 20, ty: 13 },
       { kind: 'lurker', tx: 22, ty: 13, range: 2, speed: 50 },
     ],
     repairs: [

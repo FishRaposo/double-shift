@@ -62,6 +62,11 @@ test('Scaffolding: the bracket is fixed by day, and the scaffold it holds stands
   assert.equal(night.state.won, false);
 });
 
+test('Mid-Air: a missed mid-air shift falls into the pit under the hops', () => {
+  const { events } = play(L.midair, (s) => ({ right: true, jump: s.player.grounded && tx(s) > 3.2 && tx(s) < 3.9 }), 120 * 4);
+  assert.ok(events.some((e) => e.type === 'death'));
+});
+
 // Employee of the Month: the portrait is rehung round three hooks, one move per night entry. By day it's solid where
 // it hangs; by night its sitter sits there instead (a squatter with a `when` on the hook's day tile).
 const hookAt = (s) => [9, 14, 22].find((x) => tileAt(L.portrait, DAY, x, 11, s.overrides) === '#');

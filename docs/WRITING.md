@@ -202,7 +202,7 @@ Lives in [itch/page.md](../itch/page.md) §4. Fish writes the final version. The
 > Every level has a scripted solution that the tests replay. It has to win at par or better with no deaths, and running and jumping without shifting must not win. The demo GIFs are those same runs, played by the game on a fixed clock.
 >
 > **Some numbers from the repo today:**
-> - <!-- n:tests -->600<!-- /n --> automated tests.
+> - <!-- n:tests -->601<!-- /n --> automated tests.
 > - Every input a level requires has at least 200 ms of slack in acts 1-2 and at least 100 ms in acts 3-6.
 > - The scripted solutions still win with every input up to 100 ms late in acts 1-2 and up to 50 ms late in acts 3-6.
 > - <!-- n:levels -->21<!-- /n --> levels, each proven winnable at par by a scripted run.
