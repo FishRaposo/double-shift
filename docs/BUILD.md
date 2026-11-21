@@ -410,7 +410,13 @@ The steps:
 | 20 | Head Over Heels | Every shift flips gravity and swaps which freak works | Freaks | 6.5 | 0.0 | 7 / 8 |
 | 21 | Clock Out | One of every job | Everything | 5.1 | 1.2 | 7 / 8 |
 
-Run and idle are the scripted run's (an expert's); idle counts ticks with no movement input, mid-air included. Lost & Found's idle is the two clock-ins it asks for at the spawn. Not checked here: how any of it plays for a person (PLAYTEST.md rounds 1–2).
+Run and idle are the scripted run's (an expert's); idle counts ticks with no movement input, mid-air included. Lost & Found's idle is the two clock-ins it asks for at the spawn. Not checked here: how any of it plays for a person (PLAYTEST.md rounds 1–2). The table is as of T35; T36 changed rows 7, 12 and 15.
+
+### T36 · Final audit before the content freeze *(✅ done 2026-11-21)*
+Three read-only audits (rules and input; shell, audio and stability; levels, copy and docs), the quality-bar list of cheap tells, and a session on the live build. No P0 found.
+- **Shell and rules:** P and Q are menu keys; quitting to the title from pause takes a second press (a mashed RB no longer drops the run); audio suspends with the tab or embed; a frame-loop error keeps its notice on screen; the timecard's Esc/P goes to the title and carries on from the next level; Esc/P on the act card pauses; reduced effects also stills the cable crawl, fixture spark and fail frame; a touch-only tap on the title starts nothing; a mouse can set a volume to 0; the debug overlay needs a tools flag; an old browser gets a sentence instead of a blank page. In `rules.js`: a death drops its tick's `shift` event whichever way the shift went; jobs are touched before a checkpoint saves; `wasGrounded` is read before the jump (a guard: the spurious landing wasn't reproducible); `parseLevel` rejects unknown tiles, two different S or E cells, and a `startFacing` that isn't `'left'`/`'right'` (Night Management's `-1` read as right, so it now says `'right'`).
+- **Levels (all gates re-run):** Clock In's wrench moved onto floor both shifts share (a clock-out over the gap no longer costs it). Closing Time's freaks take the night crate on the first night ("OURS NOW"): the first prank is now seen in act 1, the first to plan around is still Inventory. Stacked's third prank is a step you want ("FREE STEP"), with a lurker under a night ceiling: fewest 3 → 5 (par 6). Under Renovation's hoist is seized at the top and comes down when you clock in (every clock-in has a reason; fewest stays 5). Floor 3.5 starts on the platform: two apex hops, not four, fewest 6 → 4 (par 5).
+- **Left for Fish:** sound by ear, movement feel, Firefox/Edge, a human cold playtest, the itch embed. Not fixed (low risk, no repro on hardware): a non-standard pad's axis drift, sub-tick left/right taps.
 
 ## 5. Known gotchas
 - **Offset and Upside Down levels generate their night grid:** don't also give `night`.

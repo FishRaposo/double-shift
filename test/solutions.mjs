@@ -121,16 +121,20 @@ export const SOLUTIONS = {
     const jump = s.player.grounded ? (x > 6 && x < 7.8) || (x > 26 && x < 26.7) : s.player.vy < 0;
     return { right: x < 30, left: x > 30.6, jump, shift: want(s, target) };
   },
-  stacked: (s, m) => {
+  stacked: steady((s, m) => {
     const x = tx(s);
     const job = s.repairs[0];
     if (!job.done) {
       if (x < 14.4) return { right: true, shift: want(s, x > 4.6 ? NIGHT : DAY) };
       return { right: x < 15.1, left: x > 15.4, shift: want(s, DAY), jump: s.layer === DAY && (s.player.grounded ? x > 14.8 : s.player.vy < 0) };
     }
-    const jump = s.player.grounded ? x > 27 && x < 27.7 : s.player.vy < 0;
-    return { right: x < 30.4, jump, shift: want(s, x > 18 ? NIGHT : DAY) };
-  },
+    // a beat of standing in a spot before the shift, like a player timing the lurker's tunnel
+    const beat = (key, here) => { m[key] = here ? (m[key] ?? 0) + 1 : 0; return m[key] >= 40; };
+    if (s.nightEntries === 1) return { right: true, shift: want(s, x > 18 ? NIGHT : DAY) }; // through the night wall by day, then onto the plank by night
+    if (s.nightEntries === 2 && s.layer === NIGHT) return { right: x < 25.1, shift: beat('a', x > 25.45 && x < 26.5) }; // the plank's far end: day, before the lurker's tunnel
+    if (s.nightEntries === 2) return { right: x < 28.5, shift: beat('b', x > 28.86 && x < 29.5) }; // through the tunnel by day, and in for the step
+    return { right: true, jump: s.player.grounded && x > 29.1 }; // up the step, up the ledge, out
+  }),
   clockout: (s, m) => {
     const x = tx(s);
     const [fuse] = s.repairs;
@@ -187,13 +191,14 @@ export const SOLUTIONS = {
     const x = tx(s);
     const job = s.repairs[0];
     if (!job.done) return { right: true, shift: want(s, x > 7.4 ? NIGHT : DAY) };
-    if (x < 16.4) return { right: true, shift: want(s, x > 10 && x < 15 ? DAY : NIGHT) }; // the tunnel by day: its lurker stops
-    const stop = s.nightEntries - job.since;
-    if (stop < 1) return { shift: (m.p = !m.p), right: true };
-    if (stop === 1 && x < 19.4) return { right: true, jump: s.player.grounded ? x > 17 : s.player.vy < 0 };
-    if (stop === 1) return s.player.grounded ? { shift: (m.p = !m.p) } : {};
-    return { right: true, shift: want(s, x > 25.4 ? NIGHT : s.layer) };
-  }, { jumps: false }),
+    const calls = s.nightEntries - job.since; // night clock-ins since the hoist was freed: the first one calls it down, the second lifts you
+    if (calls < 1) return { right: true, shift: want(s, x > 10 && x < 15 ? DAY : NIGHT) }; // the tunnel by day: its lurker stops; night once past the pillar
+    if (calls === 1) { // night through the day wall, day through the night wall, then up onto the car and in
+      const onCar = s.player.grounded && s.player.y / TILE < 12.6;
+      return { right: true, jump: s.layer === DAY && !onCar && x > 19.1, shift: want(s, x > 18.3 && !onCar ? DAY : NIGHT) };
+    }
+    return { right: true };
+  }),
   doors: steady((s, m) => {
     const x = tx(s);
     const job = s.repairs[0];
@@ -327,10 +332,13 @@ export const SOLUTIONS = {
     return { right: x < 30, left: x > 30.6, shift: (x > 7 && x < 28.4 && want(s, NIGHT)) || (x >= 28.4 && want(s, DAY)) };
   },
   offset: steady((s, m) => {
-    // four hops up the tower: walk into place, jump, shift at the apex onto the floor's copy
-    const hops = [[7.5, NIGHT], [9.5, DAY], [10, NIGHT], [11.4, DAY]];
+    // the crank off the day crew's platform, then two hops up the tower: walk into place, jump, shift at the apex onto the other shift's copy
+    const hops = [[10, NIGHT], [11.4, DAY]];
     const i = m.i ?? 0;
     const p = s.player;
+    if ((m.wait = (m.wait ?? 0) + 1) < 60) return {}; // read the memo at the spawn
+    if (!s.repairs[0].tool) return { right: true };
+    if (i === 0 && p.grounded && tx(s) > 10.45) return { left: true }; // back from the crank to the take-off spot: the peeker waits by the far end of the night platform
     if (i >= hops.length) {
       const x = tx(s);
       if (x < 14.6) return { right: true };

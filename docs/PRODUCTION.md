@@ -1,6 +1,6 @@
 # Production Plan
 
-Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-17**.
+Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-21** (final audit, BUILD.md T36).
 
 **At a glance**
 - **Next for Fish (only a human can do these):** the Nov 8 milestone (M0 + M1) was **missed and is still open**. Play all 21 levels of the rework on Windows, including the Upside Down feel check; run the Sticky Keys test and pick the primary shift bind; tune the movement feel (G1); then one cold playtest before Nov 22 ([PLAYTEST.md](PLAYTEST.md)). Also: the listening checks in [AUDIO.md](AUDIO.md) §5 (including `peekerScratch`); the subtitle decision; the final edit of the in-game copy and the devlog ([WRITING.md](WRITING.md)); Firefox and Edge checks; the itch page and the jam submission (itch/page.md §0 is the list). Two rules to confirm while playing: death beats win on the same tick, and walking back onto an earlier checkpoint overwrites the later one.

@@ -64,7 +64,7 @@ In the order of the 21-level game (LEVELS.md §5.0). ✅ = in the build.
 | 4 Mid-Air (`midair`) ✅ | One valve, two rooms. Somebody is getting wet. |
 | 5 Inventory (`inventory`) ✅ | Every time you clock in, something gets moved. Unless it is bolted down. |
 | 6 Night Watch (`watch`) ✅ | Something is in the tunnel. It stops by day. Mind where you left it. |
-| 7 Under Renovation (`stairs`) ✅ | The hoist moves one stop every time you clock in. |
+| 7 Under Renovation (`stairs`) ✅ | The hoist is seized at the top. It comes down when you clock in. |
 | 8 Lost & Found (`doors`) ✅ | They swap the doors every night. Bolt them when you like where they are. |
 | 9 Wet Floor (`wet`) ✅ | Someone waxed the floors. |
 | 10 Structural Integrity (`pillar`) ✅ | They moved a load-bearing pillar. Jack it under the beam. |
@@ -100,7 +100,7 @@ SPOOKED! · AAAGH! · NOPE! · EEP! · NOT PAID ENOUGH
 | Work order tags in the level ✅ *(drafts)* | The tool, the broken thing and what it drives each carry a small paper label until the job is done |
 | Work order jobs ✅ *(drafts)* | Each level names its own pair; e.g. WRENCH / LOOSE BOLT, FUSE / FUSE BOX, BULB / DEAD LIGHT, OIL CAN / SEIZED WINCH, TAPE / LOOSE CABLE, RATCHET / CEILING LATCH (the full set is in `src/levels.js`) |
 | Work order feedback ✅ *(drafts)* | FIXED · OFF · BOLTED · CLOCK IN TO MOVE IT · TOUCH IT TO SWAP · TAKE THE FUSE WITH YOU · WAIT FOR THE PILLAR |
-| More tells ✅ | MINE NOW (Inventory) · OURS NOW (Closing Time, draft) · MOVING DAY (Lost & Found) · YOU ARE WELCOME · MINE · CLOSED (Stacked) · HEXED. NO TUCH (Night Audit) · FINDERS KEEPERS (finale); every other tell defaults to MINE |
+| More tells ✅ | MINE NOW (Inventory) · OURS NOW (Closing Time, draft) · MOVING DAY (Lost & Found) · YOU ARE WELCOME · MINE · FREE STEP (Stacked; was CLOSED, draft; its clamp reads KEEP PLANK · NO STEP, was NO GATE · NO BRIDGE) · HEXED. NO TUCH (Night Audit) · FINDERS KEEPERS (finale); every other tell defaults to MINE |
 | Hex-flavored tells *(candidates; HEXED. NO TUCH is on Night Audit's plank)* | MINE BY ANSHENT LAW · HEXED. NO TUCH · THE PLANK IS OURS NOW · WE SEE YOU (WE R SHINY) |
 | The building's sign over the staircase (`stairs`) ✅ | TOP FLOOR |
 | Management's sign in `inventory` ✅ *(draft)* | STUCK? RESTART. |

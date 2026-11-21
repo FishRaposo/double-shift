@@ -35,15 +35,15 @@ What each level's repair is, with its par: [LEVELS.md](LEVELS.md) §4. §5–5.3
 | 4 | 1 | Mid-Air | `midair` | Shift during a jump | A | ✅ |
 | 5 | 2 · Overtime | Inventory | `inventory` | First prank | A | ✅ |
 | 6 | 2 | Night Watch | `watch` | First visible freaks; day freezes them | A | ✅ |
-| 7 | 2 | Under Renovation | `stairs` | Hoist: a winch repair frees a car that moves one stop every night clock-in; be there when it comes | B | ✅ |
+| 7 | 2 | Under Renovation | `stairs` | Hoist: a winch repair frees a car, seized at the top, that moves one stop every night clock-in; call it down, clock in between the day wall and the night wall, ride it up | B | ✅ |
 | 8 | 2 | Lost & Found | `doors` | You *need* the pranks: the doors swap between down (bridges) and up (roof ledges) on alternate nights | B | ✅ |
 | 9 | 3 · Graveyard Shift | Wet Floor | `wet` | Wet floor `~`: slide at night, grip by day | C | ✅ |
 | 10 | 3 | Structural Integrity | `pillar` | A pillar moves each night clock-in | B | ✅ |
 | 11 | 3 | Night Management | `supervisor` | Supervisor freak: watched freaks work, the rest slack off | C | ✅ |
-| 12 | 3 | Stacked | `stacked` | Several queued pranks; the order of clock-ins | A | ✅ |
+| 12 | 3 | Stacked | `stacked` | Several queued pranks, a lurker's tunnel and a wanted step; the order of clock-ins | A | ✅ |
 | 13 | 4 · Lights Out | Employee of the Month | `portrait` | The portrait is rehung each clock-in: a wall in the doorway, a step elsewhere, its sitter in the frame by night | B | ✅ |
 | 14 | 4 | Broad Daylight | `daywalker` | Day-walker freak: you must freeze it | C | ✅ |
-| 15 | 4 | Floor 3.5 | `offset` | Offset layer: night is the day map half a storey up | C | ✅ |
+| 15 | 4 | Floor 3.5 | `offset` | Offset layer: night is the day map half a storey up; two apex hops, then the lift | C | ✅ |
 | 16 | 4 | Night Audit | `audit` | Acts 1–4 exam on one screen; no new rules | B | ✅ |
 | 17 | 5 · Upside Down | Mind Your Head | `upside` | At night the map is upside down and gravity points up | C | ✅ |
 | 18 | 5 | Falling Up | `fallup` | Shift mid-fall to reverse it; climb by flipping | C | ✅ |
