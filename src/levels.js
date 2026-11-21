@@ -599,9 +599,10 @@ export const LEVELS = [
     name: 'Under Renovation',
     act: 2,
     props: [
-      { kind: 'memo', tx: 4, ty: 11, text: 'The hoist runs on the night clock. Do not ask who winds it.' },
-      { kind: 'barrierTape', tx: 5, ty: 13, w: 2, layer: 'day' },
+      { kind: 'memo', tx: 4, ty: 11, text: 'The hoist runs on the night clock. Do not ask who winds it.', w: 150 },
+      { kind: 'barrierTape', tx: 7, ty: 13, w: 2, layer: 'day' },
       { kind: 'sign', tx: 23, ty: 5, text: 'TOP FLOOR', style: 'paper' },
+      { kind: 'sign', tx: 18, ty: 9, text: 'CLOCK OUT HERE', style: 'paper' },
     ],
     note: 'The hoist is seized at the top. It comes down when you clock in.',
     rev: 5,
