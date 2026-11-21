@@ -867,10 +867,32 @@ function drawWorkOrder(lvl, s, layer, t) {
       // builds something for the other shift says where
       for (const l of [layer, layer === NIGHT ? DAY : NIGHT]) {
         const cells = spot.cells.map(([cl, tx, ty, ch]) => ({ layer: cl, tx, ty, ch })).filter((c) => c.layer === l && tileAt(lvl, l, c.tx, c.ty, s.overrides) !== c.ch);
-        if (cells.length) drawPrankCells(g, cells, (ch) => !isSolidChar(ch) && !isHazardChar(ch), { alpha: l === layer ? 0.8 : 0.35, color: layer === NIGHT ? '#9dffb8' : '#3d7a4a' });
+        // water that is about to arrive reads as water (a thin wash of the real thing with its waves), never as an outline
+        // that could be taken for something to stand on; everything else keeps the dashed tell
+        const flood = cells.filter((c) => c.ch === 'w');
+        const rest = cells.filter((c) => c.ch !== 'w');
+        if (rest.length) drawPrankCells(g, rest, (ch) => !isSolidChar(ch) && !isHazardChar(ch), { alpha: l === layer ? 0.8 : 0.35, color: layer === NIGHT ? '#9dffb8' : '#3d7a4a' });
+        if (flood.length) drawFloodPreview(lvl, s, l, flood, t, l === layer ? 0.42 : 0.22);
       }
     });
   });
+}
+
+// the water a job will bring, shown as a light wash of water: a surface row with waves where it will pool, the whole
+// tile below; `layer` is the shift it will flood
+function drawFloodPreview(lvl, s, layer, cells, t, alpha) {
+  const flipped = gravitySign(lvl, layer) < 0;
+  const coming = new Set(cells.map((c) => `${c.tx},${c.ty}`));
+  const prev = g.globalAlpha;
+  g.globalAlpha = prev * alpha;
+  for (const c of cells) {
+    const ay = c.ty + (flipped ? 1 : -1);
+    const surface = !coming.has(`${c.tx},${ay}`) && tileAt(lvl, layer, c.tx, ay, s.overrides) !== 'w';
+    const draw = () => drawWater(g, c.tx, c.ty, t, surface, layer);
+    if (flipped) withCellMirror(g, c.ty, draw);
+    else draw();
+  }
+  g.globalAlpha = prev;
 }
 
 // a room waiting for its light: dim, with its freaks plain to see; lit, and empty of them
