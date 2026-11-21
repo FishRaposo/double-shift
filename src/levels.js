@@ -762,7 +762,7 @@ export const LEVELS = [
     name: 'Wet Floor',
     act: 3,
     note: 'Someone waxed the floors.',
-    rev: 3,
+    rev: 4,
     freaks: [{ kind: 'lurker', tx: 13, ty: 13, range: 3, speed: 55 }],
     repairs: [
       {
@@ -789,7 +789,7 @@ export const LEVELS = [
     min: 4,
     props: [
       { kind: 'memo', tx: 2, ty: 11, text: 'Who waxed the floors at 3 AM? — Facilities', w: 150 },
-      { kind: 'wetFloorSign', tx: 7, ty: 9, layer: 'night' },
+      { kind: 'wetFloorSign', tx: 10, ty: 9, layer: 'night' },
       { kind: 'footprints', tx: 12, ty: 9, layer: 'night' },
       { kind: 'footprints', tx: 13, ty: 9, layer: 'night' },
     ],
@@ -806,9 +806,9 @@ export const LEVELS = [
       '........#################.......',
       '........ww..########............',
       '........#################.......',
-      '........#################.......',
+      '.......C#################.......',
       '.....####################.......',
-      '..SC......#..........####...#.E.',
+      '..S.......#..........####...#.E.',
       '################################',
       '################################',
       '################################',
