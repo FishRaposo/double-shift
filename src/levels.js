@@ -1432,7 +1432,7 @@ export const LEVELS = [
     name: 'Mind Your Head',
     act: 5,
     note: 'They flipped the night shift. Mind your head.',
-    rev: 3,
+    rev: 4,
     repairs: [
       {
         tool: { tx: 5, ty: 15, layer: 'day', name: 'BULB', kind: 'bulb' },
@@ -1458,7 +1458,7 @@ export const LEVELS = [
       { kind: 'mug', tx: 13, ty: 12, layer: 'night', flip: true },
     ],
     decor: [{ kind: 'eyes', tx: 14, ty: 8 }],
-    nightPatch: [{ x0: 23, x1: 26, y0: 13, ch: '#' }, { x0: 23, x1: 25, y0: 4, y1: 5, ch: '.' }, { x0: 26, y0: 12, ch: '.' }],
+    nightPatch: [{ x0: 23, x1: 26, y0: 13, ch: '#' }, { x0: 23, x1: 25, y0: 4, y1: 5, ch: '.' }, { x0: 26, y0: 12, ch: '.' }, { x0: 26, y0: 16, y1: 17, ch: '#' }, { x0: 0, x1: 5, y0: 2, ch: '#' }, { x0: 27, x1: 31, y0: 13, ch: '#' }],
     freaks: [{ kind: 'squatter', tx: 25, ty: 12 }],
     day: [
       '................................',
