@@ -293,9 +293,9 @@ export const LEVELS = [
     name: 'Closing Time',
     act: 1,
     props: [
-      { kind: 'memo', tx: 8, ty: 11, text: 'Lasers are for security, not for jumping over. — Night Management', w: 180 },
+      { kind: 'memo', tx: 6, ty: 11, text: 'Lasers are for security, not for jumping over. — Night Management', w: 180 },
       { kind: 'sign', tx: 16, ty: 7, text: 'CLOSING TIME', style: 'paper' },
-      { kind: 'sign', tx: 22, ty: 10, text: 'LASERS', style: 'red', layer: 'night' },
+      { kind: 'sign', tx: 22, ty: 8, text: 'LASERS', style: 'red', layer: 'night' },
     ],
     decor: [{ kind: 'eyes', tx: 24, ty: 4 }],
     freaks: [{ kind: 'peeker', tx: 26, ty: 13, period: 1.6, duty: 0.5 }],
@@ -526,7 +526,7 @@ export const LEVELS = [
     name: 'Night Watch',
     act: 2,
     props: [
-      { kind: 'memo', tx: 3, ty: 11, text: 'Reminder: the vents are not a break room.' },
+      { kind: 'memo', tx: 2, ty: 11, text: 'Reminder: the vents are not a break room.', w: 130 },
       { kind: 'vent', tx: 16, ty: 10 },
       { kind: 'mug', tx: 3, ty: 13, layer: 'day' },
     ],
@@ -599,9 +599,10 @@ export const LEVELS = [
     name: 'Under Renovation',
     act: 2,
     props: [
-      { kind: 'memo', tx: 4, ty: 11, text: 'The hoist runs on the night clock. Do not ask who winds it.' },
-      { kind: 'barrierTape', tx: 5, ty: 13, w: 2, layer: 'day' },
+      { kind: 'memo', tx: 4, ty: 11, text: 'The hoist runs on the night clock. Do not ask who winds it.', w: 150 },
+      { kind: 'barrierTape', tx: 7, ty: 13, w: 2, layer: 'day' },
       { kind: 'sign', tx: 23, ty: 5, text: 'TOP FLOOR', style: 'paper' },
+      { kind: 'sign', tx: 18, ty: 9, text: 'CLOCK OUT HERE', style: 'paper' },
     ],
     note: 'The hoist is seized at the top. It comes down when you clock in.',
     rev: 5,
@@ -762,7 +763,7 @@ export const LEVELS = [
     name: 'Wet Floor',
     act: 3,
     note: 'Someone waxed the floors.',
-    rev: 3,
+    rev: 4,
     freaks: [{ kind: 'lurker', tx: 13, ty: 13, range: 3, speed: 55 }],
     repairs: [
       {
@@ -789,7 +790,7 @@ export const LEVELS = [
     min: 4,
     props: [
       { kind: 'memo', tx: 2, ty: 11, text: 'Who waxed the floors at 3 AM? — Facilities', w: 150 },
-      { kind: 'wetFloorSign', tx: 7, ty: 9, layer: 'night' },
+      { kind: 'wetFloorSign', tx: 10, ty: 9, layer: 'night' },
       { kind: 'footprints', tx: 12, ty: 9, layer: 'night' },
       { kind: 'footprints', tx: 13, ty: 9, layer: 'night' },
     ],
@@ -806,9 +807,9 @@ export const LEVELS = [
       '........#################.......',
       '........ww..########............',
       '........#################.......',
-      '........#################.......',
+      '.......C#################.......',
       '.....####################.......',
-      '..SC......#..........####...#.E.',
+      '..S.......#..........####...#.E.',
       '################################',
       '################################',
       '################################',
@@ -903,7 +904,7 @@ export const LEVELS = [
     props: [
       { kind: 'memo', tx: 4, ty: 12, text: 'Structural survey: fine. — Engineering', w: 200 },
       { kind: 'noticeBoard', tx: 2, ty: 10, layer: 'day' },
-      { kind: 'sign', tx: 7, ty: 7, text: 'LOAD BEARING', style: 'paper', layer: 'day' },
+      { kind: 'sign', tx: 6, ty: 8, text: 'LOAD BEARING', style: 'paper', layer: 'day' },
       { kind: 'pallet', tx: 10, ty: 13, layer: 'day' },
     ],
     day: [
@@ -977,7 +978,7 @@ export const LEVELS = [
               name: 'CHARGER ONE',
               target: 'SHUTTER',
               area: { x0: 13, x1: 15, y0: 12, y1: 13 },
-              link: [[14, 10], [14, 11]],
+              link: [[14, 10], [14, 12]],
               set: [{ layer: 'day', x0: 14, y0: 11, y1: 13, ch: '.' }, { layer: 'night', x0: 14, y0: 11, y1: 13, ch: '.' }],
             },
             {
@@ -986,7 +987,7 @@ export const LEVELS = [
               name: 'CHARGER TWO',
               target: 'SHUTTER',
               area: { x0: 23, x1: 25, y0: 12, y1: 13 },
-              link: [[24, 10], [24, 11]],
+              link: [[24, 10], [24, 12]],
               set: [{ layer: 'day', x0: 24, y0: 11, y1: 13, ch: '.' }, { layer: 'night', x0: 24, y0: 11, y1: 13, ch: '.' }],
             },
           ],
@@ -1156,7 +1157,7 @@ export const LEVELS = [
     min: 4,
     props: [
       { kind: 'memo', tx: 4, ty: 12, text: 'Please do not move the portrait. — Management', w: 200 },
-      { kind: 'plaque', tx: 6, ty: 10, layer: 'day' },
+      { kind: 'plaque', tx: 8, ty: 11, layer: 'day' },
       { kind: 'nail', tx: 9, ty: 11, layer: 'day' },
       { kind: 'nail', tx: 14, ty: 11, layer: 'day' },
       { kind: 'nail', tx: 22, ty: 11, layer: 'day' },
@@ -1207,7 +1208,7 @@ export const LEVELS = [
     name: 'Broad Daylight',
     act: 4,
     note: 'One of them clocked in for the day shift.',
-    rev: 4,
+    rev: 5,
     // A dumbwaiter up to a corridor on the upper floor, where a lurker works by night at the landing and the day-walker
     // by day further on. The car only moves on a night clock-in, so you always arrive by night: wait on the car for
     // day to walk past the lurker, then clock in again to walk past the day-walker. Each shift freezes the other's.
@@ -1249,7 +1250,7 @@ export const LEVELS = [
       '.................###############',
       '.................###############',
       '.................###############',
-      '..S..............###############',
+      '..S..........C...###############',
       '################################',
       '###############..###############',
       '###############..###############',
@@ -1269,7 +1270,7 @@ export const LEVELS = [
       '.................###############',
       '.................###############',
       '.................###############',
-      '..S..............###############',
+      '..S..........C...###############',
       '################################',
       '###############..###############',
       '###############..###############',
@@ -1521,9 +1522,10 @@ export const LEVELS = [
     upsideDown: true,
     nightPatch: [{ x0: 12, x1: 17, y0: 12, ch: '^' }, { x0: 31, y0: 13, ch: '#' }, { x0: 17, y0: 13, y1: 17, ch: '#' }],
     props: [
-      { kind: 'memo', tx: 16, ty: 4, text: 'Gravity will be restored after the renovation. — Facilities', layer: 'day' },
+      { kind: 'memo', tx: 15, ty: 4, text: 'Gravity will be restored after the renovation. — Facilities', layer: 'day' },
       { kind: 'sign', tx: 3, ty: 11, text: 'THIS WAY UP', style: 'note', layer: 'day' },
       { kind: 'noticeBoard', tx: 7, ty: 10, layer: 'day' },
+      { kind: 'sign', tx: 12, ty: 10, text: 'LASERS AT NIGHT', style: 'note', layer: 'day' },
       { kind: 'vent', tx: 6, ty: 4, layer: 'night', flip: true },
     ],
     decor: [{ kind: 'eyes', tx: 24, ty: 8 }],
