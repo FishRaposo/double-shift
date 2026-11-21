@@ -6,7 +6,7 @@ import { LEVELS, ACTS, FINALE_ACT } from './levels.js';
 import { createInput } from './input.js';
 import { createPad, readPads, padMenuKey } from './pad.js';
 import { ACTIONS, DEFAULT_BINDS, ownsKey, rebind, keyLabel, keysText, keysShort, browserShortcut } from './keys.js';
-import { sfx, playSound, unlockAudio, setVolumes, setMusicShift, setMusicAct, setMenu } from './audio.js';
+import { sfx, playSound, unlockAudio, audioReady, setVolumes, setMusicShift, setMusicAct, setMenu } from './audio.js';
 import { skinPlan, checkpointHangs, exitPose, lightCordFrom } from './skins.js';
 import { createSave, createSettings, isUnlocked } from './save.js';
 import { drawText, measureText, wrapText } from './font.js';
@@ -18,7 +18,7 @@ import {
   drawStamp, drawLogo, drawWetTile, drawSkin, shouldHatch, withCellMirror, PLATE, NOTE_STRIP, px, drawMemoPanel,
 } from './art.js';
 import { SPOOK_LINES, ACT_LINES, CREDITS, timecardComment, stampText, prankCountdown } from './copy.js';
-import { levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, endSummary, selectClick, canvasScale, CARD, memoPanel, memoNear, HUD_BOTTOM, hudFloor, placeTag } from './layout.js';
+import { levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, endSummary, selectClick, canvasScale, frameDeltas, CARD, memoPanel, memoNear, HUD_BOTTOM, hudFloor, placeTag } from './layout.js';
 
 const W = 960;
 const H = 540;
@@ -38,10 +38,34 @@ const levels = LEVELS.map(parseLevel);
 const storage = (() => { try { return localStorage; } catch { return null; } })();
 const save = createSave(storage);
 const settings = createSettings(storage);
+
+// Watched media queries. The OS preference for less motion seeds the game's own reduced-effects toggle until the
+// player saves a setting, then the player's word wins (src/save.js stored()); the pointer probe tells a
+// touch-only visitor why the game cannot be played (GDD §12.5, opengame-accessibility).
+const query = (q) => { try { return matchMedia(q); } catch { return null; } };
+const lessMotion = query('(prefers-reduced-motion: reduce)');
+const coarse = query('(pointer: coarse)');
+const fine = query('(any-pointer: fine)');
+// A touch-only device: a coarse pointer and no fine one. A laptop with a touchscreen has both, so it plays.
+const touchOnly = () => Boolean(coarse?.matches) && !fine?.matches;
+
+// A first run takes its reduced-effects default from the OS; an explicit choice is never overwritten. The seed is
+// in memory only (settings.setDefault), so it does not count as the player having saved: the OS preference keeps
+// being followed until the player changes a setting, and then their word wins for good.
+function seedReduced() {
+  if (settings.stored() || !lessMotion) return;
+  settings.setDefault({ reduced: lessMotion.matches });
+}
+seedReduced();
+lessMotion?.addEventListener?.('change', () => seedReduced());
+
 setVolumes(settings.get());
 
 const params = new URLSearchParams(location.search);
 const NOTEXT = params.has('notext'); // the show-don't-tell check: no notes, memos or signs (docs/LEVELS.md §3)
+// Expose the hooks for the test tools only (?level=, ?debug or ?tools). A player's console never sees the game
+// object, so nothing can poke a live run, and the debug overlay stays off unless asked for.
+const TOOLS = params.has('level') || params.has('debug') || params.has('tools');
 const freshFx = () => ({ flash: 0, flashLayer: DAY, fail: 0, death: 0, land: 0, rings: [], pops: [], dust: [], puffs: [], sparkles: [], fixes: [], spook: null, freeze: 0, squint: 0, ping: 0 });
 const game = {
   screen: 'title', // title | select | settings | controls | act | play | card | end | paused
@@ -65,9 +89,12 @@ const game = {
 
 function level() { return levels[game.index]; }
 
+let stampTimer = null; // the timecard's stamp sound, cancelled if the screen changes first
+const lurkerAt = new Map(); // a lurker's last heard x, per freak index (src/main.js lurkerSteps)
 function setScreen(s) {
   game.screen = s;
   game.screenTime = 0;
+  if (stampTimer !== null) { clearTimeout(stampTimer); stampTimer = null; } // a fast retry mustn't stamp over the next level
 }
 
 // Clocking in from the title or the end screen is a new run: the totals start over, whatever came before.
@@ -84,6 +111,7 @@ function startLevel(i, { card = true } = {}) {
   game.state = initState(levels[i]);
   game.levelTime = 0;
   game.fx = freshFx();
+  lurkerAt.clear(); // a new level's freaks start unheard: no step from where the last one's lurker was
   input.clear();
   const act = LEVELS[i].act;
   if (card && act !== game.actShown) {
@@ -110,6 +138,16 @@ function adjustSetting(row, dir) {
   const cur = settings.get();
   const next = SWITCHES.includes(key) ? settings.set({ [key]: !cur[key] }) : settings.set({ [key]: Math.round((cur[key] + dir * 0.1) * 10) / 10 });
   setVolumes(next);
+  sfx.uiMove();
+}
+
+// A volume row draws ten segments of 7 px at 18 px pitch from r.x + 250 (drawSettings): a click picks the
+// segment under the pointer, so the bar responds where it is drawn instead of stepping from the row's middle.
+const VOLUME_TRACK_X = 250;
+const VOLUME_PITCH = 18;
+function setVolumeAt(key, r, x) {
+  const i = Math.min(9, Math.max(0, Math.round((x - (r.x + VOLUME_TRACK_X + 3.5)) / VOLUME_PITCH)));
+  setVolumes(settings.set({ [key]: (i + 1) / 10 }));
   sfx.uiMove();
 }
 
@@ -151,7 +189,7 @@ function captureKey(code) {
     game.controlsNote = '';
     sfx.uiSelect();
   } else {
-    game.controlsNote = `Not that one: use a letter, a digit, an arrow, Space or Shift (${['KeyR', 'KeyL', 'KeyO'].map(keyName).join(', ')} and ${keyName('KeyM')} are the menus').`;
+    game.controlsNote = 'Not that one: use a letter, a digit, an arrow, Space or Shift. The menu keys (Esc, Enter, Tab, R, L, O, M and the debug key) stay put.';
     sfx.shiftFail();
   }
 }
@@ -206,6 +244,7 @@ function handleKey(e) {
       else sfx.shiftFail(); // NOT YET
     }
     else if (e.code === 'Escape' || e.code === 'KeyL') setScreen(game.selectFrom);
+    else if (e.code === 'KeyO') openSettings();
     return;
   }
   if (game.screen === 'card') {
@@ -221,18 +260,22 @@ function handleKey(e) {
     if (game.screenTime < 0.6) return; // mashing past the last timecard mustn't skip the ending
     if (e.code === 'Space' || e.code === 'Enter') startRun(0);
     else if (e.code === 'Escape') { game.index = 0; setScreen('title'); } // the next clock-in is a new game
+    else if (e.code === 'KeyL') openSelect();
     return;
   }
   if (game.screen === 'paused') {
-    if (e.code === 'Escape' || e.code === 'Space' || e.code === 'Enter') setScreen('play');
+    if (e.code === 'Escape' || e.code === 'KeyP' || e.code === 'Space' || e.code === 'Enter') setScreen('play');
     else if (e.code === 'KeyR') startLevel(game.index, { card: false });
     else if (e.code === 'KeyL') openSelect();
     else if (e.code === 'KeyO') openSettings();
-    else if (e.code === 'KeyQ') setScreen('title');
+    else if (e.code === 'KeyQ') { game.index = 0; setScreen('title'); } // like the end screen: a fresh run next
     return;
   }
   // play
-  if (e.code === 'Escape') { setScreen('paused'); input.clear(); return; }
+  // Escape must not clear: the physics is frozen while paused, and clearing drops the held jump, so resuming
+  // mid-jump would cut it to 45% (rules.js jump-cut) unless an OS key-repeat happened to arrive first.
+  // P pauses as well as Esc: a host page in fullscreen (the itch embed) spends Escape before the game sees it.
+  if (e.code === 'Escape' || e.code === 'KeyP') { setScreen('paused'); return; }
   if (e.code === 'KeyR') { startLevel(game.index, { card: false }); return; }
   input.keyDown(e);
 }
@@ -275,6 +318,12 @@ addEventListener('blur', () => {
   input.clear();
   if (game.screen === 'play' || game.screen === 'act') setScreen('paused'); // an act card would run on into the level
 });
+// A hidden tab is not a lost focus: an iframe scrolled out of view keeps running without a blur. Pause all the same.
+addEventListener('visibilitychange', () => {
+  if (!document.hidden) return;
+  input.clear();
+  if (game.screen === 'play' || game.screen === 'act') setScreen('paused');
+});
 // Size the canvas to a whole number of device pixels per canvas pixel unless that wastes > 15% of the window
 // (src/layout.js canvasScale); the CSS in index.html is the fallback before this runs.
 function fitCanvas() {
@@ -301,8 +350,14 @@ canvas.addEventListener('pointerdown', (e) => {
     else startRun(game.index);
   } else if (game.screen === 'settings') {
     const row = SETTING_ROWS.findIndex((_, k) => inside(settingRect(k)));
-    if (row >= 0) { const r = settingRect(row); game.settingsRow = row; adjustSetting(row, x < r.x + r.w / 2 ? -1 : 1); }
-    else setScreen(game.settingsFrom); // click outside the rows: back
+    if (row >= 0) {
+      const r = settingRect(row);
+      game.settingsRow = row;
+      const key = SETTING_ROWS[row][0];
+      // a volume row draws 10 segments from r.x + 250: click the one you mean, don't just step from the middle
+      if (!SWITCHES.includes(key) && key !== 'controls') setVolumeAt(key, r, x);
+      else adjustSetting(row, x < r.x + r.w / 2 ? -1 : 1);
+    } else setScreen(game.settingsFrom); // click outside the rows: back
   } else if (game.screen === 'controls') {
     const row = CONTROL_ROWS.findIndex((_, k) => inside(controlRect(k)));
     if (game.capturing) game.capturing = null; // a click cancels waiting for a key
@@ -324,7 +379,9 @@ canvas.addEventListener('pointerdown', (e) => {
   } else if (game.screen === 'card') {
     handleKey({ code: actionAt(CARD_ACTIONS, CARD_ROW, x, y)?.code ?? 'Space' }); // anywhere else: next
   } else if (game.screen === 'end') {
-    handleKey({ code: actionAt(END_ACTIONS, END_ROW, x, y)?.code ?? 'Space' });
+    // only the two named actions: clicking the panel to focus the embed must not wipe the run summary
+    const hit = actionAt(END_ACTIONS, END_ROW, x, y);
+    if (hit) handleKey({ code: hit.code });
   }
 });
 
@@ -458,7 +515,7 @@ function handleEvents(events) {
       case 'machine': sfx.machine(); break;
       case 'win':
         sfx.win();
-        setTimeout(() => sfx.stamp(), 450);
+        stampTimer = setTimeout(() => { stampTimer = null; sfx.stamp(); }, 450);
         game.results[game.index] = { shifts: ev.shifts, par: ev.par, deaths: game.state.deaths, time: game.state.time };
         {
           const { id, rev } = LEVELS[game.index]; // rev: undefined is revision 1 (save.js)
@@ -477,13 +534,17 @@ let last = performance.now();
 // `next`), effects decaying, the music following the level. frame() runs it on the real clock with the
 // player's input; the demo GIF (scripts/gif.mjs) runs it on a fixed clock with a level's scripted run.
 // At most 12 ticks (0.1 s) run per call, the most frame() ever passes; a longer `elapsed` falls behind.
-function advance(elapsed, next = () => input.consume()) {
-  game.clock += elapsed;
-  game.screenTime += elapsed;
+// `wall` is the frame's real duration and `sim` the step the simulation may take (clamped). Menu timers,
+// the note strip, the act card and the logged durations are interface time and read `wall`, so a slow
+// machine cannot stretch them; only the fixed-step accumulator reads the clamped `sim`. Callers that pass
+// one argument (the GIF and the browser scripts) run on a fixed clock, so wall and sim are the same there.
+function advance(sim, next = () => input.consume(), wall = sim) {
+  game.clock += wall;
+  game.screenTime += wall;
   if (game.screen === 'act' && game.screenTime > 1.6) setScreen('play');
   if (game.screen === 'play') {
-    acc += elapsed;
-    game.spent[game.index] = (game.spent[game.index] ?? 0) + elapsed;
+    acc += sim;
+    game.spent[game.index] = (game.spent[game.index] ?? 0) + wall;
     let steps = 0;
     while (acc >= DT && steps < 12) {
       game.state = step(level(), game.state, next(game.state));
@@ -492,12 +553,14 @@ function advance(elapsed, next = () => input.consume()) {
       steps++;
       if (game.screen !== 'play') break;
     }
-    game.levelTime += elapsed;
+    game.levelTime += wall;
+    // the freaks' own sounds follow the simulation, never the renderer (the GIF drives render() with rAF off)
+    if (game.state && !game.state.won) lurkerSteps(freakBoxes(level(), game.state), game.state.layer, game.state);
   } else {
     acc = 0;
   }
   const fx = game.fx;
-  const decay = (v, d) => Math.max(0, v - elapsed / d);
+  const decay = (v, d) => Math.max(0, v - wall / d);
   fx.flash = decay(fx.flash, 0.12);
   fx.fail = decay(fx.fail, 0.25);
   fx.death = decay(fx.death, 0.3);
@@ -507,9 +570,9 @@ function advance(elapsed, next = () => input.consume()) {
   fx.ping = decay(fx.ping, 0.2);
   for (const k of ['rings', 'pops', 'dust', 'puffs', 'sparkles', 'fixes']) {
     const life = { rings: 0.3, pops: 0.9, dust: 0.3, puffs: 0.4, sparkles: 0.5, fixes: 0.4 }[k];
-    fx[k] = fx[k].filter((q) => (q.t += elapsed) < life);
+    fx[k] = fx[k].filter((q) => (q.t += wall) < life);
   }
-  if (fx.spook && (fx.spook.t += elapsed) > 0.35) fx.spook = null;
+  if (fx.spook && (fx.spook.t += wall) > 0.35) fx.spook = null;
   const inLevel = game.screen === 'play' || game.screen === 'paused' || game.screen === 'card' || (['settings', 'controls'].includes(game.screen) && game.settingsFrom === 'paused');
   setMenu(!(game.screen === 'play'));
   const musicLayer = inLevel && game.state ? game.state.layer : DAY;
@@ -519,12 +582,17 @@ function advance(elapsed, next = () => input.consume()) {
 }
 
 function frame(now) {
-  const elapsed = Math.min(Math.max((now - last) / 1000, 0), 0.1);
-  last = now;
-  pollPad();
-  advance(elapsed);
-  render();
-  requestAnimationFrame(frame);
+  requestAnimationFrame(frame); // first: a throw below must not stop the loop for good
+  try {
+    // `wall` is the real frame time and drives every interface timer; `sim` is clamped and drives the physics only.
+    const { wall, sim } = frameDeltas((now - last) / 1000);
+    last = now;
+    pollPad();
+    advance(sim, undefined, wall);
+    render();
+  } catch (err) {
+    console.error(err);
+  }
 }
 
 // ---------- rendering ----------
@@ -1001,6 +1069,24 @@ function drawDebug(s) {
   t(`night clock ${s.freakClock.toFixed(2)}  day clock ${s.dayClock.toFixed(2)}  night entries ${s.nightEntries}`, H - 22);
 }
 
+// A lurker's footstep (SOUNDS.lurkerStep): a short low thud as it walks, only on its own shift and only near the
+// player, so a frozen lurker is silent and a distant one is not a drum. The rules stay pure; this reads the boxes
+// the renderer already computes and keeps the last position per freak index.
+const LURKER_STEP_TILES = 0.75; // how far it walks between steps
+const LURKER_HEAR_TILES = 9; // beyond this the step is not heard
+function lurkerSteps(boxes, layer, s) {
+  boxes.forEach((b, i) => {
+    if (b.kind !== 'lurker' || b.shift !== layer || b.scattered || b.absent) return;
+    const dist = Math.hypot(b.x + b.w / 2 - (s.player.x + PARAMS.playerW / 2), b.y + b.h / 2 - (s.player.y + PARAMS.playerH / 2));
+    const prev = lurkerAt.get(i);
+    if (prev === undefined || dist > LURKER_HEAR_TILES) { lurkerAt.set(i, b.x); return; } // no step on first sight or from afar
+    if (Math.abs(b.x - prev) >= LURKER_STEP_TILES * TILE) {
+      lurkerAt.set(i, b.x);
+      sfx.lurkerStep();
+    }
+  });
+}
+
 function drawPlay() {
   const lvl = level();
   const def = LEVELS[game.index];
@@ -1075,24 +1161,37 @@ function drawTitle() {
   const peek = Math.floor(game.clock * 6) % 2 ? 'b' : 'a';
   drawSprite(g, 'lurker', peek, 900, 16 * TILE - FREAK.h);
   drawEyes(g, 'lurker', 900, 16 * TILE - FREAK.h, { state: eyesOpen(game.clock, 4) ? 'open' : 'shut', look: -1 });
-  drawPanel(g, W / 2 - 270, 250, 540, 176, false);
+  drawPanel(g, W / 2 - 290, 250, 580, 176, false);
   drawText(g, 'One building. Two shifts. One worker.', W / 2, 270, { scale: 2, color: '#ffffff', align: 'center' });
   const b = settings.binds(); // the current bindings (SETTINGS > CONTROLS)
   drawText(g, `Move  ${keysShort(b.left, keyLayout)}  ${keysShort(b.right, keyLayout)}      Jump  ${keysShort(b.jump, keyLayout)}`, W / 2, 310, { scale: 2, color: '#d9f6ff', align: 'center' });
   drawText(g, `Change shift  ${keysText(b.shift, keyLayout)}      Restart  ${keyName('KeyR')}`, W / 2, 334, { scale: 2, color: '#d9f6ff', align: 'center' });
+  // fits the panel at scale 1 (559 px would spill past a 540 px plate)
   drawText(g, 'Gamepad: stick move · A jump · B, X or RB shift · Start pause · X levels · Y settings', W / 2, 354, { scale: 1, color: '#9fd8e6', align: 'center' });
-  const blink = Math.floor(game.clock * 2) % 2 === 0;
-  drawText(g, game.padLast ? 'Press A to clock in' : 'Click or press SPACE to clock in', W / 2, 380, { scale: 2, color: blink ? '#ffec5a' : '#ffffff', align: 'center' });
+  const reduced = settings.get().reduced;
+  const blink = reduced || Math.floor(game.clock * 2) % 2 === 0; // reduced effects: no 2 Hz strobe
+  if (touchOnly()) {
+    // A phone or tablet cannot play this build (keyboard or gamepad only, docs/RELEASE.md §2): say so, in the
+    // game's own look, instead of a prompt it can never answer.
+    drawText(g, 'This game needs a keyboard or a gamepad.', W / 2, 376, { scale: 2, color: '#ffffff', align: 'center' });
+    drawText(g, 'Open it on a computer to clock in.', W / 2, 402, { scale: 2, color: '#ffec5a', align: 'center' });
+  } else {
+    drawText(g, game.padLast ? 'Press A to clock in' : 'Click or press SPACE to clock in', W / 2, 380, { scale: 2, color: blink ? '#ffec5a' : '#ffffff', align: 'center' });
+  }
+  // A gamepad press is not a user gesture, so a pad-only player starts silent with no explanation: say so once.
+  if (game.padLast && !audioReady() && !settings.get().mute) {
+    drawText(g, 'No sound? Press any key or click once.', W / 2, 424, { scale: 1, color: '#9fd8e6', align: 'center' });
+  }
   for (const [b, label] of [[TITLE_SELECT, `LEVEL SELECT (${btnName('KeyL')})`], [TITLE_SETTINGS, `SETTINGS (${btnName('KeyO')})`]]) {
     drawPanel(g, b.x, b.y, b.w, b.h, false);
     drawText(g, label, b.x + b.w / 2, b.y + 9, { scale: 2, color: '#ffffff', align: 'center' });
   }
-  // the freaks' sticky note about it (WRITING.md §2.1), then the practical line
-  drawSign(g, W / 2, H - 38, 'WE PRES SHIFT 5 TIMES. FOR FUN.', 'note', 1);
+  // the freaks' sticky note about it (WRITING.md §2.1), then the practical line clear of it
+  drawSign(g, W / 2, H - 56, 'WE PRES SHIFT 5 TIMES. FOR FUN.', 'note', 1);
   if (b.shift.some((c) => c.startsWith('Shift'))) { // only while Shift changes shifts; the other keys come from the bindings
     const others = b.shift.filter((c) => !c.startsWith('Shift'));
     const tip = others.length ? `use ${keysText(others, keyLayout)}` : 'rebind SHIFT in SETTINGS > CONTROLS';
-    drawText(g, `Windows: hammering Shift can open Sticky Keys — ${tip}, or turn off the Sticky Keys shortcut.`, W / 2, H - 16, { scale: 1, color: 'rgba(255,255,255,0.8)', align: 'center' });
+    drawText(g, `Windows: hammering Shift can open Sticky Keys — ${tip}.`, W / 2, H - 8, { scale: 1, color: 'rgba(255,255,255,0.8)', align: 'center' });
   }
 }
 
@@ -1160,7 +1259,7 @@ function drawEnd() {
     drawText(g, 'Total time', W / 2 - 220, y + 36, { scale: 2, color: ink });
     drawText(g, `${sum.time.toFixed(2)} s`, W / 2 + 220, y + 36, { scale: 2, color: ink, align: 'right' });
   }
-  CREDITS.forEach((line, k) => drawText(g, line, W / 2, bottom - 116 + k * 20, { scale: 2, color: 'rgba(59,45,31,0.8)', align: 'center' }));
+  CREDITS.forEach((line, k) => drawText(g, line, W / 2, bottom - 96 + k * 20, { scale: 2, color: 'rgba(59,45,31,0.8)', align: 'center' }));
   drawActions(END_ACTIONS, END_ROW, ink);
   drawEndingEyes(top, bottom);
 }
@@ -1249,6 +1348,8 @@ function drawPause() {
   drawPanel(g, W / 2 - 380, H / 2 - 64, 760, 128, false);
   drawText(g, 'ON BREAK', W / 2, H / 2 - 40, { scale: 3, color: '#d9f6ff', align: 'center' });
   drawActions(PAUSE_ACTIONS, PAUSE_ROW, '#d9f6ff');
+  // Esc is spent by a browser leaving fullscreen (the itch embed), so name the second pause key too.
+  if (!game.padLast) drawText(g, `${keyName('KeyP')} also pauses`, W / 2, PAUSE_ROW.y + 26, { scale: 1, color: '#9fd8e6', align: 'center' });
 }
 
 function drawSettings() {
@@ -1268,12 +1369,12 @@ function drawSettings() {
       drawText(g, 'Enter >', r.x + r.w - 24, r.y + 16, { scale: 2, color: pal.hudSoft, align: 'right' });
     } else {
       const v = Math.round(s[key] * 10);
-      for (let i = 0; i < 10; i++) px(g, r.x + 250 + i * 18, r.y + 14, 7, 9, i < v ? (sel ? '#5ff2ff' : '#3aa8bd') : 'rgba(95,242,255,0.15)');
+      for (let i = 0; i < 10; i++) px(g, r.x + VOLUME_TRACK_X + i * VOLUME_PITCH, r.y + 14, 7, 9, i < v ? (sel ? '#5ff2ff' : '#3aa8bd') : 'rgba(95,242,255,0.15)');
       drawText(g, `${v * 10}%`, r.x + r.w - 24, r.y + 16, { scale: 2, color: pal.hudSoft, align: 'right' });
     }
   });
   drawText(g, game.padLast ? 'D-pad: choose and change · A: switch · B: back' : 'Up/Down: choose · Left/Right: change · Esc: back', W / 2, H - 40, { scale: 2, color: pal.hudSoft, halo: pal.halo, align: 'center' });
-  drawText(g, 'Reduced effects turns off screen flashes, rings, sparkles, shaking and flicker.', W / 2, H - 70, { scale: 1, color: pal.hudSoft, align: 'center' });
+  drawText(g, 'Reduced effects turns off screen flashes, rings, sparkles, tints, peeker jitter and flicker.', W / 2, H - 70, { scale: 1, color: pal.hudSoft, align: 'center' });
 }
 
 function drawControls() {
@@ -1289,7 +1390,8 @@ function drawControls() {
     drawText(g, CONTROL_LABELS[key], r.x + 36, r.y + 16, { scale: 2, color: sel ? '#ffffff' : pal.hudSoft });
     if (key === 'reset') return;
     const waiting = game.capturing === key;
-    const text = waiting ? (Math.floor(game.clock * 2) % 2 ? '' : 'PRESS A KEY') : keysText(binds[key], keyLayout);
+    const press = settings.get().reduced ? 'PRESS A KEY' : Math.floor(game.clock * 2) % 2 ? '' : 'PRESS A KEY';
+    const text = waiting ? press : keysText(binds[key], keyLayout);
     drawText(g, text, r.x + r.w - 24, r.y + 16, { scale: 2, color: waiting ? '#ffec5a' : pal.hudSoft, align: 'right' });
   });
   if (game.controlsNote) drawText(g, game.controlsNote, W / 2, H - 70, { scale: 1, color: pal.hudSoft, align: 'center' });
@@ -1331,7 +1433,28 @@ if (params.has('autostart')) {
 }
 requestAnimationFrame(frame);
 
-// expose for smoke tests (render: for timing the draw cost)
-globalThis.__doubleShift = game;
-game.render = render;
-game.advance = advance;
+// Expose the hooks only where a tool needs them (TOOLS, above): the GIF and media scripts load the page with it.
+if (TOOLS) {
+  globalThis.__doubleShift = game;
+  game.render = render;
+  game.advance = advance;
+  game.settings = settings; // read-only for the accessibility check (scripts/check-a11y.mjs)
+}
+
+// A throw used to leave a frozen picture with no reason. The frame loop already keeps running (frame() catches);
+// this catches everything else and says what happened in the game's own type, with the one action that helps.
+let complained = false;
+function complain(err) {
+  console.error(err);
+  if (complained) return; // one notice, not one per frame
+  complained = true;
+  try {
+    const msg = String(err?.message ?? err ?? 'unknown error');
+    g.fillStyle = 'rgba(11,16,41,0.85)';
+    g.fillRect(0, H - 34, W, 34);
+    drawText(g, `Something broke: ${msg}`.slice(0, 96), 12, H - 28, { scale: 1, color: '#ffec5a' });
+    drawText(g, 'Reload to carry on.', 12, H - 16, { scale: 1, color: '#9fd8e6' });
+  } catch { /* the canvas itself is gone: the console has it */ }
+}
+addEventListener('error', (e) => complain(e.error ?? e.message));
+addEventListener('unhandledrejection', (e) => complain(e.reason));

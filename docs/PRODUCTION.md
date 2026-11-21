@@ -23,7 +23,7 @@ Companion to [GDD.md](GDD.md) §16–17. Status as of **2026-11-17**.
 | Menus | Title, level select + saved bests, settings (volumes, reduced effects, speedrun timer, controls), act cards, pause, timecard with comment, end screen with totals and the run time |
 | Input | Keyboard (move, jump and shift rebindable) and gamepad (fixed standard mapping) |
 | Release kit | Cover, 20 screenshots and the demo GIF tool (`npm run media`, `npm run gif`); the zipped build passes the browser smoke test |
-| Tests | <!-- n:tests -->601<!-- /n --> passing (`npm test`), including fairness and input lag; `npm run audit` clean (also a CI job) |
+| Tests | <!-- n:tests -->609<!-- /n --> passing (`npm test`), including fairness and input lag; `npm run audit` clean (also a CI job) |
 | Repo / CI / itch | Public repo [FishRaposo/double-shift](https://github.com/FishRaposo/double-shift), CI green, playable on [GitHub Pages](https://fishraposo.github.io/double-shift/). **No itch page** |
 
 ## 2. Milestones
@@ -89,15 +89,15 @@ Priority: **P0** = the game doesn't ship without it. **P1** = expected in the ja
 | ID | Item | Pri |
 |---|---|---|
 | L1 | Polish pass on the built levels after playtest | P0 |
-| L2 | ~~`stairs` *Under Renovation*~~ done Nov 3, par 2 | Tier B |
-| L3 | ~~`doors` *Lost & Found*~~ done Nov 3, par 5 | Tier B |
-| L4 | ~~`stacked` *Stacked*~~ Done Nov 2, par 5 | **Tier A** (jam minimum) |
-| L5 | ~~`clockout` *Clock Out*~~ Done Nov 2, par 7, with the ending | **Tier A** (jam minimum) |
-| L6 | ~~`pillar` *Structural Integrity*, `portrait` *Employee of the Month*~~ done Nov 3, par 3 each | Tier B |
-| L12 | ~~`audit` *Night Audit* (act 4 exam, #16)~~ done Nov 3, par 5 | Tier B |
-| L13 | ~~`upside` *Mind Your Head*, `fallup` *Falling Up*, `ceiling` *Ceiling Walker*~~ done Nov 3, par 2, 4 and 4 | Done |
-| L14 | ~~`heels` *Head Over Heels* (act 5 combination, #20)~~ done Nov 3, par 7 | Tier C |
-| L15 | ~~Finale rework: Clock Out upside down, one room per act (LEVELS.md §5.3)~~ done Nov 3, par 7, `rev: 2` | Tier C (fallback: `CLOCKOUT_CLASSIC`) |
+| L2 | ~~`stairs` *Under Renovation*~~ done Nov 3, par 6 | Tier B |
+| L3 | ~~`doors` *Lost & Found*~~ done Nov 3, par 7 | Tier B |
+| L4 | ~~`stacked` *Stacked*~~ Done Nov 2, par 4 | **Tier A** (jam minimum) |
+| L5 | ~~`clockout` *Clock Out*~~ Done Nov 2, par 8, with the ending | **Tier A** (jam minimum) |
+| L6 | ~~`pillar` *Structural Integrity*, `portrait` *Employee of the Month*~~ done Nov 3, par 6 and 5 | Tier B |
+| L12 | ~~`audit` *Night Audit* (act 4 exam, #16)~~ done Nov 3, par 6 | Tier B |
+| L13 | ~~`upside` *Mind Your Head*, `fallup` *Falling Up*, `ceiling` *Ceiling Walker*~~ done Nov 3, par 3, 5 and 5 | Done |
+| L14 | ~~`heels` *Head Over Heels* (act 5 combination, #20)~~ done Nov 3, par 8 | Tier C |
+| L15 | ~~Finale rework: Clock Out upside down, one room per act (LEVELS.md §5.3)~~ done Nov 3, par 8, `rev: 3` | Tier C (fallback: `CLOCKOUT_CLASSIC`) |
 | L9 | ~~`wet` *Wet Floor*, `daywalker` *Broad Daylight*~~ done | Tier C |
 | L10 | ~~`supervisor` *Night Management*, `offset` *Floor 3.5*~~ done | Tier C |
 | L11 | *Freight* | Post |

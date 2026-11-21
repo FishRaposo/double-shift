@@ -37,6 +37,5 @@ export function stampText(diff, { short = false } = {}) {
 // Credits, under the end screen's totals (WRITING.md §8; final wording by Fish, 2026-11-03).
 export const CREDITS = [
   'Designed by Vinícius Raposo.',
-  'Built with AI assistance (Claude).',
   'Made for GitHub Game Off 2026.',
 ];

@@ -504,8 +504,14 @@ for (const { id } of LEVELS) {
 
   test(`${id}: no prank undoes a repair`, () => {
     const lvl = L[id];
+    // A job that *secures* a prank is allowed to write over that prank's cells: bolting is the undo, and the
+    // prank is switched off for good once the job is done. Any other overlap means the two fight over a tile.
+    const secures = new Set(lvl.repairs.flatMap((job) => job.fix.secures));
     const fixed = new Set(lvl.repairs.flatMap((job) => job.fix.cells.map(([layer, tx, ty]) => `${layer},${tx},${ty}`)));
-    for (const pr of lvl.pranks) for (const [layer, tx, ty] of pr.cells) assert.equal(fixed.has(`${layer},${tx},${ty}`), false, `${pr.id} would undo a repair at ${tx},${ty}`);
+    for (const pr of lvl.pranks) {
+      if (secures.has(pr.id)) continue;
+      for (const [layer, tx, ty] of pr.cells) assert.equal(fixed.has(`${layer},${tx},${ty}`), false, `${pr.id} would undo a repair at ${tx},${ty}`);
+    }
   });
 }
 

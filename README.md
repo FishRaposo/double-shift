@@ -17,7 +17,7 @@ A puzzle-platformer for [GitHub Game Off 2026](https://itch.io/jam/game-off-2026
 - **Jam:** [GitHub Game Off 2026](https://itch.io/jam/game-off-2026), Nov 1 – Dec 1, 2026. Theme: **SHIFT**.
 - **The theme, three ways:** the Shift key is the only new verb; the work shift is the story; and the building itself shifts, because the freaks move things between your shifts.
 - **Timeline:** design and code started on Nov 1, 2026, after the theme was announced. Everything in this repo was made during the jam.
-- **AI use:** the code was written with AI assistance (Claude) to the design document, and in-game text was drafted with AI assistance. Graphics and sound are drawn and synthesized by code; no image or audio models.
+- **AI use:** generative AI output is included: code and in-game text. Graphics and sound are drawn and synthesized by code; no image or audio generation was used.
 
 ## Play locally
 
@@ -78,7 +78,7 @@ scripts/        serve, check, zip for itch, media + headless checks, demo GIFs
 
 ## Tests
 
-The suite has <!-- n:tests -->601<!-- /n --> tests.
+The suite has <!-- n:tests -->609<!-- /n --> tests.
 
 ```sh
 npm test         # GDD §13.7 shift/collision edge cases, pranks and freaks, wet floor, day/night
@@ -93,7 +93,7 @@ npm run counts   # every count in the docs matches the code (-- --write fixes th
 
 ## How it was made
 
-Designed by Vinícius Raposo. Built with AI assistance (Claude) to his design document, and tested like production software.
+Designed by Vinícius Raposo, and tested like production software.
 
 ## License
 

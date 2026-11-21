@@ -854,6 +854,19 @@ test('parseLevel rejects definitions that would misbehave', () => {
   assert.throws(() => level(day, night, { freaks: [sup, sup] }), /one supervisor/);
   assert.throws(() => level(day, night, { freaks: [{ kind: 'peeker', tx: 1, ty: 0, period: 0 }] }), /period/);
   assert.throws(() => level(day, night, { freaks: [{ kind: 'peeker', tx: 1, ty: 0, period: 1, duty: 0 }] }), /duty/);
+  // added in the finalization pass: each of these used to pass validation and fail later, or silently misbehave
+  assert.throws(() => level(day, night, { freaks: [{ kind: 'lurkr', tx: 1, ty: 0, range: 1 }] }), /unknown freak kind/);
+  assert.throws(() => level(day, night, { pranks: [{ id: 'p', every: 2, set: [{ layer: 'day', x0: 0, y0: 0, ch: '#' }] }] }), /needs an onNight/);
+  assert.throws(() => level(day, night, { spawnLayer: 2 }), /spawnLayer/);
+  const stops = (n) => level(day, night, { repairs: [{ tool: { tx: 0, ty: 0, layer: 'day', name: 'T', kind: 'fuse' }, fix: { tx: 1, ty: 0, layer: 'day', name: 'F', kind: 'winch', car: { w: 1, stops: [[1, 0], [2, 0]].slice(0, n) } } }] });
+  assert.throws(() => stops(1), /at least two stops/); // carStop would divide by zero
+  assert.ok(stops(2), 'two stops is fine');
+  assert.throws(
+    () => level(day, night, { repairs: [{ tool: { tx: 0, ty: 0, layer: 'day', name: 'T', kind: 'fuse' }, fix: { tx: 1, ty: 0, layer: 'day', name: 'F', kind: 'bolt', when: { layer: 'dusk', tx: 0, ty: 0, ch: '#' } } }] }),
+    /when needs a layer/,
+  );
+  assert.throws(() => level(day, night, { repairs: [{ tool: { tx: 0, ty: 0, layer: 'day' }, fix: { tx: 1, ty: 0, layer: 'day', kind: 'bolt' } }] }), /tool needs a kind/);
+  assert.throws(() => level(day, night, { repairs: [{ tool: { tx: 0, ty: 0, layer: 'day', kind: 'fuse' }, fix: { tx: 1, ty: 0, layer: 'day' } }] }), /fix needs a kind/);
 });
 
 // ---------- upside down (TECH.md §6.5, GDD §13.7 cases 11–15) ----------
@@ -1447,4 +1460,34 @@ test('machine: a death sends the car back to the stop the checkpoint saw', () =>
 
 test("work order: a position needs a layer", () => {
   assert.throws(() => level(JOB_DAY, JOB_NIGHT, { repairs: [{ tool: { tx: 1, ty: 1 }, fix: { tx: 2, ty: 1, layer: 'day' } }] }), /needs a layer/);
+});
+
+// ---------- finalization pass: state a death restores ----------
+
+test('a death restores the facing the checkpoint was banked with', () => {
+  const day = ['..........', '..........', '..........', '.S..C..^.E', '##########'];
+  const lvl = level(day, night(day));
+  let s = walkTo(lvl, initState(lvl), 4.6); // face right into the checkpoint
+  assert.equal(s.player.facing, 1);
+  assert.equal(s.checkpoint.facing, 1, 'banked facing right');
+  // die on the rebar facing the other way: the respawn must put the facing back, or the first shift nudge
+  // after a death aims the wrong way
+  s = step(lvl, { ...s, player: { ...s.player, x: 7 * 30, facing: -1 } }, NO_INPUT);
+  assert.equal(s.deaths, 1);
+  assert.equal(s.player.facing, 1, 'respawned facing the way the checkpoint was banked');
+});
+
+test('a death on a shift tick drops that tick’s shift and machine events, not just the prank', () => {
+  // shift into night onto a spike: the shift, the prank and the car all happened on a tick the respawn undoes,
+  // so the screen must not ring, flash or play the machine's sound for them
+  const day = ['...S....C...E', '#############'];
+  const nightRows = ['...S....C.^.E', '#############'];
+  const lvl = level(day, nightRows, {
+    repairs: [{ tool: FUSE, fix: { tx: 6, ty: 0, name: 'LIFT', kind: 'winch', layer: 'night', ...LIFT.fix } }],
+  });
+  let s = walkTo(lvl, initState(lvl), 8.4);
+  const before = s;
+  s = step(lvl, { ...before, player: { ...before.player, x: 10 * 30 } }, SHIFT);
+  assert.equal(s.deaths, 1, 'the shift landed on the spike');
+  assert.deepEqual(s.events.filter((e) => e.type === 'shift' || e.type === 'machine'), [], 'undone changes are silent');
 });

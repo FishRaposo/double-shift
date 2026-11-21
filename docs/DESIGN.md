@@ -4,10 +4,10 @@ How *Double Shift* was designed and built, and why. The full design is in [GDD.m
 
 ## The constraint
 
-One month (GitHub Game Off, Nov 1 – Dec 1, 2026, theme SHIFT), one designer, no artist, no composer. Designed by Vinícius Raposo and built with AI assistance (Claude) to his design document. That meant three rules from day one:
+One month (GitHub Game Off, Nov 1 – Dec 1, 2026, theme SHIFT), one designer, no artist, no composer. Designed and built by Vinícius Raposo. That meant three rules from day one:
 
-- **No engine, no dependencies, no asset files.** Plain JavaScript modules on one 960×540 canvas. Everything on screen is drawn by code and every sound is synthesized with WebAudio. Nothing to license, nothing to load, and it runs in any browser.
-- **The game must be provable, not just playable.** With AI writing code, "it seemed to work" isn't enough. Every rule that decides whether you live, die or win has a test.
+- **No engine, no dependencies, no asset files.** Plain JavaScript modules on one 960×540 canvas. Everything on screen is drawn by code and every sound is synthesized with WebAudio. Nothing to license, nothing to load, and it runs in any current browser (Safari 15.4+, Firefox 104+, any Chrome or Edge — it uses `structuredClone`, `Array.prototype.at` and `findLastIndex`).
+- **The game must be provable, not just playable.** "It seemed to work" isn't enough. Every rule that decides whether you live, die or win has a test.
 - **Scope to the deadline.** The plan was 21 levels (five acts of four plus the finale) built in tiers, so any cut would still ship a complete game (CONTENT.md). All <!-- n:levels -->21<!-- /n --> exist.
 
 ## The decisions
@@ -28,8 +28,8 @@ One month (GitHub Game Off, Nov 1 – Dec 1, 2026, theme SHIFT), one designer, n
 
 ## The numbers
 
-- <!-- n:tests -->601<!-- /n --> automated tests (`npm test`): shift and collision edge cases, nudge/buffer, pranks, freaks, checkpoint restore, input rules, determinism, a 6000-tick fuzz for getting stuck in walls, every level at par, progress and settings saving (including blocked or corrupt storage), the art and music data (every glyph and sprite well-formed, every sound short), and **fairness**: every input a level requires has ≥ 200 ms of slack in acts 1–2 and ≥ 100 ms in acts 3–6, no respawn point sits in a patrol, no freak guards an exit.
-- `src/rules.js` is <!-- n:lines:src/rules.js -->854<!-- /n --> lines. The shell (`src/main.js`) is <!-- n:lines:src/main.js -->1337<!-- /n -->; the art is `src/art.js` (<!-- n:lines:src/art.js -->1222<!-- /n -->), `src/sprites.js` (<!-- n:lines:src/sprites.js -->745<!-- /n -->) and `src/font.js` (<!-- n:lines:src/font.js -->209<!-- /n -->); sound is `src/audio.js` (<!-- n:lines:src/audio.js -->209<!-- /n -->) and `src/music.js` (<!-- n:lines:src/music.js -->268<!-- /n -->).
+- <!-- n:tests -->609<!-- /n --> automated tests (`npm test`): shift and collision edge cases, nudge/buffer, pranks, freaks, checkpoint restore, input rules, determinism, a 6000-tick fuzz for getting stuck in walls, every level at par, progress and settings saving (including blocked or corrupt storage), the art and music data (every glyph and sprite well-formed, every sound short), and **fairness**: every input a level requires has ≥ 200 ms of slack in acts 1–2 and ≥ 100 ms in acts 3–6, no respawn point sits in a patrol, no freak guards an exit.
+- `src/rules.js` is <!-- n:lines:src/rules.js -->876<!-- /n --> lines. The shell (`src/main.js`) is <!-- n:lines:src/main.js -->1460<!-- /n -->; the art is `src/art.js` (<!-- n:lines:src/art.js -->1231<!-- /n -->), `src/sprites.js` (<!-- n:lines:src/sprites.js -->745<!-- /n -->) and `src/font.js` (<!-- n:lines:src/font.js -->209<!-- /n -->); sound is `src/audio.js` (<!-- n:lines:src/audio.js -->223<!-- /n -->) and `src/music.js` (<!-- n:lines:src/music.js -->268<!-- /n -->).
 - Drawing a frame costs under 1 ms (the static layer is cached), measured headless by `npm run media`.
 - CI runs the syntax check, level validation, the tests and the doc-count check on every push, plus the level fairness audit as its own job.
 - The demo GIFs are the tests' own scripted runs, played by the game on a fixed clock (`npm run gif`), so a GIF can't show a run the suite doesn't prove.
@@ -45,4 +45,4 @@ One month (GitHub Game Off, Nov 1 – Dec 1, 2026, theme SHIFT), one designer, n
 
 > *Double Shift* is a puzzle-platformer for GitHub Game Off. You work the day and night shift in the same building at once, and the Shift key moves you between them, even mid-jump. The twist is the freaks: every time you clock into the night they move something, and they freeze when you go back to day. So your clock-ins are a resource, and each level has a par.
 >
-> I designed it and built it with AI assistance, so I made it provable. The game rules are a pure function with no DOM and no clock, which means the tests play the real game headless: every collision edge case, every prank, and a scripted solution proving each level can be won at par. No engine, no assets. Everything is drawn and synthesized in code, and it runs in the browser.
+> I designed it and built it, so I made it provable. The game rules are a pure function with no DOM and no clock, which means the tests play the real game headless: every collision edge case, every prank, and a scripted solution proving each level can be won at par. No engine, no assets. Everything is drawn and synthesized in code, and it runs in the browser.

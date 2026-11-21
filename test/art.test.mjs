@@ -7,7 +7,7 @@ import { SPRITES, workerFrame, ART } from '../src/sprites.js';
 import { PARAMS, FREAK, TILE } from '../src/rules.js';
 import { LEVELS, ACTS } from '../src/levels.js';
 import { CREDITS } from '../src/copy.js';
-import { exitRects, checkpointRect, shouldHatch, drawPrankCells, DAY, NIGHT } from '../src/art.js';
+import { exitRects, checkpointRect, shouldHatch, drawPrankCells, PROPS, DAY, NIGHT } from '../src/art.js';
 import { parseLevel, tileAt, isSolidChar } from '../src/rules.js';
 import { memoPanel } from '../src/layout.js';
 import { keyLabel, isBindable } from '../src/keys.js';
@@ -108,7 +108,6 @@ function gameStrings() {
 test('the credits read exactly as decided (WRITING.md §8)', () => {
   assert.deepEqual(CREDITS, [
     'Designed by Vinícius Raposo.',
-    'Built with AI assistance (Claude).',
     'Made for GitHub Game Off 2026.',
   ]);
 });
@@ -206,6 +205,15 @@ test('sprites: the worker frame follows gravity when the sign is -1', () => {
   assert.equal(workerFrame(air(100), 0), 'fall');
   assert.equal(Sprites.workerFrame(air(100), 0, {}, -1), 'jump', 'moving down the screen is rising when gravity pulls up');
   assert.equal(Sprites.workerFrame(air(-100), 0, {}, -1), 'fall');
+});
+
+test('art: every prop a level names has a renderer (a typo used to render nothing, silently)', () => {
+  for (const def of LEVELS) {
+    for (const pr of [...(def.props ?? []), ...(def.decor ?? [])]) {
+      if (pr.kind === 'eyes' || pr.kind === 'watchers') continue; // drawn by drawEyes, not PROPS
+      assert.ok(PROPS[pr.kind], `${def.id}: prop ${pr.kind} at ${pr.tx},${pr.ty} has no PROPS entry`);
+    }
+  }
 });
 
 test('art: every prop in an upside-down level names its layer, and its night props hang (flip) unless they carry text', () => {

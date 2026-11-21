@@ -1968,4 +1968,4 @@ It is to create a platformer in which a single additional button meaningfully tr
 
 **Press Shift to change shifts.**
 
-*End of Game Design Document, Version 0.6.0*
+*End of Game Design Document, Version 0.8.0*

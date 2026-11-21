@@ -3,10 +3,22 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { LEVELS, ACTS, FINALE_ACT } from '../src/levels.js';
 import {
-  placeTag, hudFloor, HUD_BOTTOM, levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, actLabel, endSummary, selectClick, canvasScale, CARD, TAB, SELECT_BOUNDS,
+  placeTag, hudFloor, HUD_BOTTOM, levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, actLabel, endSummary, selectClick, canvasScale, frameDeltas, SIM_MAX, CARD, TAB, SELECT_BOUNDS,
   memoPanel, memoNear, MEMO,
 } from '../src/layout.js';
 import { wrapText, measureText } from '../src/font.js';
+
+test('frameDeltas: a slow frame is honest interface time but a clamped simulation step', () => {
+  // The act card shows for 1.6 s of real time: at 5 FPS one frame is 0.2 s of wall time, and the card must count
+  // all of it, or every menu timer runs at half speed on a slow machine (opengame-front-end, interface time).
+  const slow = frameDeltas(0.2);
+  assert.equal(slow.wall, 0.2, 'the interface sees the real frame time');
+  assert.equal(slow.sim, SIM_MAX, 'the simulation is clamped to one catch-up');
+  const fast = frameDeltas(1 / 60);
+  assert.equal(fast.wall, fast.sim, 'at a normal frame rate the two agree, so the GIF and tests are unchanged');
+  assert.deepEqual(frameDeltas(-5), { wall: 0, sim: 0 }, 'a clock that went backwards is no time at all');
+  assert.deepEqual(frameDeltas(NaN), { wall: 0, sim: 0 });
+});
 
 test('levelIndex: ids, numbers, junk', () => {
   assert.equal(levelIndex(LEVELS, 'offset'), LEVELS.findIndex((l) => l.id === 'offset'));
@@ -142,6 +154,27 @@ test('wrapText keeps every line within maxPx', () => {
   }
   assert.deepEqual(wrapText('', 100, 2), []);
   assert.deepEqual(wrapText('Short', 100, 2), ['Short']);
+});
+
+test('the title screen fits its panel and never overlaps the footnote', () => {
+  // These were both overflows found by opening a capture (opengame-front-end: "No text is cut, overlapped or off
+  // screen at any size"). The panel is 580 px wide; every line inside it must fit, and the sticky note must end
+  // above the Sticky Keys line, at the largest bindings the game can hold.
+  const PANEL_W = 580;
+  const lines = [
+    ['One building. Two shifts. One worker.', 2],
+    ['Move  ←/A  →/D      Jump  Space/W/↑', 2], // the widest default: both arrows and both letters for a direction
+    ['Change shift  Shift or K      Restart  R', 2],
+    ['Gamepad: stick move · A jump · B, X or RB shift · Start pause · X levels · Y settings', 1],
+    ['This game needs a keyboard or a gamepad.', 2],
+    ['Open it on a computer to clock in.', 2],
+    ['No sound? Press any key or click once.', 1],
+  ];
+  for (const [text, scale] of lines) assert.ok(measureText(text, scale) <= PANEL_W, `"${text}" at scale ${scale}: ${measureText(text, scale)} > ${PANEL_W}`);
+  // the bottom strip: the note sits at H-56 (its art is ~20 px tall at scale 1) and the footnote baseline at H-8
+  const NOTE_Y = 540 - 56;
+  const FOOT_Y = 540 - 8;
+  assert.ok(NOTE_Y + 24 < FOOT_Y, `the note (${NOTE_Y}+24) must end above the footnote (${FOOT_Y})`);
 });
 
 test('memos: every level has one, and its panel wraps within 360 px, on screen and below the HUD', () => {

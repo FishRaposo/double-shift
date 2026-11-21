@@ -377,7 +377,7 @@ export const LEVELS = [
       { kind: 'barrierTape', tx: 20, ty: 12, w: 2, layer: 'day' },
     ],
     note: 'One valve, two rooms. Somebody is getting wet.',
-    rev: 4,
+    rev: 5,
     repairs: [
       {
         tool: { tx: 12, ty: 10, layer: 'night', name: 'VALVE KEY', kind: 'key' },
@@ -422,7 +422,7 @@ export const LEVELS = [
       '...............####....#........',
       '...............####....#........',
       '...............####....#........',
-      '...............####....#........',
+      '.......C.......####....#........',
       '.......###.....####wwww#wwwwwwww',
       '..S............####wwww#ww#wwEww',
       '#####..........#################',
@@ -462,16 +462,23 @@ export const LEVELS = [
       { kind: 'footprints', tx: 18, ty: 13, layer: 'day' },
     ],
     note: 'Every time you clock in, something gets moved. Unless it is bolted down.',
-    rev: 3,
+    rev: 4,
     repairs: [
       {
         tool: { tx: 11, ty: 13, layer: 'night', name: 'WRENCH', kind: 'wrench' },
-        fix: { tx: 16, ty: 13, layer: 'day', name: 'CLAMP', kind: 'bolt', goal: 'BOLT THE PLANK DOWN', target: 'PLANK', secures: ['plank'], link: [[16, 12], [20, 12]] },
+        // The plank walks on the first clock-in, in plain sight; the bolt puts it back. Bolting it before it moves
+        // would mean the level never shows the thing it is about.
+        fix: {
+          tx: 16, ty: 13, layer: 'day', name: 'CLAMP', kind: 'bolt', goal: 'BOLT THE PLANK DOWN', target: 'PLANK', secures: ['plank'],
+          link: [[16, 12], [20, 12]],
+          // it restores the plank the prank took: the bolt is the undo, which is why `secures` names that prank
+          set: [{ layer: 'night', x0: 20, x1: 26, y0: 14, ch: '#' }],
+        },
       },
     ],
     skins: [{ kind: 'deck', tx: 7, ty: 14, w: 8, layer: 'night' }, { kind: 'deck', tx: 20, ty: 14, w: 7, layer: 'night' }],
     min: 3,
-    pranks: [{ id: 'plank', onNight: 2, tell: { tx: 23, ty: 13, text: 'MINE NOW' }, set: [{ layer: 'night', x0: 20, x1: 26, y0: 14, ch: '.' }] }],
+    pranks: [{ id: 'plank', onNight: 1, tell: { tx: 23, ty: 13, text: 'MINE NOW' }, set: [{ layer: 'night', x0: 20, x1: 26, y0: 14, ch: '.' }] }],
     day: [
       '................................',
       '................................',
@@ -596,7 +603,7 @@ export const LEVELS = [
       { kind: 'sign', tx: 23, ty: 5, text: 'TOP FLOOR', style: 'paper' },
     ],
     note: 'The hoist moves one stop every time you clock in.',
-    rev: 3,
+    rev: 4,
     freaks: [{ kind: 'lurker', tx: 11, ty: 13, range: 2, speed: 50 }],
     repairs: [
       {
@@ -649,7 +656,7 @@ export const LEVELS = [
       '...........#####.....###########',
       '...........#####.....###########',
       '...........#####.....###########',
-      '.....................###########',
+      '..................C..###########',
       '################################',
       '###################..###########',
       '###################..###########',
@@ -665,7 +672,7 @@ export const LEVELS = [
       { kind: 'sign', tx: 5, ty: 9, text: 'LOST & FOUND', style: 'paper' },
     ],
     note: 'They swap the doors every night. Bolt them when you like where they are.',
-    rev: 3,
+    rev: 4,
     freaks: [{ kind: 'lurker', tx: 28, ty: 13, range: 1, speed: 45 }],
     repairs: [
       {
@@ -722,7 +729,7 @@ export const LEVELS = [
       '............................###.',
       '............................###.',
       '...###......................###.',
-      '.S........................#....E',
+      '.S............C...........#....E',
       '######.......#####.......#######',
       '######.......#####.......#######',
       '######.......#####.......#######',

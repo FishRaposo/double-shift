@@ -258,7 +258,7 @@ All seven milestone PRs landed by Nov 3 in PR #1: foundations (T17, T18, T14, T1
 - Check the act card and level select screenshots.
 
 ### T14 · Credits *(✅ built Nov 3)*
-- WRITING.md §8: "Designed by Vinícius Raposo. Built with AI assistance (Claude). Made for GitHub Game Off 2026." No design-partner line (Fish, 2026-11-03: the art is all code-drawn).
+- WRITING.md §8: "Designed by Vinícius Raposo. Made for GitHub Game Off 2026." No design-partner line (Fish, 2026-11-03: the art is all code-drawn).
 - `CREDITS` lives in `src/copy.js`; the end screen draws it under the per-act totals (T18). The font test scans `copy.js`, so the `í` glyph is required. Mark WRITING §8 ✅ and CONTENT TXT-7.
 
 ### T15 · Sound hooks *(after T1)* · ✅ built 2026-11-03

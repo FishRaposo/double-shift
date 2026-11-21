@@ -179,7 +179,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 
 ### 5.2 Work orders *(built Nov 5)*
 
-- **Tools** are 11×11 sprites (`tool-*` in `src/sprites.js`): fuse, wrench, bulb, oil, tape, card. On the other shift they're dashed outlines. The worker carries the tool in hand.
+- **Tools** are 11×11 sprites (`tool-*` in `src/sprites.js`): fuse, wrench, bulb, oil, tape, card, key, ratchet, sandbag, crank, grease, battery and hammer. On the other shift they're dashed outlines. The worker carries the tool in hand.
 - **Fixtures** (`fix-*`) have a `broken` and a `fixed` frame that differ in silhouette: fuse box, pipe, light, bolt, hinge, cable, clock, valve, winch. A test enforces it.
 - **The link:** a broken dead line from the fixture to what it drives, a live moving line once repaired (`drawJobLink`).
 - **Machines** are skins over solid tiles: roller shutter, scaffold deck, the big portrait, and the hoist car (`drawCar`) with its rails and every stop marked. The next stop is outlined like a prank.
@@ -276,7 +276,7 @@ The screen should read in this order: **worker → what's solid now → hazards 
 | Act cards ✅ (A10) | 1.6 s split day/night card: ACT n (scale 3, yellow), the act name (scale 6, haloed), one line (WRITING.md §2.1); for the finale (act 6): FINALE, then the level's name. Any key or click skips; a two-chord sting. Shown the first time an act starts in a run. |
 | Timecard comment ✅ (A8) | One line under the stamp, scale 2 when it fits, else 1 (`timecardComment` in `src/copy.js`, WRITING.md §7). |
 | End screen totals ✅ (A8) | Paper panel with one row per act (clock-ins / par over the levels played) and total clock-ins vs. total par. The ending: a dozen pairs of eyes open one by one in the margins, then a lurker rises out of the bottom margin (scale 3) and waves an 8×10-art-px hand with a cyan rim (the `hand` sprite), then "See you tonight." |
-| Credits ✅ | Three lines in the pixel font (scale 2, soft ink) on the end screen's paper panel, under the totals (WRITING.md §8). |
+| Credits ✅ | Two lines in the pixel font (scale 2, soft ink) on the end screen's paper panel, under the totals (WRITING.md §8). |
 | Freeze cue ✅ | On a shift to day, frozen freak outlines flash white once (0.15 s), with a scratch sound. |
 | Checkpoint ping ✅ | The clock face grows by 2 art px and settles over 0.2 s when taken. |
 
@@ -290,5 +290,7 @@ Effects must stay readable under rapid shifting: no stacking full-screen flashes
 | Screenshots ✅ | 960×540 (native) | `npm run media`: 20 shots. Three come from the scripted runs, for moments real keys can't time: a repair as it lands (Mid-Air, 0.2 s after it), a prank as it lands (Lost & Found, 0.14 s after the plank moves) and the flip (Mind Your Head). The rest: title, level 1 day/night, timecard, act card, Inventory day/night, Night Watch night/day, level select, end, Stacked night, Clock Out day/night, Mind Your Head night, settings, controls. Upload order: itch/page.md §3 |
 | Demo GIF (tool ✅) | 480×270 (`--full` 960×540), the run plus 1.5 s of timecard, ≤ 3 MB; first in the screenshot list | `npm run gif -- <id>`: one level's scripted run, played by the game. Chosen by Fish: `upside` (the flip). Other candidates: `doors` (a prank every clock-in), `watch` (frozen freaks). |
 | Page theme | Background `#0b1029`, text `#d9f6ff`, links `#5ff2ff` | Matches the night palette; embed background `#0b1029` (same as `index.html`) |
+| Link preview (share card) ✅ | **1200×630** | `tools/share.html?shot=share` → `icons/share-card.png`, rendered by `npm run media`. A frame of the game: the split day/night seam, the worker mid-jump on it, the MINE note, a lurker, the logo, the pitch and the address. Wired into `index.html` as `og:image` and `twitter:image`. Committed, because Pages serves it. |
+| Icons ✅ | 32×32, 180×180 | `tools/share.html?shot=favicon` and `?shot=apple-touch-icon` → `icons/favicon.png` and `icons/apple-touch-icon.png`: the worker's idle frame on the night sky, drawn at an integer art-pixel scale. Committed, and shipped in the zip. |
 
 Capture with `npm run media` (headless Edge/Chrome: cover, screenshots, gallery, audio and draw-cost checks) and `npm run gif -- <id>` (demo GIFs, deterministic).

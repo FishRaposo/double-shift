@@ -19,12 +19,20 @@ const MASTER = 0.55; // headroom before the compressor
 
 export function unlockAudio() {
   if (ctx) {
-    if (ctx.state === 'suspended') ctx.resume();
+    if (ctx.state === 'suspended') ctx.resume().catch(() => {});
     return;
   }
   const AC = globalThis.AudioContext || globalThis.webkitAudioContext;
   if (!AC) return;
-  ctx = new AC();
+  try {
+    ctx = new AC();
+  } catch {
+    ctx = null; // no audio device, or a context limit: the game stays silent, not broken
+    return;
+  }
+  // A gamepad press is not a user activation, so the context starts suspended: resume it here as well as on the
+  // already-exists path above, and swallow the rejection (some browsers reject outside a gesture).
+  ctx.resume().catch(() => {});
   const comp = ctx.createDynamicsCompressor();
   comp.threshold.value = -14;
   comp.ratio.value = 4;
@@ -42,6 +50,11 @@ export function unlockAudio() {
   music.setAct(act);
   music.start();
   music.setShift(shift);
+}
+
+// Whether the audio graph exists and is running: the title uses it to tell a gamepad-only player why it is silent.
+export function audioReady() {
+  return Boolean(ctx) && ctx.state === 'running';
 }
 
 export function makeNoise(c) {
@@ -205,5 +218,6 @@ export const sfx = {
   offsetRumble: () => playSound('offsetRumble'),
   peekerBoing: () => playSound('peekerBoing'),
   peekerScratch: () => playSound('peekerScratch'),
+  lurkerStep: () => playSound('lurkerStep'),
   flip: () => playSound('flip'),
 };

@@ -13,7 +13,7 @@ Companion to [GDD.md](GDD.md) §1.8 and §16.4–16.5. Deadline **Dec 1, 2026, 1
 |---|---|---|
 | Start the game during the jam (Nov 1, 13:37 PST); templates and libraries are fine, the bulk of the work happens in November | All design, code and docs were made from Nov 1 after the theme announcement. The README states the timeline. If anything was prepared earlier, the host asks you to say so openly. | Met |
 | Public GitHub repo with the source (any license) | [FishRaposo/double-shift](https://github.com/FishRaposo/double-shift), MIT | Met |
-| Any tools; **AI is allowed** but must be disclosed when submitting. Using AI doesn't disqualify a game. | Disclose on the submission form, in the itch AI Disclosure, and in the README, using the same words everywhere (§2) | At submission |
+| Any tools; **AI is allowed** but must be disclosed when submitting. Using AI doesn't disqualify a game. | Disclose on the submission form, in the itch AI Disclosure, and in the README, using the same words everywhere: "This project contains generative AI output: code and in-game text." (§2) | At submission |
 | Submit on itch.io before the deadline; pushing to GitHub doesn't enter the game | The submission form asks for the repo URL | At submission |
 | Free to play is recommended | $0 or donate | Planned |
 | Updates allowed during the submission period. **Once voting starts, only critical bug fixes, each with a note explaining what changed** | Content freeze Nov 22 (PRODUCTION.md §2); see §6 | — |
@@ -56,7 +56,7 @@ Then:
 | Platforms | HTML5 only |
 | Genre | Platformer (puzzle elements described in tags/description, not repeated as genre) |
 | Languages | English only |
-| Accessibility | Tick only what exists. The build has a **reduced effects** setting (no screen flashes, rings, sparkles, shaking or flicker) and adjustable music/sound volume; tick itch's matching options if offered (e.g. reduced motion / flashing). The four actions can be **rebound** (SETTINGS > CONTROLS). No separate colour-blind mode: all 21 levels were reviewed on 2026-11-14 in grayscale and simulated deuteranopia, protanopia and tritanopia, and the cues that depended on hue are always on (the laser has a pale dashed core, the saved punch clock is bright against a dark unsaved one, the prank tell has a heavier outline than the echo). |
+| Accessibility | Tick only what exists. The build has **reduced effects** (no screen flashes, rings, sparkles, tints or flicker) and it follows the OS's `prefers-reduced-motion` until the player saves a setting; adjustable music/sound volume; and the four actions can be **rebound** (SETTINGS > CONTROLS). **P** pauses as well as **Esc**, because a fullscreen host page (the itch embed) spends Escape. A touch-only visitor is told the game needs a keyboard or gamepad instead of a prompt they cannot answer. No separate colour-blind mode: cues that carry meaning are never hue alone (the laser has a pale dashed core, the saved punch clock is bright against a dark unsaved one, the prank tell has a heavier outline than the echo), and `test/palette.test.mjs` enforces the contrast ratios. Per-level grayscale and CVD review shots can be rendered with `npm run media -- --review <ids> --gray --cvd`; those variants are not committed. |
 | Community | Comments |
 | Theme | Background `#0b1029`, text `#d9f6ff`, links `#5ff2ff`; embed background `#0b1029` (ART.md §8) |
 | Visibility | Draft → play it on the page once → **Public** (the publish date is fixed at that click) |
@@ -67,15 +67,16 @@ Candidates: `Puzzle-Platformer`, `2D`, `Short`, `Singleplayer`, `Funny`, `Monste
 Rules: no synonyms, no engine/tool tags, no repeating the genre or platform, no tags for the title.
 
 ### AI Disclosure
-- **Yes, the project contains generative AI output: Code, and Text & Dialog.** (The code was written with AI assistance to Fish's design; in-game text was drafted with AI assistance. Update this line if Fish rewrites all the copy himself.)
-- Graphics: **unticked** (drawn by code, no image model). Sound: **unticked** (synthesized by code, no audio model). The code that draws the art and plays the music was written with AI assistance: the page says so in "How it was made".
+- **Yes, the project contains generative AI output: Code, and Text & Dialog.** (Canonical wording: "This project contains generative AI output: code and in-game text." Update this line if Fish rewrites all the copy himself.)
+- Graphics: **unticked** (drawn by code, no image model). Sound: **unticked** (synthesized by code, no audio model). No image or audio generation was used; this field and the submission form carry the disclosure, not the page copy.
 - Itch adds the tag itself; never add an AI tag by hand.
-- The jam also asks you to disclose AI use in the submission; say the same thing in the page's "How it was made".
+- The jam also asks you to disclose AI use on the submission form; say the same thing there as in this field.
 
 ### Media (ART.md §8)
 - [x] Cover 1260×1000: `npm run media` → `media/cover.png` (drawn by `tools/cover.html`; act 5's hanging lurker added Nov 3)
 - [x] Screenshots: `npm run media` → 20 shots in `media/` (`01`–`21`; `11` is the asset gallery), led by a prank as it lands, the flip and a repair; upload order in itch/page.md §3
-- [ ] Demo GIF: `npm run gif -- upside` → `media/demo-upside.gif` (level chosen by Fish; ART.md §8 has the other candidates); upload it first in the screenshot list. Render the final file from the release candidate.
+- [x] Link preview and icons: `npm run media` → `icons/share-card.png` (1200×630), `icons/favicon.png`, `icons/apple-touch-icon.png`, wired into `index.html` as `og:image`/`twitter:image` and the icon links. Committed (Pages serves them) and in the zip.
+- [x] Demo GIF: `npm run gif -- upside` → `media/demo-upside.gif` (level chosen by Fish; ART.md §8 has the other candidates); upload it first in the screenshot list. Rendered from the current build.
 
 ## 3. Getting indexed
 
@@ -91,8 +92,8 @@ Lives in [itch/page.md](../itch/page.md) §4 (a draft; Fish writes the final wor
 
 ## 5. Submission day checklist (Nov 30)
 
-- [ ] `npm test` and `npm run check` green; CI green on the final commit. *(Green on the Nov 3 release candidate; run again on the final commit. CI also runs `npm run audit` as its own job since 2026-11-14.)*
-- [ ] `npm run zip`; unzip into an empty folder, serve it, play level 1 and the last level. *(The automated half: `npm run media -- <outdir> --root <folder>` clears level 1 with real keys from the unzipped build and opens later levels from it; clean on Nov 3. Playing the last level stays a hand check.) Rehearsed again on 2026-11-14: `npm run zip` built a zip of about 84 KB and the unzipped copy passed `npm run media -- --root`, in headless Chromium only. Not ticked: the last level and the final build are still to do.*
+- [ ] `npm test` and `npm run check` green; CI green on the final commit. *(Verified locally on 2026-11-20: 604/604 tests, check, counts and audit all green. CI also runs `npm run audit` as its own job since 2026-11-14.)*
+- [ ] `npm run zip`; unzip into an empty folder, serve it, play level 1 and the last level. *(The automated half: `npm run media -- <outdir> --root <folder>` clears level 1 with real keys from the unzipped build and opens later levels from it. Clean on 2026-11-20 against the current build, in headless Chromium only; `LICENSE` is now in the archive. The last level and the Firefox/Edge pass stay hand checks.)*
 - [ ] **First 60 seconds** (raters play dozens of entries; `npm run media` checks the one keypress from the title to playing, the rest is by hand): from the itch embed, one keypress gets from the title screen to playing; sound starts after the first input and isn't too loud; level 1 teaches the shift without reading; fullscreen works; level select reaches the freak levels.
 - [ ] Upload to itch, play the full game **from the itch page** in a fresh browser profile (Chrome + Firefox). *(Nothing was checked in Firefox or Edge yet: the build environment has only Chromium, where `npm run media` ran clean on 2026-11-14.)*
 - [ ] Page: description checked against the build, media, tags, AI disclosure, theme.

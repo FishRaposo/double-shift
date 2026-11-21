@@ -1,6 +1,7 @@
 // The theme's note data: whole bars, both arrangements the same length, notes in range, night = minor mode.
 import test from 'node:test';
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { MELODY, HALF_BAR_CHORDS, LOOP_STEPS, STEPS_PER_BAR, BARS, bassNote, chordNotes, minorize, LOOP_SECONDS, BPM, layersFor, INVERTED, thirdAbove } from '../src/music.js';
 import { SOUNDS } from '../src/audio.js';
 
@@ -30,6 +31,17 @@ test('night is the same melody in the minor mode: only E and A move, down a semi
     const pc = n % 12;
     assert.equal(m, pc === 4 || pc === 9 ? n - 1 : n);
   }
+});
+
+test('every sound effect is reachable from a call site (a built sound nobody plays is dead weight)', () => {
+  // The registry in src/audio.js defines every sound; the wrappers beside it (`sfx.*`) are the call sites, and the
+  // shell, rules and levels trigger them. A name counts when any of those files mentions it, so a sound is one line
+  // from being routed and a dead one is visible. docs/AUDIO.md §4 lists the few deliberately left for later.
+  const src = ['src/main.js', 'src/rules.js', 'src/levels.js', 'src/audio.js']
+    .map((f) => readFileSync(f, 'utf8').replace(/^\s*\/\/.*$/gm, '')) // comments don't count as call sites
+    .join('\n');
+  const unwired = Object.keys(SOUNDS).filter((name) => !src.includes(`'${name}'`));
+  assert.deepEqual(unwired, [], 'every SOUNDS entry is reachable from the build');
 });
 
 test('every sound effect is short (≤ 0.25 s plus delay) and not too loud', () => {

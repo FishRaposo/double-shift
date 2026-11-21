@@ -4,7 +4,7 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as of 2026-11-05 (after t
 
 **At a glance**
 - **The one rule:** `src/rules.js` decides everything that matters; the screen only draws it (§2).
-- `npm start` to play, `npm test` (<!-- n:tests -->601<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
+- `npm start` to play, `npm test` (<!-- n:tests -->609<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
 - Add a level: grids in `src/levels.js` + a `SOLUTIONS` entry in `test/solutions.mjs` (§6; the full recipe is BUILD.md §2.1).
 - The five added mechanics (wet floor, day-walker, supervisor, offset layer, Upside Down) are built — §6.5 documents them.
 
@@ -33,19 +33,21 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as of 2026-11-05 (after t
 | `src/layout.js` | Pure shell logic: `levelIndex` (`?level=` by id or position), `canvasScale` (whole device pixels per canvas pixel unless that wastes > 15 % of the window), the level select layout (`actRows`, `cardRect`, `tabRect`, `detailRect`, `moveSelect`, `selectClick`, `actLabel`), the end screen's per-act `endSummary` (with the run's total `time` for the speedrun timer), and memos (`memoNear`: within 2 tiles; `memoPanel`: the wrapped text's panel, ≤ 360 px or the memo's `w`, below the HUD, on screen) | No |
 | `src/music.js` | The theme as note data (pure), `scheduleStep`, `createMusic` (look-ahead player with day/night crossfade) | Data no; engine yes |
 | `src/save.js` | Best result per level in localStorage (key `double-shift.progress.v1`), kept per level revision (`rev` 1 under the id, a rework under `id#rev`): `best(id, rev)` reads only that revision's, so a rework starts fresh and shipping the old version again finds its bests; `cleared(id)` counts any revision, so a rework never relocks anything; unlock rule for level select. Settings (`createSettings`): `get()` returns a copy, `binds()` the stored bindings without one (input reads them every tick). Storage is passed in; blocked or corrupt storage falls back to memory | No (takes a storage object) |
-| `src/audio.js` | Mix bus (music + SFX → master → compressor), `voice()`, every SFX as data in `SOUNDS`, `sfx.*`, volumes, music shift/menu hooks | Yes (AudioContext) |
+| `src/skins.js` | Which art a moved object draws over its tiles: `skinPlan` (what a level's skins look like in a given prank/repair state), `checkpointHangs`, `exitPose`, `lightCordFrom`. Pure | No |
+| `src/audio.js` | Mix bus (music + SFX → master → compressor), `voice()`, every SFX as data in `SOUNDS`, `sfx.*`, volumes, music shift/menu hooks, `unlockAudio`/`audioReady` | Yes (AudioContext) |
 | `tools/gallery.html` | Every asset on both palettes, audio board, offline loudness check (`window.__audioCheck`) | Yes |
 | `tools/cover.html` | The itch cover, drawn with the game's sprites, tiles and font | Yes |
 | `test/*.test.mjs` | `node --test` suites against the real rules | No |
 | `test/helpers.mjs` | `level()`, `stepN()`, `place()`, `play(level, policy)`; `patrolBoxes`/`respawnSpots` for the fairness test (respawn spots in every prank state, from `overridesAfter` in rules.js); `inputsFrom(policy)` turns a policy into input frames for `play()`, the audit and the demo GIF | No |
 | `scripts/serve.mjs` | Zero-dependency local server, no caching (`npm start` opens the browser; `npm run serve` doesn't). `--port 0` takes any free port and announces it. `play.bat` wraps it for double-click on Windows. | — |
 | `scripts/check.mjs` | Syntax-check modules, validate levels | — |
+| `scripts/audit-levels.mjs` | `npm run audit`: per level, the timing slack of every required input (fails under the act floor), input-lag tolerance, and a random search for wins below the fewest (`min`) or without shifting. CI runs it as its own job | — |
 | `scripts/counts.mjs` | `npm run counts`: every `<!-- n:KEY -->` count in the docs matches the code (`-- --write` rewrites them; `-- --tap FILE` reads the test count from a saved TAP run, which is how CI runs the suite only once) | — |
 | `scripts/cdp.mjs` | Headless Edge/Chrome over the DevTools protocol (no dependencies): serves the game and starts the browser on a throwaway profile, each on a free port the OS picks (so a stale server can't answer in their place); `evaluate`/`open`; collects page errors. Shared by `media.mjs` and `gif.mjs`. | — |
 | `scripts/media.mjs` | `npm run media`: saves the cover, screenshots and gallery to `media/`; fails if level 1 can't be cleared with real keys, the page logs an error, the audio clips, or a frame takes > 8 ms to draw. | — |
 | `scripts/gif.mjs` | `npm run gif -- <id>`: a level's scripted run (`test/solutions.mjs`) played by the game on a fixed clock (`game.advance`, `game.render`; requestAnimationFrame off) → `media/demo-<id>.gif`, the same bytes every time. Checks the page's run against the tests' and decodes the file back in Chromium. | — |
 | `scripts/gif-encode.mjs` | The GIF89a encoder: `downscale`, `quantize` (one palette: exact up to 256 colors, else the 256 most frequent), `encodeGif` (LZW, looping, each frame stores only what changed) | No |
-| `scripts/zip.mjs` | Builds `double-shift-web.zip` for itch | — |
+| `scripts/zip.mjs` | Builds `double-shift-web.zip` for itch: `index.html`, `src/` and `LICENSE` at the archive root | — |
 
 **The one architectural rule:** the screen only draws what `rules.js` decided. Anything that affects whether the player lives, dies, wins or where they are belongs in `rules.js` and gets a test.
 
@@ -53,6 +55,7 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as of 2026-11-05 (after t
 
 ### 3.1 Loop
 - Fixed timestep `DT = 1/120` s. `main.js` accumulates real time and calls `step()` up to 12 times per frame.
+- **Two deltas.** `frameDeltas()` in `src/layout.js` splits each frame into `wall` (the real frame time) and `sim` (clamped to 0.1 s). `advance(sim, next, wall)` runs the interface on `wall` — `game.clock`, `screenTime`, the act card's 1.6 s, the note strip's 5 s, the per-act `spent` totals and the fx decay — and only the fixed-step accumulator on `sim`. A slow machine therefore cannot stretch a menu timer or a logged duration; a stall costs one catch-up tick, not a spiral. Callers that pass one argument (the GIF and the browser tools) run on a fixed clock, so `wall === sim` there and determinism is untouched.
 - `step()` clones the previous state (`structuredClone`), so states are immutable snapshots. That's what makes determinism tests trivial.
 
 ### 3.2 Order of operations inside `step()`
@@ -229,10 +232,11 @@ The five added mechanics from [CONTENT.md](CONTENT.md) §3 — all built, tested
 
 | Command | What it covers |
 |---|---|
-| `npm test` | <!-- n:tests -->601<!-- /n --> tests: GDD §13.7 cases 1–15, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, Upside Down rules (flip, gravity sign, hanging, jump and cut, nudge order, coyote across a flip, hazard band, grid edges, checkpoints, fuzz), every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
+| `npm test` | <!-- n:tests -->609<!-- /n --> tests: GDD §13.7 cases 1–15, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, Upside Down rules (flip, gravity sign, hanging, jump and cut, nudge order, coyote across a flip, hazard band, grid edges, checkpoints, fuzz), every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
 | `npm run check` | Every module parses; every level validates |
 | `npm run audit` | Per level: the slack of every required shift and jump (fails under the act floor), input-lag tolerance 0–150 ms, and a random search for wins below the fewest (`min`) or without shifting (`scripts/audit-levels.mjs`). |
-| `npm run media` | Real browser (headless Edge/Chrome, no dependencies): plays level 1 with key presses, fails on page errors, a wrong outcome, audio clipping or a slow frame; saves the cover, screenshots and gallery. |
+| `npm run media` | Real browser (headless Edge/Chrome, no dependencies): plays level 1 with key presses, fails on page errors, a wrong outcome, audio clipping or a slow frame; saves the cover, screenshots, share card, icons and gallery. |
+| `npm run shell` | Real browser: `prefers-reduced-motion` seeding reduced effects (and an explicit save winning), the touch-only pointer probe, **P** pausing beside Esc, and the act card lasting ~1.6 s of real time under a 20× CPU throttle (the two-delta loop). |
 | `npm run gif -- <id>` | A demo GIF of the level's scripted run; fails if the page's run differs from the tests' (shifts, deaths, time, or the exit showing at the wrong moment of the GIF), Chromium decodes a frame differently, or the file stays over 3 MB. |
 
 Test style: build tiny ASCII levels with `level(day, night, extra)` and assert on state. Policies for `play()` read state like a player would (position, layer, `freakClock`), so they survive small tuning changes better than frame-exact scripts.
@@ -275,12 +279,12 @@ GitHub Pages serves `main` (root) at <https://fishraposo.github.io/double-shift/
 ## 9. Debug
 
 - `?level=<id>` start at a level by id (`?level=offset`), or `?level=N` by 1-based position (`levelIndex` in `src/layout.js`; an id survives level insertions, a position doesn't); `?autostart` skip the title; `?debug` overlay (hitbox, position, velocity, grounding, coyote, layer, pending shift). Toggle overlay with `` ` ``.
-- `globalThis.__doubleShift` exposes the game object (screen, state, results) for smoke tests and console poking, plus `render()` and `advance(seconds, next)`: one frame of game time with inputs from `next(state)` (the demo GIF drives the game with it).
+- `globalThis.__doubleShift` exposes the game object (screen, state, results) for smoke tests and console poking, plus `render()` and `advance(sim, next, wall)`: one frame of game time with inputs from `next(state)` (the demo GIF drives the game with it). It is attached only when the URL has `?level=`, `?debug` or `?tools`, so a player's console never sees it; `npm run media` opens its screenshot pages with `?tools`.
 - `M` mutes.
 
 ## 10. Build for itch
 
-`npm run zip` → `double-shift-web.zip` with `index.html` and `src/` at the archive root (Windows uses `Compress-Archive`). Smoke-test the unzipped folder before uploading. Rebuild after any change to `index.html` or `src/`.
+`npm run zip` → `double-shift-web.zip` with `index.html`, `src/` and `LICENSE` at the archive root (Windows uses the system `tar.exe`; GNU tar and `Compress-Archive` both write entries a non-Windows unpacker can misread). Smoke-test the unzipped folder before uploading. Rebuild after any change to `index.html`, `src/` or `LICENSE`.
 
 ## 11. Known limitations
 

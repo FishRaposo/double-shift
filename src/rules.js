@@ -33,6 +33,9 @@ export const PARAMS = Object.freeze({
 export const DAY = 0;
 export const NIGHT = 1;
 
+// The visible freaks (src/art.js drawFreak draws each kind). `decor` eyes are scenery, not freaks.
+export const FREAK_KINDS = Object.freeze(['lurker', 'peeker', 'squatter', 'supervisor', 'daywalker']);
+
 // Skins are object art drawn over ordinary solid tiles (src/skins.js decides which); the rules only validate
 // them. Default sizes in tiles: a door is 1×2, a pillar 1×4, a portrait 3×2; the door pile is 2 wide and at most
 // h (3) doors high.
@@ -75,10 +78,23 @@ function parseRepair(def, job) {
     if (layer !== 'day' && layer !== 'night') throw new Error(`${def.name}: the repair's ${what} needs a layer, 'day' or 'night'`);
     return { ...rest, layer: layer === 'day' ? DAY : NIGHT };
   };
+  // Kind and car checks come after the layer check, so a missing layer still reports as a missing layer.
+  const kinds = () => {
+    if (!job.tool.kind) throw new Error(`${def.name}: the repair's tool needs a kind`);
+    if (job.fix.kind === undefined) throw new Error(`${def.name}: the repair's fix needs a kind`);
+    if (job.fix.car && !(Array.isArray(job.fix.car.stops) && job.fix.car.stops.length >= 2)) {
+      throw new Error(`${def.name}: a car needs at least two stops`); // one stop would divide by zero in carStop
+    }
+    for (const s of job.fix.spots ?? [job.fix]) {
+      if (s.when && s.when.layer !== 'day' && s.when.layer !== 'night') throw new Error(`${def.name}: a repair's when needs a layer, 'day' or 'night'`);
+    }
+  };
+  const tool = at(job.tool, 'tool');
+  kinds();
   const spot = (s) => { const f = at(s, 'fix'); return { ...f, cells: expandCells(f.set ?? []), link: f.link ?? [] }; };
   const spots = (job.fix.spots ?? [job.fix]).map((s) => spot({ ...job.fix, spots: undefined, ...s }));
   const fix = { ...spots[0], cells: spots.flatMap((s) => s.cells), secures: spots.flatMap((s) => s.secures ?? []) };
-  return { tool: at(job.tool, 'tool'), fix, spots, undoes: !!job.fix.swap || spots.length > 1 };
+  return { tool, fix, spots, undoes: !!job.fix.swap || spots.length > 1 };
 }
 
 // Legend: '#' solid, '^' hazard, 'w' water (a hazard filling its tile), 'S' spawn, 'E' exit, 'C' checkpoint, '.' empty.
@@ -95,10 +111,14 @@ export function parseLevel(def) {
   const sups = (def.freaks ?? []).filter((f) => f.kind === 'supervisor');
   if (sups.length > 1) throw new Error(`${def.name}: one supervisor per level`);
   if (def.rev !== undefined && !(Number.isInteger(def.rev) && def.rev >= 1)) throw new Error(`${def.name}: rev must be a whole number from 1`);
+  if (def.spawnLayer !== undefined && def.spawnLayer !== DAY && def.spawnLayer !== NIGHT) throw new Error(`${def.name}: spawnLayer must be DAY (0) or NIGHT (1)`);
   for (const pr of def.pranks ?? []) {
     if (pr.every !== undefined && !(Number.isInteger(pr.every) && pr.every >= 1)) throw new Error(`${def.name}: prank ${pr.id} every must be a whole number from 1`);
+    // every > 0 with no onNight leaves nextFiring() doing arithmetic on undefined: the tell reads "IN NaN NIGHTS"
+    if (pr.every !== undefined && !Number.isInteger(pr.onNight)) throw new Error(`${def.name}: prank ${pr.id} needs an onNight (a whole number) to repeat`);
   }
   for (const f of def.freaks ?? []) {
+    if (!FREAK_KINDS.includes(f.kind)) throw new Error(`${def.name}: unknown freak kind ${JSON.stringify(f.kind)}`);
     if (f.period !== undefined && !(f.period > 0)) throw new Error(`${def.name}: ${f.kind} period must be > 0`);
     if (f.duty !== undefined && !(f.duty > 0 && f.duty <= 1)) throw new Error(`${def.name}: ${f.kind} duty must be in (0, 1]`);
   }
@@ -709,11 +729,13 @@ function die(level, s, cause, by) {
   p.coyote = 0;
   p.jumpBuf = 0;
   p.rising = false;
+  p.facing = s.checkpoint.facing ?? p.facing; // the shift nudge aims by facing, so it has to come back too
   s.layer = s.checkpoint.layer;
   // GDD §9.3: level objects return to the checkpoint's state, so a prank can never softlock a run
   // a prank fired by this tick's shift went with the night entry it came from: the respawn undoes it, so the
-  // screen must not celebrate it (no giggle, no sparkles)
-  if (s.checkpoint.nightEntries < s.nightEntries) s.events = s.events.filter((e) => e.type !== 'prank');
+  // screen must not celebrate it (no giggle, no sparkles). The shift and car events from that same tick are just
+  // as undone, so their sound and rings must not play either.
+  if (s.checkpoint.nightEntries < s.nightEntries) s.events = s.events.filter((e) => e.type !== 'prank' && e.type !== 'shift' && e.type !== 'machine');
   s.overrides = s.checkpoint.overrides;
   s.nightEntries = s.checkpoint.nightEntries;
   s.repairs = s.checkpoint.repairs;
@@ -836,7 +858,7 @@ export function step(level, prev, input = NO_INPUT, dt = DT) {
       const there = here ? null : standableSpot(level, 1 - s.layer, c.tx, c.ty, s.overrides);
       if (!here && !there) continue;
       const layer = here ? s.layer : 1 - s.layer;
-      s.checkpoint = { ...(here ?? there), layer, id: c.id, overrides: s.overrides, nightEntries: s.nightEntries, repairs: s.repairs };
+      s.checkpoint = { ...(here ?? there), layer, facing: p.facing, id: c.id, overrides: s.overrides, nightEntries: s.nightEntries, repairs: s.repairs };
       s.events.push({ type: 'checkpoint', id: c.id });
     }
   }

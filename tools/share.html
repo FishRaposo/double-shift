@@ -1,0 +1,114 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Double Shift share card + icons</title>
+<style>html, body { margin: 0; background: #0b1029; } canvas { display: block; image-rendering: pixelated; }</style>
+</head>
+<body>
+<!-- The link preview (1200×630) and the icons (32 and 180 square), drawn with the game's own sprites, tiles and
+     font. Rendered to media/share-card.png, media/favicon.png and media/apple-touch-icon.png by
+     scripts/media.mjs. A frame of the real game, no counters or debug text (opengame-front-end, the share card). -->
+<canvas id="c" width="1200" height="630"></canvas>
+<script type="module">
+import { drawText } from '../src/font.js';
+import { drawSprite, drawEyes, SPRITES } from '../src/sprites.js';
+import { TILE, FREAK, DAY, NIGHT } from '../src/rules.js';
+import { PROPS, drawBackground, drawSolidTile, drawShiftRing, drawSign, drawLogo, drawHatch } from '../src/art.js';
+
+const cv = document.getElementById('c');
+const g = cv.getContext('2d');
+g.imageSmoothingEnabled = false;
+const W = 1200;
+const H = 630;
+const SEAM = W / 2;
+const SCALE = 3; // the share card draws at 400×210 game units, every art pixel 3 CSS px
+const clip = (x0, x1, fn) => { g.save(); g.beginPath(); g.rect(x0, 0, x1 - x0, H / SCALE); g.clip(); fn(); g.restore(); };
+
+function shareCard() {
+  cv.width = 1200;
+  cv.height = 630;
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.imageSmoothingEnabled = false;
+  g.fillStyle = '#0b1029';
+  g.fillRect(0, 0, W, H);
+  g.scale(SCALE, SCALE);
+  const w = W / SCALE; // 400 game units
+  const h = H / SCALE; // 210
+  const seam = w / 2;
+  const floorTy = 5; // the floor's tile row: y = 150
+  const floorY = floorTy * TILE;
+
+  // split shift: the day sky left, the night sky right (clip is in game units, so the seam is at 200)
+  clip(0, seam, () => drawBackground(g, DAY, w, h, 0));
+  clip(seam, w, () => drawBackground(g, NIGHT, w, h, 0));
+
+  // one solid floor across both halves, split at the seam
+  clip(0, seam, () => {
+    for (let tx = 0; tx < seam / TILE; tx++) drawSolidTile(g, tx, floorTy, DAY, { up: true, down: true, left: false, right: false });
+  });
+  clip(seam, w, () => {
+    for (let tx = Math.ceil(seam / TILE); tx < w / TILE; tx++) drawSolidTile(g, tx, floorTy, NIGHT, { up: true, down: true, left: false, right: false });
+  });
+
+  // freaks: eyes in the dark and a lurker standing on the night floor, a note on the day side
+  PROPS.eyes(g, 258, 60, { t: 0.5, seed: 1 });
+  PROPS.eyes(g, 300, 90, { t: 0.5, seed: 2 });
+  drawSprite(g, 'lurker', 'a', 330, floorY - FREAK.h, { scale: 2 });
+  drawEyes(g, 'lurker', 330, floorY - FREAK.h, { state: 'squint', scale: 2 });
+  drawSign(g, 30, 96, 'MINE', 'note', 2);
+
+  // the worker mid-jump on the seam, day colours on the left, night on the right
+  drawShiftRing(g, seam, floorY - 40, 0.35, NIGHT);
+  drawShiftRing(g, seam, floorY - 40, 0.55, DAY);
+  const wx = seam - 4.5 * 4;
+  const wy = floorY - 13 * 4 - 14; // clear of the floor, mid-hop
+  clip(0, seam, () => drawSprite(g, 'worker', 'jump', wx, wy, { scale: 4 }));
+  clip(seam, w, () => drawSprite(g, 'worker', 'jump', wx, wy, { scale: 4, palette: SPRITES.worker.nightPalette }));
+
+  // the lockup along the top, with the band at the bottom for the one-line pitch and the address
+  drawLogo(g, seam, 12, 4);
+  drawText(g, 'The freaks come out at night.', seam, 58, { scale: 2, color: '#ffec5a', halo: '#1b1209', align: 'center' });
+  g.fillStyle = 'rgba(0,0,0,0.62)';
+  g.fillRect(0, 168, w, 42);
+  drawText(g, 'Press SHIFT to change shifts, even mid-jump.', seam, 178, { scale: 1, color: '#d9f6ff', align: 'center' });
+  drawText(g, 'fishraposo.github.io/double-shift', seam, 192, { scale: 1, color: '#5ff2ff', align: 'center' });
+}
+
+// A square icon: the worker's head on the night sky, at whatever grid fits the size.
+function icon(size, file) {
+  cv.width = size;
+  cv.height = size;
+  g.setTransform(1, 0, 0, 1, 0, 0);
+  g.imageSmoothingEnabled = false;
+  g.clearRect(0, 0, size, size);
+  drawBackground(g, NIGHT, size, size, 0);
+  const s = SPRITES.worker;
+  const frame = 'idle0';
+  const rows = s.frames[frame];
+  const box = s.box;
+  const [ax, ay] = s.anchor;
+  // one art pixel, as big as the icon allows (an integer, so the pixel grid stays square)
+  const a = Math.max(1, Math.floor(Math.min(size / box[0], size / box[1]) * 1.1 / 1));
+  const ox = Math.round((size - box[0] * a) / 2 - ax * a);
+  const oy = Math.round((size - box[1] * a) / 2 - ay * a);
+  for (let r = 0; r < rows.length; r++) {
+    for (let c = 0; c < rows[r].length; c++) {
+      const ch = rows[r][c];
+      if (ch === '.') continue;
+      g.fillStyle = s.nightPalette[ch] ?? s.palette[ch];
+      g.fillRect(ox + c * a, oy + r * a, a, a);
+    }
+  }
+  return file;
+}
+
+// Rendered one at a time by scripts/media.mjs (it opens ?shot=<name> and screenshots the canvas).
+const which = new URLSearchParams(location.search).get('shot') ?? 'share';
+if (which === 'share') shareCard();
+else if (which === 'favicon') icon(32, which);
+else if (which === 'apple-touch-icon') icon(180, which);
+document.title = `Double Shift ${which}`;
+</script>
+</body>
+</html>

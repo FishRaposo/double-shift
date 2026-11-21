@@ -81,8 +81,11 @@ function cleanSettings(s) {
 
 export function createSettings(storage) {
   let data;
+  let stored = false; // false until the player has ever saved a setting: a first run may take defaults from the OS
   try {
-    data = cleanSettings(JSON.parse(storage?.getItem(SETTINGS_KEY) ?? 'null'));
+    const raw = storage?.getItem(SETTINGS_KEY) ?? 'null';
+    stored = raw !== 'null';
+    data = cleanSettings(JSON.parse(raw));
   } catch {
     data = cleanSettings(null);
   }
@@ -90,13 +93,24 @@ export function createSettings(storage) {
     get() {
       return { ...data };
     },
+    // Whether the player has ever saved settings. The shell reads it once at boot to seed a default (reduced
+    // effects follows the OS's prefers-reduced-motion) without overwriting an explicit choice.
+    stored() {
+      return stored;
+    },
     // The key bindings as stored, without a copy: input reads them on every key event and three times a tick.
     // Never mutated (set() builds new settings), so sharing the object is safe.
     binds() {
       return data.binds;
     },
+    // A default for this session only: it changes what get() reads but is neither written to storage nor counted
+    // as the player's choice, so an OS preference (prefers-reduced-motion) is followed until they save a setting.
+    setDefault(patch) {
+      data = cleanSettings({ ...data, ...patch });
+    },
     set(patch) {
       data = cleanSettings({ ...data, ...patch });
+      stored = true;
       try {
         storage?.setItem(SETTINGS_KEY, JSON.stringify(data));
       } catch { /* blocked: keep for this session */ }

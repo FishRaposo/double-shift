@@ -50,6 +50,15 @@ export function levelIndex(defs, param) {
   return Math.min(Math.max(n - 1, 0), defs.length - 1);
 }
 
+// A frame's two deltas (src/main.js frame/advance). Interface time — menu timers, the act card's 1.6 s, the
+// stamp guards, the note strip, the logged durations — is wall time, so a slow machine cannot stretch it. Only
+// the fixed-step simulation is clamped, so a stall costs at most one catch-up instead of a spiral.
+export const SIM_MAX = 0.1; // the most simulation one frame may take, in seconds
+export function frameDeltas(raw) {
+  const wall = Math.max(Number.isFinite(raw) ? raw : 0, 0);
+  return { wall, sim: Math.min(wall, SIM_MAX) };
+}
+
 // The canvas's on-screen size in CSS px, as a multiple of 960×540. Pixel art at a fractional scale gets uneven
 // pixels (some 2 device px wide, some 3), so it snaps to a whole number of *device* pixels per canvas pixel
 // (CSS px × devicePixelRatio, so 125% and Retina screens count right), unless that would waste more than 15%

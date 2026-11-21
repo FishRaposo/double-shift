@@ -98,13 +98,13 @@ SPOOKED! · AAAGH! · NOPE! · EEP! · NOT PAID ENOUGH
 | Work order HUD ✅ *(drafts)* | WORK ORDER: OPEN THE SHUTTER, then GET THE FUSE · FIX THE FUSE BOX · DONE |
 | Work order goals ✅ *(drafts)* | RAISE THE DECK · ONE FUSE: TAKE IT WITH YOU · SEND THE WATER BACK · BOLT THE PLANK DOWN · LIGHT THE CORRIDOR · FREE THE HOIST · FREE THE DUMBWAITER · BOLT THE DOORS IN PLACE · TURN THE LEAK ASIDE · JACK UP THE PILLAR · ONE BATTERY, TWO SHUTTERS · ONE BOLT: STOP THE RIGHT ONE · LIGHT THE PORTRAIT · FREE THE LIFT · OPEN THE GATE · WEIGH THE PLANK DOWN · LIGHT THE LAST TUNNEL · CHANGE THE CEILING LIGHT · EMPTY THE TANK INTO THE PIT · LATCH THE PLANK UPSIDE DOWN · ONE BREAKER, TWO CORRIDORS · LIGHT THE LOW TUNNEL · BOLT THE LAST STEP DOWN · SEND THE LEAK DOWN · SLIDE THE HATCH ASIDE · FIX THE TIME CLOCK |
 | Work order tags in the level ✅ *(drafts)* | The tool, the broken thing and what it drives each carry a small paper label until the job is done |
-| Work order jobs ✅ *(drafts)* | FUSE / FUSE BOX · WRENCH / LEAKING PIPE · BULB / DEAD LIGHT · OIL CAN / SQUEAKY HINGE · TAPE / LOOSE CABLE |
+| Work order jobs ✅ *(drafts)* | Each level names its own pair; e.g. WRENCH / LOOSE BOLT, FUSE / FUSE BOX, BULB / DEAD LIGHT, OIL CAN / SEIZED WINCH, TAPE / LOOSE CABLE, RATCHET / CEILING LATCH (the full set is in `src/levels.js`) |
 | Work order feedback ✅ *(drafts)* | FIXED · OFF · BOLTED · CLOCK IN TO MOVE IT · TOUCH IT TO SWAP · TAKE THE FUSE WITH YOU · WAIT FOR THE PILLAR |
-| More tells ✅ (Nov 3: MINE NOW on Inventory's and Stacked's planks, DO NOT TUCH on Stacked's gate, FINDERS KEEPERS on the finale's door) | MINE NOW · DO NOT TUCH · FINDERS KEEPERS · (a drawing of eyes) |
+| More tells ✅ | MINE NOW (Inventory) · MOVING DAY (Lost & Found) · YOU ARE WELCOME · MINE · CLOSED (Stacked) · HEXED. NO TUCH (Night Audit) · FINDERS KEEPERS (finale); every other tell defaults to MINE |
 | Hex-flavored tells *(candidates; HEXED. NO TUCH is on Night Audit's plank)* | MINE BY ANSHENT LAW · HEXED. NO TUCH · THE PLANK IS OURS NOW · WE SEE YOU (WE R SHINY) |
-| The freaks' proud sign over the staircase (`stairs`) ✅ | OUR STARES! |
+| The building's sign over the staircase (`stairs`) ✅ | TOP FLOOR |
 | Management's sign in `inventory` ✅ *(draft)* | STUCK? RESTART. |
-| `closing` sign ✅ | CLOSING TIME |
+| `closing` signs ✅ | CLOSING TIME (day) · LASERS (night) |
 
 ### 5.1 Signs in the levels ✅ *(in the build; drafts for Fish)*
 
@@ -112,10 +112,12 @@ SPOOKED! · AAAGH! · NOPE! · EEP! · NOT PAID ENOUGH
 |---|---|
 | `clock` | RENOVATION |
 | `scaff` | DELIVERIES |
-| `closing` | LASERS |
-| `stairs` | OUR STARES! (the freaks') |
+| `closing` | CLOSING TIME · LASERS |
+| `inventory` | STUCK? RESTART. |
+| `stairs` | TOP FLOOR |
+| `doors` | LOST & FOUND |
 | `pillar` | LOAD BEARING |
-| `supervisor` | STAFF ONLY |
+| `stacked` | CLAMPS |
 | `daywalker` | DAY SHIFT |
 | `offset` | 3 · 3.5 (floor numbers) |
 | `audit` | INSPECTION |
@@ -181,7 +183,7 @@ Unused, kept for later: "Efficient. Suspiciously efficient."
 
 - ✅ The end screen: SHIFT COMPLETE, one row per act (that act's clock-ins / par over the levels played this run), total vs. total par. Twenty-one level rows don't fit the screen at a readable size; six act rows do.
 - ✅ In the dark margins a dozen pairs of eyes open one after another; once they're all open, one freak waves, and "See you tonight." appears below the card.
-- ✅ Credits (`CREDITS` in `src/copy.js`), under the end screen's totals: "Designed by Vinícius Raposo. Built with AI assistance (Claude). Made for GitHub Game Off 2026." Final wording (Fish, 2026-11-03): no design-partner line, since the art is all code-drawn.
+- ✅ Credits (`CREDITS` in `src/copy.js`), under the end screen's totals: "Designed by Vinícius Raposo. Made for GitHub Game Off 2026." Final wording (Fish, 2026-11-03): no design-partner line, since the art is all code-drawn.
 
 ## 9. itch page copy
 
@@ -202,12 +204,12 @@ Lives in [itch/page.md](../itch/page.md) §4. Fish writes the final version. The
 > Every level has a scripted solution that the tests replay. It has to win at par or better with no deaths, and running and jumping without shifting must not win. The demo GIFs are those same runs, played by the game on a fixed clock.
 >
 > **Some numbers from the repo today:**
-> - <!-- n:tests -->601<!-- /n --> automated tests.
+> - <!-- n:tests -->609<!-- /n --> automated tests.
 > - Every input a level requires has at least 200 ms of slack in acts 1-2 and at least 100 ms in acts 3-6.
 > - The scripted solutions still win with every input up to 100 ms late in acts 1-2 and up to 50 ms late in acts 3-6.
 > - <!-- n:levels -->21<!-- /n --> levels, each proven winnable at par by a scripted run.
 >
-> **AI disclosure.** Designed by Vinícius Raposo. Built with AI assistance (Claude) to his design document, with draft text from the same place. The code, including the code that draws the art and synthesizes the sound, was written with AI assistance. No generated images or audio were used.
+> **AI disclosure.** This project contains generative AI output: code and in-game text. No generated images or audio were used.
 >
 > Play: [itch link]. Source: https://github.com/FishRaposo/double-shift
 
@@ -215,4 +217,4 @@ Lives in [itch/page.md](../itch/page.md) §4. Fish writes the final version. The
 
 1. > Double Shift: a puzzle-platformer where you work the day and night shift at once. Shift between them, even mid-jump. Every night clock-in, the freaks move something. <!-- n:levels -->21<!-- /n --> levels. Made for #GitHubGameOff.
 2. > No engine, no dependencies, no asset files. Double Shift's art is drawn in code and its sound is synthesized. The rules are a pure function, so the tests replay a scripted solution of every level. #GitHubGameOff
-3. > The demo GIFs for Double Shift are the tests' own scripted runs, played by the game on a fixed clock. Built with AI assistance (Claude), to a human design. #GitHubGameOff
+3. > The demo GIFs for Double Shift are the tests' own scripted runs, played by the game on a fixed clock. To a human design. #GitHubGameOff

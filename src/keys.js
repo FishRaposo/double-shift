@@ -21,7 +21,7 @@ const ARROWS = { ArrowLeft: '←', ArrowRight: '→', ArrowUp: '↑', ArrowDown:
 // Letters, digits, the arrows, Space and Shift: keys every keyboard has and the pixel font can label.
 export function isBindable(code) {
   if (typeof code !== 'string' || RESERVED.includes(code)) return false;
-  return /^Key[A-Z]$/.test(code) || /^Digit\d$/.test(code) || code in ARROWS || code === 'Space' || SHIFTS.includes(code);
+  return /^Key[A-Z]$/.test(code) || /^Digit\d$/.test(code) || Object.hasOwn(ARROWS, code) || code === 'Space' || SHIFTS.includes(code);
 }
 
 // Either Shift key binds both: players don't think of them as two keys.
@@ -42,7 +42,11 @@ function refill(next, a, fallback = []) {
   if (free.length > 0) return free;
   const swap = fallback.filter((c) => !used.has(c));
   if (swap.length > 0) return swap;
-  return [SPARE.find((c) => !used.has(c))];
+  const spare = SPARE.filter((c) => !used.has(c));
+  if (spare.length > 0) return [spare[0]];
+  // Every spare taken too (only a hand-edited save can do this): take the action's own defaults anyway. A key on
+  // two actions beats an action with no key at all, which would make it unreachable and render a blank row.
+  return [...DEFAULT_BINDS[a]];
 }
 
 // The action takes the key (just that key, or both Shifts); any other action that had it loses it, and an
@@ -82,7 +86,7 @@ export function keyLabel(code, layout = null) {
   }
   if (/^Key[A-Z]$/.test(code)) return code.slice(3);
   if (/^Digit\d$/.test(code)) return code.slice(5);
-  if (code in ARROWS) return ARROWS[code];
+  if (Object.hasOwn(ARROWS, code)) return ARROWS[code];
   if (SHIFTS.includes(code)) return 'Shift';
   return code;
 }

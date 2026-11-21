@@ -880,6 +880,15 @@ export const PROPS = {
     px(g, x + A, f - 9 * A, 13, 2, '#b88f5c');
     px(g, x + 3 * A, f - 6 * A, 9, 4, C.paper);
   },
+  // a supervisor's clipboard, left on the day desk: a board with a clip and a sheet with two ruled lines
+  clipboard(g, x, y) {
+    const f = y + TILE;
+    px(g, x + 4 * A, f - 11 * A, 8, 9, '#3b4048'); // the board
+    px(g, x + 5 * A, f - 10 * A, 6, 7, C.paper); // the sheet
+    px(g, x + 6 * A, f - 9 * A, 4, 1, '#6b6f78'); // a ruled line
+    px(g, x + 6 * A, f - 7 * A, 4, 1, '#6b6f78'); // and another
+    px(g, x + 7 * A, f - 12 * A, 2, 2, '#9aa3ad'); // the clip
+  },
   desk(g, x, y) {
     const f = y + TILE;
     px(g, x - 2 * A, f - 8 * A, 19, 2, woodDark);

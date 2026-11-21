@@ -173,6 +173,32 @@ test('settings: binds survive a reload; corrupt binds fall back', () => {
   assert.deepEqual(repaired.binds, DEFAULT_BINDS, 'nothing usable: the defaults');
 });
 
+test('settings: stored() tells a first run from an explicit choice', () => {
+  const storage = memoryStorage();
+  assert.equal(createSettings(storage).stored(), false, 'a fresh install has saved nothing');
+  createSettings(storage).set({ reduced: false });
+  assert.equal(createSettings(storage).stored(), true, 'saving anything, off included, is a choice');
+  // the shell seeds reduced effects from prefers-reduced-motion only while stored() is false, so an explicit
+  // "reduced: false" must survive a later OS change (src/main.js seedReduced)
+  assert.equal(createSettings(storage).get().reduced, false);
+  const corrupt = memoryStorage({ 'double-shift.settings.v1': 'not json' });
+  assert.equal(createSettings(corrupt).stored(), true, 'a corrupt record was still a saved one');
+});
+
+test('settings: setDefault seeds a session default without counting as the player saving', () => {
+  const storage = memoryStorage();
+  const s = createSettings(storage);
+  s.setDefault({ reduced: true });
+  assert.equal(s.get().reduced, true, 'the seed is what get() reads');
+  assert.equal(s.stored(), false, 'but the player has still saved nothing, so the OS can change it again');
+  assert.equal(storage.getItem('double-shift.settings.v1'), null, 'and nothing was written to disk');
+  s.setDefault({ reduced: false }); // the OS preference flipped back
+  assert.equal(s.get().reduced, false);
+  s.set({ reduced: true }); // now the player chose
+  assert.equal(s.stored(), true, 'an explicit save wins from here on');
+  assert.equal(createSettings(storage).get().reduced, true, 'and it persisted');
+});
+
 test('settings: the speedrun timer defaults off and survives a reload', () => {
   const storage = memoryStorage();
   assert.equal(createSettings(storage).get().timer, false);

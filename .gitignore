@@ -3,5 +3,6 @@ node_modules/
 media/*.png
 media/*.gif
 media/review/
+media/notext/
 .DS_Store
 tap.txt

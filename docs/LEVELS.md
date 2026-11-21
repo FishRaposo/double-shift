@@ -127,7 +127,7 @@ Five acts of four, then the finale. Each act introduces one idea, practises it, 
 |---|---|---|---|---|
 | 1 | **1 · Renovation** (it's just a job) | Clock In (`clock`) | Shift changes the world | ✅ |
 | 2 | 1 | Scaffolding (`scaff`) | Use the other shift's geometry | ✅ |
-| 3 | 1 | Closing Time (`closing`) | Per-shift hazards and walls; first frozen outline (harmless) | ✅ |
+| 3 | 1 | Closing Time (`closing`) | Per-shift walls and a fuse relay; **first freak: a peeker on the night floor**, a timing gate on the way to the exit | ✅ |
 | 4 | 1 | Mid-Air (`midair`) | Shift during a jump; eyes in the dark | ✅ |
 | 5 | **2 · Overtime** (the freaks show up) | Inventory (`inventory`) | **First prank**: a clock-in changes the night | ✅ |
 | 6 | 2 | Night Watch (`watch`) | **First visible freaks**: lurkers, and day freezes them | ✅ |
@@ -148,7 +148,7 @@ Five acts of four, then the finale. Each act introduces one idea, practises it, 
 | 21 | **Finale** | Clock Out (`clockout`) | Pays everything off, then the ending | ✅ reworked (`rev: 2`); the 3-room version is the fallback |
 
 **Freak and mechanic ladder** (first seen → first required):
-- **Freak evidence:** eyes and footprints in act 1, a harmless frozen peeker in Closing Time.
+- **Freak evidence:** eyes and footprints in act 1, and a live peeker in Closing Time.
 - **Pranks:** single in 5, wanted in 8, moving an object in 10, queued in 12.
 - **Visible freaks:** lurkers in 6 (the peeker is met frozen in 3); the supervisor in 11; the squatter in 13; the day-walker in 14; a freak on the ceiling in 19.
 - **New rules, one per act from act 3:** wax in 9, offset in 15, upside down in 17.
@@ -170,7 +170,7 @@ The specs the levels in acts 2–4 were built from, in the §5.0 order (manifest
 | 13 | 4 | Employee of the Month | `portrait` | B |
 | 16 | 4 | Night Audit | `audit` | B |
 
-### Under Renovation (`stairs`, #7): target par 2 (act 2, tier B) ✅ built Nov 3 at par 2 (§4)
+### Under Renovation (`stairs`, #7): target par 2 (act 2, tier B) ✅ built; §4 has the current par
 - **Lesson:** height you only have on one shift can carry you into the other. A mid-air shift that starts from the top of something.
 - **Fiction:** "They've built an entirely unnecessary staircase. It leads nowhere. They're very proud."
 - **Night:** a staircase of 1-tile steps rising from about col 6 to a top step about 6 tiles above the floor, ending in mid-air (about col 16). Beyond it, nothing.
@@ -180,7 +180,7 @@ The specs the levels in acts 2–4 were built from, in the §5.0 order (manifest
 - **Props:** a proud hand-painted sign at the stair top (WRITING.md §5), eyes under the stairs.
 - **Constraints:** step rises of 1 tile; ≥ 1 tile of open air above the ledge where both shifts are clear for the mid-air shift.
 
-### Lost & Found (`doors`, #8): target par 5 (act 2, tier B) ✅ built Nov 3 at par 5 (§4)
+### Lost & Found (`doors`, #8): target par 5 (act 2, tier B) ✅ built; §4 has the current par
 - **Lesson:** sometimes you *want* the freaks to act. Clock-ins are a resource you spend on purpose.
 - **Fiction:** "The freaks have stolen every door. Not the keys. The doors."
 - **Both shifts:** three full-height doors (D1–D3, around cols 9, 15 and 21) cut the floor into rooms. The exit is on a ledge about 6 tiles up at the right end.
@@ -189,7 +189,7 @@ The specs the levels in acts 2–4 were built from, in the §5.0 order (manifest
 - **Par note:** this level inverts "fewest clock-ins": par is the shifts needed to earn 3 night entries safely, proven by the scripted solution like every other par.
 - **Props:** door frames left behind (empty, non-solid), the pile, a LOST & FOUND box.
 
-### Structural Integrity (`pillar`, #10): target par 4 (act 3, tier B) ✅ built Nov 3 at par 3 (§4)
+### Structural Integrity (`pillar`, #10): target par 4 (act 3, tier B) ✅ built; §4 has the current par
 - **Lesson:** one object, moved by each clock-in, is a wall in one place and a step in another. Count your night entries.
 - **Fiction:** "They've moved a load-bearing pillar. The building is somehow fine."
 - **Both shifts:** a mezzanine (top about 7 tiles above the floor) holds the exit.
@@ -199,7 +199,7 @@ The specs the levels in acts 2–4 were built from, in the §5.0 order (manifest
 - **Props:** a ceiling crack and a dust outline where the pillar used to be; a memo about it.
 - **Constraints:** tells for all three positions are visible from the start (eyes/notes at P1–P3).
 
-### Employee of the Month (`portrait`, #13): target par 3–4 (act 4, tier B) ✅ built Nov 3 at par 3 (§4)
+### Employee of the Month (`portrait`, #13): target par 3–4 (act 4, tier B) ✅ built; §4 has the current par
 - **Rebuilt Nov 18 (`rev: 4`, fewest 4, par 5):** back to the rehung portrait, now by day, with its sitter in the frame by night (a squatter with a `when` on the hook's day tile) and the bulb on a shelf only the portrait reaches. §4 is the truth; the lines below are the Nov 3 version.
 - **Lesson:** the obstacle and the tool are the same object, moved by each clock-in.
 - **Fiction:** "The freaks have installed a portrait of themselves. It blocks the exit."
@@ -209,7 +209,7 @@ The specs the levels in acts 2–4 were built from, in the §5.0 order (manifest
 - **Solution:** use the portrait as a step at night (entry 2) to get onto the ledge, walk above the exit, shift to day and drop to the exit.
 - **Props:** the portrait is just eyes (WRITING.md §6 memo), a nail where it used to hang.
 
-### Night Audit (`audit`, #16): target par 6–8 (act 4, tier B) ✅ built Nov 3 at par 5 (§4)
+### Night Audit (`audit`, #16): target par 6–8 (act 4, tier B) ✅ built; §4 has the current par
 - **Lesson:** everything from acts 1–4 on one screen, no new rules. It's the "you've learned it all" exam before the building turns over.
 - **Fiction:** "Management is doing a walkthrough tonight. So are they."
 - **Beats** (left to right, a checkpoint between each):
@@ -252,24 +252,24 @@ The specs the levels in acts 2–4 were built from, in the §5.0 order (manifest
 | 19 | 5 | Ceiling Walker | `ceiling` | A freak on the ceiling, and a prank on a flipped map | C |
 | 20 | 5 | Head Over Heels | `heels` | Act 5's combination: every shift freezes one freak and flips gravity | C |
 
-### Mind Your Head (`upside`, #17): target par 2–3 (act 5, tier C) ✅ built Nov 3 at par 2 (§4)
+### Mind Your Head (`upside`, #17): target par 2–3 (act 5, tier C) ✅ built; §4 has the current par
 - **Lesson:** at night the building is upside down: you fall up, and walk along what was the ceiling.
 - **Fiction:** "They flipped the night shift. Mind your head."
 - **Concept:** by day the floor route is blocked (a pit too wide to jump, or a wall); the ceiling route above it is continuous. Clock in, fall up onto the flipped ceiling, walk across, clock out and drop down past the obstacle. A second beat reverses it: the ceiling route is blocked where the floor isn't.
 - **Teach safely:** the first shift happens on open floor under a clear ceiling, with nothing to hit; a checkpoint before the first real use.
 
-### Falling Up (`fallup`, #18): target par 4–6 (act 5, tier C) ✅ built Nov 3 at par 4 (§4)
+### Falling Up (`fallup`, #18): target par 4–6 (act 5, tier C) ✅ built; §4 has the current par
 - **Lesson:** shifting mid-fall reverses it. Chain flips to climb, or to stop a fall.
 - **Fiction:** "The floor is up there now."
 - **Concept:** a tall shaft with ledges on alternating sides at heights you can't jump between. Jump off a ledge, shift at the right height, and you "fall" the other way onto a ledge's flipped copy; repeat to climb (the cousin of Floor 3.5's apex shifts). One beat uses a flip as a brake over a pit.
 - **Margin:** every required shift needs ≥ 100 ms (act 5 floor); tune ledge spacing against the jump (≈ 93.5 px) at build.
 
-### Ceiling Walker (`ceiling`, #19): target par 4–6 (act 5, tier C) ✅ built Nov 3 at par 4 (§4)
+### Ceiling Walker (`ceiling`, #19): target par 4–6 (act 5, tier C) ✅ built; §4 has the current par
 - **Lesson:** the old tricks on the flipped map: freeze a freak, read a prank.
 - **Fiction:** "Something is walking on the ceiling. It's fine."
 - **Concept:** a lurker patrols the night ceiling route; by day it's an upside-down outline above you (freeze it by being on day, walk under its outline). Then a prank: on a night clock-in the freaks move a plank on the flipped map, telegraphed by tells hanging from the ceiling.
 
-### Head Over Heels (`heels`, #20): target par 6–8 (act 5, tier C) ✅ built Nov 3 at par 7 (§4)
+### Head Over Heels (`heels`, #20): target par 6–8 (act 5, tier C) ✅ built; §4 has the current par
 - **Lesson:** act 5's combination: every shift freezes one freak, wakes the other, and flips gravity.
 - **Fiction:** "Up is a matter of opinion now."
 - **Concept:** `upsideDown: true`. A day-walker patrols the floor by day; a lurker walks the flipped ceiling by night. Each shift both flips you to the other side of the room and swaps which freak is moving, so you route through the moments when the one on your side is frozen. It ends on a prank: a plank moved on the flipped map, telegraphed by a tell hanging from the ceiling.
@@ -291,10 +291,10 @@ The classic 3-room Clock Out (`CLOCKOUT_CLASSIC`) is kept for the record. The re
 
 ### Showing the freaks early (built, PRODUCTION.md L8)
 
-Jam raters often play only the first couple of minutes (GDD §1.8), so act 1 shows freak *evidence* from the very first night shift — no pranks, no danger before level 5:
-- **Clock In:** a peeker blinks behind the locked night gate (sealed off, unreachable), footprints lead up to it, eyes in the dark past it;
+Jam raters often play only the first couple of minutes (GDD §1.8), so act 1 shows freak *evidence* from the very first night shift. There are no pranks before level 5; act 1 is gentle but not danger-free — Closing Time's peeker is a live timing gate on the route:
+- **Clock In:** eyes in the dark past the gap and footprints on the night planks (no live freak in this level);
 - **Scaffolding:** eyes float in the dark where the scaffold stands by day; footprints on the night floor;
-- **Closing Time:** a peeker on a high night shelf over the exit blinks at night and hangs frozen there by day, out of reach;
+- **Closing Time:** a live peeker on the night floor near the exit, a timing gate the par route waits out (it is not optional or out of reach);
 - **Mid-Air:** eyes decor was already there ("Something up there blinked.");
 - level select from the title screen (A7), so anyone can reach *Inventory* and *Night Watch*.
 

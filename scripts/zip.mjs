@@ -7,10 +7,10 @@ const archive = 'double-shift-web.zip';
 rmSync(archive, { force: true });
 if (process.platform === 'win32') {
   const tar = `${process.env.SystemRoot}\\System32\\tar.exe`;
-  execFileSync(tar, ['-a', '-cf', archive, 'index.html', 'src'], { stdio: 'inherit' });
+  execFileSync(tar, ['-a', '-cf', archive, 'index.html', 'src', 'icons', 'LICENSE'], { stdio: 'inherit' });
   if (execFileSync(tar, ['-tf', archive], { encoding: 'utf8' }).includes('\\')) throw new Error('a zip entry has a backslash in its path');
 } else {
-  execFileSync('zip', ['-qr', archive, 'index.html', 'src'], { stdio: 'inherit' });
+  execFileSync('zip', ['-qr', archive, 'index.html', 'src', 'icons', 'LICENSE'], { stdio: 'inherit' });
 }
 if (readFileSync(archive).subarray(0, 2).toString() !== 'PK') throw new Error(`${archive} is not a zip`);
 console.log(`built ${archive}`);

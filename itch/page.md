@@ -1,6 +1,6 @@
 # itch.io page kit
 
-Everything needed to create the *Double Shift* page on itch.io, in the order the itch dashboard asks for it. Settings come from [RELEASE.md](../docs/RELEASE.md) §2. **Fish writes the final description words**; the draft below is checked against the current build (<!-- n:levels -->21<!-- /n --> levels, <!-- n:tests -->601<!-- /n --> tests, level select, pixel art and music). The paste-ready description in §4 carries no markers, so check its numbers by hand before pasting (the release refresh does).
+Everything needed to create the *Double Shift* page on itch.io, in the order the itch dashboard asks for it. Settings come from [RELEASE.md](../docs/RELEASE.md) §2. **Fish writes the final description words**; the draft below is checked against the current build (<!-- n:levels -->21<!-- /n --> levels, 609 tests, level select, pixel art and music). The paste-ready description in §4 carries no markers, so check its numbers by hand before pasting (the release refresh does).
 
 ## 0. What's left, in order (Fish)
 
@@ -50,6 +50,7 @@ npm run gif -- upside     # media/demo-upside.gif (480×270): Mind Your Head's s
 | Slot | File |
 |---|---|
 | Cover image | `media/cover.png` |
+| Link preview + icons | `icons/share-card.png` (1200×630, `npm run media`), `icons/favicon.png`, `icons/apple-touch-icon.png`. They ship with the Pages build and the zip; the itch page uses its own cover as the preview. |
 | Screenshots (in this order) | `demo-upside.gif` (the level Fish chose. The GIF goes first: itch plays a GIF screenshot in place), `19-prank-lost-found.png` (a prank as it lands), `20-flip-mind-your-head.png` (the flip), `21-repair-mid-air.png` (a repair changing the room), `15-clock-out-night.png`, `07-night-watch-night.png`, `08-night-watch-day.png` (the freaks frozen by day), `03-clock-in-night.png`, `04-timecard.png`, `09-level-select.png`, `01-title.png` |
 | Gameplay video or trailer | Leave empty: the field takes a YouTube or Vimeo link, and the GIF already leads the screenshots. Other GIF candidates: `npm run gif -- doors` (a prank on every clock-in), `stairs` (the hoist), `closing` (one fuse, two boxes), `watch` (the light clears the corridor); ART.md §8. |
 
@@ -83,7 +84,7 @@ npm run gif -- upside     # media/demo-upside.gif (480×270): Mind Your Head's s
 > **What's in this build:** 21 levels in five acts and a finale, from your first clock-in to the last, including an act where the night shift is upside down. Every level has a job to do, and the job is the puzzle: one fuse for two shutters, a valve that floods one room to drain another, a hoist that only moves when you clock in, a bolt for the thing they were about to steal. Every prank and patrol shows what it's about to do. Gamepad support, rebindable controls and a speedrun timer. Made for GitHub Game Off 2026 (theme: SHIFT).
 >
 > **How it was made**
-> Designed by Vinícius Raposo for GitHub Game Off 2026. Built with AI assistance (Claude) to his design document, with draft text from the same place, then tested like production software: the gameplay rules are a pure module, the game has 594 automated tests, and every level is proven solvable at par by a scripted run. No engine, no assets: the pixel art, the pixel font and the music are all drawn and synthesized by code, code that was also written with AI assistance. No generated images or audio were used. Source: https://github.com/FishRaposo/double-shift
+> Tested like production software: the gameplay rules are a pure module, the game has 609 automated tests, and every level is proven solvable at par by a scripted run. No engine, no assets: the pixel art, the pixel font and the music are all drawn and synthesized by code. Source: https://github.com/FishRaposo/double-shift
 >
 > If you enjoyed it, a follow or a small donation helps.
 

@@ -113,6 +113,15 @@ async function shot(name) {
   console.log(`  ${name}`);
 }
 
+// The same, at an absolute path: the share card and icons live in icons/ at the repo root because they must be
+// committed (media/*.png is gitignored) and served by Pages next to the game.
+async function shotTo(file) {
+  const { data } = await send('Page.captureScreenshot', { format: 'png' });
+  mkdirSync(dirname(file), { recursive: true });
+  writeFileSync(file, Buffer.from(data, 'base64'));
+  console.log(`  ${file.slice(root.length + 1)}`);
+}
+
 // Color-vision simulation for review shots (the common Brettel/Viénot matrices, applied in sRGB).
 const CVD = {
   deuteranopia: '0.625 0.375 0 0 0  0.7 0.3 0 0 0  0 0.3 0.7 0 0  0 0 0 1 0',
@@ -185,9 +194,17 @@ async function fullRun() {
   if (!serveRoot) {
     await open('tools/cover.html', 1260, 1000);
     await shot('cover.png');
+    // the link preview and the icons: one page, three shots (opengame-front-end, the share card). They go in
+    // icons/, not media/, because media/*.png is gitignored and these three have to be committed to be served.
+    await open('tools/share.html?shot=share', 1200, 630);
+    await shotTo(join(root, 'icons', 'share-card.png'));
+    await open('tools/share.html?shot=favicon', 32, 32);
+    await shotTo(join(root, 'icons', 'favicon.png'));
+    await open('tools/share.html?shot=apple-touch-icon', 180, 180);
+    await shotTo(join(root, 'icons', 'apple-touch-icon.png'));
   }
 
-  await open('');
+  await open('?tools');
   await shot('01-title.png');
 
   // level 1 with real keys: run right, night across the gap, day for the bolt, up the deck, night past the gate, exit
@@ -262,7 +279,7 @@ async function fullRun() {
   // ---- flow checks (real keys) ----
   const flow = (name, ok, detail) => { console.log(`  flow: ${name} ${ok ? 'ok' : 'FAILED'}${ok ? '' : ` ${JSON.stringify(detail)}`}`); if (!ok) failed = true; };
   // 1. a key pressed to skip the act card keeps working: hold Right from the card into the level
-  await open('');
+  await open('?tools');
   await press('Space'); // title -> act card
   await sleep(200);
   const x0 = await tileX();
@@ -306,7 +323,7 @@ async function fullRun() {
   if (ft.ms > 8) { failed = true; console.error('drawing a frame is too slow'); }
 
   // level select, after the level-1 clear above was saved (same browser profile)
-  await open('');
+  await open('?tools');
   await press('KeyL');
   await sleep(300);
   const sel = await evaluate('__doubleShift.screen');
@@ -314,7 +331,7 @@ async function fullRun() {
   if (sel !== 'select') { failed = true; console.error(`level select did not open: ${sel}`); }
 
   // the speedrun timer: SETTINGS > SPEEDRUN TIMER on with real keys; a level's HUD shows TIME; then off again
-  await open('');
+  await open('?tools');
   await press('KeyO');
   for (let i = 0; i < 5; i++) await press('ArrowDown');
   await press('Enter'); // SPEEDRUN TIMER: ON
@@ -328,7 +345,7 @@ async function fullRun() {
   await evaluate("(() => { const s = JSON.parse(localStorage.getItem('double-shift.settings.v1')); s.timer = false; localStorage.setItem('double-shift.settings.v1', JSON.stringify(s)); })()");
 
   // controls: SETTINGS > CONTROLS, rebind JUMP to J with real keys, then back to the defaults
-  await open('');
+  await open('?tools');
   await press('KeyO');
   for (let i = 0; i < 6; i++) await press('ArrowDown');
   await press('Enter'); // CONTROLS
@@ -347,7 +364,7 @@ async function fullRun() {
   flow('RESET TO DEFAULTS puts Space, W and Up back on JUMP', JSON.stringify(reset) === '["Space","KeyW","ArrowUp"]', reset);
 
   // gamepad: a stubbed standard pad (headless Chromium has none): A clocks in from the title, B shifts in the level
-  await open('');
+  await open('?tools');
   await evaluate("(() => { window.__pad = { id: 'stub', mapping: 'standard', connected: true, axes: [0, 0, 0, 0], buttons: Array.from({ length: 17 }, () => ({ pressed: false, value: 0 })) }; navigator.getGamepads = () => [window.__pad]; })()");
   await sleep(300); // the page's first frames
   // held until the game has seen it (a frame can be late), then let go
@@ -369,7 +386,7 @@ async function fullRun() {
   flow('clocking in from the title starts a new run', fresh.screen !== 'title' && fresh.spent < 5 && fresh.results === 0, fresh);
 
   // skipping an act card with the shift key holds it, but spends no clock-in
-  await open('');
+  await open('?tools');
   await press('Space'); // the act card
   await sleep(200);
   await press('KeyK');
