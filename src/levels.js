@@ -1515,9 +1515,10 @@ export const LEVELS = [
     upsideDown: true,
     nightPatch: [{ x0: 12, x1: 17, y0: 12, ch: '^' }, { x0: 31, y0: 13, ch: '#' }, { x0: 17, y0: 13, y1: 17, ch: '#' }],
     props: [
-      { kind: 'memo', tx: 16, ty: 4, text: 'Gravity will be restored after the renovation. — Facilities', layer: 'day' },
+      { kind: 'memo', tx: 12, ty: 5, text: 'Gravity will be restored after the renovation. — Facilities', w: 220, layer: 'day' },
       { kind: 'sign', tx: 3, ty: 11, text: 'THIS WAY UP', style: 'note', layer: 'day' },
       { kind: 'noticeBoard', tx: 7, ty: 10, layer: 'day' },
+      { kind: 'sign', tx: 12, ty: 10, text: 'LASERS AT NIGHT', style: 'note', layer: 'day' },
       { kind: 'vent', tx: 6, ty: 4, layer: 'night', flip: true },
     ],
     decor: [{ kind: 'eyes', tx: 24, ty: 8 }],
