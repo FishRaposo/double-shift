@@ -1673,7 +1673,7 @@ export const LEVELS = [
     id: 'clockout',
     name: 'Clock Out',
     act: 6,
-    rev: 3,
+    rev: 4,
     note: "Almost done. One of everything. Don't look at the vents.",
     repairs: [
       {
@@ -1775,10 +1775,11 @@ export const LEVELS = [
       { x0: 28, x1: 31, y0: 8, ch: '#' },
       { x0: 28, x1: 31, y0: 6, ch: '#' },
       { x0: 28, x1: 31, y0: 11, ch: 'w' },
+      { x0: 24, y0: 8, y1: 11, ch: '#' },
     ],
     pranks: [
       { id: 'door', onNight: 2, tell: { tx: 16, ty: 11, text: 'FINDERS KEEPERS' }, sound: 'doorThunk', set: [{ layer: 'night', x0: 16, y0: 13, y1: 14, ch: '.' }] },
-      { id: 'stepGone', onNight: 3, tell: { tx: 29, ty: 3 }, set: [{ layer: 'night', x0: 29, x1: 31, y0: 0, y1: 3, ch: '.' }, { layer: 'night', x0: 31, y0: 4, ch: '#' }] },
+      { id: 'stepGone', onNight: 4, tell: { tx: 27, ty: 3 }, set: [{ layer: 'night', x0: 29, x1: 31, y0: 0, y1: 3, ch: '.' }, { layer: 'night', x0: 31, y0: 4, ch: '#' }] },
     ],
     skins: [
       { kind: 'door', tx: 16, ty: 14, layer: 'night' },
