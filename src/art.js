@@ -477,13 +477,15 @@ const SCREEN_H = 18 * TILE;
 // leaves the screen at the sides.
 // On a flipped layer (`hang`) the door hangs from the top of its cell and the sign goes under it (or beside it,
 // with no room below); the sign's text stays upright.
-export function exitRects(tx, ty, { hang = false } = {}) {
+// `hud`: the HUD's top-left box ({ right, bottom }); a sign that would sit under it moves beside the door instead
+export function exitRects(tx, ty, { hang = false, hud = null } = {}) {
   const x = tx * TILE;
   const top = ty * TILE - TILE;
   const door = { x: x + A, y: top + 2 * A, w: 13 * A, h: 28 * A };
   const sign = { x: x + TILE / 2 - 21, y: top - 9 * A, w: 21 * A, h: 9 * A };
   if (hang) for (const r of [door, sign]) r.y = mirrorInCell(ty, r.y, r.h); // turned over inside the cell
-  if (hang ? sign.y + sign.h > SCREEN_H : sign.y < 0) {
+  const underHud = !hang && hud && sign.x < hud.right && sign.y < hud.bottom;
+  if (underHud || (hang ? sign.y + sign.h > SCREEN_H : sign.y < 0)) {
     sign.y = hang ? door.y + door.h - 2 * A - sign.h : top + 4 * A;
     sign.x = x + TILE + A;
     if (sign.x + sign.w > SCREEN_W) sign.x = x - A - sign.w;
@@ -492,8 +494,8 @@ export function exitRects(tx, ty, { hang = false } = {}) {
   return { door, sign };
 }
 
-export function drawExit(g, tx, ty, layer, { hang = false } = {}) {
-  const { door: d, sign: s } = exitRects(tx, ty, { hang });
+export function drawExit(g, tx, ty, layer, { hang = false, hud = null } = {}) {
+  const { door: d, sign: s } = exitRects(tx, ty, { hang, hud });
   const Y = (off, h) => d.y + (hang ? d.h - off - h * A : off); // the door's own details, turned over
   const fill = layer === DAY ? '#3d7a4a' : '#1f6b47';
   px(g, d.x, d.y, 13, 28, '#9dffb8');

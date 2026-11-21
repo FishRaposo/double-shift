@@ -725,7 +725,7 @@ function staticLayer(lvl, def, layer, ov) {
   for (let ty = 0; ty < lvl.h; ty++) for (let tx = 0; tx < lvl.w; tx++) drawShiftCues(ctx, lvl, layer, ov, tx, ty);
   // the exit, unless this shift walls it up (src/skins.js)
   const exit = exitPose(lvl, layer, ov);
-  if (exit) drawExit(ctx, lvl.exit.tx, lvl.exit.ty, layer, exit);
+  if (exit) drawExit(ctx, lvl.exit.tx, lvl.exit.ty, layer, { ...exit, hud: EXIT_HUD });
   if (staticCache.size > 24) staticCache.delete(staticCache.keys().next().value);
   const hangs = lvl.checkpoints.map((cp) => checkpointHangs(lvl, layer, cp, ov));
   const out = { canvas: c, portraits: plan.filter((sp) => sp.draw === 'portrait'), hangs };
@@ -914,7 +914,7 @@ function drawJobTags(lvl, s, box, layer, taken = []) {
   if (NOTEXT || i === -1) return;
   const { tool, spots } = lvl.repairs[i];
   const exit = exitPose(lvl, layer, s.overrides); // null while this shift walls it up
-  const rects = exit ? Object.values(exitRects(lvl.exit.tx, lvl.exit.ty, exit)) : [];
+  const rects = exit ? Object.values(exitRects(lvl.exit.tx, lvl.exit.ty, { ...exit, hud: EXIT_HUD })) : [];
   const placed = [...taken, ...rects.map((r) => ({ x: r.x + r.w / 2, y: r.y + r.h / 2, half: r.w / 2, fixed: true }))];
   const tag = (text, tx, ty) => {
     const { x, y } = placeTag(placed, box, measureText(text, 2), tx * TILE + TILE / 2, ty * TILE - 14, W);
@@ -1059,6 +1059,8 @@ function jobWords(lvl, s) {
 }
 
 const jobHudTop = () => (settings.get().timer ? 62 : 38);
+// the level name and the work order's tool strip, top left (timer off): an exit sign moves out from under it
+const EXIT_HUD = { right: 300, bottom: 90 };
 const jobStepX = (lvl) => 14 + lvl.repairs.length * 70;
 
 // what the work order takes up on the HUD, words and icons (src/layout.js keeps the rest of the screen out of it)
