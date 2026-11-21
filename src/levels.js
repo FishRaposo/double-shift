@@ -1334,7 +1334,7 @@ export const LEVELS = [
     name: 'Night Audit',
     act: 4,
     note: 'Management is doing a walkthrough tonight. So are they.',
-    rev: 4,
+    rev: 5,
     repairs: [
       {
         tool: { tx: 5, ty: 13, layer: 'night', name: 'TAPE', kind: 'tape' },
@@ -1352,7 +1352,9 @@ export const LEVELS = [
       },
       {
         tool: { tx: 15, ty: 13, layer: 'night', name: 'SANDBAG', kind: 'sandbag' },
-        fix: { tx: 24, ty: 13, layer: 'day', name: 'HOLD-DOWN', kind: 'bolt', goal: 'WEIGH THE PLANK DOWN', target: 'PLANK', secures: ['plank'], link: [[24, 12], [25, 12]] },
+        fix: { tx: 24, ty: 13, layer: 'day', name: 'HOLD-DOWN', kind: 'bolt', goal: 'WEIGH THE PLANK DOWN', target: 'PLANK', secures: ['plank'], link: [[24, 12], [25, 12]],
+          // the bolt lifts the tunnel's shutter and puts the plank back, if the hex got to it first
+          set: [{ layer: 'night', x0: 24, x1: 24, y0: 13, ch: '.' }, { layer: 'night', x0: 25, x1: 26, y0: 14, ch: '#' }] },
       },
       {
         tool: { tx: 20, ty: 13, layer: 'night', name: 'LAMP', kind: 'bulb' },
@@ -1366,12 +1368,17 @@ export const LEVELS = [
           target: 'TUNNEL',
           link: [[27, 12], [28, 12]],
           clears: { x0: 28, x1: 30, y0: 12, y1: 13 },
+          set: [{ layer: 'night', x0: 28, x1: 28, y0: 13, ch: '.' }],
         },
       },
     ],
     min: 5,
     pranks: [{ id: 'plank', onNight: 3, tell: { tx: 23, ty: 11, text: 'HEXED. NO TUCH' }, set: [{ layer: 'night', x0: 25, x1: 26, y0: 14, ch: '.' }] }],
-    skins: [{ kind: 'shutter', tx: 12, ty: 13, h: 1, layer: 'night' }],
+    skins: [
+      { kind: 'shutter', tx: 12, ty: 13, h: 1, layer: 'night' },
+      { kind: 'shutter', tx: 24, ty: 13, h: 1, layer: 'night' },
+      { kind: 'shutter', tx: 28, ty: 13, h: 1, layer: 'night' },
+    ],
     freaks: [
       { kind: 'supervisor', tx: 15, ty: 8, period: 1.6, startFacing: 'right' },
       { kind: 'lurker', tx: 13, ty: 13, range: 1, speed: 40 },
@@ -1381,8 +1388,8 @@ export const LEVELS = [
     ],
     props: [
       { kind: 'memo', tx: 11, ty: 11, text: 'Pest control visit cancelled by pest control.' },
-      { kind: 'sign', tx: 7, ty: 7, text: 'INSPECTION', style: 'paper', layer: 'day' },
-      { kind: 'noticeBoard', tx: 21, ty: 10, layer: 'day' },
+      { kind: 'sign', tx: 7, ty: 8, text: 'INSPECTION', style: 'paper', layer: 'day' },
+      { kind: 'noticeBoard', tx: 19, ty: 10, layer: 'day' },
       { kind: 'mopBucket', tx: 7, ty: 13, layer: 'night' },
       { kind: 'wetFloorSign', tx: 11, ty: 13, layer: 'night' },
     ],
@@ -1420,7 +1427,7 @@ export const LEVELS = [
       '....#######.#######.....#######.',
       '....#######.#######.....#######.',
       '....#######.#######.....#######.',
-      '.........^..#...................',
+      '.........^..#...........#...#...',
       '####~~~~~~######################',
       '#########################..#####',
       '#########################..#####',

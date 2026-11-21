@@ -278,13 +278,15 @@ export const SOLUTIONS = {
       if (x < 11.5 && !m.goA) right = m.goA = sup.facing === 1 && sup.turnIn > 0.5;
       else if (x >= 14.95 && !m.goB) right = m.goB = sup.facing === -1 && sup.turnIn > 0.5;
     }
-    // past the day-walker (its reach ends at x 22.83), stop before the pit (24.4): out for the clamp and back in
-    // (entry 3, when they would have had the plank). The stop starts early enough to absorb a slow reaction.
-    if (x > 23.5 && x < 24.4 && !m.plank) {
-      right = false;
-      if (Math.abs(p.vx) < 1) {
+    // past the day-walker (its reach ends at x 22.83), up against the tunnel's shutter (it stops them at x 23.4): out
+    // for the clamp, which lifts the shutter and weighs the plank down, and back in (entry 3, when they would have
+    // had the plank). The stop starts early enough to absorb a slow reaction.
+    if (x > 22.9 && x < 24.4 && !m.plank) {
+      const bolted = s.repairs[1].done;
+      right = s.layer === DAY && !bolted;
+      if (Math.abs(p.vx) < 1 && !right) {
         m.ticks = (m.ticks ?? 0) + 1;
-        shift = (m.ticks > 4 && m.ticks < 8 && s.layer === NIGHT) || (m.ticks > 24 && m.ticks < 28 && s.layer === DAY);
+        shift = (m.ticks > 4 && m.ticks < 8 && s.layer === NIGHT && !bolted) || (bolted && s.layer === DAY && m.ticks > 24);
         if (m.ticks > 40 && s.nightEntries >= 3) m.plank = true;
       }
     }
