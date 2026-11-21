@@ -84,7 +84,7 @@ export const BACKDROP = {
   },
 };
 
-export function drawBackground(g, layer, W, H, t = 0, act = 0) {
+export function drawBackground(g, layer, W, H, t = 0, act = 0, ladderTop = LADDER_TOP) {
   for (const b of skyBands(layer, H)) {
     g.fillStyle = b.color;
     g.fillRect(0, b.y0, W, b.y1 - b.y0);
@@ -97,16 +97,33 @@ export function drawBackground(g, layer, W, H, t = 0, act = 0) {
       px(g, x, y, 1, 1, `rgba(255,255,255,${tw})`);
     }
   }
-  drawBackdrop(g, layer, W, H, act);
+  drawBackdrop(g, layer, W, H, act, ladderTop);
 }
 
 // One act's backdrop, drawn with art-px rects only (the palette test's raster canvas allows nothing else).
 // Act 0 is the plain back wall the menus use. The Upside Down's night is its day backdrop, upside down.
-export function drawBackdrop(g, layer, W, H, act = 0) {
+export function drawBackdrop(g, layer, W, H, act = 0, ladderTop = LADDER_TOP) {
   const motif = MOTIFS[act] ?? MOTIFS[0];
   const flip = motif.flipAtNight && layer === NIGHT;
   const r = (x, y, w, h, color) => px(g, x, flip ? H - y - h * A : y, w, h, color);
-  motif.draw(r, layer, W, H);
+  motif.draw(r, layer, W, H, { ladderTop });
+}
+
+// Act 1's ladder on the back wall (x 700..728, down to y 436) runs behind whatever the level builds in front of it.
+// `ladderTop` is where its top rung starts: the full height by default, or just under the lowest ledge across it
+// (`backLadderTop`), so the rails never run through a solid tile.
+export const LADDER_TOP = 274;
+const LADDER_X = [700, 727];
+const LADDER_BOTTOM = 436;
+// `solid(tx, ty)`: is that tile solid on this shift. Walks up from the floor; the first solid tile across the ladder
+// ends it, so only the run of open tiles standing on the floor is drawn (LADDER_BOTTOM when none is: no ladder).
+export function backLadderTop(solid) {
+  const cols = [Math.floor(LADDER_X[0] / TILE), Math.floor(LADDER_X[1] / TILE)];
+  const floorRow = Math.floor((LADDER_BOTTOM - 1) / TILE) - 1; // the lowest row of open wall above the floor tile row
+  for (let ty = floorRow; ty >= Math.floor(LADDER_TOP / TILE); ty--) {
+    if (cols.some((tx) => solid(tx, ty))) return (ty + 1) * TILE;
+  }
+  return LADDER_TOP;
 }
 
 // The back wall's six windows: quiet, never brighter than a solid's edge. At night most are dark; `lit` are the
@@ -173,7 +190,7 @@ const MOTIFS = {
 
   // Act 1, Renovation: scaffolding in front of the back wall, tarps hung from it, braces and a ladder.
   1: {
-    draw(r, layer, W, H) {
+    draw(r, layer, W, H, { ladderTop = LADDER_TOP } = {}) {
       const b = BACKDROP[layer];
       backWall(r, layer);
       for (const x of POLES) r(x, 40, 2, (H - 40) / A, b.line);
@@ -196,9 +213,11 @@ const MOTIFS = {
         }
       }
       // a ladder up the lower storey
-      r(700, 274, 1, 81, b.line);
-      r(726, 274, 1, 81, b.line);
-      for (let y = 282; y < 436; y += 16) r(702, y, 12, 1, b.line);
+      if (ladderTop < LADDER_BOTTOM) {
+        r(700, ladderTop, 1, (LADDER_BOTTOM - ladderTop) / A, b.line);
+        r(726, ladderTop, 1, (LADDER_BOTTOM - ladderTop) / A, b.line);
+        for (let y = ladderTop + 8; y < LADDER_BOTTOM; y += 16) r(702, y, 12, 1, b.line);
+      }
     },
   },
 

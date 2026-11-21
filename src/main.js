@@ -12,7 +12,7 @@ import { createSave, createSettings, isUnlocked } from './save.js';
 import { drawText, measureText, wrapText } from './font.js';
 import { drawSprite, drawEyes, eyesOpen, workerFrame, spriteRect, ART, SPRITES, C, JOB_NIGHT_PAL } from './sprites.js';
 import {
-  PAL, PROPS, drawBackground, drawSolidTile, drawHatch, drawEchoEdges, drawRebar, drawLaser, drawHazardEcho,
+  PAL, PROPS, LADDER_TOP, backLadderTop, drawBackground, drawSolidTile, drawHatch, drawEchoEdges, drawRebar, drawLaser, drawHazardEcho,
   drawWaterEcho, drawExit, exitRects, drawCheckpoint, drawSign, drawFreak, drawTool, drawCarriedTool, drawFixture, drawJobLink, drawFixBrackets, drawWater, drawStatusMark, drawPatrol, drawGaze, drawTurnTimer, drawPrankCells,
   drawShiftRing, drawDust, drawPuff, drawSparkle, drawPanel,
   drawStamp, drawLogo, drawWetTile, drawSkin, shouldHatch, withCellMirror, PLATE, NOTE_STRIP, px, drawMemoPanel,
@@ -736,13 +736,13 @@ function staticLayer(lvl, def, layer, ov) {
 // The sky and the act's backdrop (act 0: the menus' plain back wall), cached per act × shift. A run visits
 // one act at a time, so the cache keeps the last few (2 MB each).
 const bgCache = new Map();
-function background(layer, act = 0) {
-  const key = `${act},${layer}`;
+function background(layer, act = 0, ladderTop = LADDER_TOP) {
+  const key = `${act},${layer},${ladderTop}`;
   let c = bgCache.get(key);
   if (!c) {
     let ctx;
     [c, ctx] = makeCanvas();
-    drawBackground(ctx, layer, W, H, 0, act);
+    drawBackground(ctx, layer, W, H, 0, act, ladderTop);
     if (bgCache.size >= 6) bgCache.delete(bgCache.keys().next().value);
     bgCache.set(key, c);
   }
@@ -1138,7 +1138,7 @@ function drawPlay() {
   const layer = s.layer;
   const t = s.time;
   const reduced = settings.get().reduced;
-  g.drawImage(background(layer, def.act), 0, 0);
+  g.drawImage(background(layer, def.act, def.act === 1 ? backLadderTop((tx, ty) => solidAt(lvl, layer, tx, ty, {})) : LADDER_TOP), 0, 0); // act 1's back-wall ladder stops under a ledge
   const still = staticLayer(lvl, def, layer, s.overrides);
   g.drawImage(still.canvas, 0, 0);
   drawHazards(lvl, layer, reduced ? 0 : t, s.overrides);
