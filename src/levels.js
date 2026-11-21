@@ -1281,7 +1281,7 @@ export const LEVELS = [
     name: 'Floor 3.5',
     act: 4,
     note: 'There is no Floor 3 anymore. The lift only moves when you clock in.',
-    rev: 4,
+    rev: 5,
     repairs: [
       {
         tool: { tx: 12, ty: 7, layer: 'day', name: 'CRANK', kind: 'crank' },
@@ -1293,24 +1293,24 @@ export const LEVELS = [
           kind: 'winch',
           goal: 'FREE THE LIFT',
           target: 'LIFT',
-          link: [[12, 4], [14, 4], [14, 3]],
+          link: [[12, 4], [14, 4], [14, 3], [17, 3]],
           car: { w: 2, stops: [[14, 2], [20, 2]] },
         },
       },
     ],
     min: 4,
     offset: { dx: 0, dy: -3 },
-    nightPatch: [{ x0: 11, x1: 18, y0: 11, ch: '^' }, { x0: 14, x1: 15, y0: 2, ch: '#' }],
+    nightPatch: [{ x0: 11, x1: 13, y0: 11, y1: 14, ch: '#' }, { x0: 14, x1: 18, y0: 11, ch: '^' }, { x0: 14, x1: 15, y0: 2, ch: '#' }, { x0: 22, x1: 25, y0: 1, ch: '#' }],
     props: [
-      { kind: 'memo', tx: 6, ty: 6, text: 'The elevator now stops at 3.5. Do not press 3.5.', w: 240 },
-      { kind: 'sign', tx: 3, ty: 12, text: '3', style: 'paper', layer: 'day' },
+      { kind: 'memo', tx: 6, ty: 6, text: 'The elevator now stops at 3.5. Do not press 3.5.', w: 170 },
+      { kind: 'sign', tx: 3, ty: 13, text: '3', style: 'paper', layer: 'day' },
       { kind: 'sign', tx: 12, ty: 4, text: '3.5', style: 'note', layer: 'night' },
     ],
     decor: [{ kind: 'eyes', tx: 21, ty: 15 }],
     freaks: [{ kind: 'peeker', tx: 13, ty: 4, period: 1.8, duty: 0.4 }],
     day: [
       '................................',
-      '......................E.........',
+      '.......................E........',
       '...........#####......####......',
       '...........###........####......',
       '................................',
@@ -1439,7 +1439,7 @@ export const LEVELS = [
     name: 'Mind Your Head',
     act: 5,
     note: 'They flipped the night shift. Mind your head.',
-    rev: 3,
+    rev: 4,
     repairs: [
       {
         tool: { tx: 5, ty: 15, layer: 'day', name: 'BULB', kind: 'bulb' },
@@ -1465,7 +1465,7 @@ export const LEVELS = [
       { kind: 'mug', tx: 13, ty: 12, layer: 'night', flip: true },
     ],
     decor: [{ kind: 'eyes', tx: 14, ty: 8 }],
-    nightPatch: [{ x0: 23, x1: 26, y0: 13, ch: '#' }, { x0: 23, x1: 25, y0: 4, y1: 5, ch: '.' }, { x0: 26, y0: 12, ch: '.' }],
+    nightPatch: [{ x0: 23, x1: 26, y0: 13, ch: '#' }, { x0: 23, x1: 25, y0: 4, y1: 5, ch: '.' }, { x0: 26, y0: 12, ch: '.' }, { x0: 26, y0: 16, y1: 17, ch: '#' }, { x0: 0, x1: 5, y0: 2, ch: '#' }, { x0: 27, x1: 31, y0: 13, ch: '#' }],
     freaks: [{ kind: 'squatter', tx: 25, ty: 12 }],
     day: [
       '................................',
