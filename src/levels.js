@@ -1207,7 +1207,7 @@ export const LEVELS = [
     name: 'Broad Daylight',
     act: 4,
     note: 'One of them clocked in for the day shift.',
-    rev: 4,
+    rev: 5,
     // A dumbwaiter up to a corridor on the upper floor, where a lurker works by night at the landing and the day-walker
     // by day further on. The car only moves on a night clock-in, so you always arrive by night: wait on the car for
     // day to walk past the lurker, then clock in again to walk past the day-walker. Each shift freezes the other's.
@@ -1249,7 +1249,7 @@ export const LEVELS = [
       '.................###############',
       '.................###############',
       '.................###############',
-      '..S..............###############',
+      '..S..........C...###############',
       '################################',
       '###############..###############',
       '###############..###############',
@@ -1269,7 +1269,7 @@ export const LEVELS = [
       '.................###############',
       '.................###############',
       '.................###############',
-      '..S..............###############',
+      '..S..........C...###############',
       '################################',
       '###############..###############',
       '###############..###############',
