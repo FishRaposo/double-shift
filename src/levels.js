@@ -957,7 +957,7 @@ export const LEVELS = [
     note: 'The clipboard only keeps one side busy at a time.',
     rev: 3,
     freaks: [
-      { kind: 'supervisor', tx: 15, ty: 9, period: 2, startFacing: -1 },
+      { kind: 'supervisor', tx: 15, ty: 9, period: 2, startFacing: 'right' },
       { kind: 'lurker', tx: 9, ty: 13, range: 3, speed: 60 },
       { kind: 'lurker', tx: 19, ty: 13, range: 3, speed: 60 },
     ],

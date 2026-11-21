@@ -21,7 +21,7 @@ npm run media -- --root <dir>              # smoke-test another folder, e.g. the
 npm run gif -- upside                      # media/demo-upside.gif: the level's scripted run, 480×270 (--full: 960×540), same bytes every time
 ```
 
-Tests and scripts target Node 22. URL flags for manual play: `?level=<id>` (or a 1-based position, `?level=3`), `?autostart`, `?debug` (overlay, toggle with `` ` ``). `globalThis.__doubleShift` exposes the game object in the browser. In a cloud session, `npm run media` uses `/opt/pw-browsers/chromium` and adds `--no-sandbox` as root.
+Tests and scripts target Node 22. URL flags for manual play: `?level=<id>` (or a 1-based position, `?level=3`), `?autostart`, `?debug` (overlay, toggle with `` ` ``). `globalThis.__doubleShift` exposes the game object in the browser, but only when the URL has `?level`, `?debug` or `?tools` (`TOOLS` in `src/main.js`). In a cloud session, `npm run media` uses `/opt/pw-browsers/chromium` and adds `--no-sandbox` as root.
 
 ## Architecture
 

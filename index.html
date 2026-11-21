@@ -31,6 +31,16 @@
 </head>
 <body>
   <canvas id="game" width="960" height="540" tabindex="0" aria-label="Double Shift, a day and night puzzle-platformer"></canvas>
+  <!-- A browser too old for the game gets a sentence instead of a blank dark page (plain ES5: it must run anywhere). -->
+  <script>
+    if (!('noModule' in document.createElement('script')) || typeof structuredClone !== 'function' || typeof Object.hasOwn !== 'function' || ![].findLastIndex) {
+      document.getElementById('game').style.display = 'none';
+      var note = document.createElement('p');
+      note.style.cssText = 'color:#d9f6ff;font:20px/1.4 sans-serif;max-width:30em;padding:16px;text-align:center';
+      note.textContent = 'This game needs a newer browser: Chrome, Firefox, Edge or Safari 15.4+.';
+      document.body.appendChild(note);
+    }
+  </script>
   <script type="module" src="src/main.js"></script>
 </body>
 </html>

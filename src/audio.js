@@ -52,6 +52,15 @@ export function unlockAudio() {
   music.setShift(shift);
 }
 
+// A hidden tab or an unfocused embed goes quiet: the context stops (its clock too, so the music scheduler, which only
+// schedules up to currentTime + 0.12, queues nothing meanwhile and nothing bursts on resume). The next input
+// resumes it through unlockAudio() above. Safe before the context exists; a rejected promise is swallowed.
+export function suspendAudio() {
+  try {
+    if (ctx && ctx.state === 'running') ctx.suspend()?.catch?.(() => {});
+  } catch { /* nothing to suspend */ }
+}
+
 // Whether the audio graph exists and is running: the title uses it to tell a gamepad-only player why it is silent.
 export function audioReady() {
   return Boolean(ctx) && ctx.state === 'running';

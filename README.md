@@ -41,7 +41,7 @@ URL options: `?level=offset` start at a level by id (or by position, `?level=3`)
 | Restart level | R | Back |
 | Level select | L (title or pause), or click LEVEL SELECT | X (title or pause) |
 | Settings (volumes, reduced effects, speedrun timer, controls) | O (title or pause), or click SETTINGS | Y (title or pause) |
-| Pause | Esc | Start |
+| Pause | Esc or P | Start |
 | Mute | M | |
 
 Move, jump and change shift can be rebound in SETTINGS > CONTROLS (the menu keys can't). The gamepad mapping is fixed; in menus A confirms, B goes back, X opens level select, Y settings, and the d-pad moves the selection. On Windows, hammering Shift can open the Sticky Keys prompt. Use K, or turn off the Sticky Keys shortcut. Browsers differ on whether a gamepad press counts as the click that unlocks sound: if the game is silent, press a key or click once.
@@ -78,7 +78,7 @@ scripts/        serve, check, zip for itch, media + headless checks, demo GIFs
 
 ## Tests
 
-The suite has <!-- n:tests -->609<!-- /n --> tests.
+The suite has <!-- n:tests -->617<!-- /n --> tests.
 
 ```sh
 npm test         # GDD §13.7 shift/collision edge cases, pranks and freaks, wet floor, day/night

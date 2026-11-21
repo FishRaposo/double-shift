@@ -1,6 +1,6 @@
 # Design Notes
 
-How *Double Shift* was designed and built, and why. The full design is in [GDD.md](GDD.md) and the code reference is [TECH.md](TECH.md). Numbers are from the repo on 2026-11-03.
+How *Double Shift* was designed and built, and why. The full design is in [GDD.md](GDD.md) and the code reference is [TECH.md](TECH.md). Numbers are from the repo on 2026-11-21.
 
 ## The constraint
 
@@ -20,7 +20,7 @@ One month (GitHub Game Off, Nov 1 – Dec 1, 2026, theme SHIFT), one designer, n
 
 **Pranks make clock-ins a resource.** Each entry into the night shift can fire a prank that changes the building (the plank you crossed on moves over the next pit). The timecard counts clock-ins against a par, so the puzzle becomes *when* to shift, not only *where*. Every prank has a visible tell with a countdown and outlined tiles, drawn from pure rule state (`pendingPranks`), and dying restores the prank state saved at your last checkpoint, so a prank can never make a level impossible to finish.
 
-**The night can turn over.** Act 5's night is the day map upside down, with gravity pointing up. Every vertical rule (jump, gravity, grounding, the nudge, hazards, the grid edges, respawn) reads one gravity sign, so the flipped night is the day's rules mirrored rather than a second physics. The 12 levels that existed before it kept identical audit numbers.
+**The night can turn over.** Act 5's night is the day map upside down, with gravity pointing up. Every vertical rule (jump, gravity, grounding, the nudge, hazards, the grid edges, respawn) reads one gravity sign, so the flipped night is the day's rules mirrored rather than a second physics. The 16 levels that existed before it kept identical audit numbers.
 
 **Freaks have no AI.** Each one is a fixed pattern computed from a clock that only runs on its own shift: a patrol, a peek cycle, a sit; the supervisor's workers run on "time spent being watched", which has a closed form. That keeps them predictable, makes freezing free, and makes them testable.
 
@@ -28,8 +28,8 @@ One month (GitHub Game Off, Nov 1 – Dec 1, 2026, theme SHIFT), one designer, n
 
 ## The numbers
 
-- <!-- n:tests -->609<!-- /n --> automated tests (`npm test`): shift and collision edge cases, nudge/buffer, pranks, freaks, checkpoint restore, input rules, determinism, a 6000-tick fuzz for getting stuck in walls, every level at par, progress and settings saving (including blocked or corrupt storage), the art and music data (every glyph and sprite well-formed, every sound short), and **fairness**: every input a level requires has ≥ 200 ms of slack in acts 1–2 and ≥ 100 ms in acts 3–6, no respawn point sits in a patrol, no freak guards an exit.
-- `src/rules.js` is <!-- n:lines:src/rules.js -->876<!-- /n --> lines. The shell (`src/main.js`) is <!-- n:lines:src/main.js -->1460<!-- /n -->; the art is `src/art.js` (<!-- n:lines:src/art.js -->1231<!-- /n -->), `src/sprites.js` (<!-- n:lines:src/sprites.js -->745<!-- /n -->) and `src/font.js` (<!-- n:lines:src/font.js -->209<!-- /n -->); sound is `src/audio.js` (<!-- n:lines:src/audio.js -->223<!-- /n -->) and `src/music.js` (<!-- n:lines:src/music.js -->268<!-- /n -->).
+- <!-- n:tests -->617<!-- /n --> automated tests (`npm test`): shift and collision edge cases, nudge/buffer, pranks, freaks, checkpoint restore, input rules, determinism, a 6000-tick fuzz for getting stuck in walls, every level at par, progress and settings saving (including blocked or corrupt storage), the art and music data (every glyph and sprite well-formed, every sound short), and **fairness**: every input a level requires has ≥ 200 ms of slack in acts 1–2 and ≥ 100 ms in acts 3–6, no respawn point sits in a patrol, no freak guards an exit.
+- `src/rules.js` is <!-- n:lines:src/rules.js -->889<!-- /n --> lines. The shell (`src/main.js`) is <!-- n:lines:src/main.js -->1481<!-- /n -->; the art is `src/art.js` (<!-- n:lines:src/art.js -->1231<!-- /n -->), `src/sprites.js` (<!-- n:lines:src/sprites.js -->745<!-- /n -->) and `src/font.js` (<!-- n:lines:src/font.js -->209<!-- /n -->); sound is `src/audio.js` (<!-- n:lines:src/audio.js -->232<!-- /n -->) and `src/music.js` (<!-- n:lines:src/music.js -->268<!-- /n -->).
 - Drawing a frame costs under 1 ms (the static layer is cached), measured headless by `npm run media`.
 - CI runs the syntax check, level validation, the tests and the doc-count check on every push, plus the level fairness audit as its own job.
 - The demo GIFs are the tests' own scripted runs, played by the game on a fixed clock (`npm run gif`), so a GIF can't show a run the suite doesn't prove.

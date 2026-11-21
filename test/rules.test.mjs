@@ -1491,3 +1491,85 @@ test('a death on a shift tick drops that tick’s shift and machine events, not 
   assert.equal(s.deaths, 1, 'the shift landed on the spike');
   assert.deepEqual(s.events.filter((e) => e.type === 'shift' || e.type === 'machine'), [], 'undone changes are silent');
 });
+
+// ---------- verified bug fixes: death events, checkpoint snapshots, land events, parse validation ----------
+
+test('a shift into day that kills you on the same tick drops its shift event (the respawn put the night back)', () => {
+  // a night checkpoint is banked, then the shift to day lands on a day-grid spike: death and respawn, no shift ring
+  const day = ['.S..C..^.E', '##########'];
+  const nightRows = ['....C.....', '##########'];
+  const lvl = level(day, nightRows);
+  let s = step(lvl, initState(lvl), SHIFT); // to night
+  s = place(s, 4, 0, { dy: TILE - PARAMS.playerH });
+  s = step(lvl, s, NO_INPUT);
+  assert.equal(s.checkpoint.layer, NIGHT, 'banked in the night');
+  s = place(s, 7, 0, { dy: TILE - PARAMS.playerH, player: { vx: 0, vy: 0 } });
+  s = step(lvl, s, SHIFT); // night -> day, onto the spike
+  assert.equal(s.deaths, 1);
+  assert.equal(s.layer, NIGHT, 'respawned into the checkpoint shift');
+  assert.ok(s.events.some((e) => e.type === 'death'));
+  assert.ok(s.events.some((e) => e.type === 'respawn'));
+  assert.ok(!s.events.some((e) => e.type === 'shift'), 'no shift event: the screen must not ring or flash at the death spot');
+  assert.equal(s.shifts, 2, 'the shift still counts on the timecard');
+});
+
+test('a tool picked up on the checkpoint’s own tick is banked with it: a death keeps the tool', () => {
+  const day = ['.S..C..^.E', '##########'];
+  const lvl = level(day, day.map((r) => r.replace(/[SE^]/g, '.')), {
+    repairs: [{ tool: { tx: 4, ty: 0, layer: 'day', name: 'FUSE', kind: 'fuse' }, fix: { tx: 8, ty: 0, layer: 'day', name: 'BOX', kind: 'fuse', set: [{ layer: 'day', x0: 1, y0: 0, ch: '#' }] } }],
+  });
+  let s = place(initState(lvl), 4, 0, { dy: TILE - PARAMS.playerH });
+  s = step(lvl, s, NO_INPUT); // the tool and the checkpoint share a tile: both touched on one tick
+  assert.equal(s.repairs[0].tool, true, 'picked up');
+  assert.ok(s.checkpoint.id, 'checkpoint taken');
+  assert.equal(s.checkpoint.repairs[0].tool, true, 'the checkpoint holds the tool too');
+  s = place(s, 7, 0, { dy: TILE - PARAMS.playerH, player: { vx: 0, vy: 0 } }); // onto the spike
+  s = step(lvl, s, NO_INPUT);
+  assert.equal(s.deaths, 1);
+  assert.equal(s.repairs[0].tool, true, 'still held after the respawn');
+});
+
+test('a jump tick is not a landing, whichever way gravity pulls (a ceiling right overhead, day and flipped night)', () => {
+  const J = { ...NO_INPUT, jumpPressed: true, jumpHeld: true };
+  // day: one tile of headroom over the floor
+  const day = ['#########', '.S.....E.', '#########'];
+  const lvl = level(day, day.map((r) => r.replace(/[SE]/g, '.')));
+  let s = stepN(lvl, initState(lvl), 20);
+  assert.ok(s.player.grounded);
+  s = step(lvl, s, J);
+  assert.ok(s.events.some((e) => e.type === 'jump'));
+  assert.ok(!s.events.some((e) => e.type === 'land'), 'day: no land on the jump tick');
+  // flipped night: gravity up, the 'floor' is the ceiling row
+  const up = level(day, undefined, { upsideDown: true });
+  let n = initState(up);
+  n.layer = NIGHT;
+  n = stepN(up, n, 20);
+  assert.ok(n.player.grounded, 'hanging');
+  n = step(up, n, J);
+  assert.ok(n.events.some((e) => e.type === 'jump'));
+  assert.ok(!n.events.some((e) => e.type === 'land'), 'night: no land on the jump tick');
+  // and a real landing still fires one
+  let f = place(initState(twin), 2, 3, { player: { grounded: false, vy: 200 } });
+  let landed = false;
+  for (let i = 0; i < 120 && !landed; i++) { f = step(twin, f, NO_INPUT); landed = f.events.some((e) => e.type === 'land'); }
+  assert.ok(landed, 'a fall still lands');
+});
+
+test('parseLevel: startFacing is left or right; unknown tiles and doubled spawn or exit markers are refused', () => {
+  const day = ['.S.E', '####'];
+  const night = ['....', '####'];
+  assert.throws(() => level(day, night, { freaks: [{ kind: 'supervisor', tx: 1, ty: 0, period: 2, startFacing: -1 }] }), /startFacing/);
+  assert.throws(() => level(day, night, { freaks: [{ kind: 'supervisor', tx: 1, ty: 0, period: 2, startFacing: 'Left' }] }), /startFacing/);
+  for (const startFacing of [undefined, 'left', 'right']) assert.ok(level(day, night, { freaks: [{ kind: 'supervisor', tx: 1, ty: 0, period: 2, startFacing }] }));
+  assert.throws(() => level(['.S.E', '#x##'], night), /unknown tile 'x'/);
+  assert.throws(() => level(day, ['..?.', '####']), /unknown tile '\?'/);
+  assert.throws(() => level(['.S.E', ' ###'], night), /unknown tile/);
+  assert.throws(() => level(['.SSE', '####'], night), /two spawn/);
+  assert.throws(() => level(['.S.E', '####'], ['S...', '####']), /two spawn/, 'a spawn in each grid at different cells');
+  assert.throws(() => level(['.S.E', '####'], ['...E', 'E###']), /two exit/);
+  assert.ok(level(['.S.E', '####'], ['.S.E', '####']), 'the same marker in both grids is one marker');
+  // supervisor facing: 'right' starts facing right (the data LEVELS use), 'left' left
+  const sup = (startFacing) => level(day, night, { freaks: [{ kind: 'supervisor', tx: 1, ty: 0, period: 2, startFacing }] });
+  assert.equal(supervisorFacing(sup('right').freaks[0], 0), 1);
+  assert.equal(supervisorFacing(sup('left').freaks[0], 0), -1);
+});

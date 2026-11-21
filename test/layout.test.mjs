@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { LEVELS, ACTS, FINALE_ACT } from '../src/levels.js';
 import {
   placeTag, hudFloor, HUD_BOTTOM, levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, actLabel, endSummary, selectClick, canvasScale, frameDeltas, SIM_MAX, CARD, TAB, SELECT_BOUNDS,
-  memoPanel, memoNear, MEMO,
+  memoPanel, memoNear, MEMO, quitPress, quitArmed, QUIT_CONFIRM, volumeAt,
 } from '../src/layout.js';
 import { wrapText, measureText } from '../src/font.js';
 
@@ -237,4 +237,29 @@ test('job tags: a tell or the exit in the way is stepped round sideways, and onl
   assert.ok(Math.abs(a.x - 380) <= 90 && Math.abs(a.x - tell.x) >= tell.half + 50, 'beside the note, not on it');
   const wall = [{ x: 380, y: 376, half: 400, fixed: true }]; // nothing within reach sideways
   assert.notEqual(placeTag(wall, box, 80, 380, 376, 960).y, 376, 'then it stacks as before');
+});
+
+test('quitPress: leaving a break for the title takes a second press within two seconds', () => {
+  const first = quitPress(null, 10);
+  assert.deepEqual(first, { quit: false, armedAt: 10 }, 'the first press only arms');
+  assert.equal(quitArmed(first.armedAt, 10.5), true, 'the row reads "title? again" meanwhile');
+  assert.deepEqual(quitPress(first.armedAt, 11.5), { quit: true, armedAt: null }, 'a second press inside the window quits');
+  assert.equal(quitArmed(first.armedAt, 10 + QUIT_CONFIRM + 0.01), false, 'time passing disarms');
+  assert.deepEqual(quitPress(first.armedAt, 13), { quit: false, armedAt: 13 }, 'a late press arms afresh, it does not quit');
+  assert.equal(quitArmed(null, 5), false, 'disarmed (any other key, leaving the break) is never armed');
+  assert.deepEqual(quitPress(null, 0), { quit: false, armedAt: 0 }, 'a clock reading of 0 is still a reading');
+});
+
+test('volumeAt: a click picks the segment under it, and left of the first segment is 0', () => {
+  const x0 = 250; // segments span x0 + 18 * i .. + 7
+  assert.equal(volumeAt(x0 + 3.5 + 18 * 4, x0), 0.5, 'the middle of the fifth segment');
+  assert.equal(volumeAt(x0 + 18 * 9 + 3.5, x0), 1, 'the last segment');
+  assert.equal(volumeAt(x0 + 500, x0), 1, 'past the bar is full, not out of range');
+  assert.equal(volumeAt(x0 + 3.5 + 1, x0), 0.1, 'the right half of the first segment is 10%');
+  assert.equal(volumeAt(x0 + 2, x0), 0, 'the left half of the first segment is 0');
+  assert.equal(volumeAt(x0 - 20, x0), 0, 'left of the bar is 0');
+  for (let x = x0 - 30; x < x0 + 200; x += 0.5) {
+    const v = volumeAt(x, x0);
+    assert.ok(v >= 0 && v <= 1 && Math.abs(v * 10 - Math.round(v * 10)) < 1e-9, `${x} -> ${v}`);
+  }
 });

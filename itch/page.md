@@ -1,6 +1,6 @@
 # itch.io page kit
 
-Everything needed to create the *Double Shift* page on itch.io, in the order the itch dashboard asks for it. Settings come from [RELEASE.md](../docs/RELEASE.md) §2. **Fish writes the final description words**; the draft below is checked against the current build (<!-- n:levels -->21<!-- /n --> levels, 609 tests, level select, pixel art and music). The paste-ready description in §4 carries no markers, so check its numbers by hand before pasting (the release refresh does).
+Everything needed to create the *Double Shift* page on itch.io, in the order the itch dashboard asks for it. Settings come from [RELEASE.md](../docs/RELEASE.md) §2. **Fish writes the final description words**; the draft below is checked against the current build (<!-- n:levels -->21<!-- /n --> levels, <!-- n:tests -->617<!-- /n --> tests, level select, pixel art and music). The paste-ready description in §4 carries no markers, so check its numbers by hand before pasting (the release refresh does).
 
 ## 0. What's left, in order (Fish)
 
@@ -60,7 +60,7 @@ npm run gif -- upside     # media/demo-upside.gif (480×270): Mind Your Head's s
 >
 > You're covering a double shift, day and night, in the same building, at the same time. Press **Shift** to step between them, even mid-jump. The day crew's scaffolding catches you; the night's gate isn't down yet.
 >
-> But clocking in has a cost. Clock into the night a second time and the plank over the next pit is gone. Unless you bolted it down first. Nobody knows what the freaks are. They giggle. They leave notes. And they only move at night, so step into the day shift and they freeze mid-stride. (Well. Most of them.)
+> But clocking in has a cost. Clock into the night and the plank over the next pit is gone. Unless you bolted it down first. Nobody knows what the freaks are. They giggle. They leave notes. And they only move at night, so step into the day shift and they freeze mid-stride. (Well. Most of them.)
 >
 > Finish each level clocking in as few times as possible. Your timecard is watching.
 >
@@ -72,7 +72,7 @@ npm run gif -- upside     # media/demo-upside.gif (480×270): Mind Your Head's s
 > | Jump | Space, W or ↑ (hold for higher) | A |
 > | Change shift | Shift or K | B, X or RB |
 > | Restart level | R | Back |
-> | Pause | Esc | Start |
+> | Pause | Esc or P | Start |
 > | Level select | L, or click LEVEL SELECT on the title | X |
 > | Settings | O: volumes, reduced effects, speedrun timer, controls | Y |
 > | Mute | M | |
@@ -84,7 +84,7 @@ npm run gif -- upside     # media/demo-upside.gif (480×270): Mind Your Head's s
 > **What's in this build:** 21 levels in five acts and a finale, from your first clock-in to the last, including an act where the night shift is upside down. Every level has a job to do, and the job is the puzzle: one fuse for two shutters, a valve that floods one room to drain another, a hoist that only moves when you clock in, a bolt for the thing they were about to steal. Every prank and patrol shows what it's about to do. Gamepad support, rebindable controls and a speedrun timer. Made for GitHub Game Off 2026 (theme: SHIFT).
 >
 > **How it was made**
-> Tested like production software: the gameplay rules are a pure module, the game has 609 automated tests, and every level is proven solvable at par by a scripted run. No engine, no assets: the pixel art, the pixel font and the music are all drawn and synthesized by code. Source: https://github.com/FishRaposo/double-shift
+> Tested like production software: the gameplay rules are a pure module, the game has <!-- n:tests -->617<!-- /n --> automated tests, and every level is proven solvable at par by a scripted run. No engine, no assets: the pixel art, the pixel font and the music are all drawn and synthesized by code. Source: https://github.com/FishRaposo/double-shift
 >
 > If you enjoyed it, a follow or a small donation helps.
 

@@ -99,6 +99,7 @@ function parseRepair(def, job) {
 
 // Legend: '#' solid, '^' hazard, 'w' water (a hazard filling its tile), 'S' spawn, 'E' exit, 'C' checkpoint, '.' empty.
 // S, E and C are shared between shifts and may be written in either grid.
+const GRID_CHARS = '.#^~wSEC';
 export function parseLevel(def) {
   const { day } = def;
   if (def.night && def.offset) throw new Error(`${def.name}: give a night grid or an offset, not both`);
@@ -121,6 +122,8 @@ export function parseLevel(def) {
     if (!FREAK_KINDS.includes(f.kind)) throw new Error(`${def.name}: unknown freak kind ${JSON.stringify(f.kind)}`);
     if (f.period !== undefined && !(f.period > 0)) throw new Error(`${def.name}: ${f.kind} period must be > 0`);
     if (f.duty !== undefined && !(f.duty > 0 && f.duty <= 1)) throw new Error(`${def.name}: ${f.kind} duty must be in (0, 1]`);
+    // 'left' is the only value read (startDir below): anything else would silently start the other way
+    if (f.startFacing !== undefined && f.startFacing !== 'left' && f.startFacing !== 'right') throw new Error(`${def.name}: ${f.kind} startFacing must be 'left' or 'right'`);
   }
   if (day.length !== night.length) throw new Error(`${def.name}: day/night height differs`);
   const h = day.length;
@@ -138,6 +141,12 @@ export function parseLevel(def) {
     for (let y = 0; y < h; y++) {
       for (let x = 0; x < w; x++) {
         const c = layers[li][y][x];
+        if (!GRID_CHARS.includes(c)) throw new Error(`${def.name}: unknown tile '${c}' at ${x},${y} in the ${li ? 'night' : 'day'} grid`);
+        // S and E are shared, so either grid may write them, but two different cells would leave one chosen by scan order
+        if (c === 'S' || c === 'E') {
+          const seen = c === 'S' ? spawn : exit;
+          if (seen && (seen.tx !== x || seen.ty !== y)) throw new Error(`${def.name}: two ${c === 'S' ? 'spawn (S)' : 'exit (E)'} markers, at ${seen.tx},${seen.ty} and ${x},${y}`);
+        }
         if (c === 'S') spawn = { tx: x, ty: y };
         else if (c === 'E') exit = { tx: x, ty: y };
         else if (c === 'C') checkpoints.push({ tx: x, ty: y, id: `${x},${y}` });
@@ -734,8 +743,11 @@ function die(level, s, cause, by) {
   // GDD §9.3: level objects return to the checkpoint's state, so a prank can never softlock a run
   // a prank fired by this tick's shift went with the night entry it came from: the respawn undoes it, so the
   // screen must not celebrate it (no giggle, no sparkles). The shift and car events from that same tick are just
-  // as undone, so their sound and rings must not play either.
-  if (s.checkpoint.nightEntries < s.nightEntries) s.events = s.events.filter((e) => e.type !== 'prank' && e.type !== 'shift' && e.type !== 'machine');
+  // as undone, so their sound and rings must not play either. A shift into day enters no night, so the prank and
+  // machine events only go when a night entry is rolled back; the shift event always goes: the respawn put the
+  // layer back, whichever way the shift went.
+  const undoneEntry = s.checkpoint.nightEntries < s.nightEntries;
+  s.events = s.events.filter((e) => e.type !== 'shift' && !(undoneEntry && (e.type === 'prank' || e.type === 'machine')));
   s.overrides = s.checkpoint.overrides;
   s.nightEntries = s.checkpoint.nightEntries;
   s.repairs = s.checkpoint.repairs;
@@ -803,6 +815,7 @@ export function step(level, prev, input = NO_INPUT, dt = DT) {
   // 4. Jump: buffer, coyote (which carries across shifts of the same gravity), variable height. `sign` is the
   // gravity after the shift resolved: every vertical rule below is the same rule mirrored on a flipped night.
   const sign = gravitySign(level, s.layer);
+  const wasGrounded = p.grounded; // before this tick's jump: a jump butting a flush ceiling ends grounded again, but is no landing
   if (input.jumpPressed) p.jumpBuf = P.jumpBuffer;
   else p.jumpBuf = Math.max(0, p.jumpBuf - dt);
   if (p.grounded) p.coyote = P.coyoteTime;
@@ -830,7 +843,6 @@ export function step(level, prev, input = NO_INPUT, dt = DT) {
     else if (p.vx < 0) p.x = (Math.floor(p.x / TILE) + 1) * TILE;
     p.vx = 0;
   }
-  const wasGrounded = p.grounded;
   p.y += p.vy * dt;
   if (solidAt(level, s, s.layer, p.x, p.y)) {
     if (p.vy > 0) p.y = Math.floor((p.y + P.playerH) / TILE) * TILE - P.playerH;
@@ -848,7 +860,9 @@ export function step(level, prev, input = NO_INPUT, dt = DT) {
   if (fb) { die(level, s, 'spooked', fb.kind); return s; }
   if (sign > 0 ? p.y > level.h * TILE + 60 : p.y + P.playerH < -60) { die(level, s, 'fall'); return s; }
 
-  // 8. Shared objects: checkpoints and exit exist in both shifts.
+  // 8. Shared objects: the work order, then checkpoints and the exit (both exist in both shifts). The jobs go first
+  // so a checkpoint touched on the same tick as a tool or a fix banks it: a death a tick later keeps what was done.
+  level.repairs.forEach((job, i) => touchJob(level, s, job, i));
   // A checkpoint saves you in the shift you touched it in, but only where you'd respawn on ground (standing,
   // or hanging on a flipped night): touched mid-air over a pit, it saves in the other shift if that one has
   // ground, else not at all. (Otherwise a respawn would drop straight back into the pit, forever.)
@@ -862,7 +876,6 @@ export function step(level, prev, input = NO_INPUT, dt = DT) {
       s.events.push({ type: 'checkpoint', id: c.id });
     }
   }
-  level.repairs.forEach((job, i) => touchJob(level, s, job, i));
   if (overlapsTile(p, level.exit.tx, level.exit.ty)) {
     s.won = true;
     s.events.push({ type: 'win', shifts: s.shifts, par: level.par });

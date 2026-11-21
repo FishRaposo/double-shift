@@ -7,7 +7,7 @@ import { SPRITES, workerFrame, ART } from '../src/sprites.js';
 import { PARAMS, FREAK, TILE } from '../src/rules.js';
 import { LEVELS, ACTS } from '../src/levels.js';
 import { CREDITS } from '../src/copy.js';
-import { exitRects, checkpointRect, shouldHatch, drawPrankCells, PROPS, DAY, NIGHT } from '../src/art.js';
+import { exitRects, checkpointRect, shouldHatch, drawPrankCells, drawJobLink, PROPS, DAY, NIGHT } from '../src/art.js';
 import { parseLevel, tileAt, isSolidChar } from '../src/rules.js';
 import { memoPanel } from '../src/layout.js';
 import { keyLabel, isBindable } from '../src/keys.js';
@@ -322,4 +322,19 @@ test('work orders: every tool and fixture a level names has a sprite', () => {
 
 test('every level note fits on its strip', () => {
   for (const def of LEVELS) if (def.note) assert.ok(measureText(def.note, 2) <= 900, `${def.id}: ${measureText(def.note, 2)} px`);
+});
+
+// Reduced effects draw the work order at t = 0 (src/main.js drawPlay): no crawl, but a powered cable must still
+// read differently from a broken one, and a powered one must not move with the clock at t = 0.
+test('reduced effects: a cable drawn at t = 0 still tells powered from broken, and is the same every frame', () => {
+  const link = [[5, 5], [9, 5]];
+  const run = (done, t) => {
+    const calls = [];
+    const g = { fillStyle: '', globalAlpha: 1, fillRect(x, y, w, h) { calls.push(`${this.fillStyle}@${x},${y},${w},${h}`); } };
+    drawJobLink(g, link, t, done, DAY);
+    return calls.join('|');
+  };
+  assert.notEqual(run(true, 0), run(false, 0), 'powered and broken look different with the clock pinned');
+  assert.equal(run(true, 0), run(true, 0));
+  assert.notEqual(run(true, 0), run(true, 0.2), 'the live crawl moves with the clock: that is what reduced effects pins');
 });

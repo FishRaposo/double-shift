@@ -43,6 +43,23 @@ test('keys: reserved and unbindable codes are refused', () => {
   assert.equal(rebind(DEFAULT_BINDS, 'dance', 'KeyJ').ok, false);
 });
 
+test('keys: P (pause) and Q (title from the pause screen) are menu keys: never bindable, never handed out, dropped from a save', () => {
+  for (const code of ['KeyP', 'KeyQ']) {
+    assert.equal(isBindable(code), false, code);
+    assert.ok(RESERVED.includes(code), code);
+    assert.equal(rebind(DEFAULT_BINDS, 'jump', code).ok, false, code);
+    assert.equal(ownsKey(code), true, code + ' is kept from the page');
+  }
+  // refill's spare-key fallback skips P and Q: with every defaults key and the earlier spares taken, the next spare is a digit
+  const crowded = { left: ['KeyJ', 'KeyI', 'KeyU', 'KeyH', 'KeyN', 'KeyY', 'KeyT', 'ShiftLeft', 'ShiftRight'], right: ['KeyG', 'KeyB', 'KeyV', 'KeyC', 'KeyX', 'KeyZ', 'KeyE', 'KeyK'], jump: ['KeyF'], shift: [] };
+  assert.deepEqual(cleanBinds(crowded).shift, ['Digit1']);
+  const saved = cleanBinds({ left: ['KeyP', 'KeyA'], right: ['KeyQ'], jump: ['KeyP'], shift: ['KeyQ', 'KeyK'] });
+  valid(saved);
+  assert.deepEqual(saved.left, ['KeyA']);
+  assert.deepEqual(saved.shift, ['KeyK']);
+  for (const a of ACTIONS) for (const c of saved[a]) assert.ok(c !== 'KeyP' && c !== 'KeyQ', a + ' kept ' + c);
+});
+
 test('keys: cleanBinds repairs corrupt or partial binds', () => {
   assert.deepEqual(cleanBinds(null), DEFAULT_BINDS);
   assert.deepEqual(cleanBinds('nope'), DEFAULT_BINDS);

@@ -6,7 +6,7 @@ import { LEVELS, ACTS, FINALE_ACT } from './levels.js';
 import { createInput } from './input.js';
 import { createPad, readPads, padMenuKey } from './pad.js';
 import { ACTIONS, DEFAULT_BINDS, ownsKey, rebind, keyLabel, keysText, keysShort, browserShortcut } from './keys.js';
-import { sfx, playSound, unlockAudio, audioReady, setVolumes, setMusicShift, setMusicAct, setMenu } from './audio.js';
+import { sfx, playSound, unlockAudio, suspendAudio, audioReady, setVolumes, setMusicShift, setMusicAct, setMenu } from './audio.js';
 import { skinPlan, checkpointHangs, exitPose, lightCordFrom } from './skins.js';
 import { createSave, createSettings, isUnlocked } from './save.js';
 import { drawText, measureText, wrapText } from './font.js';
@@ -18,7 +18,7 @@ import {
   drawStamp, drawLogo, drawWetTile, drawSkin, shouldHatch, withCellMirror, PLATE, NOTE_STRIP, px, drawMemoPanel,
 } from './art.js';
 import { SPOOK_LINES, ACT_LINES, CREDITS, timecardComment, stampText, prankCountdown } from './copy.js';
-import { levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, endSummary, selectClick, canvasScale, frameDeltas, CARD, memoPanel, memoNear, HUD_BOTTOM, hudFloor, placeTag } from './layout.js';
+import { levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, endSummary, selectClick, canvasScale, frameDeltas, CARD, memoPanel, memoNear, HUD_BOTTOM, hudFloor, placeTag, quitPress, quitArmed, volumeAt } from './layout.js';
 
 const W = 960;
 const H = 540;
@@ -85,6 +85,7 @@ const game = {
   clock: 0, // real seconds, for menu animation
   screenTime: 0, // seconds on the current screen (card stamp, act card)
   actShown: 0, // last act whose title card was shown
+  quitAt: null, // clock reading of a pause screen's first Q (title needs two presses), or null
 };
 
 function level() { return levels[game.index]; }
@@ -94,6 +95,7 @@ const lurkerAt = new Map(); // a lurker's last heard x, per freak index (src/mai
 function setScreen(s) {
   game.screen = s;
   game.screenTime = 0;
+  game.quitAt = null; // a half-confirmed quit to the title never outlives the pause screen
   if (stampTimer !== null) { clearTimeout(stampTimer); stampTimer = null; } // a fast retry mustn't stamp over the next level
 }
 
@@ -146,8 +148,7 @@ function adjustSetting(row, dir) {
 const VOLUME_TRACK_X = 250;
 const VOLUME_PITCH = 18;
 function setVolumeAt(key, r, x) {
-  const i = Math.min(9, Math.max(0, Math.round((x - (r.x + VOLUME_TRACK_X + 3.5)) / VOLUME_PITCH)));
-  setVolumes(settings.set({ [key]: (i + 1) / 10 }));
+  setVolumes(settings.set({ [key]: volumeAt(x, r.x + VOLUME_TRACK_X) })); // left of the first segment: 0
   sfx.uiMove();
 }
 
@@ -189,7 +190,7 @@ function captureKey(code) {
     game.controlsNote = '';
     sfx.uiSelect();
   } else {
-    game.controlsNote = 'Not that one: use a letter, a digit, an arrow, Space or Shift. The menu keys (Esc, Enter, Tab, R, L, O, M and the debug key) stay put.';
+    game.controlsNote = 'Not that one: use a letter, a digit, an arrow, Space or Shift. The menu keys (Esc, Enter, Tab, R, L, O, M, P, Q and the debug key) stay put.';
     sfx.shiftFail();
   }
 }
@@ -212,7 +213,7 @@ function handleKey(e) {
   if (e.repeat) { input.keyDown(e); return; }
   if (game.screen === 'controls' && game.capturing) { captureKey(e.code); return; } // before mute (M) and debug (the backquote) take theirs
   if (e.code === 'KeyM') { setVolumes(settings.set({ mute: !settings.get().mute })); return; }
-  if (e.code === 'Backquote') { game.debug = !game.debug; return; }
+  if (e.code === 'Backquote' && TOOLS) { game.debug = !game.debug; return; } // the debug overlay is a test tool (?debug, ?level, ?tools)
   if (game.screen === 'title') {
     if (e.code === 'Space' || e.code === 'Enter') startRun(game.index);
     else if (e.code === 'KeyL') openSelect();
@@ -235,7 +236,10 @@ function handleKey(e) {
     else if (e.code === 'Escape') setScreen('settings');
     return;
   }
-  if (game.screen === 'act') { setScreen('play'); input.keyDown({ code: e.code, repeat: true }); return; } // holds, never a press: skipping the card spends no clock-in
+  if (game.screen === 'act') {
+    if (e.code === 'Escape' || e.code === 'KeyP') { setScreen('paused'); return; } // pause the level behind the card, not a held key
+    setScreen('play'); input.keyDown({ code: e.code, repeat: true }); return;
+  } // holds, never a press: skipping the card spends no clock-in
   if (game.screen === 'select') {
     const dir = SELECT_KEYS[e.code];
     if (dir) { game.selected = moveSelect(LEVELS, game.selected, dir[0], dir[1]); sfx.uiMove(); }
@@ -254,6 +258,7 @@ function handleKey(e) {
       else setScreen('end');
     } else if (e.code === 'KeyR') startLevel(game.index, { card: false });
     else if (e.code === 'KeyL') openSelect();
+    else if (e.code === 'Escape' || e.code === 'KeyP') { game.index = Math.min(game.index + 1, levels.length - 1); setScreen('title'); } // the title's clock-in carries on from the next level
     return;
   }
   if (game.screen === 'end') {
@@ -264,11 +269,17 @@ function handleKey(e) {
     return;
   }
   if (game.screen === 'paused') {
+    if (e.code !== 'KeyQ') game.quitAt = null; // any other key disarms the quit
     if (e.code === 'Escape' || e.code === 'KeyP' || e.code === 'Space' || e.code === 'Enter') setScreen('play');
     else if (e.code === 'KeyR') startLevel(game.index, { card: false });
     else if (e.code === 'KeyL') openSelect();
     else if (e.code === 'KeyO') openSettings();
-    else if (e.code === 'KeyQ') { game.index = 0; setScreen('title'); } // like the end screen: a fresh run next
+    else if (e.code === 'KeyQ') { // two presses (src/layout.js quitPress): a mashed RB must not drop the run
+      const q = quitPress(game.quitAt, game.clock);
+      game.quitAt = q.armedAt;
+      if (q.quit) { game.index = 0; setScreen('title'); } // like the end screen: a fresh run next
+      else sfx.uiMove();
+    }
     return;
   }
   // play
@@ -317,12 +328,14 @@ function pollPad() {
 addEventListener('blur', () => {
   input.clear();
   if (game.screen === 'play' || game.screen === 'act') setScreen('paused'); // an act card would run on into the level
+  suspendAudio(); // the music stops with the focus; the next key or click resumes it (unlockAudio)
 });
 // A hidden tab is not a lost focus: an iframe scrolled out of view keeps running without a blur. Pause all the same.
 addEventListener('visibilitychange', () => {
   if (!document.hidden) return;
   input.clear();
   if (game.screen === 'play' || game.screen === 'act') setScreen('paused');
+  suspendAudio();
 });
 // Size the canvas to a whole number of device pixels per canvas pixel unless that wastes > 15% of the window
 // (src/layout.js canvasScale); the CSS in index.html is the fallback before this runs.
@@ -347,7 +360,7 @@ canvas.addEventListener('pointerdown', (e) => {
   if (game.screen === 'title') {
     if (inside(TITLE_SELECT)) openSelect();
     else if (inside(TITLE_SETTINGS)) openSettings();
-    else startRun(game.index);
+    else if (!touchOnly()) startRun(game.index); // a touch-only visitor is told it needs a keyboard: a tap mustn't start a run they cannot play
   } else if (game.screen === 'settings') {
     const row = SETTING_ROWS.findIndex((_, k) => inside(settingRect(k)));
     if (row >= 0) {
@@ -374,7 +387,7 @@ canvas.addEventListener('pointerdown', (e) => {
       else { game.selected = i; sfx.shiftFail(); } // NOT YET
     }
   } else if (game.screen === 'paused') {
-    const hit = actionAt(PAUSE_ACTIONS, PAUSE_ROW, x, y);
+    const hit = actionAt(pauseActions(), PAUSE_ROW, x, y);
     if (hit) handleKey({ code: hit.code });
   } else if (game.screen === 'card') {
     handleKey({ code: actionAt(CARD_ACTIONS, CARD_ROW, x, y)?.code ?? 'Space' }); // anywhere else: next
@@ -400,7 +413,8 @@ const btnName = (code) => (game.padLast ? PAD_WORDS[code] : keyName(code));
 
 // A centred row of actions ("Esc: resume   R: restart"), the same on every device: each is also a click target.
 const PAUSE_ACTIONS = [['Escape', 'resume'], ['KeyR', 'restart'], ['KeyL', 'levels'], ['KeyO', 'settings'], ['KeyQ', 'title']];
-const CARD_ACTIONS = [['Space', 'next'], ['KeyR', 'retry'], ['KeyL', 'levels']];
+const pauseActions = () => PAUSE_ACTIONS.map(([code, what]) => (code === 'KeyQ' && quitArmed(game.quitAt, game.clock) ? [code, 'title? again'] : [code, what]));
+const CARD_ACTIONS = [['Space', 'next'], ['KeyR', 'retry'], ['KeyL', 'levels'], ['Escape', 'title']];
 const END_ACTIONS = [['Space', 'clock in again'], ['Escape', 'title']];
 const PAUSE_ROW = { y: H / 2 + 12 };
 const CARD_ROW = { y: 402 };
@@ -590,8 +604,9 @@ function frame(now) {
     pollPad();
     advance(sim, undefined, wall);
     render();
+    if (complaint) drawComplaint(); // render() clears the canvas every frame: the notice is drawn over it again
   } catch (err) {
-    console.error(err);
+    complain(err);
   }
 }
 
@@ -898,7 +913,7 @@ function drawWorker(s, layer) {
   const fx = game.fx;
   const sign = gravitySign(level(), layer);
   const vflip = sign < 0; // hanging on a flipped night: head down
-  if (fx.fail > 0) {
+  if (fx.fail > 0 && !settings.get().reduced) { // reduced effects: no 0.25 s red frame (the sound still says it failed)
     // a red frame 3 art px around the sprite (which sticks out on the hat side)
     g.fillStyle = `rgba(255,70,70,${fx.fail})`;
     const r = spriteRect('worker', 'idle0', p.x, p.y, { vflip });
@@ -1108,7 +1123,7 @@ function drawPlay() {
   });
   drawDecor(def, layer, t);
   drawLitRooms(lvl, s);
-  drawWorkOrder(lvl, s, layer, t);
+  drawWorkOrder(lvl, s, layer, reduced ? 0 : t); // reduced effects: no cable crawl, no spark, no bobbing tool (powered and broken still differ)
   const box = jobHudBox(lvl, s);
   const taken = drawTells(lvl, s, layer, t, box);
   const boxes = freakBoxes(lvl, s);
@@ -1347,7 +1362,7 @@ function drawSelect() {
 function drawPause() {
   drawPanel(g, W / 2 - 380, H / 2 - 64, 760, 128, false);
   drawText(g, 'ON BREAK', W / 2, H / 2 - 40, { scale: 3, color: '#d9f6ff', align: 'center' });
-  drawActions(PAUSE_ACTIONS, PAUSE_ROW, '#d9f6ff');
+  drawActions(pauseActions(), PAUSE_ROW, '#d9f6ff');
   // Esc is spent by a browser leaving fullscreen (the itch embed), so name the second pause key too.
   if (!game.padLast) drawText(g, `${keyName('KeyP')} also pauses`, W / 2, PAUSE_ROW.y + 26, { scale: 1, color: '#9fd8e6', align: 'center' });
 }
@@ -1443,18 +1458,24 @@ if (TOOLS) {
 
 // A throw used to leave a frozen picture with no reason. The frame loop already keeps running (frame() catches);
 // this catches everything else and says what happened in the game's own type, with the one action that helps.
-let complained = false;
-function complain(err) {
-  console.error(err);
-  if (complained) return; // one notice, not one per frame
-  complained = true;
+// The notice stays: frame() redraws it after every render() (which clears the canvas), so it is not wiped a frame later.
+let complaint = null; // the first message, or null while all is well
+function drawComplaint() {
   try {
-    const msg = String(err?.message ?? err ?? 'unknown error');
     g.fillStyle = 'rgba(11,16,41,0.85)';
     g.fillRect(0, H - 34, W, 34);
-    drawText(g, `Something broke: ${msg}`.slice(0, 96), 12, H - 28, { scale: 1, color: '#ffec5a' });
+    drawText(g, `Something broke: ${complaint}`.slice(0, 96), 12, H - 28, { scale: 1, color: '#ffec5a' });
     drawText(g, 'Reload to carry on.', 12, H - 16, { scale: 1, color: '#9fd8e6' });
   } catch { /* the canvas itself is gone: the console has it */ }
+}
+function complain(err) {
+  try {
+    if (complaint === null) { // one notice, not one per frame (a throw in frame() repeats every frame)
+      console.error(err);
+      complaint = String(err?.message ?? err ?? 'unknown error');
+      drawComplaint();
+    }
+  } catch { /* complaining must never throw */ }
 }
 addEventListener('error', (e) => complain(e.error ?? e.message));
 addEventListener('unhandledrejection', (e) => complain(e.reason));

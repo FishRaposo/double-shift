@@ -4,7 +4,7 @@ Companion to [GDD.md](GDD.md) §13. Describes the code as of 2026-11-05 (after t
 
 **At a glance**
 - **The one rule:** `src/rules.js` decides everything that matters; the screen only draws it (§2).
-- `npm start` to play, `npm test` (<!-- n:tests -->609<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
+- `npm start` to play, `npm test` (<!-- n:tests -->617<!-- /n --> tests), `npm run check` (§7), `npm run media` (headless checks + itch media).
 - Add a level: grids in `src/levels.js` + a `SOLUTIONS` entry in `test/solutions.mjs` (§6; the full recipe is BUILD.md §2.1).
 - The five added mechanics (wet floor, day-walker, supervisor, offset layer, Upside Down) are built — §6.5 documents them.
 
@@ -176,6 +176,8 @@ Every level has `repairs: [...]`, each a `tool` and a `fix`, each with `{ tx, ty
 
 `state.repairs[i]` is `{ tool, done, at, armed, since }`: `at` the filled spot, `armed` off until you step away from a spot you just changed, `since` the night entries when it was done. Checkpoints snapshot it with the overrides. Any change waits rather than close on the worker. Events: `tool`, `repaired`, `pulled` and `refused` (with `job` and `spot`; `refused` is a `when` job touched too early, and turns `armed` off), `machine`.
 
+Authoring rule: a repair that can be undone (a Power pull, a Water swap, a Machine car stop) must not share a cell with a prank's `set`: undoing deletes the override key instead of restoring the prank's tile, so the prank's change is lost.
+
 ### 6.5 Added mechanics (built)
 
 The five added mechanics from [CONTENT.md](CONTENT.md) §3 — all built, tested and shipped in their levels. Each follows the same rules as everything else: pure functions of state and level, no per-object mutable state.
@@ -232,7 +234,7 @@ The five added mechanics from [CONTENT.md](CONTENT.md) §3 — all built, tested
 
 | Command | What it covers |
 |---|---|
-| `npm test` | <!-- n:tests -->609<!-- /n --> tests: GDD §13.7 cases 1–15, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, Upside Down rules (flip, gravity sign, hanging, jump and cut, nudge order, coyote across a flip, hazard band, grid edges, checkpoints, fuzz), every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
+| `npm test` | <!-- n:tests -->617<!-- /n --> tests: GDD §13.7 cases 1–15, S-rules, nudge/buffer, pranks, freaks, checkpoint restore, input semantics, determinism, a 6000-tick no-embedding fuzz, wet floor, day/night freak clocks and per-freak shifts, supervisor watched clock, offset generation/refusal/apex, Upside Down rules (flip, gravity sign, hanging, jump and cut, nudge order, coyote across a flip, hazard band, grid edges, checkpoints, fuzz), every level at par + unwinnable without shifting, progress and settings saving, level-select unlocks, font/sprite/music/SFX data, **fairness** (≥ 200/100 ms slack per required input by act, no respawn in a patrol, no freak over an exit), checkpoint-over-pit, level-definition validation |
 | `npm run check` | Every module parses; every level validates |
 | `npm run audit` | Per level: the slack of every required shift and jump (fails under the act floor), input-lag tolerance 0–150 ms, and a random search for wins below the fewest (`min`) or without shifting (`scripts/audit-levels.mjs`). |
 | `npm run media` | Real browser (headless Edge/Chrome, no dependencies): plays level 1 with key presses, fails on page errors, a wrong outcome, audio clipping or a slow frame; saves the cover, screenshots, share card, icons and gallery. |

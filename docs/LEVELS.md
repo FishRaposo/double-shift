@@ -97,7 +97,7 @@ Every level is built on one rule: **the repair is the level's puzzle, not its lo
 | 2 | Scaffolding (`scaff`) | 2 | Build | None | Fix the bracket by day and the scaffold it holds stands at night only: up the night boards to a stub both shifts share, clock out there, and the day crew's ledge goes on to the tower |
 | 3 | Closing Time (`closing`) | 2 | Power | Peeker | One fuse: fit it in the shutter box, pull it from the far side, fit it in the laser box |
 | 4 | Mid-Air (`midair`) | 3 | Water | None | Climb out mid-air over a pit; the valve (its own VALVE KEY) floods where you came from and drains where you are going |
-| 5 | Inventory (`inventory`) | 3 | Secure | Prank | Bolt the far plank before the second night |
+| 5 | Inventory (`inventory`) | 3 | Secure | Prank | Bolt the far plank down by day, before the first clock-in to night |
 | 6 | Night Watch (`watch`) | 4 | Light | Two lurkers | One kind of freak: freeze the first by day to walk through its outline to the bulb; the light clears the second from the corridor |
 | 7 | Under Renovation (`stairs`) | 5 | Machine | Lurker | The hoist moves a stop per clock-in, wherever you are: be there when it comes |
 | 8 | Lost & Found (`doors`) | 6 | Secure | Pranks, lurker | The doors swap every night: bolt them when they are where you want them (the clamp says NOT YET until a night has brought them down as bridges) |
@@ -277,7 +277,7 @@ The specs the levels in acts 2–4 were built from, in the §5.0 order (manifest
 
 
 
-## 5.3 The finale: Clock Out reworked *(✅ built Nov 3 at par 7, `rev: 2`, §4)*
+## 5.3 The finale: Clock Out reworked *(✅ built Nov 3 at par 7, `rev: 3`, §4)*
 
 The classic 3-room Clock Out (`CLOCKOUT_CLASSIC`) is kept for the record. The rework makes the finale pay off every act:
 - **One screen, `upsideDown: true`, four rooms**, each recalling an act:

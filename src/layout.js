@@ -177,3 +177,27 @@ export function memoPanel(text, tx, ty, { maxW = MEMO.maxW, W = 960, H = 540 } =
   const y = Math.min(Math.max(even(ty * TILE - h - 6), MEMO.top), H - 8 - h);
   return { x, y, w, h, lines, scale, pad, lineH };
 }
+
+// ---------- leaving a break for the title (the pause screen's Q, the pad's RB) ----------
+// Quitting a level to the title costs the run, and RB is a button players mash to shift, so it takes two presses:
+// the first arms (the row reads "title? again"), a second within QUIT_CONFIRM seconds quits. `armedAt` is the
+// clock reading of the arming press, or null when disarmed. Any other key, or the time passing, disarms
+// (quitArmed); leaving the pause screen disarms too (main.js setScreen).
+export const QUIT_CONFIRM = 2;
+export const quitArmed = (armedAt, now) => armedAt !== null && now - armedAt <= QUIT_CONFIRM;
+export function quitPress(armedAt, now) {
+  return quitArmed(armedAt, now) ? { quit: true, armedAt: null } : { quit: false, armedAt: now };
+}
+
+// ---------- volume rows ----------
+// A volume row draws ten 7 px segments at an 18 px pitch from x0 (drawSettings). A click picks the segment under
+// the pointer (nearest centre, so the gaps count too: that segment's level, i+1 tenths); a click left of the first
+// segment's centre, on its left half or off the bar, is 0: the only way to silence a bar with the pointer.
+export const VOLUME_SEGMENT = Object.freeze({ w: 7, pitch: 18, count: 10 });
+export function volumeAt(x, x0) {
+  const { w, pitch, count } = VOLUME_SEGMENT;
+  const first = x0 + w / 2;
+  if (x < first) return 0;
+  const i = Math.min(count - 1, Math.round((x - first) / pitch));
+  return (i + 1) / count;
+}

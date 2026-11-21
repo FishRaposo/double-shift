@@ -12,8 +12,8 @@ export const DEFAULT_BINDS = Object.freeze({
 });
 
 // The menus' keys never drive an action: Esc (pause, back), Enter (confirm), R (restart), L (levels),
-// O (settings), M (mute), ` (debug) and Tab (focus).
-export const RESERVED = Object.freeze(['Escape', 'Enter', 'KeyR', 'KeyL', 'KeyO', 'KeyM', 'Backquote', 'Tab']);
+// O (settings), M (mute), P (pause), Q (title, from the pause screen), ` (debug) and Tab (focus).
+export const RESERVED = Object.freeze(['Escape', 'Enter', 'KeyR', 'KeyL', 'KeyO', 'KeyM', 'KeyP', 'KeyQ', 'Backquote', 'Tab']);
 
 const SHIFTS = ['ShiftLeft', 'ShiftRight'];
 const ARROWS = { ArrowLeft: '←', ArrowRight: '→', ArrowUp: '↑', ArrowDown: '↓' };
@@ -27,7 +27,7 @@ export function isBindable(code) {
 // Either Shift key binds both: players don't think of them as two keys.
 const keysOf = (code) => (SHIFTS.includes(code) ? [...SHIFTS] : [code]);
 
-const SPARE = [...'JIUHNYTGBVCXZQEPF'].map((c) => `Key${c}`).concat([...'1234567890'].map((d) => `Digit${d}`));
+const SPARE = [...'JIUHNYTGBVCXZEF'].map((c) => `Key${c}`).concat([...'1234567890'].map((d) => `Digit${d}`));
 
 export function actionOf(binds, code) {
   for (const a of ACTIONS) if (binds[a]?.includes(code)) return a;
