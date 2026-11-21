@@ -53,7 +53,7 @@ export const steady = (policy, { jumps = true } = {}) => (s, mem, f) => {
 export const SOLUTIONS = {
   clock: steady((s) => {
     const x = tx(s);
-    const target = x > 7 && x < 19.2 ? NIGHT : x > 26 ? NIGHT : DAY;
+    const target = x > 26 || (x > 7 && !s.repairs[0].tool) ? NIGHT : DAY; // night over the gap until the wrench is in hand
     const jump = s.player.grounded && ((x > 19.8 && x < 20.6) || (x > 23 && x < 24.5));
     return { right: true, jump, shift: want(s, target) };
   }),

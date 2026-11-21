@@ -100,7 +100,7 @@ SPOOKED! · AAAGH! · NOPE! · EEP! · NOT PAID ENOUGH
 | Work order tags in the level ✅ *(drafts)* | The tool, the broken thing and what it drives each carry a small paper label until the job is done |
 | Work order jobs ✅ *(drafts)* | Each level names its own pair; e.g. WRENCH / LOOSE BOLT, FUSE / FUSE BOX, BULB / DEAD LIGHT, OIL CAN / SEIZED WINCH, TAPE / LOOSE CABLE, RATCHET / CEILING LATCH (the full set is in `src/levels.js`) |
 | Work order feedback ✅ *(drafts)* | FIXED · OFF · BOLTED · CLOCK IN TO MOVE IT · TOUCH IT TO SWAP · TAKE THE FUSE WITH YOU · WAIT FOR THE PILLAR |
-| More tells ✅ | MINE NOW (Inventory) · MOVING DAY (Lost & Found) · YOU ARE WELCOME · MINE · CLOSED (Stacked) · HEXED. NO TUCH (Night Audit) · FINDERS KEEPERS (finale); every other tell defaults to MINE |
+| More tells ✅ | MINE NOW (Inventory) · OURS NOW (Closing Time, draft) · MOVING DAY (Lost & Found) · YOU ARE WELCOME · MINE · CLOSED (Stacked) · HEXED. NO TUCH (Night Audit) · FINDERS KEEPERS (finale); every other tell defaults to MINE |
 | Hex-flavored tells *(candidates; HEXED. NO TUCH is on Night Audit's plank)* | MINE BY ANSHENT LAW · HEXED. NO TUCH · THE PLANK IS OURS NOW · WE SEE YOU (WE R SHINY) |
 | The building's sign over the staircase (`stairs`) ✅ | TOP FLOOR |
 | Management's sign in `inventory` ✅ *(draft)* | STUCK? RESTART. |

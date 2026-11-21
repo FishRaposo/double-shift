@@ -204,7 +204,7 @@ Game Off is rated by other participants in six categories (RELEASE.md §0). What
 | Gameplay | Tight movement (§5), mid-air shifting, par as a second puzzle per level | Tuning pass (G1), playtests |
 | Graphics | A deliberate code-drawn style: two palettes of one building, echoes, readable freaks (ART.md §1.1) | — |
 | Audio | Theme in two arrangements crossfaded on shift (§11.3); yelp, giggle, stamp | — |
-| Innovation | **Pranks**: each night clock-in can change the building, so clock-ins are a resource. **Freaks freeze by day**: the other shift is a pause button for the monsters. Timecard par. | — (evidence from level 1; first encounter level 3) |
+| Innovation | **Pranks**: each night clock-in can change the building, so clock-ins are a resource. **Freaks freeze by day**: the other shift is a pause button for the monsters. Timecard par. | — (evidence from level 1; first encounter and first visible prank level 3; first prank to plan around level 5) |
 | Theme | The Shift key, the work shift, and the building that shifts, all at once (§1.7) | — |
 
 **Overlap warning.** The jam page's list of example ideas includes a puzzle-platformer where you shift between two overlapping realities and a monster might be standing on the bridge in the other one. That is our core premise, so many entries will look like ours at first glance. Everywhere a rater forms a first impression (the itch hook, cover, GIF, the first two minutes of play), lead with what only this game does: the freaks prank the building every time you clock in, and freeze when you leave the night.
@@ -866,7 +866,7 @@ A linear progression is sufficient.
 |---|---|---|---|---|
 | 1. Clock In ✅ | Basic toggle | Shift changes world geometry | Gap in the floor by day; night planks, night gate | A |
 | 2. Scaffolding ✅ | Missing platforms | Use the other shift to cross | Day crew's scaffolding and deliveries | A |
-| 3. Closing Time ✅ | Obstacle bypass | Geometry differs spatially; first frozen outline | Gates, rebar by day, lasers by night | A |
+| 3. Closing Time ✅ | Obstacle bypass | Geometry differs spatially; first frozen outline; first prank seen (a night crate stolen) | Gates, rebar by day, lasers by night | A |
 | 4. Mid-Air ✅ | Midair shifting | Shift during a jump | Eyes blink in the dark. Nobody mentions it. | A |
 
 **Act 2: Overtime** (the freaks show up)

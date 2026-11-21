@@ -31,7 +31,7 @@ What each level's repair is, with its par: [LEVELS.md](LEVELS.md) §4. §5–5.3
 |---|---|---|---|---|---|---|
 | 1 | 1 · Renovation | Clock In | `clock` | Shift changes the world | A | ✅ |
 | 2 | 1 | Scaffolding | `scaff` | Use the other shift's geometry | A | ✅ |
-| 3 | 1 | Closing Time | `closing` | Per-shift hazards and walls; first frozen outline | A | ✅ |
+| 3 | 1 | Closing Time | `closing` | Per-shift hazards and walls; first frozen outline; first prank seen (a night crate stolen) | A | ✅ |
 | 4 | 1 | Mid-Air | `midair` | Shift during a jump | A | ✅ |
 | 5 | 2 · Overtime | Inventory | `inventory` | First prank | A | ✅ |
 | 6 | 2 | Night Watch | `watch` | First visible freaks; day freezes them | A | ✅ |

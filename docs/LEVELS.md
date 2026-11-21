@@ -93,9 +93,9 @@ Every level is built on one rule: **the repair is the level's puzzle, not its lo
 
 | # | Level (id) | Fewest (par = +1) | Repair | Freaks | The puzzle |
 |---|---|---|---|---|---|
-| 1 | Clock In (`clock`) | 3 | Build | None | Cross on the night boards, fix the deck, and climb it to the top floor |
+| 1 | Clock In (`clock`) | 3 | Build | None | Cross on the night boards, take the wrench on the far side of the gap (clocking out over the gap costs a death, never a pickup), fix the deck, and climb it to the top floor |
 | 2 | Scaffolding (`scaff`) | 2 | Build | None | Fix the bracket by day and the scaffold it holds stands at night only: up the night boards to a stub both shifts share, clock out there, and the day crew's ledge goes on to the tower |
-| 3 | Closing Time (`closing`) | 2 | Power | Peeker | One fuse: fit it in the shutter box, pull it from the far side, fit it in the laser box |
+| 3 | Closing Time (`closing`) | 2 | Power | Peeker, prank (seen, not planned around) | One fuse: fit it in the shutter box, pull it from the far side, fit it in the laser box; on your first night the freaks steal the night crate in front of you (tell: OURS NOW) |
 | 4 | Mid-Air (`midair`) | 3 | Water | None | Climb out mid-air over a pit; the valve (its own VALVE KEY) floods where you came from and drains where you are going |
 | 5 | Inventory (`inventory`) | 3 | Secure | Prank | Bolt the far plank down by day, before the first clock-in to night |
 | 6 | Night Watch (`watch`) | 4 | Light | Two lurkers | One kind of freak: freeze the first by day to walk through its outline to the bulb; the light clears the second from the corridor |
@@ -127,7 +127,7 @@ Five acts of four, then the finale. Each act introduces one idea, practises it, 
 |---|---|---|---|---|
 | 1 | **1 · Renovation** (it's just a job) | Clock In (`clock`) | Shift changes the world | ✅ |
 | 2 | 1 | Scaffolding (`scaff`) | Use the other shift's geometry | ✅ |
-| 3 | 1 | Closing Time (`closing`) | Per-shift walls and a fuse relay; **first freak: a peeker on the night floor**, a timing gate on the way to the exit | ✅ |
+| 3 | 1 | Closing Time (`closing`) | Per-shift walls and a fuse relay; **first freak: a peeker on the night floor**, a timing gate on the way to the exit; **first prank seen**: the freaks steal a night crate on your first clock-in | ✅ |
 | 4 | 1 | Mid-Air (`midair`) | Shift during a jump; eyes in the dark | ✅ |
 | 5 | **2 · Overtime** (the freaks show up) | Inventory (`inventory`) | **First prank**: a clock-in changes the night | ✅ |
 | 6 | 2 | Night Watch (`watch`) | **First visible freaks**: lurkers, and day freezes them | ✅ |
@@ -149,7 +149,7 @@ Five acts of four, then the finale. Each act introduces one idea, practises it, 
 
 **Freak and mechanic ladder** (first seen → first required):
 - **Freak evidence:** eyes and footprints in act 1, and a live peeker in Closing Time.
-- **Pranks:** single in 5, wanted in 8, moving an object in 10, queued in 12.
+- **Pranks:** seen in 3 (a crate stolen in front of you, nothing to plan around), single in 5, wanted in 8, moving an object in 10, queued in 12.
 - **Visible freaks:** lurkers in 6 (the peeker is met frozen in 3); the supervisor in 11; the squatter in 13; the day-walker in 14; a freak on the ceiling in 19.
 - **New rules, one per act from act 3:** wax in 9, offset in 15, upside down in 17.
 - **Act 4 previews act 5:** Floor 3.5 already says "the building isn't where it was", so the flip in 17 is the next step, not a jump.
@@ -291,10 +291,10 @@ The classic 3-room Clock Out (`CLOCKOUT_CLASSIC`) is kept for the record. The re
 
 ### Showing the freaks early (built, PRODUCTION.md L8)
 
-Jam raters often play only the first couple of minutes (GDD §1.8), so act 1 shows freak *evidence* from the very first night shift. There are no pranks before level 5; act 1 is gentle but not danger-free — Closing Time's peeker is a live timing gate on the route:
+Jam raters often play only the first couple of minutes (GDD §1.8), so act 1 shows freak *evidence* from the very first night shift. The first prank is seen in level 3 (Closing Time: the freaks steal a night crate the moment you first clock in, a visible tell and nothing to plan around); the first prank you must plan around is still level 5. Act 1 is gentle but not danger-free — Closing Time's peeker is a live timing gate on the route:
 - **Clock In:** eyes in the dark past the gap and footprints on the night planks (no live freak in this level);
 - **Scaffolding:** eyes float in the dark where the scaffold stands by day; footprints on the night floor;
-- **Closing Time:** a live peeker on the night floor near the exit, a timing gate the par route waits out (it is not optional or out of reach);
+- **Closing Time:** a live peeker on the night floor near the exit, a timing gate the par route waits out (it is not optional or out of reach), and the game's first visible prank: the night crate at (18,13) is stolen on the first clock-in, tell OURS NOW;
 - **Mid-Air:** eyes decor was already there ("Something up there blinked.");
 - level select from the title screen (A7), so anyone can reach *Inventory* and *Night Watch*.
 

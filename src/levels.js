@@ -141,15 +141,15 @@ export const LEVELS = [
       { kind: 'memo', tx: 7, ty: 11, text: 'Mind the gap. Seriously. — Renovation' },
       { kind: 'barrierTape', tx: 11, ty: 13, w: 8, layer: 'day' },
       { kind: 'sign', tx: 15, ty: 9, text: 'RENOVATION', style: 'note' },
-      { kind: 'footprints', tx: 19, ty: 13, layer: 'night' },
+      { kind: 'footprints', tx: 18, ty: 13, layer: 'night' },
       { kind: 'footprints', tx: 20, ty: 13, layer: 'night' },
     ],
     decor: [{ kind: 'eyes', tx: 29, ty: 4 }],
     note: 'Gap in the floor by day. The night crew laid planks.',
-    rev: 3,
+    rev: 4,
     repairs: [
       {
-        tool: { tx: 15, ty: 13, layer: 'night', name: 'WRENCH', kind: 'wrench' },
+        tool: { tx: 19, ty: 13, layer: 'night', name: 'WRENCH', kind: 'wrench' },
         fix: {
           tx: 20,
           ty: 13,
@@ -300,7 +300,8 @@ export const LEVELS = [
     decor: [{ kind: 'eyes', tx: 24, ty: 4 }],
     freaks: [{ kind: 'peeker', tx: 26, ty: 13, period: 1.6, duty: 0.5 }],
     note: 'One fuse for the whole floor. Budget cuts.',
-    rev: 3,
+    rev: 4,
+    pranks: [{ id: 'crate', onNight: 1, tell: { tx: 18, ty: 11, text: 'OURS NOW' }, set: [{ layer: 'night', x0: 18, y0: 13, ch: '.' }] }],
     repairs: [
       {
         tool: { tx: 6, ty: 13, layer: 'day', name: 'FUSE', kind: 'fuse' },
