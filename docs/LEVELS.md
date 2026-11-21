@@ -96,24 +96,24 @@ Every level is built on one rule: **the repair is the level's puzzle, not its lo
 | 1 | Clock In (`clock`) | 3 | Build | None | Cross on the night boards, take the wrench on the far side of the gap (clocking out over the gap costs a death, never a pickup), fix the deck, and climb it to the top floor |
 | 2 | Scaffolding (`scaff`) | 2 | Build | None | Fix the bracket by day and the scaffold it holds stands at night only: up the night boards to a stub both shifts share, clock out there, and the day crew's ledge goes on to the tower |
 | 3 | Closing Time (`closing`) | 2 | Power | Peeker, prank (seen, not planned around) | One fuse: fit it in the shutter box, pull it from the far side, fit it in the laser box; on your first night the freaks steal the night crate in front of you (tell: OURS NOW) |
-| 4 | Mid-Air (`midair`) | 3 | Water | None | Climb out mid-air over a pit; the valve (its own VALVE KEY) floods where you came from and drains where you are going |
+| 4 | Mid-Air (`midair`) | 3 | Water | None | Climb out mid-air over a pit; the valve (its own VALVE KEY) floods where you came from and drains where you are going; the day pillar at col 23 reaches up so the tower-top jump can't skip the water (`rev: 6`). The job's preview is drawn as pale water, never an outline |
 | 5 | Inventory (`inventory`) | 3 | Secure | Prank | Bolt the far plank down by day, before the first clock-in to night |
 | 6 | Night Watch (`watch`) | 4 | Light | Two lurkers | One kind of freak: freeze the first by day to walk through its outline to the bulb; the light clears the second from the corridor |
 | 7 | Under Renovation (`stairs`) | 5 | Machine | Lurker | The hoist is seized at the top; freed, it moves a stop on every night clock-in, wherever you are. Call it down from the far side of the lurker's tunnel (by day), clock in again in the pocket between a day-only wall and a night-only wall to get through both, and ride it back up on the clock-in after that |
-| 8 | Lost & Found (`doors`) | 6 | Secure | Pranks, lurker | The doors swap every night: bolt them when they are where you want them (the clamp says NOT YET until a night has brought them down as bridges) |
-| 9 | Wet Floor (`wet`) | 4 | Water | Lurker | Fetch the wrench from the lurker's corridor, turn the leak onto it, and ride the wax out above |
+| 8 | Lost & Found (`doors`) | 6 | Secure | Pranks, lurker | The doors move on some nights, on a three-night cycle: down as bridges on night 1, up as roof ledges on night 2, left alone on night 3, and round again. Bolt them when they are where you want them (the clamp says NOT YET until a night has brought them down as bridges); a LOST & FOUND sign hangs over the spawn |
+| 9 | Wet Floor (`wet`) | 4 | Water | Lurker | Fetch the wrench from the lurker's corridor, turn the leak onto it, and ride the wax out above; the checkpoint sits beside the valve at (7,11), so a laser death keeps the tool and the valve (`rev: 4`) |
 | 10 | Structural Integrity (`pillar`) | 5 | Secure | Repeating prank | The jack only bites with the pillar under the beam, and it has to stay for the next clock-in; jump off the crates on the wrong night and the pit under its last spot takes you |
 | 11 | Night Management (`supervisor`) | 2 | Power | Supervisor, lurkers | Two tunnels, one each side of the clipboard, and the battery goes through with you to the second charger |
-| 12 | Stacked (`stacked`) | 5 | Secure | Lurker, three pranks | Three things are scheduled and there is one bolt: read them and choose. The bridge has come before you can choose; keep the plank (the night floor over the gap the day can't jump), cross the lurker's tunnel by day, and let the third night build the step (FREE STEP) you climb to the exit. Bolt the step away and the exit is out of reach |
+| 12 | Stacked (`stacked`) | 5 | Secure | Lurker, three pranks | Three things are scheduled and there is one bolt: read them and choose. The bridge has come before you can choose; keep the plank (the night floor over the gap the day can't jump), cross the lurker's tunnel by day, and let the third night build the step (FREE STEP) you climb to the exit. Bolt the step away and the exit is out of reach. The night roof block runs to the ceiling (cols 27–28), so it is no stair to the col-31 ledge; a checkpoint sits before the clamp choice |
 | 13 | Employee of the Month (`portrait`) | 4 | Light | Its sitter (a squatter per hook) | Rehung on every clock-in round three hooks: a wall in the doorway, a step anywhere else, and its sitter sits where it hangs. Light the last hook's corner to get past it at night |
-| 14 | Broad Daylight (`daywalker`) | 5 | Machine | Lurker, day-walker | A dumbwaiter up to a corridor where a lurker works the landing by night and the day-walker further on by day. The car only moves on a night clock-in, so you arrive by night: wait for day to pass the lurker, then clock in again to pass the day-walker |
-| 15 | Floor 3.5 (`offset`) | 4 | Machine | Peeker | You start on the day crew's platform with the CRANK in reach: two apex hops up the tower (each shift is the building moved), the STUCK GEAR at the top, then the lift as a trolley across the top-floor gap, which only runs on a clock-in. The old floor stays as the way back up after a fall |
-| 16 | Night Audit (`audit`) | 5 | Build, Secure, Light | Several | The exam: a gate (TAPE → LOOSE CABLE), a plank (SANDBAG → HOLD-DOWN) and a tunnel (LAMP → TUNNEL LAMP), one job per stretch |
-| 17 | Mind Your Head (`upside`) | 2 | Light | Squatter | Change the light from the ceiling; the squatter in the low lane past it scatters |
+| 14 | Broad Daylight (`daywalker`) | 5 | Machine | Lurker, day-walker | A dumbwaiter up to a corridor where a lurker works the landing by night and the day-walker further on by day. The car only moves on a night clock-in, so you arrive by night: wait for day to pass the lurker, then clock in again to pass the day-walker; a checkpoint at (13,13) keeps a fall from resetting the job (`rev: 5`) |
+| 15 | Floor 3.5 (`offset`) | 4 | Machine | Peeker | You start on the day crew's platform with the CRANK in reach: two apex hops up the tower (each shift is the building moved), the STUCK GEAR at the top, then the lift as a trolley across the top-floor gap, which only runs on a clock-in. The old floor stays as the way back up after a fall. At night a slab (x 22–25, rows 1–2) walls the exit, so the exit is for the day, and the night floor under the crank (x 11–13) keeps a clock-in beside the crank off the laser (`rev: 5`) |
+| 16 | Night Audit (`audit`) | 5 | Build, Secure, Light | Several | The exam: a gate (TAPE → LOOSE CABLE), a plank (SANDBAG → HOLD-DOWN, which also lifts the night shutter at (24,13) and puts the plank back if the hex took it) and a tunnel (LAMP → TUNNEL LAMP, which lifts the night shutter at (28,13)), one job per stretch; both jobs are needed to get through (`rev: 5`) |
+| 17 | Mind Your Head (`upside`) | 2 | Light | Squatter | Change the light from the ceiling; the squatter in the low lane past it scatters. Night walls at (26,16–17), a night slab x 27–31 row 13 and a ceiling x 0–5 row 2 close the low route under the lane and keep the first flip on screen (`rev: 4`) |
 | 18 | Falling Up (`fallup`) | 4 | Water | Peeker | Turn the stopcock (SPANNER → STOPCOCK) mid-fall, and the tank empties into the pit; brake a fall by flipping and rise across it |
-| 19 | Ceiling Walker (`ceiling`) | 4 | Secure | Supervisor, prank | The latch is on the ceiling's side: hang from the walkway on the flipped night to latch the far plank before they take it, under the clipboard's tunnel |
+| 19 | Ceiling Walker (`ceiling`) | 4 | Secure | Supervisor, prank | The latch is on the ceiling's side: hang from the walkway on the flipped night to latch the far plank before they take it, under the clipboard's tunnel. The checkpoint sits at (30,13), only reachable after the plank crossing, so a wasted night can't bank a lost plank (`rev: 5`) |
 | 20 | Head Over Heels (`heels`) | 7 | Power | Day-walkers, lurkers | One breaker for the floor corridor and the ceiling corridor: take it up the shaft and round the loop |
-| 21 | Clock Out (`clockout`) | 7 | All six | All | One fuse through two shutters, a light for the low tunnel, a clamp on the last step, the valve, the winch, then the time clock |
+| 21 | Clock Out (`clockout`) | 7 | All six | All | One fuse through two shutters, a light for the low tunnel, a clamp on the last step (the prank that takes it fires on night 4), the valve, the winch, then the time clock |
 
 Notes that outlive the table:
 - **The classic Clock Out** stays in `src/levels.js` as `CLOCKOUT_CLASSIC` (not in `LEVELS`), proven at par 7.
@@ -145,7 +145,7 @@ Five acts of four, then the finale. Each act introduces one idea, practises it, 
 | 18 | 5 | Falling Up (`fallup`) | Mid-fall flips; climb by flipping | ✅ |
 | 19 | 5 | Ceiling Walker (`ceiling`) | A freak on the ceiling; a prank on the flipped map | ✅ |
 | 20 | 5 | Head Over Heels (`heels`) | Act 5's combination: every shift freezes one freak and flips gravity | ✅ |
-| 21 | **Finale** | Clock Out (`clockout`) | Pays everything off, then the ending | ✅ reworked (`rev: 2`); the 3-room version is the fallback |
+| 21 | **Finale** | Clock Out (`clockout`) | Pays everything off, then the ending | ✅ reworked (`rev: 4`); the 3-room version is the fallback |
 
 **Freak and mechanic ladder** (first seen → first required):
 - **Freak evidence:** eyes and footprints in act 1, and a live peeker in Closing Time.
@@ -217,6 +217,7 @@ The specs the levels in acts 2–4 were built from, in the §5.0 order (manifest
   2. a supervisor watching two short tunnels: cross on the slack side (act 3);
   3. a day-walker stretch you pass by going night, then a night lurker you pass by going day (act 4).
 - **Glue:** one telegraphed prank (act 2), visible from the spawn: a plank that appears over the last pit on the night entry the beats naturally lead to. Count your clock-ins so it's there when you arrive.
+- **As built (`rev: 5`):** the plank and the tunnel each end in a night shutter that only its fix lifts ((24,13) by the HOLD-DOWN, (28,13) by the TUNNEL LAMP), so neither job can be skipped; the notice board hangs at (19,10), clear of the tell.
 - **Uses:** existing systems only. Every required input ≥ 100 ms (act 4 floor).
 
 ## 5.1 Idea pool status
@@ -277,7 +278,7 @@ The specs the levels in acts 2–4 were built from, in the §5.0 order (manifest
 
 
 
-## 5.3 The finale: Clock Out reworked *(✅ built Nov 3 at par 7, `rev: 3`, §4)*
+## 5.3 The finale: Clock Out reworked *(✅ built Nov 3 at par 7; now `rev: 4`, §4)*
 
 The classic 3-room Clock Out (`CLOCKOUT_CLASSIC`) is kept for the record. The rework makes the finale pay off every act:
 - **One screen, `upsideDown: true`, four rooms**, each recalling an act:
@@ -285,7 +286,8 @@ The classic 3-room Clock Out (`CLOCKOUT_CLASSIC`) is kept for the record. The re
   2. a frozen-lurker tunnel and a telegraphed prank (act 2);
   3. a wax stop under a supervisor's gaze (act 3);
   4. a flipped climb to the time clock, where the freaks take the last step and put it back (acts 4–5).
-- **Fiction:** "Almost done. Don't look at the vents." (kept). Act card: FINALE · CLOCK OUT · "One more shift."
+- **Built (Nov 21, `rev: 4`):** six repairs, one of each type, in that one flipped room: one fuse through two shutters (FUSE BOX), a light for the low tunnel, the clamp on the last step (the `stepGone` prank now fires on night 4, not 3, so one early clock-in can't bank it before the clamp), the valve, the winch and the time clock. The night wall at col 24 runs rows 4–11 (`nightPatch`), so a jump clocked into night mid-air can't duck under it to the exit and skip the last jobs; the MINE tell sits at tx 27, clear of the EXIT sign. The four rooms above are the design the level grew from.
+- **Fiction:** "Almost done. One of everything. Don't look at the vents." Act card: FINALE · CLOCK OUT · "One more shift."
 - **Ending:** the timecard, then the eyes-and-wave ending that's already built.
 - Grids at build time, with the fairness floor (≥ 100 ms), a checkpoint at every room, and par proven by test.
 

@@ -875,7 +875,7 @@ A linear progression is sufficient.
 |---|---|---|---|---|
 | 5. Inventory ✅ | First prank | Each clock-in changes the night | The plank keeps moving | A |
 | 6. Night Watch ✅ | Lurker, peeker, squatter | Freaks freeze when you go to day | Something is in the tunnel | A |
-| 7. Under Renovation ✅ | Height from one shift | Climb a night staircase, shift mid-air onto a day ledge | A staircase to nowhere; they're very proud | B |
+| 7. Under Renovation ✅ | Height from one shift | Free a seized hoist by day, ride it up on the night clock-in, and clock in again in the pocket between a day-only wall and a night-only wall to get through both | A hoist that only runs on the night clock; nobody will say who winds it | B |
 | 8. Lost & Found ✅ | Wanted pranks (act 2 combination) | Spend clock-ins on purpose | They stole every door | B |
 
 **Act 3: Graveyard Shift** (they get organized; first new rule)
@@ -1026,6 +1026,8 @@ Upon death:
 - Resume control quickly.
 
 Respawning should minimize interruption.
+
+A level may still end up unwinnable until the player restarts (a clock-in wasted before a job). After three deaths with no new progress (a repair step, a new checkpoint), the HUD says `Stuck? R restarts the shift` (`stuckHint`, TECH §6.6). Beyond the hint, every level is checked for a softlock after one wasted night by `npm run audit` (`test/cheese.mjs`).
 
 ## 9.4 Checkpoints
 

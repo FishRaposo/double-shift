@@ -65,7 +65,7 @@ In the order of the 21-level game (LEVELS.md §5.0). ✅ = in the build.
 | 5 Inventory (`inventory`) ✅ | Every time you clock in, something gets moved. Unless it is bolted down. |
 | 6 Night Watch (`watch`) ✅ | Something is in the tunnel. It stops by day. Mind where you left it. |
 | 7 Under Renovation (`stairs`) ✅ | The hoist is seized at the top. It comes down when you clock in. |
-| 8 Lost & Found (`doors`) ✅ | They swap the doors every night. Bolt them when you like where they are. |
+| 8 Lost & Found (`doors`) ✅ | They move the doors some nights. Bolt them when you like where they are. |
 | 9 Wet Floor (`wet`) ✅ | Someone waxed the floors. |
 | 10 Structural Integrity (`pillar`) ✅ | They moved a load-bearing pillar. Jack it under the beam. |
 | 11 Night Management (`supervisor`) ✅ | The clipboard only keeps one side busy at a time. |
@@ -99,10 +99,11 @@ SPOOKED! · AAAGH! · NOPE! · EEP! · NOT PAID ENOUGH
 | Work order goals ✅ *(drafts)* | RAISE THE DECK · ONE FUSE: TAKE IT WITH YOU · SEND THE WATER BACK · BOLT THE PLANK DOWN · LIGHT THE CORRIDOR · FREE THE HOIST · FREE THE DUMBWAITER · BOLT THE DOORS IN PLACE · TURN THE LEAK ASIDE · JACK UP THE PILLAR · ONE BATTERY, TWO SHUTTERS · ONE BOLT: STOP THE RIGHT ONE · LIGHT THE PORTRAIT · FREE THE LIFT · OPEN THE GATE · WEIGH THE PLANK DOWN · LIGHT THE LAST TUNNEL · CHANGE THE CEILING LIGHT · EMPTY THE TANK INTO THE PIT · LATCH THE PLANK UPSIDE DOWN · ONE BREAKER, TWO CORRIDORS · LIGHT THE LOW TUNNEL · BOLT THE LAST STEP DOWN · SEND THE LEAK DOWN · SLIDE THE HATCH ASIDE · FIX THE TIME CLOCK |
 | Work order tags in the level ✅ *(drafts)* | The tool, the broken thing and what it drives each carry a small paper label until the job is done |
 | Work order jobs ✅ *(drafts)* | Each level names its own pair; e.g. WRENCH / LOOSE BOLT, FUSE / FUSE BOX, BULB / DEAD LIGHT, OIL CAN / SEIZED WINCH, TAPE / LOOSE CABLE, RATCHET / CEILING LATCH (the full set is in `src/levels.js`) |
-| Work order feedback ✅ *(drafts)* | FIXED · OFF · BOLTED · CLOCK IN TO MOVE IT · TOUCH IT TO SWAP · TAKE THE FUSE WITH YOU · WAIT FOR THE PILLAR |
+| Work order feedback ✅ *(drafts)* | FIXED · OFF · BOLTED · CLOCK IN TO MOVE IT · TOUCH IT TO SWAP · TAKE THE FUSE WITH YOU · WAIT FOR THE PILLAR · GO THROUGH, THEN TOUCH THE BOX AGAIN (Closing Time, when the fuse sits in the first box and you are still left of it) |
+| Stuck hint ✅ *(draft)* | Stuck? R restarts the shift (after 3 deaths with no new progress; the key name follows the player's binding) |
 | More tells ✅ | MINE NOW (Inventory) · OURS NOW (Closing Time, draft) · MOVING DAY (Lost & Found) · YOU ARE WELCOME · MINE · FREE STEP (Stacked; was CLOSED, draft; its clamp reads KEEP PLANK · NO STEP, was NO GATE · NO BRIDGE) · HEXED. NO TUCH (Night Audit) · FINDERS KEEPERS (finale); every other tell defaults to MINE |
 | Hex-flavored tells *(candidates; HEXED. NO TUCH is on Night Audit's plank)* | MINE BY ANSHENT LAW · HEXED. NO TUCH · THE PLANK IS OURS NOW · WE SEE YOU (WE R SHINY) |
-| The building's sign over the staircase (`stairs`) ✅ | TOP FLOOR |
+| The building's sign at the hoist's top floor (`stairs`) ✅ | TOP FLOOR |
 | Management's sign in `inventory` ✅ *(draft)* | STUCK? RESTART. |
 | `closing` signs ✅ | CLOSING TIME (day) · LASERS (night) |
 
@@ -114,7 +115,7 @@ SPOOKED! · AAAGH! · NOPE! · EEP! · NOT PAID ENOUGH
 | `scaff` | DELIVERIES |
 | `closing` | CLOSING TIME · LASERS |
 | `inventory` | STUCK? RESTART. |
-| `stairs` | TOP FLOOR |
+| `stairs` | TOP FLOOR · CLOCK OUT HERE |
 | `doors` | LOST & FOUND |
 | `pillar` | LOAD BEARING |
 | `stacked` | CLAMPS |
@@ -122,7 +123,7 @@ SPOOKED! · AAAGH! · NOPE! · EEP! · NOT PAID ENOUGH
 | `offset` | 3 · 3.5 (floor numbers) |
 | `audit` | INSPECTION |
 | `upside` | MIND YOUR HEAD |
-| `fallup` | THIS WAY UP |
+| `fallup` | THIS WAY UP · LASERS AT NIGHT |
 | `ceiling` | IT'S FINE |
 | `heels` | HARD HAT AREA |
 | `clockout` | LAST SHIFT |
@@ -204,7 +205,7 @@ Lives in [itch/page.md](../itch/page.md) §4. Fish writes the final version. The
 > Every level has a scripted solution that the tests replay. It has to win at par or better with no deaths, and running and jumping without shifting must not win. The demo GIFs are those same runs, played by the game on a fixed clock.
 >
 > **Some numbers from the repo today:**
-> - <!-- n:tests -->617<!-- /n --> automated tests.
+> - <!-- n:tests -->686<!-- /n --> automated tests.
 > - Every input a level requires has at least 200 ms of slack in acts 1-2 and at least 100 ms in acts 3-6.
 > - The scripted solutions still win with every input up to 100 ms late in acts 1-2 and up to 50 ms late in acts 3-6.
 > - <!-- n:levels -->21<!-- /n --> levels, each proven winnable at par by a scripted run.

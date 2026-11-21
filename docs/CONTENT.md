@@ -36,7 +36,7 @@ What each level's repair is, with its par: [LEVELS.md](LEVELS.md) §4. §5–5.3
 | 5 | 2 · Overtime | Inventory | `inventory` | First prank | A | ✅ |
 | 6 | 2 | Night Watch | `watch` | First visible freaks; day freezes them | A | ✅ |
 | 7 | 2 | Under Renovation | `stairs` | Hoist: a winch repair frees a car, seized at the top, that moves one stop every night clock-in; call it down, clock in between the day wall and the night wall, ride it up | B | ✅ |
-| 8 | 2 | Lost & Found | `doors` | You *need* the pranks: the doors swap between down (bridges) and up (roof ledges) on alternate nights | B | ✅ |
+| 8 | 2 | Lost & Found | `doors` | You *need* the pranks: the doors cycle over three nights: down (bridges) on night 1, up (roof ledges) on night 2, still on night 3, then round again | B | ✅ |
 | 9 | 3 · Graveyard Shift | Wet Floor | `wet` | Wet floor `~`: slide at night, grip by day | C | ✅ |
 | 10 | 3 | Structural Integrity | `pillar` | A pillar moves each night clock-in | B | ✅ |
 | 11 | 3 | Night Management | `supervisor` | Supervisor freak: watched freaks work, the rest slack off | C | ✅ |
@@ -49,7 +49,7 @@ What each level's repair is, with its par: [LEVELS.md](LEVELS.md) §4. §5–5.3
 | 18 | 5 | Falling Up | `fallup` | Shift mid-fall to reverse it; climb by flipping | C | ✅ |
 | 19 | 5 | Ceiling Walker | `ceiling` | A freak on the ceiling, a prank on the flipped map | C | ✅ |
 | 20 | 5 | Head Over Heels | `heels` | Every shift freezes one freak and flips gravity | C | ✅ |
-| 21 | Finale | Clock Out | `clockout` | Pays everything off, then the ending | A (built) / C (rework) | ✅ reworked (`rev: 3`; the 3-room version is the fallback) |
+| 21 | Finale | Clock Out | `clockout` | Pays everything off, then the ending | A (built) / C (rework) | ✅ reworked (`rev: 4`; the 3-room version is the fallback) |
 
 *Post-jam pool:* Freight (crates restack on a cycle). It's covered by `doors` and `stacked`, so it's not needed for the jam.
 
@@ -92,7 +92,7 @@ Specs: [ART.md](ART.md). Palette rule: existing colors only, unless a color gets
 | ART-5 | Wet floor `~`, both shifts (sheen lines + WET FLOOR sign; non-color cue: wavy top edge) | `wet` | C | ART §6.1 | ✅ |
 | ART-6 | Doors (closed, missing frame) and the door pile | `doors` | B | ART §6.1 | ✅ in its level |
 | ART-7 | Pillar (and the ceiling crack where it used to be) | `pillar` | B | ART §6.1 | ✅ in its level |
-| ART-8 | Hoist car on its rails with marked stops (`drawCar`), barrier tape and the TOP FLOOR paper sign (no staircase art; the level is a hoist) | `stairs` | B | ART §6.1 | ✅ in its level |
+| ART-8 | Hoist car on its rails with marked stops (`drawCar`), barrier tape, the TOP FLOOR paper sign and a CLOCK OUT HERE sign over the pocket (no staircase art; the level is a hoist) | `stairs` | B | ART §6.1 | ✅ in its level |
 | ART-9 | Portrait ("just eyes") | `portrait` | B | ART §6.1 | ✅ in its level |
 | ART-10 | Offset-layer echo treatment (floor label "3.5") | `offset` | C | ART §6.1 | ✅ |
 | ART-18 | Upside Down: worker sprite flipped vertically at night in act 5, upside-down freak outlines, tells hanging from the ceiling | act 5 | C | ART §5, §6.1 | ✅ (Nov 3; first used in `upside`) |
