@@ -28,7 +28,7 @@ Companion to [GDD.md](GDD.md) §6 and §8. Tile = 30 px. Levels are 32×18 tiles
 
 **Input lag floor, enforced by `test/fairness.test.mjs`:** the scripted run, with every input arriving late (`delayed` in `test/helpers.mjs`), must still win without a death at 0, 25, 50, 75 and 100 ms in acts 1–2 and at 0, 25 and 50 ms in acts 3–6. The policies hold a jump until the apex and press each shift once, so a late press is not a failed one.
 
-`npm run audit` prints, per level: the slack of every required input, how much input lag the solution tolerates, and a random search for wins below par or without shifting. Run it after any level or `PARAMS` change.
+`npm run audit` prints, per level: the slack of every required input, how much input lag the solution tolerates, and a random search for wins below par or without shifting. It also runs the cheese instruments of `test/cheese.mjs` on fine grids (the coarse ones are `test/cheese.test.mjs`): a walk-and-hop sweep from states along the scripted run with no further clock-in (a win below the fewest), the same with each work order out of reach and up to one more clock-in (the job is optional), and one night entry wasted (two clock-ins at the first safe spot, then the scripted policy; if it can't win and nothing wins from the last checkpoint, the level is softlocked until R). Run it after any level or `PARAMS` change.
 
 **Re-verify all of this after any `PARAMS` change** (`npm test` re-proves every par).
 

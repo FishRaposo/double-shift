@@ -201,3 +201,19 @@ export function volumeAt(x, x0) {
   const i = Math.min(count - 1, Math.round((x - first) / pitch));
   return (i + 1) / count;
 }
+
+// ---------- the stuck hint ----------
+// Some levels can still end up unwinnable until the player restarts (GDD §9.3), and the player may not know that R
+// restarts. After STUCK_DEATHS deaths in one attempt with no progress since the previous death, the play HUD says so.
+// `progress` is the list of progress tokens the run has reached right now (a repair step such as 'r0:tool', 'r0:done',
+// 'r0:at1'; a saved checkpoint 'cp:<id>'; 'win'). A token never seen before in this attempt is progress; tokens
+// that come back after a death sends the repairs back to the last checkpoint are not. `prev` is the tracker this
+// returns (null at the start of an attempt: a restart or a new level drops it, which clears the hint). Pure.
+export const STUCK_DEATHS = 3;
+export function stuckHint(prev, { deaths, progress = [] }) {
+  if (!prev) return { tracker: { deaths, seen: [...progress], fruitless: 0 }, show: false };
+  const fresh = progress.filter((p) => !prev.seen.includes(p));
+  const fruitless = fresh.length ? 0 : prev.fruitless + Math.max(0, deaths - prev.deaths);
+  const tracker = { deaths, seen: fresh.length ? [...prev.seen, ...fresh] : prev.seen, fruitless };
+  return { tracker, show: fruitless >= STUCK_DEATHS };
+}

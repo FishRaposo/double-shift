@@ -4,7 +4,7 @@ import assert from 'node:assert/strict';
 import { LEVELS, ACTS, FINALE_ACT } from '../src/levels.js';
 import {
   placeTag, hudFloor, HUD_BOTTOM, levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, actLabel, endSummary, selectClick, canvasScale, frameDeltas, SIM_MAX, CARD, TAB, SELECT_BOUNDS,
-  memoPanel, memoNear, MEMO, quitPress, quitArmed, QUIT_CONFIRM, volumeAt,
+  memoPanel, memoNear, MEMO, quitPress, quitArmed, QUIT_CONFIRM, volumeAt, stuckHint, STUCK_DEATHS,
 } from '../src/layout.js';
 import { wrapText, measureText } from '../src/font.js';
 
@@ -262,4 +262,47 @@ test('volumeAt: a click picks the segment under it, and left of the first segmen
     const v = volumeAt(x, x0);
     assert.ok(v >= 0 && v <= 1 && Math.abs(v * 10 - Math.round(v * 10)) < 1e-9, `${x} -> ${v}`);
   }
+});
+
+test('stuckHint: the hint shows on the third fruitless death, and not before', () => {
+  let t = null;
+  let r = stuckHint(t, { deaths: 0, progress: ['cp:a'] });
+  assert.equal(r.show, false);
+  t = r.tracker;
+  for (let d = 1; d <= STUCK_DEATHS; d++) {
+    r = stuckHint(t, { deaths: d, progress: ['cp:a'] });
+    t = r.tracker;
+    assert.equal(r.show, d >= STUCK_DEATHS, `death ${d}`);
+  }
+  r = stuckHint(t, { deaths: STUCK_DEATHS, progress: ['cp:a'] });
+  assert.equal(r.show, true, 'it stays up while nothing changes');
+});
+
+test('stuckHint: progress clears it and restarts the count; tokens a death rolls back are not progress', () => {
+  let t = stuckHint(null, { deaths: 0, progress: ['r0:tool'] }).tracker;
+  let r;
+  for (let d = 1; d <= 3; d++) { r = stuckHint(t, { deaths: d, progress: ['r0:tool'] }); t = r.tracker; }
+  assert.equal(r.show, true);
+  r = stuckHint(t, { deaths: 3, progress: ['r0:tool', 'r0:done'] });
+  assert.equal(r.show, false, 'a new repair step is progress');
+  t = r.tracker;
+  r = stuckHint(t, { deaths: 4, progress: [] }); // the death put the repairs back to the checkpoint's
+  t = r.tracker;
+  r = stuckHint(t, { deaths: 4, progress: ['r0:tool', 'r0:done'] });
+  assert.equal(r.show, false);
+  assert.equal(r.tracker.fruitless, 1, 'redoing a step already made is not progress');
+  r = stuckHint(r.tracker, { deaths: 5, progress: ['cp:b'] });
+  assert.equal(r.tracker.fruitless, 0, 'a new checkpoint is progress');
+  r = stuckHint(r.tracker, { deaths: 5, progress: ['cp:b', 'win'] });
+  assert.equal(r.tracker.fruitless, 0, 'a win is progress');
+});
+
+test('stuckHint: a restart (a null tracker) clears it', () => {
+  let t = stuckHint(null, { deaths: 0, progress: [] }).tracker;
+  let r;
+  for (let d = 1; d <= 4; d++) { r = stuckHint(t, { deaths: d, progress: [] }); t = r.tracker; }
+  assert.equal(r.show, true);
+  r = stuckHint(null, { deaths: 0, progress: [] });
+  assert.equal(r.show, false);
+  assert.equal(stuckHint(r.tracker, { deaths: 2, progress: [] }).show, false, 'two deaths after the restart is still quiet');
 });

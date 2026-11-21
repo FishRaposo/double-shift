@@ -18,7 +18,7 @@ import {
   drawStamp, drawLogo, drawWetTile, drawSkin, shouldHatch, withCellMirror, PLATE, NOTE_STRIP, px, drawMemoPanel,
 } from './art.js';
 import { SPOOK_LINES, ACT_LINES, CREDITS, timecardComment, stampText, prankCountdown } from './copy.js';
-import { levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, endSummary, selectClick, canvasScale, frameDeltas, CARD, memoPanel, memoNear, HUD_BOTTOM, hudFloor, placeTag, quitPress, quitArmed, volumeAt } from './layout.js';
+import { levelIndex, actRows, cardRect, tabRect, detailRect, moveSelect, endSummary, selectClick, canvasScale, frameDeltas, CARD, memoPanel, memoNear, HUD_BOTTOM, hudFloor, placeTag, quitPress, quitArmed, volumeAt, stuckHint } from './layout.js';
 
 const W = 960;
 const H = 540;
@@ -71,6 +71,8 @@ const game = {
   screen: 'title', // title | select | settings | controls | act | play | card | end | paused
   settingsFrom: 'title', // where Esc returns to from settings
   selectFrom: 'title', // where Esc returns to from level select
+  stuck: null, // stuckHint tracker for this attempt (src/layout.js)
+  stuckShow: false, // the "Stuck?" line is up
   padLast: false, // the pad was used last: on-screen hints name its buttons
   settingsRow: 0,
   selected: 0, // highlighted card on the level select screen
@@ -112,6 +114,8 @@ function startLevel(i, { card = true } = {}) {
   game.index = i;
   game.state = initState(levels[i]);
   game.levelTime = 0;
+  game.stuck = null; // the stuck-hint tracker starts over with every attempt
+  game.stuckShow = false;
   game.fx = freshFx();
   lurkerAt.clear(); // a new level's freaks start unheard: no step from where the last one's lurker was
   input.clear();
@@ -568,6 +572,7 @@ function advance(sim, next = () => input.consume(), wall = sim) {
       if (game.screen !== 'play') break;
     }
     game.levelTime += wall;
+    trackStuck(game.state);
     // the freaks' own sounds follow the simulation, never the renderer (the GIF drives render() with rAF off)
     if (game.state && !game.state.won) lurkerSteps(freakBoxes(level(), game.state), game.state.layer, game.state);
   } else {
@@ -981,6 +986,24 @@ function hud(text, x, y, layer, { align = 'left', scale = 2, color } = {}) {
   drawText(g, text, x, y, { scale, align, color: color ?? PAL[layer].hud });
 }
 
+// the progress tokens stuckHint (src/layout.js) counts: a repair step, a saved checkpoint, a win
+function progressTokens(s) {
+  const out = [];
+  s.repairs.forEach((r, i) => {
+    if (r.tool) out.push(`r${i}:tool`);
+    if (r.done) out.push(`r${i}:done`);
+    if (r.at !== null && r.at !== undefined) out.push(`r${i}:at${r.at}`);
+  });
+  if (s.checkpoint.id) out.push(`cp:${s.checkpoint.id}`);
+  if (s.won) out.push('win');
+  return out;
+}
+function trackStuck(s) {
+  const r = stuckHint(game.stuck, { deaths: s.deaths, progress: progressTokens(s) });
+  game.stuck = r.tracker;
+  game.stuckShow = r.show && !s.won;
+}
+
 // The level note: a paper strip, like everything official in the building.
 function drawNoteStrip(text) {
   const cols = Math.ceil((measureText(text, 2) + 20) / A); // whole art px, so the rim stays on the 2-px grid
@@ -1064,6 +1087,10 @@ function drawHud(lvl, s, layer) {
   hud(`CLOCK-INS ${s.shifts}  ·  PAR ${lvl.par}`, W - 14, 36, layer, { align: 'right', color: over ? pal.overPar : pal.hud });
   const note = LEVELS[game.index].note;
   if (game.levelTime < 5 && note && !NOTEXT) drawNoteStrip(note);
+  if (game.stuckShow && !NOTEXT) { // centred just above the note strip; steady, so reduced effects needs no variant
+    const text = `Stuck? ${btnName('KeyR')} restarts the shift`;
+    hud(text, W / 2, H - 60, layer, { align: 'center' });
+  }
   if (game.index === 0 && s.shifts === 0 && !NOTEXT) {
     hud(`Press ${keysText(settings.binds().shift, keyLayout)} to change shifts`, W / 2, 140, layer, { align: 'center', scale: 3 });
     hud('Dashed outlines show the other shift', W / 2, 172, layer, { align: 'center', color: pal.hudSoft });

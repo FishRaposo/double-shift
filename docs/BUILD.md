@@ -35,7 +35,7 @@ npm run media
 ```
 - **`npm test`:** all tests, including fairness (about 1 min on 21 levels; the files run in parallel).
 - **`npm run check`:** syntax plus every level parses.
-- **`npm run audit`:** per-level input slack, lag tolerance, and a random search for wins below par (a few minutes on 21 levels; `npm run audit -- <id>` for one).
+- **`npm run audit`:** per-level input slack, lag tolerance, a random search for wins below par, and the cheese instruments of `test/cheese.mjs` (a skippable job, a win below the fewest by walking and hopping, a softlock after one wasted night) (a few minutes on 21 levels; `npm run audit -- <id>` for one).
 - **`npm run media`:** headless Edge, Chrome or Chromium plays level 1 with real keys and runs the flow checks; it also checks audio clipping and draw cost, and saves screenshots to `media/` for you to look at. In a cloud session it finds `/opt/pw-browsers/chromium` and adds `--no-sandbox` as root.
 - **Review shots:** `npm run media -- --review <id,id> --gray --cvd` writes a day and a night picture of each level, plus grayscale and color-blind variants, to `media/review/`. Read them: that's the visual check for every level (§2.1 step 6).
 
