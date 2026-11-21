@@ -293,9 +293,9 @@ export const LEVELS = [
     name: 'Closing Time',
     act: 1,
     props: [
-      { kind: 'memo', tx: 8, ty: 11, text: 'Lasers are for security, not for jumping over. — Night Management', w: 180 },
+      { kind: 'memo', tx: 6, ty: 11, text: 'Lasers are for security, not for jumping over. — Night Management', w: 180 },
       { kind: 'sign', tx: 16, ty: 7, text: 'CLOSING TIME', style: 'paper' },
-      { kind: 'sign', tx: 22, ty: 10, text: 'LASERS', style: 'red', layer: 'night' },
+      { kind: 'sign', tx: 22, ty: 8, text: 'LASERS', style: 'red', layer: 'night' },
     ],
     decor: [{ kind: 'eyes', tx: 24, ty: 4 }],
     freaks: [{ kind: 'peeker', tx: 26, ty: 13, period: 1.6, duty: 0.5 }],

@@ -1025,7 +1025,9 @@ function jobWords(lvl, s) {
   const { tool, done, at } = s.repairs[i];
   const many = job.spots.length > 1;
   let step = `GET THE ${job.tool.name}`;
-  if (done && many) step = job.fix.relay && at === 0 ? `TAKE THE ${job.tool.name} WITH YOU` : `${job.tool.name} IN THE ${job.spots[at].name}`;
+  // a fuse fitted in the box in the wall opens the way; from this side the next step is through it, then the box again
+  const behind = job.fix.relay && at === 0 && s.player.x + PARAMS.playerW / 2 < job.spots[0].tx * TILE;
+  if (done && many) step = behind ? 'GO THROUGH, THEN TOUCH THE BOX AGAIN' : job.fix.relay && at === 0 ? `TAKE THE ${job.tool.name} WITH YOU` : `${job.tool.name} IN THE ${job.spots[at].name}`;
   else if (done) step = job.undoes ? 'TOUCH IT TO SWAP' : job.fix.car ? 'CLOCK IN TO MOVE IT' : 'DONE';
   else if (tool) step = many ? `FIT THE ${job.tool.name}` : `FIX THE ${job.fix.name}`;
   const { when } = job.fix;
