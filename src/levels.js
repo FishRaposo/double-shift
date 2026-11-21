@@ -670,10 +670,10 @@ export const LEVELS = [
     act: 2,
     props: [
       { kind: 'memo', tx: 17, ty: 12, text: 'Lost & Found is not responsible for doors.' },
-      { kind: 'sign', tx: 5, ty: 9, text: 'LOST & FOUND', style: 'paper' },
+      { kind: 'sign', tx: 1, ty: 8, text: 'LOST & FOUND', style: 'paper' },
     ],
-    note: 'They swap the doors every night. Bolt them when you like where they are.',
-    rev: 4,
+    note: 'They move the doors some nights. Bolt them when you like where they are.',
+    rev: 5,
     freaks: [{ kind: 'lurker', tx: 28, ty: 13, range: 1, speed: 45 }],
     repairs: [
       {
@@ -694,7 +694,7 @@ export const LEVELS = [
       {
         id: 'down',
         onNight: 1,
-        every: 2,
+        every: 3,
         tell: { tx: 9, ty: 13, text: 'MOVING DAY' },
         set: [
           { layer: 'night', x0: 6, x1: 12, y0: 14, ch: '#' },
@@ -706,7 +706,7 @@ export const LEVELS = [
       {
         id: 'up',
         onNight: 2,
-        every: 2,
+        every: 3,
         tell: { tx: 9, ty: 13, text: 'MOVING DAY' },
         set: [
           { layer: 'night', x0: 6, x1: 12, y0: 14, ch: '.' },
