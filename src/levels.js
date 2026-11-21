@@ -1547,7 +1547,7 @@ export const LEVELS = [
     name: 'Ceiling Walker',
     act: 5,
     note: "Something is walking on the ceiling. It's fine.",
-    rev: 4,
+    rev: 5,
     repairs: [
       {
         // the latch is on the ceiling's side: you reach it hanging from the walkway on the flipped night
@@ -1562,7 +1562,9 @@ export const LEVELS = [
       { x0: 22, x1: 29, y0: 11, ch: '#' },
       { x0: 13, x1: 14, y0: 11, ch: '~' },
       { x0: 29, y0: 4, y1: 10, ch: '.' },
-      { x0: 30, x1: 31, y0: 13, y1: 17, ch: '#' },
+      { x0: 30, x1: 31, y0: 14, y1: 17, ch: '#' },
+      { x0: 30, y0: 13, ch: '#' },
+      { x0: 31, y0: 12, ch: '#' },
       { x0: 20, y0: 12, y1: 16, ch: '#' },
     ],
     pranks: [{ id: 'plank', onNight: 2, tell: { tx: 25, ty: 11, text: 'MINE' }, set: [{ layer: 'night', x0: 22, x1: 29, y0: 11, ch: '.' }] }],
@@ -1589,7 +1591,7 @@ export const LEVELS = [
       '.............................#..',
       '.............................#..',
       '.............................#..',
-      '.S.................C.........#.E',
+      '.S...........................#CE',
       '#####........#########........##',
       '#####........#########........##',
       '#####........#########........##',

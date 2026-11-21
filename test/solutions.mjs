@@ -323,7 +323,7 @@ export const SOLUTIONS = {
   },
   ceiling: (s) => {
     const x = tx(s);
-    const plan = [[2.8, 4.4, NIGHT], [13.9, 14.9, DAY], [20.8, 21.6, NIGHT], [31, 32, DAY]];
+    const plan = [[2.8, 4.4, NIGHT], [13.9, 14.9, DAY], [20.8, 21.6, NIGHT], [30.2, 32, DAY]];
     const due = plan.find(([a, b]) => x >= a && x <= b);
     return { right: true, shift: !!due && s.layer !== due[2] };
   },
